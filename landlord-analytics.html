@@ -1,0 +1,2350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ResLinQ | Landlord Analytics</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --success: #059669;
+      --warning: #f59e0b;
+      --info: #60a5fa;
+      --light-bg: #f8fafc;
+      --navy: #0b2447;
+    }
+
+    /* Layout: ensure footer sticks to bottom without overlapping content */
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    body {
+      background-color: var(--light-bg);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    main {
+      flex: 1 0 auto;
+      padding-bottom: 2.5rem; /* prevents content from colliding with footer */
+    }
+
+    .bg-navy {
+      background-color: #1C2B4A !important;
+    }
+
+    /* Enhanced Analytics Hero Section with Animations - Mobile Responsive */
+    .analytics-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, #9983e7 50%, var(--primary-light) 100%);
+      color: white;
+      padding: 3rem 0;
+      border-radius: 0 0 1.5rem 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      animation: heroReveal 1s ease-out 0.2s forwards;
+      display: flex;
+      align-items: center;
+      min-height: 250px;
+    }
+
+    .analytics-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+      animation: float 20s infinite linear;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-title {
+      animation: fadeInUp 0.8s ease-out 0.4s both;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .hero-subtitle {
+      animation: fadeInUp 0.8s ease-out 0.6s both;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      opacity: 0.9;
+      max-width: 600px;
+      line-height: 1.5;
+    }
+
+    .hero-actions {
+      animation: fadeInUp 0.8s ease-out 0.8s both;
+    }
+
+    /* Mobile Responsiveness for Hero Section */
+    @media (max-width: 768px) {
+      .analytics-hero {
+        padding: 2rem 0;
+      }
+      
+      .analytics-hero .row.align-items-center {
+        text-align: center;
+      }
+      
+      .hero-subtitle {
+        font-size: 1rem;
+        padding: 0 0.5rem;
+      }
+      
+      .hero-actions {
+        margin-top: 1rem;
+      }
+      
+      .hero-actions .d-flex {
+        justify-content: center !important;
+      }
+      
+      .analytics-hero .text-lg-end {
+        text-align: center !important;
+      }
+    }
+
+    /* Enhanced Animations */
+    @keyframes heroReveal {
+      0% {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes float {
+      0% {
+        transform: translate(0, 0);
+      }
+      50% {
+        transform: translate(-5px, -5px);
+      }
+      100% {
+        transform: translate(0, 0);
+      }
+    }
+
+    .analytics-card {
+      border: none;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      background: #ffffff;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 0;
+    }
+
+    .analytics-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+
+    .metric-card {
+      border: none;
+      border-radius: 1rem;
+      color: white;
+      text-align: center;
+      padding: 1.5rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      height: 100%;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      animation: fadeInScale 0.6s ease-out;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+
+    .metric-card i {
+      font-size: 2.5rem;
+      opacity: 0.8;
+      margin-bottom: 1rem;
+    }
+
+    .metric-card h5 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* Enhanced Bar Chart Styles */
+.chart-container {
+  position: relative;
+  height: 300px;
+  margin: 1rem 0;
+  overflow: visible;
+  padding-left: 50px; /* Space for Y-axis labels */
+  padding-right: 20px;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 100%;
+  padding-bottom: 30px; /* Space for X-axis labels */
+  gap: 0.75rem;
+  position: relative;
+}
+
+.chart-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: calc(100% / 8 - 0.5rem);
+  min-width: 40px;
+  position: relative;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.bar {
+  width: 100%;
+  border-radius: 8px 8px 0 0;
+  min-height: 10px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  /* Remove the default gradient - colors will be set dynamically */
+}
+
+.bar:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 20px rgba(30, 58, 138, 0.3);
+}
+
+.bar:hover .bar-value {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-5px);
+}
+
+/* Enhanced bar value styles for different colors */
+.bar-value {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 10;
+  white-space: nowrap;
+}
+
+/* Color-specific bar value backgrounds */
+.bar-value.past { background: #059669; }
+.bar-value.current { background: #1e40af; }
+.bar-value.future { background: #6b7280; }
+
+.bar-value::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+}
+
+.bar-value.past::after { border-top-color: #059669; }
+.bar-value.current::after { border-top-color: #1e40af; }
+.bar-value.future::after { border-top-color: #6b7280; }
+
+.chart-label {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: #64748b;
+  text-align: center;
+  font-weight: 500;
+  position: absolute;
+  bottom: -25px;
+  width: 100%;
+}
+
+.chart-grid {
+  position: absolute;
+  top: 0;
+  left: 50px; /* Align with padding-left */
+  right: 20px; /* Align with padding-right */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.grid-line {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  width: 100%;
+}
+
+.chart-y-axis {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 0;
+  width: 50px;
+}
+
+.y-axis-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-align: right;
+  padding-right: 8px;
+}
+
+    /* Enhanced Time Period Filter Grid */
+    .period-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (min-width: 576px) {
+      .period-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+      }
+    }
+
+    .period-card {
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 1rem;
+      padding: 1.25rem 0.75rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100px;
+    }
+
+    .period-card:hover {
+      border-color: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.1);
+    }
+
+    .period-card.active {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border-color: var(--primary);
+      color: white;
+      box-shadow: 0 6px 20px rgba(30, 58, 138, 0.2);
+    }
+
+    .period-card.active .period-icon {
+      color: white;
+    }
+
+    .period-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--primary);
+      transition: color 0.3s ease;
+    }
+
+    .period-label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .period-days {
+      font-size: 0.8rem;
+      opacity: 0.8;
+    }
+
+    .performance-indicator {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .indicator-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 0.75rem;
+    }
+
+    .property-performance {
+      border-left: 4px solid var(--primary);
+      padding-left: 1rem;
+      margin-bottom: 1.25rem;
+      background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9));
+      border-radius: 0.5rem;
+      padding-top: 0.75rem;
+      padding-bottom: 0.75rem;
+    }
+
+    .trend-indicator {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.875rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 1rem;
+      margin-left: 0.5rem;
+    }
+
+    .trend-up {
+      background-color: rgba(5, 150, 105, 0.08);
+      color: var(--success);
+    }
+
+    .trend-down {
+      background-color: rgba(220, 38, 38, 0.06);
+      color: #dc2626;
+    }
+
+    .comparison-bar {
+      height: 10px;
+      border-radius: 6px;
+      background-color: #e9eef7;
+      margin: 0.5rem 0;
+      overflow: hidden;
+    }
+
+    .comparison-fill {
+      height: 100%;
+      border-radius: 6px;
+    }
+
+    .insight-card {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border: none;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      border-left: 4px solid var(--primary);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Enhanced Mobile Responsiveness */
+    @media (max-width: 768px) {
+      .analytics-hero {
+        padding: 1.5rem 0;
+        border-radius: 0 0 1.5rem 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      
+      .analytics-card {
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+      }
+      
+      .chart-container {
+        height: 250px;
+      }
+      
+      .chart-bar {
+        width: 12%;
+        min-width: 30px;
+      }
+      
+      .chart-label {
+        font-size: 0.7rem;
+      }
+      
+      .bar-value {
+        font-size: 0.65rem;
+        padding: 3px 6px;
+      }
+      
+      .property-stats {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+      
+      .metric-card {
+        padding: 1.25rem 0.75rem;
+      }
+      
+      .metric-card i {
+        font-size: 2rem;
+      }
+      
+      .metric-card h5 {
+        font-size: 1.75rem;
+      }
+      
+      /* Stack columns on mobile */
+      .col-lg-8, .col-lg-4 {
+        margin-bottom: 1rem;
+      }
+      
+      /* Improve spacing for mobile */
+      .performance-indicator {
+        margin-bottom: 1rem;
+      }
+      
+      .property-performance {
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      /* Mobile Reporting Period - Show on mobile, hide desktop period */
+      .mobile-reporting-period {
+        display: block;
+      }
+
+      .desktop-reporting-period {
+        display: none;
+      }
+
+      /* Center align hero content on mobile */
+      .analytics-hero .row.align-items-center {
+        text-align: center;
+      }
+
+      .analytics-hero .text-lg-end {
+        text-align: center !important;
+        margin-top: 1rem;
+      }
+    }
+
+    @media (min-width: 769px) {
+      .mobile-reporting-period {
+        display: none;
+      }
+
+      .desktop-reporting-period {
+        display: block;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .period-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+      
+      .period-card {
+        padding: 1rem 0.5rem;
+        min-height: 80px;
+      }
+      
+      .period-icon {
+        font-size: 1.25rem;
+      }
+      
+      .analytics-hero .lead {
+        font-size: 0.9rem;
+      }
+      
+      .chart-container {
+        height: 220px;
+      }
+      
+      .chart-bar {
+        width: 14%;
+      }
+    }
+
+    /* Additional mobile optimizations */
+    @media (max-width: 480px) {
+      .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .d-flex.justify-content-between .d-flex {
+        justify-content: center !important;
+      }
+      
+      .export-section .row.align-items-center {
+        text-align: center;
+      }
+      
+      .export-section .text-md-end {
+        text-align: center !important;
+        margin-top: 1rem;
+      }
+    }
+
+    .fw-bold-footer {
+      color: white;
+    }
+
+    .text-light {
+      color: #d1d5db !important;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .fw-medium {
+      color: whitesmoke
+    }
+
+    /* Mobile Bottom Navigation */
+    .mobile-bottom-nav {
+      display: none;
+    }
+
+    @media (max-width: 767px) {
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #1C2B4A;
+        z-index: 1030;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      }
+      
+      .mobile-nav-item {
+        flex: 1;
+        text-align: center;
+        padding: 0.5rem;
+        color: #fff;
+        text-decoration: none;
+        font-size: 0.75rem;
+      }
+      
+      .mobile-nav-item.active {
+        color: #64748b;
+      }
+      
+      .mobile-nav-item i {
+        display: block;
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+      }
+      
+      /* Add padding to main content to account for bottom nav */
+      main {
+        margin-bottom: 80px;
+      }
+    }
+
+    footer {
+      flex-shrink: 0;
+      position: relative;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Redirect if not logged in -->
+  <script>
+    try {
+      const token = localStorage.getItem("token");
+      const userJson = localStorage.getItem("user");
+      const user = userJson ? JSON.parse(userJson) : null;
+
+      if (!token) {
+        alert("Please log in to access this page.");
+        window.location.href = "authorization.html";
+      } else if (!user || user.role !== 'landlord') {
+        alert("This page is for landlords only.");
+        window.location.href = "index.html";
+      }
+    } catch (err) {
+      console.warn("Redirect script error:", err);
+    }
+  </script>
+
+  <!-- Dynamic Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i><span class="d-none d-sm-inline">ResLinQ</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav" id="mainNavList">
+          <li class="nav-item"><a class="nav-link" href="manage-properties.html">Properties</a></li>
+          <li class="nav-item"><a class="nav-link active" href="landlord-analytics.html">Analytics</a></li>
+          <li class="nav-item"><a class="nav-link" href="landlord-booking.html">Bookings</a></li>
+        </ul>
+      </div>
+
+      <div class="signup-login-buttons" id="authButtons">
+        <a href="profile.html" id="profileLink" class="btn btn-sm btn-outline-light me-2">Profile</a>
+        <a href="logout.html" class="btn btn-sm btn-light">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Compact Analytics Hero Section - Mobile Responsive -->
+  <section class="analytics-hero">
+    <div class="container hero-content">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1 class="hero-title fw-bold mb-3">Property Analytics</h1>
+          <p class="lead mb-0 hero-subtitle">Track performance, optimize occupancy, and maximize your rental income.</p>
+        </div>
+        <div class="col-md-4 hero-actions">
+          <div class="d-flex align-items-center justify-content-end">
+            <div class="text-end me-3 desktop-reporting-period">
+              <small class="opacity-75">Reporting Period</small>
+              <div id="reportingPeriod" class="fw-medium" aria-live="polite">Last 30 Days</div>
+            </div>
+            <div class="bg-white rounded-circle d-flex align-items-center justify-content-center"
+                style="width: 44px; height: 44px;">
+              <i class="bi bi-graph-up text-primary fs-6" aria-hidden="true"></i>
+            </div>
+          </div>
+          <!-- Mobile Reporting Period -->
+          <div class="mobile-reporting-period text-center mt-2">
+            <small class="opacity-75">Reporting Period</small>
+            <div id="mobileReportingPeriod" class="fw-medium" aria-live="polite">Last 30 Days</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="container py-4">
+
+    <!-- Enhanced Time Period Filter Grid -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="period-grid">
+          <div class="period-card active time-pill" data-period="month">
+            <i class="bi bi-calendar-month period-icon"></i>
+            <div class="period-label">30 Days</div>
+            <div class="period-days">Monthly View</div>
+          </div>
+          <div class="period-card time-pill" data-period="week">
+            <i class="bi bi-calendar-week period-icon"></i>
+            <div class="period-label">7 Days</div>
+            <div class="period-days">Weekly View</div>
+          </div>
+          <div class="period-card time-pill" data-period="quarter">
+            <i class="bi bi-calendar-range period-icon"></i>
+            <div class="period-label">90 Days</div>
+            <div class="period-days">Quarterly View</div>
+          </div>
+          <div class="period-card time-pill" data-period="year">
+            <i class="bi bi-calendar-check period-icon"></i>
+            <div class="period-label">1 Year</div>
+            <div class="period-days">Annual View</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+      <div class="col-md-3 mb-3">
+        <div class="metric-card" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
+          <i class="bi bi-buildings" aria-hidden="true"></i>
+          <h5 id="totalProperties">0</h5>
+          <p class="mb-0">Properties</p>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="metric-card" style="background: linear-gradient(135deg, var(--success) 0%, #047857 100%);">
+          <i class="bi bi-calendar-check" aria-hidden="true"></i>
+          <h5 id="occupancyRate">0%</h5>
+          <p class="mb-0">Occupancy Rate</p>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="metric-card" style="background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);">
+          <i class="bi bi-cash-coin" aria-hidden="true"></i>
+          <h5 id="totalRevenue">R 0</h5>
+          <p class="mb-0">Revenue</p>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="metric-card" style="background: linear-gradient(135deg, var(--info) 0%, #3b82f6 100%);">
+          <i class="bi bi-star" aria-hidden="true"></i>
+          <h5 id="avgRating">0.0</h5>
+          <p class="mb-0">Avg. Rating</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Analytics Content -->
+    <div class="row">
+      <!-- Left Column: Charts and Performance -->
+      <div class="col-lg-8">
+
+        <!-- Revenue Trend Chart - UPDATED WITH BEAUTIFUL BAR CHART -->
+        <div class="analytics-card mb-4" id="revenueCard" aria-labelledby="revenueHeading">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 id="revenueHeading" class="text-navy mb-0">Revenue Trend</h4>
+            <div class="d-flex align-items-center">
+              <div class="dropdown me-2">
+                <button class="btn btn-outline-primary btn-sm dropdown-toggle" id="chartPeriodBtn" type="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                  Monthly
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="chartPeriodBtn">
+                  <li><a class="dropdown-item chart-period" href="#" data-period="weekly">Weekly</a></li>
+                  <li><a class="dropdown-item chart-period" href="#" data-period="monthly">Monthly</a></li>
+                  <li><a class="dropdown-item chart-period" href="#" data-period="quarterly">Quarterly</a></li>
+                  <li><a class="dropdown-item chart-period" href="#" data-period="year">Yearly</a></li>
+                </ul>
+              </div>
+              <button class="btn btn-sm btn-outline-secondary" id="refreshChartBtn" title="Refresh chart data">
+                <i class="bi bi-arrow-clockwise"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- NEW: Beautiful Bar Chart Container -->
+          <div class="chart-container">
+            <div class="chart-grid" id="chartGrid">
+              <div class="grid-line"></div>
+              <div class="grid-line"></div>
+              <div class="grid-line"></div>
+              <div class="grid-line"></div>
+              <div class="grid-line"></div>
+            </div>
+            <div class="chart-y-axis" id="chartYAxis"></div>
+            <div class="chart-bars" id="chartBars">
+              <!-- Bars will be populated dynamically -->
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <div class="text-center">
+              <div class="fw-bold text-navy" id="avgMonthlyValue">R 0</div>
+              <small class="text-muted">Avg. Monthly</small>
+            </div>
+            <div class="text-center">
+              <div class="fw-bold text-success" id="growthValue">+0%</div>
+              <small class="text-muted">Growth</small>
+            </div>
+            <div class="text-center">
+              <div class="fw-bold text-navy" id="currentMonthValue">R 0</div>
+              <small class="text-muted">Current Month</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Property Performance -->
+        <div class="analytics-card" aria-labelledby="propertyPerfHeading" id="propertyPerformanceCard">
+          <h4 id="propertyPerfHeading" class="text-navy mb-3">Property Performance</h4>
+          <div id="propertyPerformanceContent">
+            <div class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading properties...</span>
+              </div>
+              <p class="mt-2 text-muted">Loading property performance data...</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Insights and Data -->
+      <div class="col-lg-4">
+
+        <!-- Performance Insights -->
+        <div class="insight-card mb-4" aria-labelledby="insightsHeading">
+          <h4 id="insightsHeading" class="text-navy mb-3">Performance Insights</h4>
+          <div id="performanceInsightsContent">
+            <div class="text-center py-2">
+              <div class="spinner-border text-primary spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading insights...</span>
+              </div>
+              <p class="mt-2 text-muted small">Loading insights...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Reviews -->
+        <div class="analytics-card" aria-labelledby="recentReviewsHeading">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 id="recentReviewsHeading" class="text-navy mb-0">Recent Reviews</h4>
+            <a href="landlord-reports.html" class="text-primary small">View All</a>
+          </div>
+          <div id="recentReviewsContent">
+            <div class="text-center py-2">
+              <div class="spinner-border text-primary spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading reviews...</span>
+              </div>
+              <p class="mt-2 text-muted small">Loading reviews...</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Export Section -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="analytics-card export-section">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h4 class="text-navy mb-2">Export Analytics Data</h4>
+              <p class="mb-0">Download your property performance data for further analysis.</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button class="btn btn-outline-primary me-2" id="exportPdf">
+                  <i class="bi bi-file-earmark-pdf me-1"></i> PDF Report
+                </button>
+                <button class="btn btn-primary" id="exportExcel">
+                  <i class="bi bi-file-earmark-spreadsheet me-1"></i> Excel Data
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Mobile Bottom Navigation -->
+  <div class="mobile-bottom-nav d-lg-none">
+    <a href="landlord-dashboard.html" class="mobile-nav-item">
+      <i class="bi bi-house"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="manage-properties.html" class="mobile-nav-item">
+      <i class="bi bi-building"></i>
+      <span>Properties</span>
+    </a>
+    <a href="landlord-booking.html" class="mobile-nav-item">
+      <i class="bi bi-calendar-check"></i>
+      <span>Bookings</span>
+    </a>
+    <a href="landlord-analytics.html" class="mobile-nav-item active">
+      <i class="bi bi-bar-chart"></i>
+      <span>Analytics</span>
+    </a>
+    <a href="landlord-help.html" class="mobile-nav-item">
+      <i class="bi bi-question-circle"></i>
+      <span>Help</span>
+    </a>
+  </div>
+
+  <!-- Enhanced Footer -->
+  <footer class="py-5 bg-navy text-white">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer"><i class="bi bi-house-heart-fill me-2"></i>ResLinQ</h5>
+          <p class="text-light small">Your trusted platform for managing student accommodation properties efficiently.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Property Management</h6>
+          <ul class="list-unstyled">
+            <li><a href="manage-properties.html" class="text-light text-decoration-none">My Properties</a></li>
+            <li><a href="landlord-booking.html" class="text-light text-decoration-none">Bookings</a></li>
+            <li><a href="landlord-reports.html" class="text-light text-decoration-none">Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="landlord-analytics.html" class="text-light text-decoration-none">Analytics</a></li>
+            <li><a href="landlord-help.html" class="text-light text-decoration-none">Help</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Landlord Support</h6>
+          <p class="text-light small mb-0">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa<br>
+            <i class="bi bi-clock me-2"></i>Mon-Fri: 9AM-5PM
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="navbar.js"></script>
+    
+  <script>
+    const API_BASE_URL = window.API_BASE_URL || 'https://linqs-backend.onrender.com/api';
+
+    class AnalyticsManager {
+        constructor() {
+            this.token = localStorage.getItem("token");
+            this.user = JSON.parse(localStorage.getItem("user") || "{}");
+            this.properties = [];
+            this.reviews = [];
+            this.bookings = [];
+            this.currentPeriod = 'month';
+            this.currentChartPeriod = 'monthly';
+            this.monthlyRevenue = 0;
+            this.propertyCreationDate = this.getPropertyCreationDate();
+            this.init();
+        }
+
+        async init() {
+            if (!this.token) return;
+
+            try {
+                await this.loadData();
+                this.setupEventListeners();
+                await this.updateMetrics();
+                this.renderCharts();
+                this.renderPropertyPerformance();
+                this.renderRecentReviews();
+                this.renderPerformanceInsights();
+                this.updateReportingPeriod();
+            } catch (error) {
+                console.error('Error initializing analytics manager:', error);
+                this.showError('Failed to load analytics data');
+            }
+        }
+
+        // Get property creation date (when user started using the app)
+        getPropertyCreationDate() {
+            const storedDate = localStorage.getItem('propertyCreationDate');
+            if (storedDate) {
+                return new Date(storedDate);
+            }
+            
+            // Use user registration date or current date
+            const userJoinDate = this.user.createdAt ? new Date(this.user.createdAt) : new Date();
+            localStorage.setItem('propertyCreationDate', userJoinDate.toISOString());
+            return userJoinDate;
+        }
+
+        async loadData() {
+            try {
+                const [propertiesData, reviewsData, bookingsData] = await Promise.all([
+                    this.fetchProperties(),
+                    this.fetchReviews(),
+                    this.fetchBookings()
+                ]);
+
+                this.properties = propertiesData;
+                this.reviews = reviewsData;
+                this.bookings = bookingsData;
+                
+                this.monthlyRevenue = await this.calculateMonthlyRevenue();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                throw error;
+            }
+        }
+
+        async fetchProperties() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/properties/user/my-properties`, {
+                    headers: {
+                        'Authorization': `Bearer ${this.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.properties || [];
+                }
+                return [];
+            } catch (error) {
+                console.warn('Failed to fetch properties:', error);
+                return [];
+            }
+        }
+
+        async fetchReviews() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/reviews/my-reviews`, {
+                    headers: {
+                        'Authorization': `Bearer ${this.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.reviews || [];
+                }
+                return [];
+            } catch (error) {
+                console.warn('Failed to fetch reviews:', error);
+                return [];
+            }
+        }
+
+        async fetchBookings() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
+                    headers: {
+                        'Authorization': `Bearer ${this.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.bookings || [];
+                }
+                return [];
+            } catch (error) {
+                console.warn('Failed to fetch bookings:', error);
+                return [];
+            }
+        }
+
+        // Calculate room-based occupancy rate
+        async calculateOverallOccupancyRate() {
+            if (this.properties.length === 0) return 0;
+
+            let totalOccupancy = 0;
+            let propertyCount = 0;
+
+            for (const property of this.properties) {
+                try {
+                    let propertyOccupancy = 0;
+                    
+                    if (property.status === 'occupied' || property.availability === 'occupied') {
+                        propertyOccupancy = 100;
+                    } else {
+                        propertyOccupancy = await this.calculateRoomBasedOccupancy(property._id);
+                    }
+                    
+                    totalOccupancy += propertyOccupancy;
+                    propertyCount++;
+                    
+                } catch (error) {
+                    console.error(`Error processing property ${property._id}:`, error);
+                }
+            }
+
+            return propertyCount > 0 ? totalOccupancy / propertyCount : 0;
+        }
+
+        // Add the calculateRoomBasedOccupancy method
+        async calculateRoomBasedOccupancy(propertyId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms`, {
+                    headers: {
+                        'Authorization': `Bearer ${this.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const rooms = data.rooms || [];
+                    
+                    if (rooms.length === 0) {
+                        return 0;
+                    }
+                    
+                    const occupiedRooms = rooms.filter(room => !room.isAvailable).length;
+                    const occupancyRate = (occupiedRooms / rooms.length) * 100;
+                    return Math.round(occupancyRate);
+                } else {
+                    console.warn(`Failed to fetch rooms for property ${propertyId}`);
+                    return 0;
+                }
+            } catch (error) {
+                console.error(`Error calculating occupancy for property ${propertyId}:`, error);
+                return 0;
+            }
+        }
+
+        // Calculate monthly revenue
+        async calculateMonthlyRevenue() {
+            let totalRevenue = 0;
+
+            for (const property of this.properties) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/properties/${property._id}/rooms`, {
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const rooms = data.rooms || [];
+                        const propertyRevenue = rooms
+                            .filter(room => !room.isAvailable)
+                            .reduce((sum, room) => sum + (room.price || 0), 0);
+                        totalRevenue += propertyRevenue;
+                    }
+                } catch (error) {
+                    console.error(`Error fetching rooms for property ${property._id}:`, error);
+                }
+            }
+
+            return totalRevenue;
+        }
+
+        // Calculate revenue for different time periods - FIXED CUMULATIVE CALCULATIONS
+        calculateRevenueForPeriod(period) {
+            const baseRevenue = this.monthlyRevenue;
+            
+            switch (period) {
+                case 'week':
+                    return Math.round(baseRevenue / 4.33);
+                case 'month':
+                    return baseRevenue;
+                case 'quarter':
+                    // For quarterly stats card, show cumulative quarter-to-date
+                    return this.calculateCumulativeRevenueForQuarter();
+                case 'year':
+                    // For yearly stats card, show cumulative year-to-date
+                    return this.calculateCumulativeRevenueForYear();
+                default:
+                    return baseRevenue;
+            }
+        }
+
+        // FIXED: Calculate cumulative revenue for current year
+        calculateCumulativeRevenueForYear() {
+            const now = new Date();
+            const currentMonth = now.getMonth(); // 0-11 (Jan=0, Dec=11)
+            
+            // Months completed this year (January = 0 to current month)
+            const monthsCompleted = currentMonth + 1;
+            
+            // Return cumulative revenue for months completed so far this year
+            return this.monthlyRevenue * monthsCompleted;
+        }
+
+        // FIXED: Calculate cumulative revenue for current quarter
+        calculateCumulativeRevenueForQuarter() {
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            
+            // Determine current quarter and its start month
+            const quarterStartMonth = Math.floor(currentMonth / 3) * 3;
+            
+            // Calculate how many months have passed in this quarter (including current month)
+            const monthsCompletedInQuarter = currentMonth - quarterStartMonth + 1;
+            
+            // Return cumulative revenue for months completed so far in the quarter
+            return this.monthlyRevenue * monthsCompletedInQuarter;
+        }
+
+        // Update main metrics
+        async updateMetrics() {
+            document.getElementById('totalProperties').textContent = this.properties.length;
+
+            const occupancyRate = await this.calculateOverallOccupancyRate();
+            document.getElementById('occupancyRate').textContent = `${Math.round(occupancyRate)}%`;
+
+            const periodRevenue = this.calculateRevenueForPeriod(this.currentPeriod);
+            document.getElementById('totalRevenue').textContent = `R ${periodRevenue.toLocaleString()}`;
+
+            const reviewsWithRatings = this.reviews.filter(review => review.rating && review.rating > 0);
+            const averageRating = reviewsWithRatings.length > 0 
+                ? (reviewsWithRatings.reduce((sum, review) => sum + review.rating, 0) / reviewsWithRatings.length).toFixed(1)
+                : '0.0';
+            document.getElementById('avgRating').textContent = averageRating;
+        }
+
+        // NEW: Render beautiful bar chart
+        renderCharts() {
+            this.renderRevenueBarChartForPeriod(this.currentChartPeriod);
+        }
+
+        // NEW: Render bar chart for specific period with proper axis scaling and colors
+        // NEW: Render beautiful bar chart with proper positioning
+renderCharts() {
+    this.renderRevenueBarChartForPeriod(this.currentChartPeriod);
+}
+
+// NEW: Render bar chart for specific period with proper axis scaling and colors
+renderRevenueBarChartForPeriod(period = this.currentChartPeriod) {
+    const container = document.getElementById('chartBars');
+    if (!container) return;
+
+    // Get actual revenue data with time status information
+    const { periods, values, timeStatuses } = this.getDynamicChartDataForPeriod(period);
+
+    // Clear previous chart
+    container.innerHTML = '';
+    document.getElementById('chartYAxis').innerHTML = '';
+    document.getElementById('chartGrid').innerHTML = '';
+
+    // Calculate max value for proper axis scaling - ensure it's at least the highest value
+    const maxValue = Math.max(...values, 1);
+    const yAxisStep = Math.ceil(maxValue / 5 / 100) * 100; // Round to nearest 100 for better scaling
+
+    // Create Y-axis labels and grid lines
+    const yAxisContainer = document.getElementById('chartYAxis');
+    const gridContainer = document.getElementById('chartGrid');
+    
+    for (let i = 5; i >= 0; i--) {
+        const yValue = yAxisStep * i;
+        
+        // Create grid line
+        const gridLine = document.createElement('div');
+        gridLine.className = 'grid-line';
+        gridContainer.appendChild(gridLine);
+        
+        // Create Y-axis label
+        const yLabel = document.createElement('div');
+        yLabel.className = 'y-axis-label';
+        yLabel.textContent = `R ${yValue.toLocaleString()}`;
+        yAxisContainer.appendChild(yLabel);
+    }
+
+    // Create bars with proper scaling and colors
+    values.forEach((value, index) => {
+        // Calculate height based on actual value and maxValue
+        const heightPercent = Math.max(5, (value / maxValue) * 95); // 5% minimum height
+        
+        // Determine bar color based on time status
+        let barColor = '';
+        const timeStatus = timeStatuses[index];
+        
+        switch (timeStatus) {
+            case 'past':
+                barColor = 'linear-gradient(to top, #059669 0%, #10b981 100%)'; // Green for past
+                break;
+            case 'current':
+                barColor = 'linear-gradient(to top, #1e40af 0%, #3b82f6 100%)'; // Blue for current
+                break;
+            case 'future':
+                barColor = 'linear-gradient(to top, #6b7280 0%, #9ca3af 100%)'; // Gray for future
+                break;
+            default:
+                barColor = 'linear-gradient(to top, #1e3a8a 0%, #3b82f6 100%)';
+        }
+
+        const barWrapper = document.createElement('div');
+        barWrapper.className = 'chart-bar';
+        barWrapper.innerHTML = `
+            <div class="bar-value ${timeStatus}">R ${value.toLocaleString()}</div>
+            <div class="bar" style="height: ${heightPercent}%; background: ${barColor}"></div>
+            <div class="chart-label">${periods[index]}</div>
+        `;
+        
+        container.appendChild(barWrapper);
+    });
+
+    // Update summary values with dynamic labels
+    this.updateChartSummary(period, values);
+}
+
+
+        // Update chart summary with dynamic labels based on period - FIXED FOR QUARTERLY AND YEARLY
+        updateChartSummary(period, values) {
+            if (values.length === 0) return;
+
+            // Calculate growth percentage based on chart values
+            const currentValue = values[values.length - 1] || 0;
+            const previousValue = values[values.length - 2] || currentValue;
+            const growth = previousValue > 0 ? Math.round(((currentValue - previousValue) / previousValue) * 100) : 0;
+
+            // Update labels based on period
+            let avgLabel = 'Avg. Monthly';
+            let currentLabel = 'Current Month';
+
+            switch (period) {
+                case 'weekly':
+                    avgLabel = 'Avg. Weekly';
+                    currentLabel = 'Current Week';
+                    break;
+                case 'monthly':
+                    avgLabel = 'Avg. Monthly';
+                    currentLabel = 'Current Month';
+                    break;
+                case 'quarterly':
+                    avgLabel = 'Current Quarter';
+                    currentLabel = 'Current Month';
+                    break;
+                case 'year':
+                    avgLabel = 'Current Year';
+                    currentLabel = 'Current Month';
+                    break;
+            }
+
+            // For quarterly and yearly periods, use current month revenue only (not cumulative)
+            let avgValue, currentValueDisplay;
+            
+            if (period === 'quarterly' || period === 'year') {
+                // For quarterly and yearly chart summary, use the current month's actual revenue only
+                avgValue = this.monthlyRevenue; // Just current month, not cumulative
+                currentValueDisplay = this.monthlyRevenue; // Just current month, not cumulative
+            } else {
+                // For weekly and monthly periods, use the stats card revenue
+                const statsCardRevenue = this.calculateRevenueForPeriod(this.currentPeriod);
+                avgValue = statsCardRevenue;
+                currentValueDisplay = statsCardRevenue;
+            }
+
+            // Update the display values
+            document.getElementById('avgMonthlyValue').textContent = `R ${avgValue.toLocaleString()}`;
+            document.getElementById('growthValue').textContent = `${growth >= 0 ? '+' : ''}${growth}%`;
+            document.getElementById('growthValue').className = `fw-bold ${growth >= 0 ? 'text-success' : 'text-danger'}`;
+            document.getElementById('currentMonthValue').textContent = `R ${currentValueDisplay.toLocaleString()}`;
+
+            // Update the labels
+            document.querySelector('#avgMonthlyValue').nextElementSibling.textContent = avgLabel;
+            document.querySelector('#currentMonthValue').nextElementSibling.textContent = currentLabel;
+        }
+
+        // Dynamic chart data based on current date
+        getDynamicChartDataForPeriod(period) {
+            // Get the actual revenue amount from the stats card for the current period
+            const statsCardRevenue = this.calculateRevenueForPeriod(this.currentPeriod);
+            
+            switch (period) {
+                case 'weekly':
+                    return this.getWeeklyChartData(statsCardRevenue);
+                case 'monthly':
+                    return this.getMonthlyChartData(statsCardRevenue);
+                case 'quarterly':
+                    return this.getQuarterlyChartData(statsCardRevenue);
+                case 'year':
+                    return this.getYearlyChartData(statsCardRevenue);
+                default:
+                    return {
+                        periods: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        values: Array(4).fill(Math.round(statsCardRevenue / 4)),
+                        timeStatuses: Array(4).fill('past')
+                    };
+            }
+        }
+
+        // Weekly chart data with time status
+        getWeeklyChartData(weeklyRevenue) {
+            const now = new Date();
+            const currentDay = now.getDay();
+            
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - currentDay + (currentDay === 0 ? -6 : 1));
+            
+            const periods = [];
+            const values = [];
+            const timeStatuses = [];
+            const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            
+            const dailyBaseRevenue = Math.round(weeklyRevenue / 7);
+            const dailyPattern = [0.9, 1.0, 1.1, 1.2, 1.1, 0.8, 0.7];
+            
+            for (let i = 0; i < 7; i++) {
+                const currentDate = new Date(monday);
+                currentDate.setDate(monday.getDate() + i);
+                
+                periods.push(dayNames[i]);
+                values.push(Math.round(dailyBaseRevenue * dailyPattern[i]));
+                
+                let adjustedCurrentDay = currentDay === 0 ? 6 : currentDay - 1;
+                
+                if (i < adjustedCurrentDay) {
+                    timeStatuses.push('past');
+                } else if (i === adjustedCurrentDay) {
+                    timeStatuses.push('current');
+                } else {
+                    timeStatuses.push('future');
+                }
+            }
+            
+            return { periods, values, timeStatuses };
+        }
+
+        // Monthly chart data with time status
+        getMonthlyChartData(monthlyRevenue) {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const currentDate = now.getDate();
+            const lastDay = new Date(year, month + 1, 0);
+            const totalDays = lastDay.getDate();
+            
+            const periods = [];
+            const values = [];
+            const timeStatuses = [];
+            
+            const daysPerPeriod = 7;
+            const totalPeriods = Math.ceil(totalDays / daysPerPeriod);
+            
+            const periodBaseRevenue = Math.round(monthlyRevenue / totalPeriods);
+            const periodPattern = [0.9, 1.0, 1.1, 1.0, 0.8];
+            
+            const currentPeriod = Math.ceil(currentDate / daysPerPeriod);
+            
+            for (let i = 1; i <= totalPeriods; i++) {
+                const startDay = (i - 1) * daysPerPeriod + 1;
+                let endDay = i * daysPerPeriod;
+                if (endDay > totalDays) endDay = totalDays;
+                
+                periods.push(`Day ${startDay}-${endDay}`);
+                
+                const patternMultiplier = periodPattern[i-1] || 1.0;
+                values.push(Math.round(periodBaseRevenue * patternMultiplier));
+                
+                if (i < currentPeriod) {
+                    timeStatuses.push('past');
+                } else if (i === currentPeriod) {
+                    timeStatuses.push('current');
+                } else {
+                    timeStatuses.push('future');
+                }
+            }
+            
+            return { periods, values, timeStatuses };
+        }
+
+        // Quarterly chart data with time status - FIXED: Only shows current month to end of quarter with 0 for future months
+        getQuarterlyChartData(quarterlyRevenue) {
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const quarterStartMonth = Math.floor(currentMonth / 3) * 3;
+            const quarterEndMonth = quarterStartMonth + 2; // Quarters end at month + 2
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            const periods = [];
+            const values = [];
+            const timeStatuses = [];
+            
+            // Only show months from current month to end of quarter
+            for (let i = currentMonth; i <= quarterEndMonth; i++) {
+                periods.push(monthNames[i]);
+                
+                // Only current month gets actual revenue, future months get 0
+                if (i === currentMonth) {
+                    values.push(this.monthlyRevenue); // Actual current month revenue
+                    timeStatuses.push('current');
+                } else {
+                    values.push(0); // Future months show 0 revenue
+                    timeStatuses.push('future');
+                }
+            }
+            
+            return { periods, values, timeStatuses };
+        }
+
+        // Yearly chart data - FIXED VERSION: Only shows current month to December with actual current month data
+        getYearlyChartData(yearlyRevenue) {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth(); // 0-11 (Jan=0, Dec=11)
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            const periods = [];
+            const values = [];
+            const timeStatuses = [];
+            
+            // Only show months from current month to December
+            for (let i = currentMonth; i < 12; i++) {
+                periods.push(monthNames[i]);
+                
+                // Only current month gets actual revenue, future months get 0
+                if (i === currentMonth) {
+                    values.push(this.monthlyRevenue); // Actual current month revenue
+                    timeStatuses.push('current');
+                } else {
+                    values.push(0); // Future months show 0 revenue
+                    timeStatuses.push('future');
+                }
+            }
+            
+            return { periods, values, timeStatuses };
+        }
+
+        // Format chart period for display
+        formatChartPeriod(period) {
+            const periodMap = {
+                'weekly': 'Weekly',
+                'monthly': 'Monthly', 
+                'quarterly': 'Quarterly',
+                'year': 'Yearly'
+            };
+            return periodMap[period] || 'Monthly';
+        }
+
+        // Map stats card periods to chart periods
+        mapStatsPeriodToChartPeriod(statsPeriod) {
+            const periodMap = {
+                'week': 'weekly',
+                'month': 'monthly',
+                'quarter': 'quarterly',
+                'year': 'year'
+            };
+            return periodMap[statsPeriod] || 'monthly';
+        }
+
+        // Map chart periods to stats card periods
+        mapChartPeriodToStatsPeriod(chartPeriod) {
+            const periodMap = {
+                'weekly': 'week',
+                'monthly': 'month',
+                'quarterly': 'quarter',
+                'year': 'year'
+            };
+            return periodMap[chartPeriod] || 'month';
+        }
+
+        async renderPropertyPerformance() {
+            const container = document.getElementById('propertyPerformanceContent');
+            if (!container) return;
+
+            if (this.properties.length === 0) {
+                container.innerHTML = '<div class="text-center py-4"><p class="text-muted">No properties found</p></div>';
+                return;
+            }
+
+            let html = `
+                <div class="property-performance-container" style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
+            `;
+
+            for (const property of this.properties) {
+                const occupancyRate = await this.calculatePropertyOccupancy(property._id);
+                const revenue = await this.calculatePropertyRevenue(property._id);
+                const rating = this.calculatePropertyRating(property._id);
+                
+                // Calculate actual growth rate based on historical data
+                const growthRate = await this.calculatePropertyGrowthRate(property._id);
+                const trend = growthRate >= 0 ? 'up' : 'down';
+                const trendValue = `${growthRate >= 0 ? '+' : ''}${growthRate.toFixed(1)}%`;
+
+                html += `
+                    <div class="property-performance">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0">${property.title || 'Unnamed Property'}</h5>
+                            <span class="trend-indicator trend-${trend}">
+                                <i class="bi bi-arrow-${trend === 'up' ? 'up-right' : 'down-right'} me-1"></i>${trendValue}
+                            </span>
+                        </div>
+                        <p class="text-muted mb-2">${property.location?.address || 'Address not specified'}, ${property.location?.city || 'City not specified'}</p>
+
+                        <div class="property-stats">
+                            <div class="mb-2">
+                                <small class="text-muted">Occupancy</small>
+                                <div class="fw-bold">${Math.round(occupancyRate)}%</div>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Monthly Revenue</small>
+                                <div class="fw-bold">R ${revenue.toLocaleString()}</div>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Rating</small>
+                                <div class="fw-bold">${rating}/5</div>
+                            </div>
+                        </div>
+
+                        <div class="comparison-bar">
+                            <div class="comparison-fill bg-${occupancyRate >= 80 ? 'success' : occupancyRate >= 60 ? 'primary' : 'warning'}" 
+                                 style="width: ${occupancyRate}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        // Add this new method to calculate actual growth rate
+        async calculatePropertyGrowthRate(propertyId) {
+            try {
+                // Get current occupancy rate
+                const currentOccupancy = await this.calculatePropertyOccupancy(propertyId);
+                
+                // Get historical data for comparison
+                const historicalOccupancy = await this.getHistoricalOccupancy(propertyId);
+                
+                if (historicalOccupancy === 0 || currentOccupancy === 0) {
+                    // If no historical data or current occupancy is 0, return 0% growth
+                    return 0;
+                }
+                
+                // Calculate actual growth percentage
+                const growthRate = ((currentOccupancy - historicalOccupancy) / historicalOccupancy) * 100;
+                
+                // Return the actual growth rate without caps
+                return growthRate;
+                
+            } catch (error) {
+                console.error(`Error calculating growth rate for property ${propertyId}:`, error);
+                return 0; // Fallback to 0% growth on error
+            }
+        }
+
+        // Update the getHistoricalOccupancy method to be more accurate
+        async getHistoricalOccupancy(propertyId) {
+            try {
+                // Try to get historical data from localStorage first
+                const storageKey = `property_${propertyId}_historical_occupancy`;
+                const storedData = localStorage.getItem(storageKey);
+                
+                if (storedData) {
+                    const historicalData = JSON.parse(storedData);
+                    
+                    // Return the most recent historical occupancy (not average)
+                    if (historicalData.length > 0) {
+                        return historicalData[historicalData.length - 1]; // Return the last recorded occupancy
+                    }
+                }
+                
+                // If no historical data exists, use current occupancy as baseline
+                const currentOccupancy = await this.calculatePropertyOccupancy(propertyId);
+                
+                // Store this as initial historical data
+                this.updateHistoricalData(propertyId, currentOccupancy);
+                
+                return currentOccupancy; // Return current as baseline for first calculation
+                
+            } catch (error) {
+                console.error(`Error getting historical occupancy for property ${propertyId}:`, error);
+                return 0;
+            }
+        }
+
+        // Add this method to update historical data
+        updateHistoricalData(propertyId, currentOccupancy) {
+            try {
+                const storageKey = `property_${propertyId}_historical_occupancy`;
+                const existingData = localStorage.getItem(storageKey);
+                let historicalData = [];
+                
+                if (existingData) {
+                    historicalData = JSON.parse(existingData);
+                }
+                
+                // Add current data point
+                historicalData.push(currentOccupancy);
+                
+                // Keep only last 6 months of data to maintain relevance
+                if (historicalData.length > 6) {
+                    historicalData = historicalData.slice(-6);
+                }
+                
+                localStorage.setItem(storageKey, JSON.stringify(historicalData));
+                
+            } catch (error) {
+                console.error(`Error updating historical data for property ${propertyId}:`, error);
+            }
+        }
+
+        async calculatePropertyOccupancy(propertyId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms`, {
+                    headers: {
+                        'Authorization': `Bearer ${this.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const rooms = data.rooms || [];
+                    if (rooms.length === 0) return 0;
+                    
+                    const occupiedRooms = rooms.filter(room => !room.isAvailable).length;
+                    return (occupiedRooms / rooms.length) * 100;
+                }
+                return 0;
+            } catch (error) {
+                console.error(`Error calculating occupancy for property ${propertyId}:`, error);
+                return 0;
+            }
+        }
+
+        async calculatePropertyRevenue(propertyId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms`, {
+                    headers: {
+                        'Authorization': `Bearer ${this.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const rooms = data.rooms || [];
+                    return rooms
+                        .filter(room => !room.isAvailable)
+                        .reduce((sum, room) => sum + (room.price || 0), 0);
+                }
+                return 0;
+            } catch (error) {
+                console.error(`Error calculating revenue for property ${propertyId}:`, error);
+                return 0;
+            }
+        }
+
+        calculatePropertyRating(propertyId) {
+            const propertyReviews = this.reviews.filter(review => review.property?._id === propertyId);
+            if (propertyReviews.length === 0) return 'No ratings';
+            
+            const average = propertyReviews.reduce((sum, review) => sum + review.rating, 0) / propertyReviews.length;
+            return average.toFixed(1);
+        }
+
+        renderRecentReviews() {
+            const container = document.getElementById('recentReviewsContent');
+            if (!container) return;
+
+            const recentReviews = this.reviews.slice(0, 2);
+            
+            if (recentReviews.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="bi bi-chat-left-text display-4 text-muted mb-3"></i>
+                        <p class="text-muted">No reviews yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            recentReviews.forEach(review => {
+                const studentName = review.student?.username || 'Anonymous Student';
+                const stars = this.generateStars(review.rating);
+                
+                html += `
+                    <div class="mb-3">
+                        <div class="d-flex align-items-start">
+                            <div class="me-3">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white"
+                                     style="width: 40px; height: 40px;">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-medium">${studentName}</div>
+                                <div class="text-warning small">
+                                    ${stars}
+                                </div>
+                                <p class="small mb-0">${review.comment}</p>
+                                <small class="text-muted">${new Date(review.createdAt).toLocaleDateString()}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `<div class="text-center mt-3">
+                        <a href="landlord-reports.html" class="btn btn-outline-primary btn-sm">View All Reviews</a>
+                    </div>`;
+
+            container.innerHTML = html;
+        }
+
+        generateStars(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    stars += '<i class="bi bi-star-fill"></i>';
+                } else if (i === Math.ceil(rating) && !Number.isInteger(rating)) {
+                    stars += '<i class="bi bi-star-half"></i>';
+                } else {
+                    stars += '<i class="bi bi-star"></i>';
+                }
+            }
+            return stars;
+        }
+
+        renderPerformanceInsights() {
+            const container = document.getElementById('performanceInsightsContent');
+            if (!container) return;
+
+            const insights = this.generateInsights();
+            
+            let html = '';
+            insights.forEach(insight => {
+                html += `
+                    <div class="performance-indicator">
+                        <span class="indicator-dot bg-${insight.color}"></span>
+                        <div class="flex-grow-1">
+                            <div class="fw-medium">${insight.title}</div>
+                            <small class="text-muted">${insight.description}</small>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        generateInsights() {
+            const occupancyRate = this.calculateOverallOccupancyRate();
+            const totalProperties = this.properties.length;
+            
+            return [
+                {
+                    title: "Room-based occupancy tracking",
+                    description: "Your occupancy rate is calculated based on individual room utilization across all properties.",
+                    color: "success"
+                },
+                {
+                    title: `${totalProperties} properties managed`,
+                    description: "You're managing multiple properties with room-level revenue tracking.",
+                    color: "primary"
+                },
+                {
+                    title: "Revenue optimization opportunity",
+                    description: "Consider dynamic pricing for high-demand periods to maximize income.",
+                    color: "warning"
+                },
+                {
+                    title: "Review response rate",
+                    description: "Quick responses to reviews can improve your property ratings and attract more tenants.",
+                    color: "info"
+                }
+            ];
+        }
+
+        setupEventListeners() {
+            // Stats card period buttons
+            document.querySelectorAll('.time-pill').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    document.querySelectorAll('.time-pill').forEach(x => x.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    this.currentPeriod = btn.getAttribute('data-period');
+                    this.updateReportingPeriod();
+                    
+                    // Update both the revenue card AND the chart
+                    await this.updateMetrics();
+                    
+                    // Sync chart period with stats card period
+                    this.currentChartPeriod = this.mapStatsPeriodToChartPeriod(this.currentPeriod);
+                    this.updateChartDropdown();
+                    this.renderCharts();
+                });
+            });
+
+            // Chart period dropdown items - FIXED VERSION
+            document.querySelectorAll('.chart-period').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const period = item.getAttribute('data-period');
+                    
+                    // Update chart period
+                    this.currentChartPeriod = period;
+                    const dropdownBtn = document.getElementById('chartPeriodBtn');
+                    
+                    if (dropdownBtn) {
+                        dropdownBtn.textContent = this.formatChartPeriod(period);
+                        
+                        // Close the dropdown
+                        const dropdownElement = dropdownBtn.nextElementSibling;
+                        if (dropdownElement && dropdownElement.classList.contains('dropdown-menu')) {
+                            dropdownElement.classList.remove('show');
+                            dropdownBtn.classList.remove('show');
+                            dropdownBtn.setAttribute('aria-expanded', 'false');
+                        }
+                    }
+                    
+                    // Sync stats card period with chart period
+                    const statsPeriod = this.mapChartPeriodToStatsPeriod(period);
+                    this.currentPeriod = statsPeriod;
+                    
+                    // Update stats cards UI
+                    document.querySelectorAll('.time-pill').forEach(x => x.classList.remove('active'));
+                    const activeStatsCard = document.querySelector(`.time-pill[data-period="${statsPeriod}"]`);
+                    if (activeStatsCard) {
+                        activeStatsCard.classList.add('active');
+                    }
+                    
+                    // Update metrics and reporting period
+                    this.updateMetrics();
+                    this.updateReportingPeriod();
+                    
+                    // Update the chart with the selected period
+                    this.renderRevenueBarChartForPeriod(period);
+                });
+            });
+
+            const refreshBtn = document.getElementById('refreshChartBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', () => {
+                    this.refreshData();
+                });
+            }
+
+            // Export buttons
+            const exportPdf = document.getElementById('exportPdf');
+            const exportExcel = document.getElementById('exportExcel');
+            
+            if (exportPdf) {
+                exportPdf.addEventListener('click', () => {
+                    this.exportPDF();
+                });
+            }
+            
+            if (exportExcel) {
+                exportExcel.addEventListener('click', () => {
+                    this.exportExcel();
+                });
+            }
+        }
+
+        // Update chart dropdown to reflect current selection
+        updateChartDropdown() {
+            const dropdownBtn = document.getElementById('chartPeriodBtn');
+            if (dropdownBtn) {
+                dropdownBtn.textContent = this.formatChartPeriod(this.currentChartPeriod);
+            }
+        }
+
+        updateReportingPeriod() {
+            const reportingPeriod = document.getElementById('reportingPeriod');
+            const mobileReportingPeriod = document.getElementById('mobileReportingPeriod');
+            
+            if (!reportingPeriod && !mobileReportingPeriod) return;
+
+            const periods = {
+                'week': 'Last 7 Days',
+                'month': 'Last 30 Days',
+                'quarter': 'Last 90 Days',
+                'year': 'Last 12 Months'
+            };
+
+            const periodText = periods[this.currentPeriod] || 'Last 30 Days';
+            
+            if (reportingPeriod) reportingPeriod.textContent = periodText;
+            if (mobileReportingPeriod) mobileReportingPeriod.textContent = periodText;
+        }
+
+        async refreshData() {
+            try {
+                await this.loadData();
+                await this.updateMetrics();
+                this.renderCharts();
+                this.renderPropertyPerformance();
+                this.renderRecentReviews();
+                
+                // Update historical data with current values
+                for (const property of this.properties) {
+                    const currentOccupancy = await this.calculatePropertyOccupancy(property._id);
+                    this.updateHistoricalData(property._id, currentOccupancy);
+                }
+                
+                this.showToast('Data updated successfully', 'success');
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+                this.showToast('Failed to update data', 'error');
+            }
+        }
+
+        // EXPORT METHODS
+        async exportPDF() {
+            try {
+                this.showToast('Generating PDF report...', 'info');
+                
+                const data = await this.collectExportData();
+                const pdfHTML = this.createPDFContent(data);
+                
+                this.downloadFile(pdfHTML, `ResLinQ-Report-${new Date().toISOString().split('T')[0]}.html`, 'text/html');
+                
+                this.showToast('PDF report downloaded! Open the file and use "Print as PDF"', 'success');
+            } catch (error) {
+                console.error('PDF export error:', error);
+                this.showToast('Failed to generate PDF', 'error');
+            }
+        }
+
+        async exportExcel() {
+            try {
+                this.showToast('Generating Excel data...', 'info');
+                
+                const data = await this.collectExportData();
+                const csvContent = this.createCSVContent(data);
+                
+                this.downloadFile(csvContent, `ResLinQ-Data-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
+                
+                this.showToast('Excel data downloaded!', 'success');
+            } catch (error) {
+                console.error('Excel export error:', error);
+                this.showToast('Failed to generate Excel data', 'error');
+            }
+        }
+
+        async collectExportData() {
+            const occupancyRate = await this.calculateOverallOccupancyRate();
+            const currentRevenue = this.calculateRevenueForPeriod(this.currentPeriod);
+            
+            const propertiesData = [];
+            for (const property of this.properties.slice(0, 5)) {
+                const propOccupancy = await this.calculatePropertyOccupancy(property._id);
+                const propRevenue = await this.calculatePropertyRevenue(property._id);
+                const propRating = this.calculatePropertyRating(property._id);
+                
+                propertiesData.push({
+                    name: property.title || 'Unnamed Property',
+                    location: `${property.location?.address || ''}, ${property.location?.city || ''}`,
+                    occupancy: Math.round(propOccupancy),
+                    revenue: propRevenue,
+                    rating: propRating
+                });
+            }
+            
+            const reviewsData = this.reviews.slice(0, 3).map(review => ({
+                student: review.student?.username || 'Anonymous',
+                rating: review.rating,
+                comment: review.comment.substring(0, 100) + (review.comment.length > 100 ? '...' : ''),
+                date: new Date(review.createdAt).toLocaleDateString()
+            }));
+            
+            return {
+                summary: {
+                    totalProperties: this.properties.length,
+                    occupancyRate: Math.round(occupancyRate),
+                    currentRevenue: currentRevenue,
+                    averageRating: this.calculateAverageRating(),
+                    totalReviews: this.reviews.length,
+                    period: this.getPeriodDisplayName(this.currentPeriod)
+                },
+                properties: propertiesData,
+                reviews: reviewsData,
+                generatedAt: new Date().toLocaleString(),
+                landlord: this.user.username || 'Landlord'
+            };
+        }
+
+        createPDFContent(data) {
+            return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>ResLinQ Analytics Report</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+            .header { text-align: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 20px; }
+            .section { margin: 20px 0; }
+            .section-title { background: #f8f9fa; padding: 10px; border-left: 4px solid #1e3a8a; }
+            table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f8f9fa; }
+            .metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; }
+            .metric-card { border: 1px solid #e9ecef; padding: 15px; border-radius: 5px; }
+            .footer { margin-top: 30px; padding-top: 10px; border-top: 1px solid #ddd; text-align: center; color: #6c757d; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>ResLinQ Property Analytics Report</h1>
+            <p>Generated: ${data.generatedAt} | Landlord: ${data.landlord}</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Summary (${data.summary.period})</h2>
+            <div class="metrics">
+                <div class="metric-card"><strong>Properties:</strong> ${data.summary.totalProperties}</div>
+                <div class="metric-card"><strong>Occupancy Rate:</strong> ${data.summary.occupancyRate}%</div>
+                <div class="metric-card"><strong>Revenue:</strong> R ${data.summary.currentRevenue.toLocaleString()}</div>
+                <div class="metric-card"><strong>Avg Rating:</strong> ${data.summary.averageRating}/5</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Property Performance</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Location</th>
+                        <th>Occupancy</th>
+                        <th>Revenue</th>
+                        <th>Rating</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.properties.map(prop => `
+                        <tr>
+                            <td>${prop.name}</td>
+                            <td>${prop.location}</td>
+                            <td>${prop.occupancy}%</td>
+                            <td>R ${prop.revenue.toLocaleString()}</td>
+                            <td>${prop.rating}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Recent Reviews</h2>
+            ${data.reviews.length > 0 ? `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Rating</th>
+                            <th>Comment</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.reviews.map(review => `
+                            <tr>
+                                <td>${review.student}</td>
+                                <td>${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</td>
+                                <td>${review.comment}</td>
+                                <td>${review.date}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            ` : '<p>No reviews available</p>'}
+        </div>
+
+        <div class="footer">
+            <p>Generated by ResLinQ Analytics System</p>
+        </div>
+    </body>
+    </html>`;
+        }
+
+        createCSVContent(data) {
+            let csv = 'ResLinQ Analytics Data Export\n\n';
+            
+            csv += 'SUMMARY\n';
+            csv += 'Metric,Value\n';
+            csv += `Total Properties,${data.summary.totalProperties}\n`;
+            csv += `Occupancy Rate,${data.summary.occupancyRate}%\n`;
+            csv += `Revenue (${data.summary.period}),R ${data.summary.currentRevenue}\n`;
+            csv += `Average Rating,${data.summary.averageRating}\n`;
+            csv += `Total Reviews,${data.summary.totalReviews}\n`;
+            csv += `Generated,${data.generatedAt}\n\n`;
+            
+            csv += 'PROPERTIES\n';
+            csv += 'Name,Location,Occupancy %,Monthly Revenue,Rating\n';
+            data.properties.forEach(prop => {
+                csv += `"${prop.name}","${prop.location}",${prop.occupancy},${prop.revenue},${prop.rating}\n`;
+            });
+            csv += '\n';
+            
+            csv += 'REVIEWS\n';
+            csv += 'Student,Rating,Comment,Date\n';
+            data.reviews.forEach(review => {
+                csv += `"${review.student}",${review.rating},"${review.comment}","${review.date}"\n`;
+            });
+            
+            return csv;
+        }
+
+        downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        getPeriodDisplayName(period) {
+            const periods = {
+                'week': 'Last 7 Days',
+                'month': 'Last 30 Days', 
+                'quarter': 'Last 90 Days',
+                'year': 'Last 12 Months'
+            };
+            return periods[period] || 'Last 30 Days';
+        }
+
+        calculateAverageRating() {
+            const reviewsWithRatings = this.reviews.filter(review => review.rating && review.rating > 0);
+            return reviewsWithRatings.length > 0 
+                ? (reviewsWithRatings.reduce((sum, review) => sum + review.rating, 0) / reviewsWithRatings.length).toFixed(1)
+                : '0.0';
+        }
+
+        showToast(message, type = 'info') {
+            alert(`${type.toUpperCase()}: ${message}`);
+        }
+
+        showError(message) {
+            console.error(message);
+            this.showToast(message, 'error');
+        }
+    }
+
+    let analyticsManager;
+    document.addEventListener('DOMContentLoaded', function() {
+        analyticsManager = new AnalyticsManager();
+    });
+  </script>
+</body>
+</html>

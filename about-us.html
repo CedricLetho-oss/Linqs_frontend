@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us | ResLinQ</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <!-- AOS CSS -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --secondary: #b6b1fb;
+      --accent: #f59e0b;
+      --text-dark: #1e293b;
+      --text-light: #64748b;
+      --bg-light: #f8fafc;
+    }
+
+    /* Floating Animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+
+    /* Pulse Animation */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Gradient Text */
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Enhanced Hero Section */
+    .about-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 6rem 0;
+      border-radius: 0 0 3rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .about-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Floating Elements */
+    .floating-element {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-element:nth-child(1) {
+      width: 80px;
+      height: 80px;
+      top: 20%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      width: 120px;
+      height: 120px;
+      top: 60%;
+      right: 10%;
+      animation-delay: -2s;
+    }
+
+    .floating-element:nth-child(3) {
+      width: 60px;
+      height: 60px;
+      bottom: 20%;
+      left: 20%;
+      animation-delay: -4s;
+    }
+
+    /* Enhanced Cards */
+    .feature-card {
+      background: white;
+      border-radius: 1.5rem;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      transition: all 0.4s ease;
+      height: 100%;
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 20px 60px rgba(30, 58, 138, 0.2);
+    }
+
+    .feature-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: inline-block;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Enhanced Team Cards */
+    .team-card {
+      background: white;
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      transition: all 0.4s ease;
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .team-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    }
+
+    .team-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 50px rgba(30, 58, 138, 0.15);
+    }
+
+    .team-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      margin: 0 auto 1.5rem;
+      border: 4px solid;
+      border-image: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%) 1;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .team-card:hover .team-avatar {
+      transform: scale(1.1);
+    }
+
+    /* Stats Section */
+    .stats-section {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 5rem 0;
+      border-radius: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stats-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .stat-item {
+      position: relative;
+      z-index: 2;
+    }
+
+    .stat-number {
+      font-size: 3.5rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #ffffff 0%, #b6b1fb 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Mission Section */
+    .mission-section {
+      background: linear-gradient(135deg, var(--bg-light) 0%, #ffffff 100%);
+      border-radius: 2rem;
+      padding: 4rem 2rem;
+    }
+
+    .mission-image {
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+      transition: transform 0.4s ease;
+    }
+
+    .mission-image:hover {
+      transform: scale(1.02);
+    }
+
+    /* Values Section */
+    .value-item {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .value-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      color: white;
+      font-size: 2rem;
+    }
+
+    /* CTA Section */
+    .cta-section {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 5rem 0;
+      border-radius: 2rem;
+      text-align: center;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .about-hero {
+        padding: 4rem 0;
+        border-radius: 0 0 2rem 2rem;
+      }
+      
+      .feature-card, .team-card {
+        padding: 2rem 1.5rem;
+      }
+      
+      .stat-number {
+        font-size: 2.5rem;
+      }
+    }
+
+    /*[data-aos]:not(.mobile-bottom-nav):not(.mobile-nav-item) {
+    pointer-events: none;
+    }
+
+    [data-aos].aos-animate:not(.mobile-bottom-nav):not(.mobile-nav-item) {
+      pointer-events: auto;
+    }*/
+
+    /* Custom Button */
+    .btn-gradient {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border: none;
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
+      color: white;
+    }
+
+    /* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1C2B4A;
+    z-index: 1030;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1); 
+    }
+
+  
+  .mobile-nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-nav-item.active {
+    color: #64748b;
+  }
+  
+  .mobile-nav-item i {
+    display: block;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .mobile-nav-item span {
+        display: none;
+        
+      }
+  
+  /* Add padding to main content to account for bottom nav */
+  main {
+    margin-bottom: 80px;
+  }
+}
+
+.hero-subtitle {
+        color:#e2e8f0;
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+        line-height: 1.5;
+        }
+
+        #logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i>ResLinQ</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <i class="bi bi-house-door-fill"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="listings.html">
+              <i class="bi bi-building"></i> Listings
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="help.html">
+              <i class="bi bi-question-circle-fill"></i> Help
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="about-us.html">
+              <i class="bi bi-info-circle"></i> About Us
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="signup-login-buttons">
+        <!-- Dynamic content will be inserted by navbar.js -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Enhanced Hero Section -->
+  <section class="about-hero">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    
+    <div class="container hero-content">
+      <div class="row justify-content-center text-center">
+        <div class="col-lg-10">
+          <h1 class="display-3 fw-bold mb-4 animate__animated animate__fadeInDown">
+            Welcome to <span class="gradient-text">ResLinQ</span>
+          </h1>
+          <p class="lead fs-2 mb-0 hero-subtitle animate__animated animate__fadeInUp animate__delay-1s">
+            Where Students Find Their Perfect Home Away From Home
+          </p>
+          <div class="animate__animated animate__fadeInUp animate__delay-2s">
+            <a href="#mission" class="btn btn-light btn-lg px-4 py-2">
+              <i class="bi bi-arrow-down me-2"></i>Discover Our Story
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mission Section -->
+  <section id="mission" class="container my-5 py-5" data-aos="fade-up">
+    <div class="mission-section">
+      <div class="row align-items-center">
+        <div class="col-lg-6" data-aos="fade-right">
+          <h2 class="display-5 fw-bold gradient-text mb-4">Our Mission</h2>
+          <p class="fs-5 mb-4 text-dark">
+            At <strong class="text-primary">ResLinQ</strong>, we believe that finding the right accommodation shouldn't be a barrier to education. 
+            Our mission is to revolutionize the student housing experience by creating a trusted, innovative platform 
+            that seamlessly connects students with quality, affordable accommodation near their educational institutions.
+          </p>
+          <p class="fs-5 text-dark">
+            We're committed to making the entire process - from search to settlement - seamless, secure, and stress-free 
+            for both students and property owners, ensuring everyone finds exactly what they're looking for.
+          </p>
+          <div class="mt-4">
+            <a href="signup.html" class="btn btn-gradient me-3">
+              <i class="bi bi-rocket-takeoff me-2"></i>Join Now
+            </a>
+            <a href="listings.html" class="btn btn-outline-primary">
+              <i class="bi bi-search me-2"></i>Explore Listings
+            </a>
+          </div>
+        </div>
+        <div class="col-lg-6" data-aos="fade-left" data-aos-delay="200">
+          <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+               alt="Modern student accommodation" class="img-fluid mission-image">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="container my-5 py-5">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <h2 class="display-4 fw-bold gradient-text mb-3">Why Choose ResLinQ?</h2>
+      <p class="lead text-muted fs-4">We're setting new standards in student accommodation</p>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="bi bi-shield-check"></i>
+          </div>
+          <h4 class="text-navy mb-3 fw-bold">Verified Properties</h4>
+          <p class="text-muted fs-6">
+            Every property and landlord undergoes rigorous verification to ensure complete safety, 
+            reliability, and peace of mind for our student community.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="bi bi-search-heart"></i>
+          </div>
+          <h4 class="text-navy mb-3 fw-bold">Smart Matching</h4>
+          <p class="text-muted fs-6">
+            Our AI-powered matching system intelligently connects students with accommodation that 
+            perfectly fits their budget, preferences, and campus proximity.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="bi bi-chat-dots"></i>
+          </div>
+          <h4 class="text-navy mb-3 fw-bold">Direct Communication</h4>
+          <p class="text-muted fs-6">
+            Connect directly with landlords, ask questions, schedule viewings, and negotiate terms 
+            without any intermediaries or hidden fees.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="stats-section my-5" data-aos="fade-up">
+    <div class="container">
+      <div class="row text-center">
+        <div class="col-md-3 mb-4 stat-item">
+          <div class="stat-number" data-count="500">0</div>
+          <div class="fs-4 fw-semibold">Happy Students</div>
+        </div>
+        <div class="col-md-3 mb-4 stat-item">
+          <div class="stat-number" data-count="200">0</div>
+          <div class="fs-4 fw-semibold">Verified Properties</div>
+        </div>
+        <div class="col-md-3 mb-4 stat-item">
+          <div class="stat-number" data-count="15">0</div>
+          <div class="fs-4 fw-semibold">Partner Institutions</div>
+        </div>
+        <div class="col-md-3 mb-4 stat-item">
+          <div class="stat-number" data-count="98">0</div>
+          <div class="fs-4 fw-semibold">Satisfaction Rate</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Values Section -->
+  <section class="container my-5 py-5">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <h2 class="display-4 fw-bold gradient-text mb-3">Our Values</h2>
+      <p class="lead text-muted fs-4">The principles that guide everything we do</p>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="value-item">
+          <div class="value-icon">
+            <i class="bi bi-heart"></i>
+          </div>
+          <h4 class="text-navy mb-3">Student-First</h4>
+          <p class="text-muted">Every decision we make prioritizes student safety, comfort, and success.</p>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="value-item">
+          <div class="value-icon">
+            <i class="bi bi-shield"></i>
+          </div>
+          <h4 class="text-navy mb-3">Trust & Safety</h4>
+          <p class="text-muted">We maintain the highest standards of verification and security.</p>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+        <div class="value-item">
+          <div class="value-icon">
+            <i class="bi bi-lightbulb"></i>
+          </div>
+          <h4 class="text-navy mb-3">Innovation</h4>
+          <p class="text-muted">Constantly evolving to provide the best possible experience.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Team Section -->
+  <section class="container my-5 py-5">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <h2 class="display-4 fw-bold gradient-text mb-3">Meet Our Team</h2>
+      <p class="lead text-muted fs-4">The passionate innovators behind ResLinQ</p>
+    </div>
+    
+    <div class="row g-4 justify-content-center">
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="team-card">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
+               alt="Lethokuhle Dlamini" class="team-avatar">
+          <h4 class="text-navy mb-2 fw-bold">Lethokuhle Dlamini</h4>
+          <p class="text-primary mb-2 fw-semibold">Founder & CEO</p>
+          <p class="text-muted">
+            Former UFS student who experienced accommodation challenges firsthand. Passionate about 
+            creating solutions that make student life better.
+          </p>
+        </div>
+      </div>
+     
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section my-5" data-aos="fade-up">
+    <div class="container">
+      <div class="row justify-content-center text-center">
+        <div class="col-lg-8">
+          <h2 class="display-4 fw-bold mb-4">Ready to Find Your Perfect Accommodation?</h2>
+          <p class="fs-5 mb-4 opacity-90">Join thousands of students who've found their home away from home with ResLinQ</p>
+          <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="signup.html" class="btn btn-light btn-lg px-4">
+              <i class="bi bi-person-plus me-2"></i>Sign Up Free
+            </a>
+            <a href="listings.html" class="btn btn-outline-light btn-lg px-4">
+              <i class="bi bi-building me-2"></i>Browse Listings
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mobile Bottom Navigation -->
+<div class="mobile-bottom-nav d-lg-none">
+  <a href="home.html" class="mobile-nav-item">
+    <i class="bi bi-house"></i>
+    <span>Home</span>
+  </a>
+  <a href="listings.html" class="mobile-nav-item">
+    <i class="bi bi-building"></i>
+    <span>Listings</span>
+  </a>
+  <a href="my-bookings.html" class="mobile-nav-item">
+    <i class="bi bi-calendar-check"></i>
+    <span>Bookings</span>
+  </a>
+  <a href="help.html" class="mobile-nav-item">
+    <i class="bi bi-question-circle"></i>
+    <span>Help</span>
+  </a>
+</div>
+
+  <!-- Footer -->
+  <footer class="py-5 bg-navy text-white">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for finding the perfect student accommodation near your campus.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Quick Links</h6>
+          <ul class="list-unstyled">
+            <li><a href="home.html" class="text-light text-decoration-none">Home</a></li>
+            <li><a href="listings.html" class="text-light text-decoration-none">Listings</a></li>
+            <li><a href="help.html" class="text-light text-decoration-none">Help</a></li>
+            <li><a href="about-us.html" class="text-light text-decoration-none">About Us</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="my-bookings.html" class="text-light text-decoration-none">My Bookings</a></li>
+            <li><a href="view-reports.html" class="text-light text-decoration-none">My Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Get in Touch</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="navbar.js"></script>
+  
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 1000,
+      once: true,
+      offset: 100
+    });
+
+    // Animated counter for stats
+    function animateCounter() {
+      const counters = document.querySelectorAll('.stat-number');
+      const speed = 200;
+
+      counters.forEach(counter => {
+        const target = +counter.getAttribute('data-count');
+        const count = +counter.innerText;
+        const increment = target / speed;
+
+        if (count < target) {
+          counter.innerText = Math.ceil(count + increment);
+          setTimeout(() => animateCounter(), 1);
+        } else {
+          counter.innerText = target + (counter.getAttribute('data-count') === '98' ? '%' : '+');
+        }
+      });
+    }
+
+    // Start counter animation when stats section is in view
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animateCounter();
+          observer.unobserve(entry.target);
+        }
+      });
+    });
+
+    const statsSection = document.querySelector('.stats-section');
+    if (statsSection) {
+      observer.observe(statsSection);
+    }
+
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

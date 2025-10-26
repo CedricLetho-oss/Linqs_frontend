@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reports Management - ResLinQ Admin</title>
+  
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --success: #059669;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --info: #60a5fa;
+      --light-bg: #f8fafc;
+      --navy: #0b2447;
+      --admin-sidebar: #0f172a;
+    }
+
+    body {
+      background: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .admin-sidebar {
+      background: var(--admin-sidebar);
+      color: white;
+      min-height: 100vh;
+      position: fixed;
+      width: 280px;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+
+    .admin-sidebar.collapsed {
+      width: 80px;
+    }
+
+    .admin-sidebar.collapsed .sidebar-text {
+      display: none;
+    }
+
+    .sidebar-brand {
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      text-align: center;
+    }
+
+    .sidebar-nav {
+      padding: 1rem 0;
+    }
+
+    .nav-item {
+      margin: 0.25rem 1rem;
+    }
+
+    .nav-link {
+      color: rgba(255,255,255,0.8);
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background: rgba(59, 130, 246, 0.1);
+      color: white;
+      border-left: 3px solid var(--primary-light);
+    }
+
+    .admin-main {
+      margin-left: 280px;
+      transition: all 0.3s ease;
+      min-height: 100vh;
+    }
+
+    .admin-main.expanded {
+      margin-left: 80px;
+    }
+
+    .admin-header {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1rem 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .admin-content {
+      padding: 2rem;
+    }
+
+    /* Reports-specific styles */
+    .report-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      border-left: 4px solid var(--primary);
+      transition: all 0.3s ease;
+      margin-bottom: 1rem;
+    }
+
+    .report-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+
+    .report-card.critical { border-left-color: var(--danger); }
+    .report-card.high { border-left-color: var(--warning); }
+    .report-card.medium { border-left-color: var(--info); }
+    .report-card.low { border-left-color: var(--success); }
+
+    .priority-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .priority-critical { background: #fee2e2; color: #dc2626; }
+    .priority-high { background: #fef3c7; color: #d97706; }
+    .priority-medium { background: #dbeafe; color: #1d4ed8; }
+    .priority-low { background: #d1fae5; color: #059669; }
+
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-pending { background: #fef3c7; color: #d97706; }
+    .status-under_review { background: #dbeafe; color: #1d4ed8; }
+    .status-resolved { background: #d1fae5; color: #059669; }
+    .status-dismissed { background: #f1f5f9; color: #64748b; }
+
+    .report-type-badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.5rem;
+      font-size: 0.7rem;
+      background: #f8fafc;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
+
+    .evidence-gallery {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .evidence-img {
+      width: 60px;
+      height: 60px;
+      border-radius: 0.5rem;
+      object-fit: cover;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .evidence-img:hover {
+      transform: scale(1.1);
+    }
+
+    .data-table {
+      background: white;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .table th {
+      background: #f8fafc;
+      border-bottom: 2px solid #e2e8f0;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--danger);
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Tabs */
+    .report-tabs {
+      background: white;
+      border-radius: 1rem;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .nav-tabs .nav-link {
+      border: none;
+      color: #64748b;
+      font-weight: 500;
+      padding: 0.75rem 1.5rem;
+    }
+
+    .nav-tabs .nav-link.active {
+      background: var(--primary);
+      color: white;
+      border-radius: 0.75rem;
+    }
+
+    /* Analytics Cards */
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .analytics-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .analytics-card.critical { border-top: 4px solid var(--danger); }
+    .analytics-card.high { border-top: 4px solid var(--warning); }
+    .analytics-card.medium { border-top: 4px solid var(--info); }
+    .analytics-card.low { border-top: 4px solid var(--success); }
+  </style>
+</head>
+<body>
+
+  <!-- Admin Redirect Check -->
+  <script>
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    if (!token) {
+      alert("Please log in to access admin panel.");
+      window.location.href = "authorization.html";
+    } else if (user.role !== 'admin') {
+      alert("Access denied. Admin privileges required.");
+      window.location.href = "index.html";
+    }
+  </script>
+
+  <!-- Admin Sidebar -->
+  <div class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-brand">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-shield-check text-primary fs-4 me-2"></i>
+          <span class="sidebar-text fs-5 fw-bold">ResLinQ Admin</span>
+        </div>
+        <button class="btn btn-sm btn-outline-light" id="sidebarToggle">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="nav-item">
+        <a class="nav-link" href="admin-dashboard.html">
+          <i class="bi bi-speedometer2"></i>
+          <span class="sidebar-text">Dashboard</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-users.html">
+          <i class="bi bi-people"></i>
+          <span class="sidebar-text">Users</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-properties.html">
+          <i class="bi bi-houses"></i>
+          <span class="sidebar-text">Properties</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-bookings.html">
+          <i class="bi bi-calendar-check"></i>
+          <span class="sidebar-text">Bookings</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link active" href="admin-reports.html">
+          <i class="bi bi-flag"></i>
+          <span class="sidebar-text">Reports</span>
+          <span class="notification-badge">8</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-reviews.html">
+          <i class="bi bi-star"></i>
+          <span class="sidebar-text">Reviews</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-verification.html">
+          <i class="bi bi-patch-check"></i>
+          <span class="sidebar-text">Verification</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-messages.html">
+          <i class="bi bi-chat-dots"></i>
+          <span class="sidebar-text">Messages</span>
+        </a>
+      </div>
+
+      <div class="nav-item">
+        <a class="nav-link" href="admin-payments.html">
+          <i class="bi bi-credit-card"></i>
+          <span class="sidebar-text">Payments</span>
+        </a>
+      </div>
+      
+      <div class="nav-item">
+        <a class="nav-link" href="admin-settings.html">
+          <i class="bi bi-gear"></i>
+          <span class="sidebar-text">Settings</span>
+        </a>
+      </div>
+      
+      <div class="nav-item mt-4">
+        <a class="nav-link text-warning" href="admin-login.html">
+          <i class="bi bi-box-arrow-right"></i>
+          <span class="sidebar-text">Logout</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="admin-main" id="adminMain">
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h4 class="fw-bold mb-0">Reports Management</h4>
+          <small class="text-muted">Review and resolve user reports</small>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn btn-primary" onclick="generateReport()">
+            <i class="bi bi-graph-up me-2"></i>Generate Report
+          </button>
+          <div class="dropdown">
+            <button class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+              <i class="bi bi-bell"></i>
+              <span class="notification-badge">5</span>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end">
+              <h6 class="dropdown-header">Report Alerts</h6>
+              <a class="dropdown-item" href="#">New critical report</a>
+              <a class="dropdown-item" href="#">3 reports pending review</a>
+              <a class="dropdown-item" href="#">Report resolved</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="admin-content">
+      <!-- Analytics Overview -->
+      <div class="analytics-grid">
+        <div class="analytics-card critical">
+          <div class="text-danger mb-2">
+            <i class="bi bi-exclamation-triangle fs-1"></i>
+          </div>
+          <h3 class="fw-bold" id="criticalReports">0</h3>
+          <p class="text-muted mb-0">Critical Priority</p>
+        </div>
+        <div class="analytics-card high">
+          <div class="text-warning mb-2">
+            <i class="bi bi-flag fs-1"></i>
+          </div>
+          <h3 class="fw-bold" id="highReports">0</h3>
+          <p class="text-muted mb-0">High Priority</p>
+        </div>
+        <div class="analytics-card medium">
+          <div class="text-info mb-2">
+            <i class="bi bi-clock-history fs-1"></i>
+          </div>
+          <h3 class="fw-bold" id="pendingReports">0</h3>
+          <p class="text-muted mb-0">Pending Review</p>
+        </div>
+        <div class="analytics-card low">
+          <div class="text-success mb-2">
+            <i class="bi bi-check-circle fs-1"></i>
+          </div>
+          <h3 class="fw-bold" id="resolvedReports">0</h3>
+          <p class="text-muted mb-0">Resolved Today</p>
+        </div>
+      </div>
+
+      <!-- Report Tabs -->
+      <div class="report-tabs">
+        <ul class="nav nav-tabs" id="reportTabs">
+          <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#pending-tab">
+              <i class="bi bi-clock me-2"></i>Pending
+              <span class="badge bg-warning ms-2" id="pendingCount">0</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#review-tab">
+              <i class="bi bi-eye me-2"></i>Under Review
+              <span class="badge bg-info ms-2" id="reviewCount">0</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#resolved-tab">
+              <i class="bi bi-check-circle me-2"></i>Resolved
+              <span class="badge bg-success ms-2" id="resolvedCount">0</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#all-tab">
+              <i class="bi bi-list-ul me-2"></i>All Reports
+              <span class="badge bg-secondary ms-2" id="allCount">0</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="tab-content">
+        <!-- Pending Tab -->
+        <div class="tab-pane fade show active" id="pending-tab">
+          <div class="row">
+            <div class="col-12">
+              <div class="data-table">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                  <h5 class="fw-bold mb-0">Pending Reports</h5>
+                  <div class="d-flex gap-2">
+                    <select class="form-select form-select-sm" id="priorityFilter" style="width: auto;">
+                      <option value="">All Priorities</option>
+                      <option value="critical">Critical</option>
+                      <option value="high">High</option>
+                      <option value="medium">Medium</option>
+                      <option value="low">Low</option>
+                    </select>
+                    <button class="btn btn-sm btn-primary" onclick="loadPendingReports()">
+                      <i class="bi bi-filter"></i> Filter
+                    </button>
+                  </div>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-hover mb-0">
+                    <thead>
+                      <tr>
+                        <th>Report ID</th>
+                        <th>Type</th>
+                        <th>Reporter</th>
+                        <th>Target</th>
+                        <th>Priority</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="pendingReportsTable">
+                      <tr>
+                        <td colspan="7" class="text-center py-4">
+                          <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading reports...</span>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Under Review Tab -->
+        <div class="tab-pane fade" id="review-tab">
+          <div class="row" id="reviewReportsGrid">
+            <!-- Cards will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Resolved Tab -->
+        <div class="tab-pane fade" id="resolved-tab">
+          <div class="row">
+            <div class="col-12">
+              <div class="data-table">
+                <div class="p-3 border-bottom">
+                  <h5 class="fw-bold mb-0">Resolved Reports</h5>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-hover mb-0">
+                    <thead>
+                      <tr>
+                        <th>Report ID</th>
+                        <th>Type</th>
+                        <th>Resolution</th>
+                        <th>Resolved By</th>
+                        <th>Resolved At</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="resolvedReportsTable">
+                      <!-- Resolved reports will be loaded here -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- All Reports Tab -->
+        <div class="tab-pane fade" id="all-tab">
+          <div class="row">
+            <div class="col-12">
+              <div class="data-table">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                  <h5 class="fw-bold mb-0">All Reports</h5>
+                  <div class="d-flex gap-2">
+                    <input type="text" class="form-control form-control-sm" placeholder="Search reports..." style="width: 200px;">
+                    <button class="btn btn-sm btn-primary">
+                      <i class="bi bi-search"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-hover mb-0">
+                    <thead>
+                      <tr>
+                        <th>Report ID</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Reporter</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="allReportsTable">
+                      <!-- All reports will be loaded here -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report Details Modal -->
+  <div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Report Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="reportDetails">
+          <!-- Report details will be loaded here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-warning" onclick="startReview()">
+            <i class="bi bi-eye me-2"></i>Start Review
+          </button>
+          <button type="button" class="btn btn-success" onclick="resolveReport()">
+            <i class="bi bi-check-circle me-2"></i>Resolve
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const API_BASE_URL = 'https://linqs-backend.onrender.com/api';
+  // Sidebar Toggle
+  document.getElementById('sidebarToggle').addEventListener('click', function() {
+    document.getElementById('adminSidebar').classList.toggle('collapsed');
+    document.getElementById('adminMain').classList.toggle('expanded');
+  });
+
+  // Reports Management
+  class AdminReportsManager {
+    constructor() {
+      this.token = localStorage.getItem("token");
+      this.currentFilter = {
+        status: 'pending',
+        priority: '',
+        page: 1,
+        limit: 20
+      };
+      this.init();
+    }
+
+    async init() {
+      await this.loadReportStats();
+      await this.loadPendingReports();
+      this.setupEventListeners();
+      this.setupRealTimeUpdates();
+    }
+
+    async loadReportStats() {
+      try {
+        console.log('Loading report stats...');
+        const response = await fetch(`${API_BASE_URL}/admin/reports/stats/overview`, {
+          headers: {
+            'Authorization': `Bearer ${this.token}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          console.log('Report stats loaded:', data.data.statistics);
+          this.updateDashboardStats(data.data.statistics);
+          this.updateNotificationBadges(data.data.statistics);
+        } else {
+          console.error('API returned error:', data.error);
+          this.showError('Failed to load report statistics: ' + data.error);
+        }
+      } catch (error) {
+        console.error('Error loading report stats:', error);
+        this.showError('Failed to load report statistics. Please check console for details.');
+      }
+    }
+
+    async loadPendingReports() {
+    try {
+        console.log('Loading reports for admin...');
+        
+        // Build query parameters - NO status filter for admin
+        const queryParams = new URLSearchParams({
+            page: this.currentFilter.page,
+            limit: this.currentFilter.limit
+        });
+
+        // Only add priority filter if specified
+        if (this.currentFilter.priority) {
+            queryParams.append('priority', this.currentFilter.priority);
+        }
+
+        console.log('Fetching ALL reports with params:', queryParams.toString());
+        
+        const response = await fetch(`${API_BASE_URL}/admin/reports?${queryParams}`, {
+            headers: {
+                'Authorization': `Bearer ${this.token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('All reports loaded:', data.data.reports.length);
+            console.log('Reports status breakdown:', this.getStatusBreakdown(data.data.reports));
+            
+            // Filter reports based on current tab
+            const filteredReports = this.filterReportsByTab(data.data.reports);
+            console.log(`Filtered to ${filteredReports.length} reports for ${this.getCurrentTab()} tab`);
+            
+            // Display filtered reports
+            this.displayReports(filteredReports);
+            
+            // Update counts
+            if (data.data.statistics) {
+                this.updateReportCounts(data.data.statistics);
+            }
+        } else {
+            console.error('API returned error:', data.error);
+            this.showError('Failed to load reports: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error loading reports:', error);
+        this.showError('Failed to load reports. Please check console for details.');
+    }
+}
+
+// NEW METHOD: Filter reports based on current tab
+filterReportsByTab(reports) {
+    const currentTab = this.getCurrentTab();
+    
+    switch (currentTab) {
+        case 'pending':
+            return reports.filter(report => report.status === 'pending');
+        case 'under_review':
+            return reports.filter(report => report.status === 'under_review');
+        case 'resolved':
+            return reports.filter(report => report.status === 'resolved');
+        case 'all':
+            return reports; // Return all reports for "all" tab
+        default:
+            return reports.filter(report => report.status === 'pending');
+    }
+}
+
+// NEW METHOD: Get status breakdown for debugging
+getStatusBreakdown(reports) {
+    const breakdown = {};
+    reports.forEach(report => {
+        breakdown[report.status] = (breakdown[report.status] || 0) + 1;
+    });
+    return breakdown;
+}
+
+  // NEW METHOD: Display reports based on current tab
+  displayReports(reports) {
+      const currentTab = this.getCurrentTab();
+      
+      switch (currentTab) {
+          case 'pending':
+              this.displayPendingReportsTable(reports);
+              break;
+          case 'under_review':
+              this.displayReviewReportsGrid(reports);
+              break;
+          case 'resolved':
+              this.displayResolvedReportsTable(reports);
+              break;
+          case 'all':
+              this.displayAllReportsTable(reports);
+              break;
+          default:
+              this.displayPendingReportsTable(reports);
+      }
+  }
+
+ // UPDATED METHOD: Get current active tab
+  getCurrentTab() {
+      const activeTab = document.querySelector('#reportTabs .nav-link.active');
+      if (activeTab) {
+          const target = activeTab.getAttribute('href'); // Changed from data-bs-target to href
+          if (target === '#pending-tab') return 'pending';
+          if (target === '#review-tab') return 'under_review'; // This matches your API data
+          if (target === '#resolved-tab') return 'resolved'; // This matches your API data
+          if (target === '#all-tab') return 'all';
+      }
+      return 'pending';
+  }
+
+  // UPDATED METHOD: Display pending reports in table
+  displayPendingReportsTable(reports) {
+      const tbody = document.getElementById('pendingReportsTable');
+      
+      if (!reports || reports.length === 0) {
+          tbody.innerHTML = `
+              <tr>
+                  <td colspan="7" class="text-center py-4">
+                      <i class="bi bi-flag fs-1 text-muted mb-3 d-block"></i>
+                      <p class="text-muted">No pending reports found</p>
+                      <small class="text-muted">Total reports in system: ${this.getTotalReportsCount()}</small>
+                  </td>
+              </tr>
+          `;
+          return;
+      }
+
+      tbody.innerHTML = reports.map(report => `
+          <tr>
+              <td>
+                  <strong>#${report._id ? report._id.slice(-6) : 'N/A'}</strong>
+              </td>
+              <td>
+                  <span class="report-type-badge">${this.formatReportType(report.reportType)}</span>
+              </td>
+              <td>
+                  <div class="fw-semibold">${report.reporter?.firstName || 'Anonymous'} ${report.reporter?.surname || ''}</div>
+                  <small class="text-muted">${report.reporter?.email || 'No email'}</small>
+              </td>
+              <td>
+                  ${this.getReportTarget(report)}
+              </td>
+              <td>
+                  <span class="priority-badge priority-${report.priority}">${report.priority}</span>
+              </td>
+              <td>
+                  <div>${new Date(report.createdAt).toLocaleDateString()}</div>
+                  <small class="text-muted">${new Date(report.createdAt).toLocaleTimeString()}</small>
+              </td>
+              <td>
+                  <div class="dropdown">
+                      <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                          Actions
+                      </button>
+                      <ul class="dropdown-menu">
+                          <li><a class="dropdown-item" href="#" onclick="adminReportsManager.viewReport('${report._id}')">
+                              <i class="bi bi-eye me-2"></i>View Details
+                          </a></li>
+                          <li><a class="dropdown-item" href="#" onclick="adminReportsManager.updateReportStatus('${report._id}', 'under_review')">
+                              <i class="bi bi-eye me-2"></i>Start Review
+                          </a></li>
+                          <li><a class="dropdown-item" href="#" onclick="adminReportsManager.updateReportStatus('${report._id}', 'resolved')">
+                              <i class="bi bi-check-circle me-2"></i>Mark Resolved
+                          </a></li>
+                          <li><hr class="dropdown-divider"></li>
+                          <li><a class="dropdown-item text-danger" href="#" onclick="adminReportsManager.dismissReport('${report._id}')">
+                              <i class="bi bi-x-circle me-2"></i>Dismiss
+                          </a></li>
+                      </ul>
+                  </div>
+              </td>
+          </tr>
+      `).join('');
+  }
+
+  // NEW METHOD: Display review reports in grid
+  displayReviewReportsGrid(reports) {
+      const grid = document.getElementById('reviewReportsGrid');
+      
+      if (!reports || reports.length === 0) {
+          grid.innerHTML = `
+              <div class="col-12 text-center py-4">
+                  <i class="bi bi-eye fs-1 text-muted mb-3 d-block"></i>
+                  <p class="text-muted">No reports under review</p>
+              </div>
+          `;
+          return;
+      }
+
+      grid.innerHTML = reports.map(report => `
+          <div class="col-md-6 mb-3">
+              <div class="report-card ${report.priority}">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                      <h6 class="fw-bold">${report.title}</h6>
+                      <span class="priority-badge priority-${report.priority}">${report.priority}</span>
+                  </div>
+                  <p class="text-muted small">${report.description.substring(0, 100)}...</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                      <small class="text-muted">${new Date(report.createdAt).toLocaleDateString()}</small>
+                      <button class="btn btn-sm btn-outline-primary" onclick="adminReportsManager.viewReport('${report._id}')">
+                          View Details
+                      </button>
+                  </div>
+              </div>
+          </div>
+      `).join('');
+  }
+
+  // NEW METHOD: Display resolved reports
+  displayResolvedReportsTable(reports) {
+      const tbody = document.getElementById('resolvedReportsTable');
+      
+      if (!reports || reports.length === 0) {
+          tbody.innerHTML = `
+              <tr>
+                  <td colspan="6" class="text-center py-4">
+                      <i class="bi bi-check-circle fs-1 text-muted mb-3 d-block"></i>
+                      <p class="text-muted">No resolved reports</p>
+                  </td>
+              </tr>
+          `;
+          return;
+      }
+
+      tbody.innerHTML = reports.map(report => `
+          <tr>
+              <td><strong>#${report._id ? report._id.slice(-6) : 'N/A'}</strong></td>
+              <td><span class="report-type-badge">${this.formatReportType(report.reportType)}</span></td>
+              <td>${report.adminNotes || 'No resolution notes'}</td>
+              <td>${report.resolvedBy?.firstName || 'System'} ${report.resolvedBy?.surname || ''}</td>
+              <td>${report.resolvedAt ? new Date(report.resolvedAt).toLocaleDateString() : 'N/A'}</td>
+              <td>
+                  <button class="btn btn-sm btn-outline-primary" onclick="adminReportsManager.viewReport('${report._id}')">
+                      View
+                  </button>
+              </td>
+          </tr>
+      `).join('');
+  }
+
+  // NEW METHOD: Display all reports
+  displayAllReportsTable(reports) {
+      const tbody = document.getElementById('allReportsTable');
+      
+      if (!reports || reports.length === 0) {
+          tbody.innerHTML = `
+              <tr>
+                  <td colspan="7" class="text-center py-4">
+                      <i class="bi bi-list-ul fs-1 text-muted mb-3 d-block"></i>
+                      <p class="text-muted">No reports found</p>
+                  </td>
+              </tr>
+          `;
+          return;
+      }
+
+      tbody.innerHTML = reports.map(report => `
+          <tr>
+              <td><strong>#${report._id ? report._id.slice(-6) : 'N/A'}</strong></td>
+              <td><span class="report-type-badge">${this.formatReportType(report.reportType)}</span></td>
+              <td><span class="status-badge status-${report.status}">${report.status.replace('_', ' ')}</span></td>
+              <td><span class="priority-badge priority-${report.priority}">${report.priority}</span></td>
+              <td>${report.reporter?.firstName || 'Anonymous'} ${report.reporter?.surname || ''}</td>
+              <td>${new Date(report.createdAt).toLocaleDateString()}</td>
+              <td>
+                  <button class="btn btn-sm btn-outline-primary" onclick="adminReportsManager.viewReport('${report._id}')">
+                      View
+                  </button>
+              </td>
+          </tr>
+      `).join('');
+  }
+
+  // NEW METHOD: Get total reports count for display
+  getTotalReportsCount() {
+      // This would ideally come from your stats, but for now we'll return a placeholder
+      return document.getElementById('allCount')?.textContent || '0';
+  }
+
+    updateDashboardStats(stats) {
+      // Update analytics cards
+      document.getElementById('criticalReports').textContent = stats.critical || 0;
+      document.getElementById('highReports').textContent = stats.high || 0;
+      document.getElementById('pendingReports').textContent = stats.pending || 0;
+      document.getElementById('resolvedReports').textContent = stats.resolvedToday || 0;
+    }
+
+    updateNotificationBadges(stats) {
+      // Update notification badges
+      const totalAlerts = (stats.critical || 0) + (stats.high || 0);
+      const notificationBadges = document.querySelectorAll('.notification-badge');
+      
+      notificationBadges.forEach(badge => {
+        badge.textContent = totalAlerts > 99 ? '99+' : totalAlerts;
+      });
+
+      // Update dropdown alerts
+      this.updateAlertDropdown(stats);
+    }
+
+    updateAlertDropdown(stats) {
+      const dropdownMenu = document.querySelector('.dropdown-menu');
+      if (dropdownMenu) {
+        let alertsHTML = '<h6 class="dropdown-header">Report Alerts</h6>';
+        
+        if (stats.critical > 0) {
+          alertsHTML += `<a class="dropdown-item text-danger" href="#">
+            <i class="bi bi-exclamation-triangle me-2"></i>${stats.critical} critical reports
+          </a>`;
+        }
+        
+        if (stats.high > 0) {
+          alertsHTML += `<a class="dropdown-item text-warning" href="#">
+            <i class="bi bi-flag me-2"></i>${stats.high} high priority reports
+          </a>`;
+        }
+        
+        if (stats.pending > 0) {
+          alertsHTML += `<a class="dropdown-item" href="#">
+            <i class="bi bi-clock me-2"></i>${stats.pending} reports pending review
+          </a>`;
+        }
+        
+        if (stats.resolvedToday > 0) {
+          alertsHTML += `<a class="dropdown-item text-success" href="#">
+            <i class="bi bi-check-circle me-2"></i>${stats.resolvedToday} reports resolved today
+          </a>`;
+        }
+
+        if (stats.critical === 0 && stats.high === 0 && stats.pending === 0) {
+          alertsHTML += '<a class="dropdown-item text-muted" href="#">No new alerts</a>';
+        }
+
+        dropdownMenu.innerHTML = alertsHTML;
+      }
+    }
+
+    updateReportCounts(statistics) {
+      // Update tab counts
+      document.getElementById('pendingCount').textContent = statistics.byStatus.pending || 0;
+      document.getElementById('reviewCount').textContent = statistics.byStatus.under_review || 0;
+      document.getElementById('resolvedCount').textContent = statistics.byStatus.resolved || 0;
+      document.getElementById('allCount').textContent = statistics.byStatus.total || 0;
+    }
+
+    displayPendingReportsTable(reports) {
+    const tbody = document.getElementById('pendingReportsTable');
+    
+    if (!reports || reports.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-4">
+                    <i class="bi bi-flag fs-1 text-muted mb-3 d-block"></i>
+                    <p class="text-muted">No pending reports found</p>
+                    <small class="text-muted">Total reports in system: ${this.getTotalReportsCount()}</small>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = reports.map(report => {
+        const isResolved = report.status === 'resolved';
+        const isDismissed = report.status === 'dismissed';
+        
+        return `
+            <tr>
+                <td>
+                    <strong>#${report._id ? report._id.slice(-6) : 'N/A'}</strong>
+                </td>
+                <td>
+                    <span class="report-type-badge">${this.formatReportType(report.reportType)}</span>
+                </td>
+                <td>
+                    <div class="fw-semibold">${report.reporter?.firstName || 'Anonymous'} ${report.reporter?.surname || ''}</div>
+                    <small class="text-muted">${report.reporter?.email || 'No email'}</small>
+                </td>
+                <td>
+                    ${this.getReportTarget(report)}
+                </td>
+                <td>
+                    <span class="priority-badge priority-${report.priority}">${report.priority}</span>
+                </td>
+                <td>
+                    <div>${new Date(report.createdAt).toLocaleDateString()}</div>
+                    <small class="text-muted">${new Date(report.createdAt).toLocaleTimeString()}</small>
+                </td>
+                <td>
+                    ${isResolved || isDismissed ? `
+                        <button class="btn btn-sm btn-outline-primary" onclick="adminReportsManager.viewReport('${report._id}')">
+                            <i class="bi bi-eye me-1"></i>View
+                        </button>
+                    ` : `
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                Actions
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="adminReportsManager.viewReport('${report._id}')">
+                                    <i class="bi bi-eye me-2"></i>View Details
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="adminReportsManager.updateReportStatus('${report._id}', 'under_review')">
+                                    <i class="bi bi-eye me-2"></i>Start Review
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="adminReportsManager.updateReportStatus('${report._id}', 'resolved')">
+                                    <i class="bi bi-check-circle me-2"></i>Mark Resolved
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="adminReportsManager.dismissReport('${report._id}')">
+                                    <i class="bi bi-x-circle me-2"></i>Dismiss
+                                </a></li>
+                            </ul>
+                        </div>
+                    `}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+    getReportTarget(report) {
+      if (report.reportedProperty) {
+        return `<div class="fw-semibold">Property</div><small class="text-muted">${report.reportedProperty?.title || 'Unknown'}</small>`;
+      } else if (report.reportedUser) {
+        return `<div class="fw-semibold">User</div><small class="text-muted">${report.reportedUser?.firstName || 'Unknown'} ${report.reportedUser?.surname || ''}</small>`;
+      } else if (report.reportedBooking) {
+        return `<div class="fw-semibold">Booking</div><small class="text-muted">Booking #${report.reportedBooking?._id?.slice(-6) || 'Unknown'}</small>`;
+      }
+      return 'Unknown';
+    }
+
+    formatReportType(type) {
+      const typeMap = {
+        'fake_listing': 'Fake Listing',
+        'inappropriate_behavior': 'Inappropriate Behavior',
+        'safety_concerns': 'Safety Concerns',
+        'fraud': 'Fraud',
+        'spam': 'Spam',
+        'harassment': 'Harassment',
+        'other': 'Other'
+      };
+      return typeMap[type] || type.replace('_', ' ');
+    }
+
+    async viewReport(reportId) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/admin/reports/${reportId}`, {
+          headers: {
+            'Authorization': `Bearer ${this.token}`
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          this.displayReportModal(data.report);
+        } else {
+          this.showError('Failed to load report details');
+        }
+      } catch (error) {
+        console.error('Error viewing report:', error);
+        this.showError('Failed to load report details');
+      }
+    }
+
+    displayReportModal(report) {
+    const modalContent = document.getElementById('reportDetails');
+    
+    // Determine which action buttons to show based on report status
+    const isResolved = report.status === 'resolved';
+    const isDismissed = report.status === 'dismissed';
+    
+    modalContent.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Report Information</h6>
+                <p><strong>ID:</strong> #${report._id.slice(-6)}</p>
+                <p><strong>Type:</strong> <span class="badge bg-secondary">${this.formatReportType(report.reportType)}</span></p>
+                <p><strong>Priority:</strong> <span class="priority-badge priority-${report.priority}">${report.priority}</span></p>
+                <p><strong>Status:</strong> <span class="status-badge status-${report.status}">${report.status.replace('_', ' ')}</span></p>
+                <p><strong>Created:</strong> ${new Date(report.createdAt).toLocaleString()}</p>
+                ${report.resolvedAt ? `<p><strong>Resolved:</strong> ${new Date(report.resolvedAt).toLocaleString()}</p>` : ''}
+            </div>
+            <div class="col-md-6">
+                <h6>Reporter Information</h6>
+                <p><strong>Name:</strong> ${report.reporter?.firstName || 'Anonymous'} ${report.reporter?.surname || ''}</p>
+                <p><strong>Email:</strong> ${report.reporter?.email || 'Not provided'}</p>
+                <p><strong>Phone:</strong> ${report.reporter?.phone || 'Not provided'}</p>
+            </div>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6>Report Details</h6>
+                <div class="card">
+                    <div class="card-body">
+                        <h5>${report.title}</h5>
+                        <p class="mb-0">${report.description}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        ${report.evidence && report.evidence.length > 0 ? `
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6>Evidence</h6>
+                <div class="evidence-gallery">
+                    ${report.evidence.map(evidence => `
+                        <img src="${evidence}" class="evidence-img" alt="Evidence" onclick="window.open('${evidence}', '_blank')">
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+        ` : ''}
+        
+        ${report.adminNotes ? `
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6>Admin Notes</h6>
+                <div class="alert alert-info">
+                    ${report.adminNotes}
+                </div>
+            </div>
+        </div>
+        ` : ''}
+    `;
+
+    const modal = new bootstrap.Modal(document.getElementById('reportModal'));
+    
+    // Update modal footer based on report status
+    const modalFooter = document.querySelector('#reportModal .modal-footer');
+    if (modalFooter) {
+        if (isResolved || isDismissed) {
+            // For resolved/dismissed reports, only show Close button
+            modalFooter.innerHTML = `
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            `;
+        } else {
+            // For pending/under review reports, show action buttons
+            modalFooter.innerHTML = `
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-warning" onclick="startReview('${report._id}')">
+                    <i class="bi bi-eye me-2"></i>Start Review
+                </button>
+                <button type="button" class="btn btn-success" onclick="resolveReport('${report._id}')">
+                    <i class="bi bi-check-circle me-2"></i>Resolve
+                </button>
+            `;
+        }
+    }
+    
+    modal.show();
+}
+
+    async updateReportStatus(reportId, status) {
+      const adminNotes = prompt('Enter admin notes (optional):');
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/admin/reports/${reportId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.token}`
+          },
+          body: JSON.stringify({
+            status: status,
+            adminNotes: adminNotes
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          this.showSuccess('Report status updated successfully');
+          this.loadPendingReports();
+          this.loadReportStats();
+        } else {
+          this.showError('Error updating report status: ' + data.error);
+        }
+      } catch (error) {
+        console.error('Error updating report status:', error);
+        this.showError('Failed to update report status');
+      }
+    }
+
+    async dismissReport(reportId) {
+      if (confirm('Are you sure you want to dismiss this report? This action cannot be undone.')) {
+        await this.updateReportStatus(reportId, 'dismissed');
+      }
+    }
+
+    setupEventListeners() {
+    // Priority filter
+    const priorityFilter = document.getElementById('priorityFilter');
+    if (priorityFilter) {
+        priorityFilter.addEventListener('change', (e) => {
+            this.currentFilter.priority = e.target.value;
+            this.loadPendingReports(); // This now loads ALL reports and filters by tab
+        });
+    }
+
+    // Tab changes - FIXED VERSION
+    const reportTabs = document.getElementById('reportTabs');
+    if (reportTabs) {
+        reportTabs.addEventListener('shown.bs.tab', (e) => {
+            const target = e.target.getAttribute('data-bs-target');
+            
+            // REMOVE status filter - we'll filter on frontend
+            // this.currentFilter.status = ''; // Don't set status filter
+            
+            console.log('Tab changed to:', target);
+            this.loadPendingReports(); // Reload reports (will filter by tab on frontend)
+        });
+    }
+}
+
+    setupRealTimeUpdates() {
+      // Refresh data every 2 minutes
+      setInterval(() => {
+        this.loadReportStats();
+        this.loadPendingReports();
+      }, 120000);
+
+      // Refresh when page becomes visible
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          this.loadReportStats();
+          this.loadPendingReports();
+        }
+      });
+    }
+
+    showSuccess(message) {
+      alert(message); // You can replace with toast notifications
+    }
+
+    showError(message) {
+      alert('Error: ' + message); // You can replace with toast notifications
+    }
+  }
+
+  // Initialize admin reports manager
+  let adminReportsManager;
+
+  // Load reports on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    adminReportsManager = new AdminReportsManager();
+  });
+
+  // Global functions for onclick handlers
+  function viewReport(reportId) {
+    if (adminReportsManager) {
+      adminReportsManager.viewReport(reportId);
+    }
+  }
+
+  function updateReportStatus(reportId, status) {
+    if (adminReportsManager) {
+      adminReportsManager.updateReportStatus(reportId, status);
+    }
+  }
+
+  function dismissReport(reportId) {
+    if (adminReportsManager) {
+      adminReportsManager.dismissReport(reportId);
+    }
+  }
+
+  function generateReport() {
+    alert('Advanced report generation feature coming soon!');
+    // This would open a modal for generating custom reports
+  }
+
+  // Add this function to handle report generation
+async function generateReport() {
+    try {
+        // Show loading state
+        const originalText = event.target.innerHTML;
+        event.target.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Generating...';
+        event.target.disabled = true;
+
+        console.log('Generating report...');
+        
+        const response = await fetch(`${API_BASE_URL}/admin/reports/export`, {
+            headers: {
+                'Authorization': `Bearer ${this.token || localStorage.getItem("token")}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            
+            // Create filename with timestamp
+            const timestamp = new Date().toISOString().split('T')[0];
+            a.download = `reports-export-${timestamp}.csv`;
+            
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showNotification('Report downloaded successfully!', 'success');
+        } else {
+            // Fallback: Generate report from current data
+            await generateReportFallback();
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        // Fallback to JSON export
+        await generateReportFallback();
+        
+        // Reset button
+        event.target.innerHTML = originalText;
+        event.target.disabled = false;
+    }
+}
+
+// Fallback report generation
+async function generateReportFallback() {
+    try {
+        // Get all reports for export
+        const response = await fetch(`${API_BASE_URL}/admin/reports?page=1&limit=1000`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem("token")}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const reports = data.data?.reports || [];
+            
+            // Convert to CSV format
+            const csvData = convertReportsToCSV(reports);
+            const blob = new Blob([csvData], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            
+            const timestamp = new Date().toISOString().split('T')[0];
+            a.download = `reports-export-${timestamp}.csv`;
+            
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showNotification('Report generated successfully!', 'success');
+        } else {
+            throw new Error('Failed to fetch data for report');
+        }
+    } catch (error) {
+        console.error('Report generation error:', error);
+        showNotification('Failed to generate report: ' + error.message, 'danger');
+    }
+}
+
+// Convert reports data to CSV
+function convertReportsToCSV(reports) {
+    const headers = [
+        'Report ID',
+        'Type',
+        'Title',
+        'Description',
+        'Priority',
+        'Status',
+        'Reporter Name',
+        'Reporter Email',
+        'Reported Property',
+        'Reported User',
+        'Created Date',
+        'Resolved Date',
+        'Admin Notes'
+    ];
+
+    const rows = reports.map(report => {
+        return [
+            `"${report._id || ''}"`,
+            `"${report.reportType || ''}"`,
+            `"${(report.title || '').replace(/"/g, '""')}"`,
+            `"${(report.description || '').replace(/"/g, '""')}"`,
+            `"${report.priority || ''}"`,
+            `"${report.status || ''}"`,
+            `"${report.reporter ? `${report.reporter.firstName || ''} ${report.reporter.surname || ''}`.trim() : ''}"`,
+            `"${report.reporter?.email || ''}"`,
+            `"${report.reportedProperty?.title || ''}"`,
+            `"${report.reportedUser ? `${report.reportedUser.firstName || ''} ${report.reportedUser.surname || ''}`.trim() : ''}"`,
+            `"${report.createdAt ? new Date(report.createdAt).toLocaleDateString() : ''}"`,
+            `"${report.resolvedAt ? new Date(report.resolvedAt).toLocaleDateString() : ''}"`,
+            `"${(report.adminNotes || '').replace(/"/g, '""')}"`
+        ];
+    });
+
+    return [headers, ...rows].map(row => row.join(',')).join('\n');
+}
+
+// Notification function
+function showNotification(message, type) {
+    // Create toast notification
+    const toastContainer = document.querySelector('.toast-container') || createToastContainer();
+    const toastId = 'toast-' + Date.now();
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-bg-${type} border-0`;
+    toast.id = toastId;
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+
+    toastContainer.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
+
+function createToastContainer() {
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+    toastContainer.style.zIndex = '9999';
+    document.body.appendChild(toastContainer);
+    return toastContainer;
+}
+
+  // Update the global functions to accept reportId parameter
+function startReview(reportId) {
+    if (adminReportsManager) {
+        adminReportsManager.updateReportStatus(reportId, 'under_review');
+    }
+    const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
+    if (modal) {
+        modal.hide();
+    }
+}
+
+function resolveReport(reportId) {
+    if (adminReportsManager) {
+        adminReportsManager.updateReportStatus(reportId, 'resolved');
+    }
+    const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
+    if (modal) {
+        modal.hide();
+    }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResLinQ | Report Complaint</title>
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .form-step {
+      display: none;
+      animation: fadeIn 0.5s ease-in;
+    }
+    .form-step.active {
+      display: block;
+    }
+    .progress-bar {
+      transition: width 0.5s ease-in-out;
+    }
+    .step-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    .step-indicator::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #e9ecef;
+      z-index: 1;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+    .step-number {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      border: 3px solid white;
+    }
+    .step.active .step-number {
+      background: #007bff;
+      color: white;
+    }
+    .step.completed .step-number {
+      background: #28a745;
+      color: white;
+    }
+    .step-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .complaint-card {
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .complaint-card:hover {
+      border-color: #007bff;
+      background: #f8f9fa;
+    }
+    .complaint-card.selected {
+      border-color: #007bff;
+      background: #e7f1ff;
+    }
+    .evidence-preview {
+      max-width: 100px;
+      max-height: 100px;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    .summary-item {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .manual-toggle {
+      cursor: pointer;
+      color: #007bff;
+      text-decoration: underline;
+    }
+
+    #logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+  </style>
+</head>
+<body>
+
+  <!-- Redirect if not logged in or not student -->
+  <script>
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    if (!token) {
+      alert("Please log in to access this page.");
+      window.location.href = "authorization.html";
+    } else if (user.role !== 'student') {
+      alert("This page is for students only.");
+      window.location.href = user.role === 'landlord' ? "landlord-dashboard.html" : "index.html";
+    }
+  </script>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i>ResLinQ</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html"><i class="bi bi-house-door-fill"></i> Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="listings.html"><i class="bi bi-building"></i> Listings</a></li>
+          <li class="nav-item"><a class="nav-link" href="help.html"><i class="bi bi-question-circle-fill"></i> Help</a></li>
+        </ul>
+      </div>
+
+      <div class="signup-login-buttons">
+        <a href="authorization.html" class="btn btn-outline-light me-2 nav-btn">Login</a>
+        <a href="signup.html" class="btn btn-primary nav-btn">Sign Up</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Report Form Section -->
+  <section class="py-5 bg-lightgrey">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <h2 class="text-center text-navy mb-3">Report an Issue</h2>
+          <p class="text-center text-muted mb-4">Help us improve student accommodation by reporting issues. Your feedback helps other students.</p>
+
+          <!-- Step Indicator -->
+          <div class="step-indicator">
+            <div class="step active" data-step="1">
+              <div class="step-number">1</div>
+              <div class="step-label">Complaint</div>
+            </div>
+            <div class="step" data-step="2">
+              <div class="step-number">2</div>
+              <div class="step-label">Details</div>
+            </div>
+            <div class="step" data-step="3">
+              <div class="step-number">3</div>
+              <div class="step-label">Your Info</div>
+            </div>
+            <div class="step" data-step="4">
+              <div class="step-number">4</div>
+              <div class="step-label">Review</div>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="progress mb-4" style="height: 8px;">
+            <div class="progress-bar bg-navy" id="progressBar" role="progressbar" style="width: 25%"></div>
+          </div>
+
+          <!-- Multi-Step Form -->
+          <form id="reportForm">
+            
+            <!-- Step 1: Complaint Type -->
+            <div class="form-step active" data-step="1">
+              <div class="card shadow-sm">
+                <div class="card-body">
+                  <h4 class="text-navy mb-4">Step 1: What would you like to report?</h4>
+
+                  <!-- Auto-filled from URL parameters -->
+                  <div id="autoFillSection" class="mb-4 p-3 bg-light rounded" style="display: none;">
+                    <h6 class="text-success"><i class="bi bi-info-circle me-2"></i>Pre-filled from your selection</h6>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label">Property</label>
+                          <input type="text" id="propertyField" class="form-control" readonly>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label">Landlord</label>
+                          <input type="text" id="landlordField" class="form-control" readonly>
+                        </div>
+                      </div>
+                    </div>
+                    <p class="text-muted small mb-0">Not the right property? <span class="manual-toggle" onclick="toggleManualEntry()">Enter details manually</span></p>
+                  </div>
+
+                  <!-- Manual Entry Section -->
+                  <div id="manualEntrySection">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label">Property Name *</label>
+                          <input type="text" id="manualProperty" class="form-control" placeholder="Enter property name">
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label">Landlord Name *</label>
+                          <input type="text" id="manualLandlord" class="form-control" placeholder="Enter landlord name">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Complaint Category -->
+                  <div class="mb-4">
+                    <label class="form-label">Complaint Category *</label>
+                    <select id="category" class="form-select" required>
+                      <option value="">-- Choose complaint type --</option>
+                      <option value="Landlord Issues">Landlord Issues</option>
+                      <option value="Accommodation Facilities">Accommodation Facilities</option>
+                      <option value="Security Concerns">Security Concerns</option>
+                      <option value="Payment/Contracts">Payment/Contracts</option>
+                      <option value="Maintenance">Maintenance Problems</option>
+                      <option value="Noise/Disturbance">Noise/Disturbance</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  <!-- Quick Complaint Cards -->
+                  <div class="mb-3">
+                    <label class="form-label mb-3">Common Issues (Select one for quick setup)</label>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="complaint-card" data-category="Maintenance" data-description="There are maintenance issues that need urgent attention.">
+                          <i class="bi bi-tools text-warning me-2"></i>
+                          <strong>Maintenance Needed</strong>
+                          <small class="d-block text-muted">Broken fixtures, plumbing, electrical issues</small>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="complaint-card" data-category="Security Concerns" data-description="I have security concerns about the property.">
+                          <i class="bi bi-shield-exclamation text-danger me-2"></i>
+                          <strong>Security Issues</strong>
+                          <small class="d-block text-muted">Locks, lighting, access control problems</small>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="complaint-card" data-category="Landlord Issues" data-description="I'm experiencing issues with the landlord.">
+                          <i class="bi bi-person-x text-info me-2"></i>
+                          <strong>Landlord Problems</strong>
+                          <small class="d-block text-muted">Communication, responsiveness, behavior</small>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="complaint-card" data-category="Other" data-description="">
+                          <i class="bi bi-chat-dots text-secondary me-2"></i>
+                          <strong>Other Issue</strong>
+                          <small class="d-block text-muted">Describe your specific concern</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="d-flex justify-content-between">
+                    <div></div>
+                    <button type="button" class="btn btn-navy next-step">Continue <i class="bi bi-arrow-right ms-1"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Details -->
+            <div class="form-step" data-step="2">
+              <div class="card shadow-sm">
+                <div class="card-body">
+                  <h4 class="text-navy mb-4">Step 2: Tell us more about the issue</h4>
+                  
+                  <div class="mb-4">
+                    <label class="form-label">Describe the issue in detail *</label>
+                    <textarea class="form-control" id="description" rows="5" placeholder="Please provide specific details about what happened, when it occurred, and how it has affected you..." required></textarea>
+                    <div class="form-text">Be as detailed as possible to help us understand and address your concern.</div>
+                  </div>
+
+                  <div class="mb-4">
+                    <label class="form-label">When did this issue occur? *</label>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <input type="date" class="form-control" id="issueDate" required>
+                      </div>
+                      <div class="col-md-6">
+                        <select class="form-select" id="issueFrequency">
+                          <option value="once">Happened once</option>
+                          <option value="daily">Happens daily</option>
+                          <option value="weekly">Happens weekly</option>
+                          <option value="monthly">Happens monthly</option>
+                          <option value="ongoing">Ongoing issue</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mb-4">
+                    <label class="form-label">Upload evidence (optional but helpful)</label>
+                    <input type="file" class="form-control" id="evidenceFiles" multiple accept="image/*,.pdf,.doc,.docx">
+                    <div class="form-text">You can upload photos, documents, or screenshots. Max 5 files, 5MB each.</div>
+                    <div id="filePreview" class="mt-2"></div>
+                  </div>
+
+                  <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary prev-step"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                    <button type="button" class="btn btn-navy next-step">Continue <i class="bi bi-arrow-right ms-1"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3: Your Information -->
+            <div class="form-step" data-step="3">
+              <div class="card shadow-sm">
+                <div class="card-body">
+                  <h4 class="text-navy mb-4">Step 3: Your contact information</h4>
+                  
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-control" id="fullName" required>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">Student Number</label>
+                        <input type="text" class="form-control" id="studentNumber" placeholder="Optional">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">Email Address *</label>
+                        <input type="email" class="form-control" id="email" required>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" placeholder="Optional">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mb-4">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="anonymous">
+                      <label class="form-check-label" for="anonymous">
+                        <strong>Submit anonymously</strong>
+                        <small class="d-block text-muted">Your personal information will not be shared with the landlord</small>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Privacy Notice:</strong> Your information is protected and will only be used to follow up on this report.
+                  </div>
+
+                  <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary prev-step"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                    <button type="button" class="btn btn-navy next-step">Review <i class="bi bi-check-circle ms-1"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 4: Review -->
+            <div class="form-step" data-step="4">
+              <div class="card shadow-sm">
+                <div class="card-body">
+                  <h4 class="text-navy mb-4">Step 4: Review your complaint</h4>
+                  <p class="text-muted mb-4">Please verify all information before submitting your complaint.</p>
+
+                  <div class="summary-item">
+                    <h6><i class="bi bi-building me-2"></i>Property Details</h6>
+                    <p class="mb-1"><strong>Property:</strong> <span id="summaryProperty">-</span></p>
+                    <p class="mb-0"><strong>Landlord:</strong> <span id="summaryLandlord">-</span></p>
+                  </div>
+
+                  <div class="summary-item">
+                    <h6><i class="bi bi-exclamation-triangle me-2"></i>Complaint Details</h6>
+                    <p class="mb-1"><strong>Category:</strong> <span id="summaryCategory">-</span></p>
+                    <p class="mb-1"><strong>Issue Date:</strong> <span id="summaryDate">-</span></p>
+                    <p class="mb-1"><strong>Frequency:</strong> <span id="summaryFrequency">-</span></p>
+                    <p class="mb-0"><strong>Description:</strong> <span id="summaryDescription">-</span></p>
+                  </div>
+
+                  <div class="summary-item">
+                    <h6><i class="bi bi-person me-2"></i>Your Information</h6>
+                    <p class="mb-1"><strong>Name:</strong> <span id="summaryName">-</span></p>
+                    <p class="mb-1"><strong>Email:</strong> <span id="summaryEmail">-</span></p>
+                    <p class="mb-1"><strong>Phone:</strong> <span id="summaryPhone">-</span></p>
+                    <p class="mb-0"><strong>Student Number:</strong> <span id="summaryStudentNumber">-</span></p>
+                  </div>
+
+                  <div class="alert alert-warning">
+                    <i class="bi bi-shield-exclamation me-2"></i>
+                    <strong>Important:</strong> Once submitted, you'll receive a reference number to track your complaint's progress.
+                  </div>
+
+                  <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary prev-step"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-send me-1"></i> Submit Complaint</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-5 bg-navy text-white">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for finding the perfect student accommodation near your campus.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Quick Links</h6>
+          <ul class="list-unstyled">
+            <li><a href="home.html" class="text-light text-decoration-none">Home</a></li>
+            <li><a href="listings.html" class="text-light text-decoration-none">Listings</a></li>
+            <li><a href="help.html" class="text-light text-decoration-none">Help</a></li>
+            <li><a href="about-us.html" class="text-light text-decoration-none">About Us</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="my-bookings.html" class="text-light text-decoration-none">My Bookings</a></li>
+            <li><a href="my-reports.html" class="text-light text-decoration-none">My Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Get in Touch</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap + JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="my-reports.js"></script>
+  <script src="navbar.js"></script>
+</body>
+</html>

@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Properties Management - ResLinQ Admin</title>
+  
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --success: #059669;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --info: #60a5fa;
+      --light-bg: #f8fafc;
+      --navy: #0b2447;
+      --admin-sidebar: #0f172a;
+    }
+
+    body {
+      background: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .admin-sidebar {
+      background: var(--admin-sidebar);
+      color: white;
+      min-height: 100vh;
+      position: fixed;
+      width: 280px;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+
+    .admin-sidebar.collapsed {
+      width: 80px;
+    }
+
+    .admin-sidebar.collapsed .sidebar-text {
+      display: none;
+    }
+
+    .sidebar-brand {
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      text-align: center;
+    }
+
+    .sidebar-nav {
+      padding: 1rem 0;
+    }
+
+    .nav-item {
+      margin: 0.25rem 1rem;
+    }
+
+    .nav-link {
+      color: rgba(255,255,255,0.8);
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background: rgba(59, 130, 246, 0.1);
+      color: white;
+      border-left: 3px solid var(--primary-light);
+    }
+
+    .admin-main {
+      margin-left: 280px;
+      transition: all 0.3s ease;
+      min-height: 100vh;
+    }
+
+    .admin-main.expanded {
+      margin-left: 80px;
+    }
+
+    .admin-header {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1rem 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .admin-content {
+      padding: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      border-left: 4px solid var(--primary);
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+
+    .stat-card.success { border-left-color: var(--success); }
+    .stat-card.warning { border-left-color: var(--warning); }
+    .stat-card.danger { border-left-color: var(--danger); }
+
+    .data-table {
+      background: white;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .table th {
+      background: #f8fafc;
+      border-bottom: 2px solid #e2e8f0;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-pending { background: #fef3c7; color: #d97706; }
+    .status-approved { background: #d1fae5; color: #059669; }
+    .status-rejected { background: #fee2e2; color: #dc2626; }
+    .status-available { background: #dbeafe; color: #1d4ed8; }
+
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--danger);
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Admin Redirect Check -->
+  <script>
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    if (!token) {
+      alert("Please log in to access admin panel.");
+      window.location.href = "authorization.html";
+    } else if (user.role !== 'admin') {
+      alert("Access denied. Admin privileges required.");
+      window.location.href = "index.html";
+    }
+  </script>
+
+  <!-- Admin Sidebar -->
+  <div class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-brand">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-shield-check text-primary fs-4 me-2"></i>
+          <span class="sidebar-text fs-5 bold">ResLinQ Admin</span>
+        </div>
+        <button class="btn btn-sm btn-outline-light" id="sidebarToggle">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="nav-item">
+        <a class="nav-link" href="admin-dashboard.html">
+          <i class="bi bi-speedometer2"></i>
+          <span class="sidebar-text">Dashboard</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-users.html">
+          <i class="bi bi-people"></i>
+          <span class="sidebar-text">Users</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link active" href="admin-properties.html">
+          <i class="bi bi-houses"></i>
+          <span class="sidebar-text">Properties</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-bookings.html">
+          <i class="bi bi-calendar-check"></i>
+          <span class="sidebar-text">Bookings</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-reports.html">
+          <i class="bi bi-flag"></i>
+          <span class="sidebar-text">Reports</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-reviews.html">
+          <i class="bi bi-star"></i>
+          <span class="sidebar-text">Reviews</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-verification.html">
+          <i class="bi bi-patch-check"></i>
+          <span class="sidebar-text">Verification</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-messages.html">
+          <i class="bi bi-chat-dots"></i>
+          <span class="sidebar-text">Messages</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-payments.html">
+          <i class="bi bi-credit-card"></i>
+          <span class="sidebar-text">Payments</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-settings.html">
+          <i class="bi bi-gear"></i>
+          <span class="sidebar-text">Settings</span>
+        </a>
+      </div>
+      
+      <div class="nav-item mt-4">
+        <a class="nav-link text-warning" href="admin-login.html">
+          <i class="bi bi-box-arrow-right"></i>
+          <span class="sidebar-text">Logout</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="admin-main" id="adminMain">
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h4 class="fw-bold mb-0">Properties Management</h4>
+          <small class="text-muted">Manage and verify property listings</small>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn btn-primary" onclick="exportProperties()">
+            <i class="bi bi-download me-2"></i>Export Properties
+          </button>
+          <div class="dropdown">
+            <button class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+              <i class="bi bi-bell"></i>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end">
+              <h6 class="dropdown-header">Notifications</h6>
+              <a class="dropdown-item" href="#">New property pending review</a>
+              <a class="dropdown-item" href="#">Property verification required</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="admin-content">
+      <!-- Stats Overview -->
+      <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="stat-card">
+            <div class="d-flex align-items-center">
+              <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                <i class="bi bi-houses text-primary fs-4"></i>
+              </div>
+              <div>
+                <h3 class="fw-bold mb-0" id="totalProperties">0</h3>
+                <p class="text-muted mb-0">Total Properties</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="stat-card warning">
+            <div class="d-flex align-items-center">
+              <div class="bg-warning bg-opacity-10 rounded-circle p-3 me-3">
+                <i class="bi bi-clock text-warning fs-4"></i>
+              </div>
+              <div>
+                <h3 class="fw-bold mb-0" id="pendingProperties">0</h3>
+                <p class="text-muted mb-0">Pending Review</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="stat-card success">
+            <div class="d-flex align-items-center">
+              <div class="bg-success bg-opacity-10 rounded-circle p-3 me-3">
+                <i class="bi bi-check-circle text-success fs-4"></i>
+              </div>
+              <div>
+                <h3 class="fw-bold mb-0" id="approvedProperties">0</h3>
+                <p class="text-muted mb-0">Approved</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="stat-card danger">
+            <div class="d-flex align-items-center">
+              <div class="bg-danger bg-opacity-10 rounded-circle p-3 me-3">
+                <i class="bi bi-x-circle text-danger fs-4"></i>
+              </div>
+              <div>
+                <h3 class="fw-bold mb-0" id="rejectedProperties">0</h3>
+                <p class="text-muted mb-0">Rejected</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="data-table p-4">
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select class="form-select" id="statusFilter">
+                  <option value="">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="available">Available</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Property Type</label>
+                <select class="form-select" id="typeFilter">
+                  <option value="">All Types</option>
+                  <option value="apartment">Apartment</option>
+                  <option value="house">House</option>
+                  <option value="condo">Condo</option>
+                  <option value="townhouse">Townhouse</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Search</label>
+                <input type="text" class="form-control" id="searchInput" placeholder="Search properties...">
+              </div>
+              <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-primary w-100" onclick="loadProperties()">
+                  <i class="bi bi-search me-2"></i>Search
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Properties Table -->
+      <div class="row">
+        <div class="col-12">
+          <div class="data-table">
+            <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+              <h5 class="fw-bold mb-0">Property Listings</h5>
+              <div class="d-flex gap-2">
+                <select class="form-select form-select-sm" style="width: auto;" id="bulkAction">
+                  <option>Bulk Actions</option>
+                  <option value="approve">Approve Selected</option>
+                  <option value="reject">Reject Selected</option>
+                </select>
+                <button class="btn btn-sm btn-outline-primary" onclick="applyBulkAction()">Apply</button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead>
+                  <tr>
+                    <th width="50">
+                      <input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleSelectAll()">
+                    </th>
+                    <th>Property</th>
+                    <th>Landlord</th>
+                    <th>Type</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="propertiesTable">
+                  <tr>
+                    <td colspan="8" class="text-center py-4">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading properties...</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="p-3 border-top d-flex justify-content-between align-items-center">
+              <div class="text-muted" id="tableInfo">Showing 0 properties</div>
+              <nav>
+                <ul class="pagination mb-0" id="pagination">
+                  <!-- Pagination will be inserted here -->
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Property Modal -->
+  <div class="modal fade" id="propertyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Property Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="propertyDetails">
+          <!-- Property details will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Sidebar Toggle
+    document.getElementById('sidebarToggle').addEventListener('click', function() {
+      document.getElementById('adminSidebar').classList.toggle('collapsed');
+      document.getElementById('adminMain').classList.toggle('expanded');
+    });
+
+    // Properties Management Functions
+    let currentPage = 1;
+    const limit = 10;
+    const API_BASE_URL = 'https://linqs-backend.onrender.com/api';
+
+    // Load properties with better error handling
+    async function loadProperties() {
+      try {
+        showLoadingState();
+        
+        const status = document.getElementById('statusFilter').value;
+        const type = document.getElementById('typeFilter').value;
+        const search = document.getElementById('searchInput').value;
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        // Build query parameters
+        const params = new URLSearchParams({
+          page: currentPage,
+          limit: limit
+        });
+
+        // Add filters only if they have values
+        if (status) params.append('status', status);
+        if (type) params.append('propertyType', type);
+        if (search) params.append('search', search);
+
+        console.log('Fetching properties with params:', params.toString());
+
+        // Try different endpoints
+        let response;
+        let data;
+        
+        try {
+          // First try the admin endpoint
+          response = await fetch(`${API_BASE_URL}/admin/properties?${params}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            data = await response.json();
+            console.log('Admin endpoint success:', data);
+          } else {
+            // If admin endpoint fails, try the regular properties endpoint
+            console.log('Admin endpoint failed, trying regular properties endpoint...');
+            response = await fetch(`${API_BASE_URL}/properties?${params}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            if (response.ok) {
+              data = await response.json();
+              console.log('Regular endpoint success:', data);
+            } else {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+          }
+        } catch (endpointError) {
+          console.error('Error with endpoints:', endpointError);
+          // Final fallback - get all properties and filter client-side
+          response = await fetch(`${API_BASE_URL}/properties`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const allData = await response.json();
+            data = filterPropertiesClientSide(allData, status, type, search);
+            console.log('Client-side filtering applied:', data);
+          } else {
+            throw new Error(`All endpoints failed: ${response.status}`);
+          }
+        }
+        
+        console.log('Final properties data:', data);
+        
+        // Handle different response structures
+        let properties = [];
+        let stats = {};
+        
+        if (data.success && data.data) {
+          properties = data.data.properties || data.data || [];
+          stats = data.data.stats || {};
+        } else if (data.properties) {
+          properties = data.properties;
+        } else if (Array.isArray(data)) {
+          properties = data;
+        } else {
+          properties = data.data || [];
+        }
+
+        displayProperties(properties);
+        updateStats(calculateStats(properties));
+        updateTableInfo(properties.length);
+        
+      } catch (error) {
+        console.error('Error loading properties:', error);
+        showErrorState('Failed to load properties: ' + error.message);
+      }
+    }
+
+    // Client-side filtering as fallback
+    function filterPropertiesClientSide(data, status, type, search) {
+      let properties = [];
+      
+      // Extract properties from different response structures
+      if (data.success && data.data) {
+        properties = data.data.properties || data.data || [];
+      } else if (data.properties) {
+        properties = data.properties;
+      } else if (Array.isArray(data)) {
+        properties = data;
+      } else {
+        properties = data.data || [];
+      }
+      
+      console.log('Properties for client-side filtering:', properties);
+      
+      // Apply filters
+      let filtered = properties.filter(property => {
+        let matches = true;
+        
+        // Status filter
+        if (status && property.status !== status) {
+          matches = false;
+        }
+        
+        // Type filter
+        if (type && property.propertyType) {
+          const propertyType = property.propertyType.toLowerCase();
+          const filterType = type.toLowerCase();
+          if (propertyType !== filterType) {
+            matches = false;
+          }
+        }
+        
+        // Search filter
+        if (search) {
+          const searchLower = search.toLowerCase();
+          const searchableFields = [
+            property.title,
+            property.description,
+            property.location?.address,
+            property.location?.city,
+            property.location?.state,
+            property.propertyType,
+            getLandlordName(property)
+          ].filter(Boolean);
+          
+          const matchesSearch = searchableFields.some(field => 
+            field.toString().toLowerCase().includes(searchLower)
+          );
+          if (!matchesSearch) {
+            matches = false;
+          }
+        }
+        
+        return matches;
+      });
+      
+      console.log('Filtered properties:', filtered);
+      
+      return {
+        success: true,
+        data: {
+          properties: filtered,
+          pagination: {
+            total: filtered.length,
+            page: 1,
+            limit: filtered.length,
+            totalPages: 1
+          }
+        }
+      };
+    }
+
+    // Calculate statistics from properties
+    function calculateStats(properties) {
+      const stats = {
+        total: properties.length,
+        pending: properties.filter(p => p.status === 'pending').length,
+        approved: properties.filter(p => p.status === 'approved').length,
+        rejected: properties.filter(p => p.status === 'rejected').length,
+        available: properties.filter(p => p.status === 'available').length
+      };
+      
+      return stats;
+    }
+
+    // Display properties in table
+    function displayProperties(properties) {
+      const tbody = document.getElementById('propertiesTable');
+      
+      if (!properties || properties.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="text-center py-4">
+              <i class="bi bi-inbox fs-1 text-muted mb-3 d-block"></i>
+              <p class="text-muted">No properties found</p>
+              <button class="btn btn-primary btn-sm" onclick="loadProperties()">
+                <i class="bi bi-arrow-clockwise me-1"></i>Retry
+              </button>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = properties.map(property => `
+        <tr>
+          <td>
+            <input type="checkbox" class="form-check-input property-checkbox" value="${property._id || property.id}">
+          </td>
+          <td>
+            <div class="d-flex align-items-center">
+              <img src="${getPropertyImage(property)}" 
+                   class="rounded me-3" width="40" height="40" style="object-fit: cover;">
+              <div>
+                <h6 class="mb-0">${property.title || 'Untitled Property'}</h6>
+                <small class="text-muted">${getPropertyLocation(property)}</small>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div>${getLandlordName(property)}</div>
+            <small class="text-muted">${getLandlordEmail(property)}</small>
+          </td>
+          <td>${property.propertyType || 'N/A'}</td>
+          <td>R${property.price || 0}/month</td>
+          <td>
+            <span class="status-badge status-${property.status || 'pending'}">
+              ${(property.status || 'pending').charAt(0).toUpperCase() + (property.status || 'pending').slice(1)}
+            </span>
+          </td>
+          <td>${property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'N/A'}</td>
+          <td>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                Actions
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="viewPropertyDetails('${property._id || property.id}')">
+                  <i class="bi bi-eye me-2"></i>View Details
+                </a></li>
+                ${property.status !== 'approved' ? `
+                <li><a class="dropdown-item" href="#" onclick="updatePropertyStatus('${property._id || property.id}', 'approved')">
+                  <i class="bi bi-check-circle me-2"></i>Approve
+                </a></li>
+                ` : ''}
+                ${property.status !== 'rejected' ? `
+                <li><a class="dropdown-item" href="#" onclick="updatePropertyStatus('${property._id || property.id}', 'rejected')">
+                  <i class="bi bi-x-circle me-2"></i>Reject
+                </a></li>
+                ` : ''}
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="#" onclick="deleteProperty('${property._id || property.id}')">
+                  <i class="bi bi-trash me-2"></i>Delete
+                </a></li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Helper functions for property data
+    function getPropertyImage(property) {
+      if (property.images && property.images.length > 0) {
+        const image = property.images[0];
+        if (typeof image === 'string' && (image.startsWith('http') || image.startsWith('data:'))) {
+          return image;
+        }
+      }
+      return 'https://via.placeholder.com/60?text=No+Image';
+    }
+
+    function getPropertyLocation(property) {
+      if (property.location) {
+        if (typeof property.location === 'string') {
+          return property.location;
+        }
+        if (property.location.city && property.location.address) {
+          return `${property.location.address}, ${property.location.city}`;
+        }
+        return property.location.city || property.location.address || property.location.street || 'Location not specified';
+      }
+      return 'Location not specified';
+    }
+
+    function getLandlordName(property) {
+      console.log('Getting landlord name for property:', property);
+      
+      if (property.landlord) {
+        if (typeof property.landlord === 'string') {
+          return property.landlord;
+        }
+        if (property.landlord.firstName || property.landlord.lastName) {
+          return `${property.landlord.firstName || ''} ${property.landlord.lastName || ''}`.trim();
+        }
+        if (property.landlord.name) {
+          return property.landlord.name;
+        }
+      }
+      
+      if (property.owner) {
+        if (typeof property.owner === 'string') {
+          return property.owner;
+        }
+        if (property.owner.firstName || property.owner.lastName) {
+          return `${property.owner.firstName || ''} ${property.owner.lastName || ''}`.trim();
+        }
+        if (property.owner.name) {
+          return property.owner.name;
+        }
+      }
+      
+      if (property.user) {
+        if (typeof property.user === 'string') {
+          return property.user;
+        }
+        if (property.user.firstName || property.user.lastName) {
+          return `${property.user.firstName || ''} ${property.user.lastName || ''}`.trim();
+        }
+        if (property.user.name) {
+          return property.user.name;
+        }
+      }
+      
+      if (property.contactInfo && property.contactInfo.name) {
+        return property.contactInfo.name;
+      }
+      
+      return 'Landlord information not available';
+    }
+
+    function getLandlordEmail(property) {
+      if (property.landlord && property.landlord.email) {
+        return property.landlord.email;
+      }
+      if (property.owner && property.owner.email) {
+        return property.owner.email;
+      }
+      if (property.user && property.user.email) {
+        return property.user.email;
+      }
+      if (property.contactInfo && property.contactInfo.email) {
+        return property.contactInfo.email;
+      }
+      return 'Email not available';
+    }
+
+    // Update property status
+    // Update property status - FIXED VERSION
+async function updatePropertyStatus(propertyId, status) {
+  // Only allow approved/rejected for admin
+  if (!['approved', 'rejected'].includes(status)) {
+    alert('Admin can only approve or reject properties');
+    return;
+  }
+  
+  const adminNotes = prompt(`Enter admin notes for ${status} (optional):`);
+  
+  try {
+    const token = localStorage.getItem('token');
+    
+    console.log(`Updating property ${propertyId} to status: ${status}`);
+    
+    const response = await fetch(`${API_BASE_URL}/admin/properties/${propertyId}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        status: status,
+        adminNotes: adminNotes || ''
+      })
+    });
+    
+    const responseData = await response.json();
+    
+    if (!response.ok) {
+      console.error('Server response error:', responseData);
+      throw new Error(responseData.error || `HTTP error! status: ${response.status}`);
+    }
+    
+    console.log('Status update successful:', responseData);
+    alert(`Property ${status} successfully`);
+    loadProperties();
+  } catch (error) {
+    console.error('Error updating property status:', error);
+    alert('Failed to update property status: ' + error.message);
+  }
+}
+
+    // Update statistics display
+    function updateStats(stats) {
+      console.log('Updating stats with:', stats);
+      document.getElementById('totalProperties').textContent = stats.total || 0;
+      document.getElementById('pendingProperties').textContent = stats.pending || 0;
+      document.getElementById('approvedProperties').textContent = stats.approved || 0;
+      document.getElementById('rejectedProperties').textContent = stats.rejected || 0;
+    }
+
+    // Update table information
+    function updateTableInfo(count) {
+      document.getElementById('tableInfo').textContent = `Showing ${count} properties`;
+    }
+
+    // FIXED: View property details function
+    // FIXED: View property details function
+async function viewPropertyDetails(propertyId) {
+  try {
+    console.log('Viewing details for property ID:', propertyId);
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    let property = null;
+    
+    // Try multiple endpoints to get property details
+    try {
+      // Try admin endpoint first
+      const adminResponse = await fetch(`${API_BASE_URL}/admin/properties/${propertyId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (adminResponse.ok) {
+        const adminData = await adminResponse.json();
+        console.log('Admin endpoint response:', adminData);
+        
+        // FIX: Extract property from the correct location
+        if (adminData.success && adminData.data) {
+          property = adminData.data.property; // Get property from data.property, not just data
+          console.log('Admin endpoint property details:', property);
+        }
+      }
+    } catch (adminError) {
+      console.log('Admin details endpoint failed:', adminError);
+    }
+    
+    // If admin endpoint failed, try regular endpoint
+    if (!property) {
+      try {
+        const regularResponse = await fetch(`${API_BASE_URL}/properties/${propertyId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (regularResponse.ok) {
+          const regularData = await regularResponse.json();
+          property = regularData.property || regularData.data || regularData;
+          console.log('Regular endpoint property details:', property);
+        } else {
+          throw new Error(`HTTP error! status: ${regularResponse.status}`);
+        }
+      } catch (regularError) {
+        console.log('Regular endpoint failed:', regularError);
+      }
+    }
+
+    // If still no property, throw error
+    if (!property) {
+      throw new Error('Could not fetch property details from any endpoint');
+    }
+    
+    // Display the property details
+    displayPropertyDetails(property);
+    
+  } catch (error) {
+    console.error('Error viewing property:', error);
+    alert('Failed to load property details: ' + error.message);
+  }
+}
+
+    // Enhanced property details display
+    function displayPropertyDetails(property) {
+      const statusConfig = {
+        pending: { class: 'warning', text: 'Pending' },
+        approved: { class: 'success', text: 'Approved' },
+        rejected: { class: 'danger', text: 'Rejected' },
+        available: { class: 'info', text: 'Available' }
+      };
+      
+      const status = property.status || 'pending';
+      const statusInfo = statusConfig[status] || statusConfig.pending;
+      
+      const landlordName = getLandlordName(property);
+      const landlordEmail = getLandlordEmail(property);
+      
+      console.log('Displaying property details - Landlord:', { landlordName, landlordEmail });
+      
+      const modalContent = `
+        <div class="row">
+          <div class="col-md-6">
+            <img src="${getPropertyImage(property)}" class="img-fluid rounded" alt="${property.title}" style="max-height: 300px; width: 100%; object-fit: cover;">
+            ${property.images && property.images.length > 1 ? `
+              <div class="mt-2">
+                <small class="text-muted">+${property.images.length - 1} more images</small>
+              </div>
+            ` : ''}
+          </div>
+          <div class="col-md-6">
+            <h4>${property.title || 'Untitled Property'}</h4>
+            <p class="text-muted">${getPropertyLocation(property)}</p>
+            
+            <div class="mb-3">
+              <span class="badge bg-${statusInfo.class}">${statusInfo.text}</span>
+              <span class="badge bg-secondary ms-2">${property.propertyType || 'N/A'}</span>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-6">
+                <strong>Monthly Rent:</strong><br>
+                <h5 class="text-primary">R${property.price || 0}</h5>
+              </div>
+              <div class="col-6">
+                <strong>Rooms:</strong><br>
+                <h6>${property.bedrooms || 0} beds • ${property.bathrooms || 0} baths</h6>
+              </div>
+            </div>
+            
+            ${property.genderPreference ? `
+            <div class="mb-2">
+              <strong>Gender Preference:</strong> 
+              <span class="badge bg-info">${property.genderPreference}</span>
+            </div>
+            ` : ''}
+            
+            ${property.accreditation ? `
+            <div class="mb-2">
+              <strong>Accreditation:</strong> 
+              <span class="badge bg-success">${property.accreditation}</span>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+        
+        <div class="row mt-3">
+          <div class="col-12">
+            <h5>Description</h5>
+            <p class="border p-3 rounded bg-light">${property.description || 'No description provided.'}</p>
+          </div>
+        </div>
+        
+        ${property.amenities && property.amenities.length > 0 ? `
+        <div class="row mt-3">
+          <div class="col-12">
+            <h5>Amenities</h5>
+            <div class="d-flex flex-wrap gap-2">
+              ${property.amenities.map(amenity => `
+                <span class="badge bg-primary">
+                  <i class="bi bi-check me-1"></i>${amenity.charAt(0).toUpperCase() + amenity.slice(1)}
+                </span>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+        ` : ''}
+        
+        <div class="row mt-3">
+          <div class="col-12">
+            <h5>Landlord Information</h5>
+            <div class="card">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <strong>Name:</strong> ${landlordName}
+                  </div>
+                  <div class="col-md-6">
+                    <strong>Email:</strong> ${landlordEmail}
+                  </div>
+                </div>
+                ${property.contactInfo && property.contactInfo.phone ? `
+                <div class="row mt-2">
+                  <div class="col-12">
+                    <strong>Phone:</strong> ${property.contactInfo.phone}
+                  </div>
+                </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row mt-3">
+          <div class="col-6">
+            <strong>Created:</strong> ${property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'N/A'}
+          </div>
+          <div class="col-6">
+            <strong>Updated:</strong> ${property.updatedAt ? new Date(property.updatedAt).toLocaleDateString() : 'N/A'}
+          </div>
+        </div>
+        
+        ${property.adminNotes ? `
+        <div class="row mt-3">
+          <div class="col-12">
+            <h5>Admin Notes</h5>
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2"></i>
+              ${property.adminNotes}
+            </div>
+          </div>
+        </div>
+        ` : ''}
+        
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="d-flex justify-content-end gap-2">
+              ${property.status !== 'approved' ? `
+              <button class="btn btn-success" onclick="updatePropertyStatus('${property._id || property.id}', 'approved')">
+                <i class="bi bi-check-circle me-1"></i>Approve
+              </button>
+              ` : ''}
+              ${property.status !== 'rejected' ? `
+              <button class="btn btn-danger" onclick="updatePropertyStatus('${property._id || property.id}', 'rejected')">
+                <i class="bi bi-x-circle me-1"></i>Reject
+              </button>
+              ` : ''}
+              <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('propertyDetails').innerHTML = modalContent;
+      const modal = new bootstrap.Modal(document.getElementById('propertyModal'));
+      modal.show();
+    }
+
+    // Delete property
+    async function deleteProperty(propertyId) {
+      if (confirm('Are you sure you want to delete this property? This action cannot be undone.')) {
+        try {
+          const token = localStorage.getItem('token');
+          let success = false;
+          
+          // Try admin endpoint first
+          try {
+            const response = await fetch(`${API_BASE_URL}/admin/properties/${propertyId}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            
+            if (response.ok) {
+              success = true;
+            }
+          } catch (adminError) {
+            console.log('Admin delete failed, trying regular endpoint...');
+          }
+          
+          // If admin endpoint failed, try regular endpoint
+          if (!success) {
+            const response = await fetch(`${API_BASE_URL}/properties/${propertyId}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            
+            if (response.ok) {
+              success = true;
+            }
+          }
+          
+          if (success) {
+            alert('Property deleted successfully');
+            loadProperties();
+          } else {
+            throw new Error('Failed to delete property on all endpoints');
+          }
+        } catch (error) {
+          console.error('Error deleting property:', error);
+          alert('Failed to delete property: ' + error.message);
+        }
+      }
+    }
+
+    // Bulk actions
+    function toggleSelectAll() {
+      const checkboxes = document.querySelectorAll('.property-checkbox');
+      const selectAll = document.getElementById('selectAll');
+      
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+      });
+    }
+
+    async function applyBulkAction() {
+      const action = document.getElementById('bulkAction').value;
+      const selectedIds = Array.from(document.querySelectorAll('.property-checkbox:checked'))
+        .map(checkbox => checkbox.value);
+
+      if (selectedIds.length === 0) {
+        alert('Please select at least one property');
+        return;
+      }
+
+      if (action === 'approve' || action === 'reject') {
+        if (confirm(`Are you sure you want to ${action} ${selectedIds.length} properties?`)) {
+          try {
+            const token = localStorage.getItem('token');
+            let successCount = 0;
+            
+            for (const propertyId of selectedIds) {
+              try {
+                const response = await fetch(`${API_BASE_URL}/admin/properties/${propertyId}/status`, {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                  },
+                  body: JSON.stringify({
+                    status: action,
+                    adminNotes: 'Bulk action performed by admin'
+                  })
+                });
+                
+                if (response.ok) {
+                  successCount++;
+                }
+              } catch (error) {
+                console.error(`Error updating property ${propertyId}:`, error);
+              }
+            }
+            
+            alert(`Successfully ${action}d ${successCount} out of ${selectedIds.length} properties`);
+            loadProperties();
+          } catch (error) {
+            console.error('Error in bulk action:', error);
+            alert('Failed to perform bulk action: ' + error.message);
+          }
+        }
+      }
+    }
+
+    // FIXED: Export properties function
+    function exportProperties() {
+      try {
+        // Get all properties data (you might want to fetch fresh data or use cached data)
+        const token = localStorage.getItem('token');
+        
+        // Show loading state
+        alert('Preparing properties export...');
+        
+        // Fetch all properties for export
+        fetch(`${API_BASE_URL}/properties?limit=1000`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to fetch properties for export');
+          }
+          return response.json();
+        })
+        .then(data => {
+          let properties = [];
+          
+          // Extract properties from response
+          if (data.success && data.data) {
+            properties = data.data.properties || data.data || [];
+          } else if (data.properties) {
+            properties = data.properties;
+          } else if (Array.isArray(data)) {
+            properties = data;
+          } else {
+            properties = data.data || [];
+          }
+          
+          // Convert to CSV
+          const csv = convertToCSV(properties);
+          
+          // Create and download file
+          downloadCSV(csv, 'properties_export.csv');
+          
+          alert('Properties exported successfully!');
+        })
+        .catch(error => {
+          console.error('Export error:', error);
+          alert('Failed to export properties: ' + error.message);
+        });
+        
+      } catch (error) {
+        console.error('Export error:', error);
+        alert('Failed to export properties: ' + error.message);
+      }
+    }
+
+    // Helper function to convert properties to CSV
+    function convertToCSV(properties) {
+      if (!properties || properties.length === 0) {
+        return 'No properties to export';
+      }
+      
+      const headers = [
+        'ID', 'Title', 'Type', 'Status', 'Price', 'Bedrooms', 'Bathrooms',
+        'Location', 'Landlord Name', 'Landlord Email', 'Created Date'
+      ];
+      
+      const rows = properties.map(property => [
+        property._id || property.id,
+        `"${(property.title || '').replace(/"/g, '""')}"`,
+        property.propertyType || 'N/A',
+        property.status || 'pending',
+        property.price || 0,
+        property.bedrooms || 0,
+        property.bathrooms || 0,
+        `"${getPropertyLocation(property).replace(/"/g, '""')}"`,
+        `"${getLandlordName(property).replace(/"/g, '""')}"`,
+        `"${getLandlordEmail(property).replace(/"/g, '""')}"`,
+        property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'N/A'
+      ]);
+      
+      return [headers, ...rows].map(row => row.join(',')).join('\n');
+    }
+
+    // Helper function to download CSV
+    function downloadCSV(csv, filename) {
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // UI State Management
+    function showLoadingState() {
+      const tbody = document.getElementById('propertiesTable');
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading properties...</span>
+            </div>
+            <p class="mt-2 text-muted">Loading properties...</p>
+          </td>
+        </tr>
+      `;
+    }
+
+    function showErrorState(message) {
+      const tbody = document.getElementById('propertiesTable');
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" class="text-center py-4">
+            <i class="bi bi-exclamation-triangle fs-1 text-danger mb-3 d-block"></i>
+            <p class="text-danger">${message}</p>
+            <button class="btn btn-primary btn-sm" onclick="loadProperties()">
+              <i class="bi bi-arrow-clockwise me-1"></i>Try Again
+            </button>
+          </td>
+        </tr>
+      `;
+    }
+
+    // Load properties on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      loadProperties();
+      
+      // Add event listeners for filters
+      document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          loadProperties();
+        }
+      });
+      
+      document.getElementById('statusFilter').addEventListener('change', loadProperties);
+      document.getElementById('typeFilter').addEventListener('change', loadProperties);
+      
+      document.querySelector('button[onclick="loadProperties()"]').addEventListener('click', loadProperties);
+    });
+</script>
+</body>
+</html>

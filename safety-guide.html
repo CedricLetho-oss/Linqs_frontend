@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Safety Guide | ResLinQ</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <!-- AOS CSS -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1C2B4A;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --secondary: #b6b1fb;
+      --accent: #f59e0b;
+      --success: #059669;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --info: #60a5fa;
+      --text-dark: #1e293b;
+      --text-light: #64748b;
+      --bg-light: #f8fafc;
+    }
+
+    /* Floating Animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Pulse Animation */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Gradient Text */
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Enhanced Hero Section */
+    .safety-hero {
+      background: linear-gradient(135deg, #1e3a8a 0%, var(--secondary) 50%, #1e3a8a 100%);
+      color: white;
+      padding: 6rem 0;
+      margin-bottom: 3rem;
+      border-radius: 0 0 3rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .safety-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+
+    /* Floating Elements */
+    .floating-element {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-element:nth-child(1) {
+      width: 80px;
+      height: 80px;
+      top: 20%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      width: 120px;
+      height: 120px;
+      top: 60%;
+      right: 10%;
+      animation-delay: -2s;
+    }
+
+    .floating-element:nth-child(3) {
+      width: 60px;
+      height: 60px;
+      bottom: 20%;
+      left: 20%;
+      animation-delay: -4s;
+    }
+
+    /* Enhanced Cards */
+    .safety-card {
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      border: none;
+      border-radius: 1.5rem;
+      overflow: hidden;
+      position: relative;
+      height: fit-content !important;
+    }
+
+    .safety-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      z-index: 1;
+    }
+
+    .safety-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 60px rgba(30, 58, 138, 0.2);
+    }
+
+    /* Card Variants */
+    .feature-card::before { background: linear-gradient(135deg, var(--success) 0%, #10b981 100%); }
+    .verification-card::before { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); }
+    .guideline-card::before { background: linear-gradient(135deg, var(--info) 0%, #93c5fd 100%); }
+    .emergency-card::before { background: linear-gradient(135deg, var(--warning) 0%, #fbbf24 100%); }
+
+    /* Safety Icons */
+    .safety-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      font-size: 2rem;
+      transition: all 0.3s ease;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .safety-card:hover .safety-icon {
+      transform: scale(1.1) rotate(-5deg);
+      animation: none;
+    }
+
+    .icon-success {
+      background: linear-gradient(135deg, var(--success) 0%, #10b981 100%);
+      color: white;
+    }
+
+    .icon-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+    }
+
+    .icon-warning {
+      background: linear-gradient(135deg, var(--warning) 0%, #fbbf24 100%);
+      color: white;
+    }
+
+    .icon-info {
+      background: linear-gradient(135deg, var(--info) 0%, #93c5fd 100%);
+      color: white;
+    }
+
+    .icon-danger {
+      background: linear-gradient(135deg, var(--danger) 0%, #ef4444 100%);
+      color: white;
+    }
+
+    /* Section Titles */
+    .section-title {
+      color: var(--primary);
+      border-bottom: 3px solid;
+      border-image: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%) 1;
+      padding-bottom: 0.75rem;
+      margin-bottom: 2rem;
+      font-weight: 700;
+    }
+
+    /* Progress Steps */
+    .progress-container {
+      position: relative;
+      margin: 3rem 0;
+    }
+
+    .progress-step {
+      display: flex;
+      align-items: center;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+
+    .step-number {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin-right: 1.5rem;
+      flex-shrink: 0;
+      z-index: 2;
+      box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .step-content {
+      flex: 1;
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      border-left: 4px solid var(--primary);
+      transition: all 0.3s ease;
+    }
+
+    .step-content:hover {
+      transform: translateX(5px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+
+    .progress-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 50px;
+      left: 25px;
+      width: 3px;
+      height: calc(100% - 20px);
+      background: linear-gradient(to bottom, var(--primary) 0%, var(--secondary) 100%);
+      opacity: 0.5;
+      z-index: 1;
+    }
+
+    /* Verification Badges */
+    .verification-badge {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(5, 150, 105, 0.1);
+      color: var(--success);
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-weight: 500;
+      margin: 0.25rem;
+      border: 1px solid rgba(5, 150, 105, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .verification-badge:hover {
+      background: rgba(5, 150, 105, 0.2);
+      transform: translateY(-2px);
+    }
+
+    /* Checklist Items */
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 1.25rem;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+    }
+
+    .checklist-item:hover {
+      background: rgba(5, 150, 105, 0.05);
+      transform: translateX(5px);
+    }
+
+    .checklist-icon {
+      color: var(--success);
+      margin-right: 1rem;
+      margin-top: 0.2rem;
+      flex-shrink: 0;
+      font-size: 1.2rem;
+    }
+
+    /* Emergency Section */
+    .emergency-section {
+      background: linear-gradient(135deg, #fffbeb 0%, #fed7aa 100%);
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      margin: 3rem 0;
+      border-left: 4px solid var(--warning);
+      box-shadow: 0 8px 30px rgba(245, 158, 11, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .emergency-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 150px;
+      height: 150px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f59e0b' opacity='0.1'%3E%3Cpath d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+
+    /* Red Flags Section */
+    .red-flag-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      padding: 1.25rem;
+      border-radius: 0.75rem;
+      background: rgba(220, 38, 38, 0.05);
+      border-left: 4px solid var(--danger);
+      transition: all 0.3s ease;
+      min-height: auto !important;
+      height: fit-content !important;
+    }
+
+    .red-flag-item:hover {
+      background: rgba(220, 38, 38, 0.1);
+      transform: translateX(5px);
+    }
+    
+
+    /* Custom Button Styles */
+    .btn-gradient {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border: none;
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
+      color: white;
+    }
+
+    /* Navbar Styles */
+    .bg-navy {
+      background-color: var(--primary) !important;
+    }
+
+    .text-navy {
+      color: var(--primary) !important;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .safety-hero {
+        padding: 4rem 0;
+        border-radius: 0 0 2rem 2rem;
+      }
+
+      .step-number {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+      }
+
+      .progress-step:not(:last-child)::after {
+        left: 20px;
+      }
+
+      .emergency-section {
+        padding: 2rem 1.5rem;
+      }
+    }
+
+    /* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1C2B4A;
+    z-index: 1030;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .mobile-nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-nav-item.active {
+    color: #64748b;
+  }
+  
+  .mobile-nav-item i {
+    display: block;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .mobile-nav-item span {
+    display: none;
+  }
+  
+  /* Add padding to main content to account for bottom nav */
+  main {
+    margin-bottom: 80px;
+  }
+}
+
+#logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+
+.hero-subtitle {
+        color:#e2e8f0;
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+        line-height: 1.5;
+        }
+  </style>
+</head>
+<body>
+
+  <!-- Dynamic Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i>ResLinQ</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <!-- Navigation will be populated by navbar.js -->
+        </ul>
+      </div>
+      
+      <!-- Dynamic Auth Buttons -->
+      <div class="signup-login-buttons">
+        <!-- Content will be populated by navbar.js -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Enhanced Hero Section -->
+  <section class="safety-hero">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    
+    <div class="container position-relative">
+      <div class="row align-items-center">
+        <div class="col-lg-8" data-aos="fade-right">
+          <h1 class="display-4 fw-bold mb-3 animate__animated animate__fadeInDown">
+            Student <span class="gradient-text">Safety Guide</span>
+          </h1>
+          <p class="lead mb-0 hero-subtitle animate__animated animate__fadeInUp animate__delay-1s">
+            Your security is our priority. Learn how to identify safe accommodations and protect yourself during your student journey.
+          </p>
+          <div class="d-flex flex-wrap gap-2" data-aos="fade-up" data-aos-delay="200">
+            <span class="badge bg-light text-navy p-2">Verified Properties</span>
+            <span class="badge bg-light text-navy p-2">Safety Checklist</span>
+            <span class="badge bg-light text-navy p-2">Emergency Contacts</span>
+            <span class="badge bg-light text-navy p-2">Accreditation Guide</span>
+          </div>
+        </div>
+        <div class="col-lg-4 text-center" data-aos="fade-left" data-aos-delay="300">
+          <div class="safety-icon icon-success mx-auto">
+            <i class="bi bi-shield-check"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="container my-5">
+    <!-- Safety Features Overview -->
+    <section class="mb-5">
+      <h2 class="section-title display-5 fw-bold" data-aos="fade-up">Our Safety Features</h2>
+      <div class="row">
+        <div class="col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="100">
+          <div class="safety-card feature-card text-center p-4">
+            <div class="safety-icon icon-success mx-auto">
+              <i class="bi bi-patch-check"></i>
+            </div>
+            <h4 class="fw-bold">Verified Properties</h4>
+            <p class="text-muted">All listings undergo thorough verification to ensure they meet safety standards.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="200">
+          <div class="safety-card verification-card text-center p-4">
+            <div class="safety-icon icon-primary mx-auto">
+              <i class="bi bi-person-check"></i>
+            </div>
+            <h4 class="fw-bold">Landlord Verification</h4>
+            <p class="text-muted">Landlords are verified with background checks and identity confirmation.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="300">
+          <div class="safety-card guideline-card text-center p-4">
+            <div class="safety-icon icon-info mx-auto">
+              <i class="bi bi-list-check"></i>
+            </div>
+            <h4 class="fw-bold">Safety Checklist</h4>
+            <p class="text-muted">Comprehensive safety guidelines for evaluating accommodation options.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="400">
+          <div class="safety-card emergency-card text-center p-4">
+            <div class="safety-icon icon-warning mx-auto">
+              <i class="bi bi-telephone"></i>
+            </div>
+            <h4 class="fw-bold">24/7 Support</h4>
+            <p class="text-muted">Round-the-clock assistance for emergencies and safety concerns.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Property Verification Process -->
+    <section class="mb-5">
+      <h2 class="section-title display-5 fw-bold" data-aos="fade-up">Property Verification Process</h2>
+      <p class="lead mb-4" data-aos="fade-up">We ensure every property listed on ResLinQ meets our strict safety standards through a multi-step verification process.</p>
+      
+      <div class="progress-container">
+        <div class="progress-step" data-aos="fade-right">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h4 class="fw-bold">Document Verification</h4>
+            <p class="mb-3">Landlords must provide proof of ownership, property registration, and compliance with local regulations.</p>
+            <div class="d-flex flex-wrap">
+              <span class="verification-badge"><i class="bi bi-file-check me-1"></i>Ownership Documents</span>
+              <span class="verification-badge"><i class="bi bi-building me-1"></i>Property Registration</span>
+              <span class="verification-badge"><i class="bi bi-shield me-1"></i>Compliance Certificates</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="progress-step" data-aos="fade-right" data-aos-delay="100">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h4 class="fw-bold">Safety Inspection</h4>
+            <p class="mb-3">Properties undergo safety checks for electrical systems, fire safety, structural integrity, and security measures.</p>
+            <div class="d-flex flex-wrap">
+              <span class="verification-badge"><i class="bi bi-lightning me-1"></i>Electrical Safety</span>
+              <span class="verification-badge"><i class="bi bi-fire me-1"></i>Fire Prevention</span>
+              <span class="verification-badge"><i class="bi bi-house me-1"></i>Structural Safety</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="progress-step" data-aos="fade-right" data-aos-delay="200">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h4 class="fw-bold">Amenity Verification</h4>
+            <p class="mb-3">We verify that all listed amenities are present and functional, including security features.</p>
+            <div class="d-flex flex-wrap">
+              <span class="verification-badge"><i class="bi bi-camera-video me-1"></i>Security Systems</span>
+              <span class="verification-badge"><i class="bi bi-lock me-1"></i>Secure Access</span>
+              <span class="verification-badge"><i class="bi bi-wifi me-1"></i>Essential Services</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="progress-step" data-aos="fade-right" data-aos-delay="300">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h4 class="fw-bold">Final Approval</h4>
+            <p class="mb-3">After passing all checks, properties receive our verified badge and are listed for student accommodation.</p>
+            <div class="d-flex flex-wrap">
+              <span class="verification-badge"><i class="bi bi-award me-1"></i>Verified Badge</span>
+              <span class="verification-badge"><i class="bi bi-star me-1"></i>Quality Assured</span>
+              <span class="verification-badge"><i class="bi bi-check-circle me-1"></i>Ready to List</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Safety Checklist -->
+    <section class="mb-5">
+      <div class="row">
+        <div class="col-lg-8" data-aos="fade-right">
+          <h2 class="section-title display-5 fw-bold">Student Safety Checklist</h2>
+          <p class="lead mb-4">Use this checklist when viewing properties to ensure your safety and comfort.</p>
+          
+          <div class="safety-card p-4 mb-4">
+            <h4 class="mb-3 fw-bold"><i class="bi bi-house-check text-primary me-2"></i>Property Evaluation</h4>
+            <div class="checklist-item">
+              <i class="bi bi-check-circle-fill checklist-icon"></i>
+              <div>
+                <strong>Secure locks</strong> on all doors and windows
+                <p class="text-muted small mb-0">Check that locks are functional and secure</p>
+              </div>
+            </div>
+            <div class="checklist-item">
+              <i class="bi bi-check-circle-fill checklist-icon"></i>
+              <div>
+                <strong>Working smoke detectors</strong> and fire extinguishers
+                <p class="text-muted small mb-0">Ensure safety equipment is present and functional</p>
+              </div>
+            </div>
+            <div class="checklist-item">
+              <i class="bi bi-check-circle-fill checklist-icon"></i>
+              <div>
+                <strong>Proper lighting</strong> in common areas and entryways
+                <p class="text-muted small mb-0">Well-lit areas improve security, especially at night</p>
+              </div>
+            </div>
+            <div class="checklist-item">
+              <i class="bi bi-check-circle-fill checklist-icon"></i>
+              <div>
+                <strong>Emergency exits</strong> clearly marked and accessible
+                <p class="text-muted small mb-0">Know your escape routes in case of emergency</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="safety-card p-4">
+            <h4 class="mb-3 fw-bold"><i class="bi bi-geo-alt text-primary me-2"></i>Neighborhood Assessment</h4>
+            <div class="checklist-item">
+              <i class="bi bi-check-circle-fill checklist-icon"></i>
+              <div>
+                <strong>Safe neighborhood</strong> with low crime rates
+                <p class="text-muted small mb-0">Research the area or ask locals about safety</p>
+              </div>
+            </div>
+            <div class="checklist-item">
+              <i class="bi bi-check-circle-fill checklist-icon"></i>
+              <div>
+                <strong>Proximity to campus</strong> and public transportation
+                <p class="text-muted small mb-0">Shorter commutes mean less time traveling alone</p>
+              </div>
+            </div>
+            <div class="checklist-item">
+              <i class="bi bi-check-circle-fill checklist-icon"></i>
+              <div>
+                <strong>Nearby amenities</strong> like grocery stores and pharmacies
+                <p class="text-muted small mb-0">Convenient access to essentials improves quality of life</p>
+              </div>
+            </div>
+            <div class="checklist-item">
+              <i class="bi bi-check-circle-fill checklist-icon"></i>
+              <div>
+                <strong>Well-maintained streets</strong> and public spaces
+                <p class="text-muted small mb-0">Clean, well-kept areas often indicate safer neighborhoods</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-4" data-aos="fade-left" data-aos-delay="200">
+          <div class="safety-card p-4 text-center h-100">
+            <div class="safety-icon icon-danger mx-auto mb-3">
+              <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <h4 class="fw-bold">Red Flags to Watch For</h4>
+            <div class="text-start mt-4">
+              <div class="red-flag-item">
+                <i class="bi bi-x-circle text-danger me-2 mt-1"></i>
+                <div>
+                  <strong>Pressure to sign quickly</strong>
+                  <p class="text-muted small mb-0">Legitimate landlords allow time for consideration</p>
+                </div>
+              </div>
+              <div class="red-flag-item">
+                <i class="bi bi-x-circle text-danger me-2 mt-1"></i>
+                <div>
+                  <strong>Unwillingness to provide documentation</strong>
+                  <p class="text-muted small mb-0">Transparency is key to trustworthy rentals</p>
+                </div>
+              </div>
+              <div class="red-flag-item">
+                <i class="bi bi-x-circle text-danger me-2 mt-1"></i>
+                <div>
+                  <strong>Cash-only payments</strong>
+                  <p class="text-muted small mb-0">Always use traceable payment methods</p>
+                </div>
+              </div>
+              <div class="red-flag-item">
+                <i class="bi bi-x-circle text-danger me-2 mt-1"></i>
+                <div>
+                  <strong>Poor maintenance</strong>
+                  <p class="text-muted small mb-0">Neglected properties may have hidden safety issues</p>
+                </div>
+              </div>
+              <div class="red-flag-item">
+                <i class="bi bi-x-circle text-danger me-2 mt-1"></i>
+                <div>
+                  <strong>Vague or inconsistent information</strong>
+                  <p class="text-muted small mb-0">Trustworthy listings provide clear, consistent details</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Emergency Information -->
+    <section class="mb-5">
+      <div class="emergency-section" data-aos="zoom-in">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <h3 class="fw-bold text-dark mb-3"><i class="bi bi-telephone-outbound me-2"></i>Emergency Contacts & Procedures</h3>
+            <p class="mb-4">Save these important numbers and know what to do in case of an emergency.</p>
+            
+            <div class="row">
+              <div class="col-sm-6 mb-3">
+                <div class="d-flex align-items-center">
+                  <div class="safety-icon icon-warning me-3">
+                    <i class="bi bi-telephone-fill"></i>
+                  </div>
+                  <div>
+                    <h5 class="mb-1 fw-bold">Emergency Services</h5>
+                    <p class="mb-0 fw-bold text-dark fs-4">10111</p>
+                    <small class="text-muted">Police, Fire, Ambulance</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 mb-3">
+                <div class="d-flex align-items-center">
+                  <div class="safety-icon icon-primary me-3">
+                    <i class="bi bi-headset"></i>
+                  </div>
+                  <div>
+                    <h5 class="mb-1 fw-bold">ResLinQ Support</h5>
+                    <p class="mb-0 fw-bold text-dark fs-4">+27 82 305 6754</p>
+                    <small class="text-muted">24/7 Emergency Line</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 text-center">
+            <div class="safety-icon icon-warning mx-auto" style="width: 100px; height: 100px; font-size: 2.5rem;">
+              <i class="bi bi-shield-exclamation"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-4 pt-3 border-top border-warning">
+          <h5 class="fw-bold mb-3">Emergency Procedures</h5>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <div class="d-flex">
+                <i class="bi bi-1-circle text-primary me-2 mt-1 fs-5"></i>
+                <div>
+                  <strong>Assess the Situation</strong>
+                  <p class="small mb-0 text-muted">Stay calm and evaluate the emergency</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="d-flex">
+                <i class="bi bi-2-circle text-primary me-2 mt-1 fs-5"></i>
+                <div>
+                  <strong>Contact Emergency Services</strong>
+                  <p class="small mb-0 text-muted">Call appropriate emergency number</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="d-flex">
+                <i class="bi bi-3-circle text-primary me-2 mt-1 fs-5"></i>
+                <div>
+                  <strong>Notify ResLinQ</strong>
+                  <p class="small mb-0 text-muted">Inform our support team immediately</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Accreditation Guide -->
+    <section class="mb-5">
+      <h2 class="section-title display-5 fw-bold" data-aos="fade-up">Understanding Accreditation</h2>
+      <p class="lead mb-4" data-aos="fade-up">Learn about different types of accreditation and what they mean for your safety.</p>
+      
+      <div class="row">
+        <div class="col-md-6 mb-4" data-aos="fade-right" data-aos-delay="100">
+          <div class="safety-card p-4 h-100">
+            <div class="d-flex align-items-start">
+              <div class="safety-icon icon-success me-3">
+                <i class="bi bi-award"></i>
+              </div>
+              <div>
+                <h4 class="fw-bold">University Accredited</h4>
+                <p class="text-muted">Properties officially recognized and vetted by educational institutions.</p>
+                <ul class="list-unstyled">
+                  <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Regular safety inspections</li>
+                  <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Compliance with campus standards</li>
+                  <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Direct university oversight</li>
+                  <li><i class="bi bi-check text-success me-2"></i>Priority support from campus security</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6 mb-4" data-aos="fade-left" data-aos-delay="100">
+          <div class="safety-card p-4 h-100">
+            <div class="d-flex align-items-start">
+              <div class="safety-icon icon-primary me-3">
+                <i class="bi bi-house-check"></i>
+              </div>
+              <div>
+                <h4 class="fw-bold">ResLinQ Verified</h4>
+                <p class="text-muted">Properties that pass our comprehensive safety verification process.</p>
+                <ul class="list-unstyled">
+                  <li class="mb-2"><i class="bi bi-check text-primary me-2"></i>Thorough background checks</li>
+                  <li class="mb-2"><i class="bi bi-check text-primary me-2"></i>Safety feature verification</li>
+                  <li class="mb-2"><i class="bi bi-check text-primary me-2"></i>Document validation</li>
+                  <li><i class="bi bi-check text-primary me-2"></i>Regular compliance monitoring</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Additional Resources -->
+    <section class="mb-5">
+      <div class="row">
+        <div class="col-lg-8 mx-auto" data-aos="zoom-in">
+          <div class="safety-card text-center p-5">
+            <h3 class="mb-3 fw-bold">Need More Help?</h3>
+            <p class="text-muted mb-4">Our support team is always ready to assist with any safety concerns or questions.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+              <a href="contact.html" class="btn btn-gradient btn-lg">
+                <i class="bi bi-envelope me-2"></i>Contact Support
+              </a>
+              <a href="help.html" class="btn btn-outline-primary btn-lg">
+                <i class="bi bi-question-circle me-2"></i>Help Center
+              </a>
+              <a href="my-reports.html" class="btn btn-outline-warning btn-lg">
+                <i class="bi bi-flag me-2"></i>Report an Issue
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Mobile Bottom Navigation -->
+<div class="mobile-bottom-nav d-lg-none">
+  <a href="home.html" class="mobile-nav-item">
+    <i class="bi bi-house"></i>
+    <span>Home</span>
+  </a>
+  <a href="listings.html" class="mobile-nav-item">
+    <i class="bi bi-building"></i>
+    <span>Listings</span>
+  </a>
+  <a href="my-bookings.html" class="mobile-nav-item">
+    <i class="bi bi-calendar-check"></i>
+    <span>Bookings</span>
+  </a>
+  <a href="help.html" class="mobile-nav-item ">
+    <i class="bi bi-question-circle"></i>
+    <span>Help</span>
+  </a>
+</div>
+
+  <!-- Footer -->
+  <footer class="py-5 bg-navy text-white">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for finding the perfect student accommodation near your campus.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Quick Links</h6>
+          <ul class="list-unstyled">
+            <li><a href="home.html" class="text-light text-decoration-none">Home</a></li>
+            <li><a href="listings.html" class="text-light text-decoration-none">Listings</a></li>
+            <li><a href="help.html" class="text-light text-decoration-none">Help</a></li>
+            <li><a href="about-us.html" class="text-light text-decoration-none">About Us</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="my-bookings.html" class="text-light text-decoration-none">My Bookings</a></li>
+            <li><a href="my-reports.html" class="text-light text-decoration-none">My Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Get in Touch</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="navbar.js"></script>
+  
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 1000,
+      once: true,
+      offset: 100
+    });
+
+    // Add interactive animations
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add hover effects to safety cards
+      const safetyCards = document.querySelectorAll('.safety-card');
+      safetyCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-10px)';
+        });
+        card.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateY(0)';
+        });
+      });
+
+      // Animate verification badges on scroll
+      const badges = document.querySelectorAll('.verification-badge');
+      const badgeObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+          if (entry.isIntersecting) {
+            setTimeout(() => {
+              entry.target.style.opacity = '1';
+              entry.target.style.transform = 'translateY(0)';
+            }, index * 100);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      badges.forEach(badge => {
+        badge.style.opacity = '0';
+        badge.style.transform = 'translateY(20px)';
+        badge.style.transition = 'all 0.5s ease';
+        badgeObserver.observe(badge);
+      });
+    });
+  </script>
+</body>
+</html>

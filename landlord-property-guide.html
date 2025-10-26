@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResLinQ | Property Management Guide</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --success: #059669;
+      --warning: #f59e0b;
+      --info: #60a5fa;
+      --light-bg: #f8fafc;
+    }
+
+    .guide-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, #9983e7 50%, var(--primary-light) 100%);
+      color: white;
+      padding: 3rem 0;
+      border-radius: 0 0 1.5rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    @media (min-width: 768px) {
+      .guide-hero {
+        padding: 4rem 0;
+        border-radius: 0 0 2rem 2rem;
+      }
+    }
+    
+    .guide-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="%23ffffff" opacity="0.1"><path d="M500 50L550 30L600 50L650 30L700 50L750 30L800 50L850 30L900 50L950 30L1000 50V100H0V50Z"/></svg>');
+      background-size: cover;
+    }
+    
+    .guide-card {
+      border: none;
+      border-radius: 1rem;
+      transition: all 0.3s ease;
+      height: 100%;
+      opacity: 0;
+      transform: translateY(30px);
+      margin-bottom: 1rem;
+    }
+    
+    .guide-card.animated {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .guide-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+    }
+    
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      transition: transform 0.3s ease;
+    }
+    
+    @media (min-width: 768px) {
+      .card-icon {
+        font-size: 2.5rem;
+      }
+    }
+    
+    .guide-card:hover .card-icon {
+      transform: scale(1.1) rotate(5deg);
+    }
+    
+    .step-card {
+      border-left: 4px solid var(--primary);
+      transition: all 0.3s ease;
+      margin-bottom: 1rem;
+    }
+    
+    .step-card:hover {
+      border-left-color: var(--primary-light);
+      transform: translateX(5px);
+    }
+    
+    .feature-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    @media (min-width: 768px) {
+      .feature-icon {
+        width: 60px;
+        height: 60px;
+      }
+    }
+    
+    .feature-item:hover .feature-icon {
+      transform: scale(1.1) rotate(10deg);
+    }
+    
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.8s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .bounce-in {
+      animation: bounceIn 0.8s ease-out;
+    }
+    
+    @keyframes bounceIn {
+      0% { opacity: 0; transform: scale(0.3); }
+      50% { opacity: 1; transform: scale(1.05); }
+      70% { transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    
+    .guide-section {
+      scroll-margin-top: 80px;
+    }
+    
+    @media (min-width: 768px) {
+      .guide-section {
+        scroll-margin-top: 100px;
+      }
+    }
+    
+    .nav-pills .nav-link.active {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .nav-pills .nav-link {
+      color: var(--primary);
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
+      white-space: nowrap;
+      font-size: 0.85rem;
+      padding: 0.5rem 0.75rem;
+    }
+    
+    @media (min-width: 768px) {
+      .nav-pills .nav-link {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+      }
+    }
+    
+    .nav-pills .nav-link:hover {
+      background-color: rgba(30, 58, 138, 0.1);
+    }
+    
+    .progress {
+      height: 8px;
+      margin-bottom: 1rem;
+    }
+    
+    .tooltip-icon {
+      cursor: pointer;
+      color: var(--primary-light);
+    }
+    
+    .checklist-item {
+      padding-left: 1.5rem;
+      position: relative;
+    }
+    
+    .checklist-item::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: bold;
+    }
+    
+    /* Mobile-specific styles */
+    .mobile-sticky-nav {
+      position: sticky;
+      top: 56px;
+      z-index: 1020;
+      background-color: #f8f9fa;
+    }
+    
+    @media (max-width: 767px) {
+      .mobile-sticky-nav {
+        top: 0;
+      }
+      
+      .mobile-sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        z-index: 1030;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        padding: 0.5rem;
+      }
+      
+      .mobile-sidebar .btn {
+        font-size: 0.75rem;
+        padding: 0.5rem;
+      }
+      
+      .mobile-sidebar .btn i {
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+      }
+      
+      .content-area {
+        margin-bottom: 80px; /* Space for mobile bottom navigation */
+      }
+      
+      .guide-hero h1 {
+        font-size: 1.75rem;
+      }
+      
+      .guide-hero p.lead {
+        font-size: 1rem;
+      }
+      
+      .section-title {
+        font-size: 1.5rem;
+      }
+      
+      .step-card h6 {
+        font-size: 1rem;
+      }
+      
+      .card-body {
+        padding: 1rem;
+      }
+    }
+    
+    /* Improved responsive grid */
+    @media (max-width: 575px) {
+      .container {
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+      
+      .row {
+        margin-left: -8px;
+        margin-right: -8px;
+      }
+      
+      .col, .col-1, .col-2, .col-3, .col-4, .col-5, .col-6, 
+      .col-7, .col-8, .col-9, .col-10, .col-11, .col-12 {
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+    }
+    
+    /* Improved typography for mobile */
+    @media (max-width: 767px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+      h3 { font-size: 1.25rem; }
+      h4 { font-size: 1.1rem; }
+      h5 { font-size: 1rem; }
+      h6 { font-size: 0.9rem; }
+      
+      .display-5 {
+        font-size: 2rem;
+      }
+    }
+    
+    /* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1C2B4A;
+    z-index: 1030;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .mobile-nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-nav-item.active {
+    color: #64748b;
+  }
+  
+  .mobile-nav-item i {
+    display: block;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Add padding to main content to account for bottom nav */
+  main {
+    margin-bottom: 80px;
+  }
+}
+
+#logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+
+/* Quick z-index fix */
+.navbar { z-index: 1030 !important; }
+.dropdown-menu { z-index: 1050 !important; }
+
+  </style>
+</head>
+<body>
+
+  <!-- Redirect if not logged in as landlord -->
+  <script>
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    if (!token) {
+      alert("Please log in to access this page.");
+      window.location.href = "authorization.html";
+    } else if (user.role !== 'landlord') {
+      alert("This page is for landlords only.");
+      window.location.href = "index.html";
+    }
+  </script>
+
+  <!-- Dynamic Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i><span class="d-none d-sm-inline">ResLinQ</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <!-- Navigation will be populated by navbar.js -->
+        </ul>
+      </div>
+      
+      <!-- Dynamic Auth Buttons -->
+      <div class="signup-login-buttons">
+        <!-- Content will be populated by navbar.js -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="guide-hero">
+    <div class="container position-relative">
+      <div class="row justify-content-center text-center">
+        <div class="col-12 fade-in">
+          <h1 class="display-5 fw-bold mb-3">Property Management Guide</h1>
+          <p class="lead mb-4">Learn how to list, verify, and manage your properties effectively with our comprehensive guides and resources.</p>
+          
+          <!-- Progress Tracker -->
+          <div class="row justify-content-center mt-4">
+            <div class="col-12 col-lg-8 bounce-in">
+              <div class="card bg-white bg-opacity-20 border-0 p-3">
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-light fw-bold">Your Property Management Progress</span>
+                  <span class="text-white fw-bold">25%</span>
+                </div>
+                <div class="progress bg-white bg-opacity-30">
+                  <div class="progress-bar bg-warning" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <small class="text-white fw-bold opacity-75">Complete all guides to maximize your property's potential</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Guide Navigation -->
+  <section class="py-3 bg-light mobile-sticky-nav">
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <div class="nav-scrollable">
+            <ul class="nav nav-pills justify-content-start flex-nowrap overflow-auto pb-1">
+              <li class="nav-item">
+                <a class="nav-link active" href="#listing-guide">Listing</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#verification-process">Verification</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#management-tips">Management</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#pricing-strategy">Pricing</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#promotion-tips">Promotion</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#troubleshooting">Help</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <div class="container my-4 my-md-5">
+    <div class="row">
+      <!-- Sidebar - Hidden on mobile, shown on desktop -->
+      <div class="col-lg-3 d-none d-lg-block mb-4">
+        <div class="card shadow-sm border-0 sticky-top" style="top: 150px;">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Quick Actions</h5>
+          </div>
+          <div class="card-body">
+            <div class="d-grid gap-2">
+              <a href="manage-properties.html" class="btn btn-outline-primary btn-sm text-start">
+                <i class="bi bi-plus-circle me-2"></i>Add New Property
+              </a>
+              <a href="manage-properties.html" class="btn btn-outline-primary btn-sm text-start">
+                <i class="bi bi-list-check me-2"></i>Manage Properties
+              </a>
+              <a href="landlord-verification.html" class="btn btn-outline-primary btn-sm text-start">
+                <i class="bi bi-shield-check me-2"></i>Get Verified
+              </a>
+              <a href="landlord-analytics.html" class="btn btn-outline-primary btn-sm text-start">
+                <i class="bi bi-graph-up me-2"></i>View Analytics
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div class="col-12 col-lg-9 content-area">
+        <!-- Listing Guide Section -->
+        <section id="listing-guide" class="guide-section mb-5">
+          <div class="d-flex align-items-center mb-4">
+            <div class="feature-icon bg-primary bg-opacity-10 text-primary me-3">
+              <i class="bi bi-pencil-square"></i>
+            </div>
+            <div>
+              <h2 class="fw-bold text-navy mb-1 section-title">Property Listing Guide</h2>
+              <p class="text-muted mb-0">Create compelling listings that attract quality tenants</p>
+            </div>
+          </div>
+
+          <div class="row g-3 g-md-4 mb-4">
+            <div class="col-12 col-md-6">
+              <div class="card guide-card h-100">
+                <div class="card-body">
+                  <div class="card-icon text-primary">
+                    <i class="bi bi-camera"></i>
+                  </div>
+                  <h4 class="fw-bold text-navy">High-Quality Photos</h4>
+                  <p class="text-muted">Properties with professional photos get 3x more views and bookings.</p>
+                  <ul class="checklist-item">
+                    <li>Use natural lighting</li>
+                    <li>Capture all rooms and amenities</li>
+                    <li>Include exterior shots</li>
+                    <li>Show nearby attractions</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="card guide-card h-100">
+                <div class="card-body">
+                  <div class="card-icon text-success">
+                    <i class="bi bi-text-paragraph"></i>
+                  </div>
+                  <h4 class="fw-bold text-navy">Compelling Descriptions</h4>
+                  <p class="text-muted">Write descriptions that highlight unique features and benefits.</p>
+                  <ul class="checklist-item">
+                    <li>Start with an engaging headline</li>
+                    <li>Highlight key amenities</li>
+                    <li>Describe the neighborhood</li>
+                    <li>Mention transportation options</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card bg-light border-0 mb-4">
+            <div class="card-body">
+              <h5 class="fw-bold text-navy mb-3">
+                <i class="bi bi-lightbulb text-warning me-2"></i>
+                Pro Tip: Complete Your Profile
+              </h5>
+              <p class="mb-0">Landlords with complete profiles and verified identities receive 40% more booking inquiries. Make sure to fill out all sections of your landlord profile.</p>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Step-by-Step Listing Process</h5>
+            </div>
+            <div class="card-body">
+              <div class="step-card p-3 mb-3 bg-light">
+                <h6 class="fw-bold text-primary">Step 1: Basic Information</h6>
+                <p class="mb-0">Add property type, location, number of rooms, and basic amenities.</p>
+              </div>
+              <div class="step-card p-3 mb-3 bg-light">
+                <h6 class="fw-bold text-primary">Step 2: Detailed Description</h6>
+                <p class="mb-0">Write a compelling description highlighting unique features and benefits.</p>
+              </div>
+              <div class="step-card p-3 mb-3 bg-light">
+                <h6 class="fw-bold text-primary">Step 3: Upload Photos</h6>
+                <p class="mb-0">Add high-quality images of all rooms, amenities, and exterior areas.</p>
+              </div>
+              <div class="step-card p-3 mb-3 bg-light">
+                <h6 class="fw-bold text-primary">Step 4: Set Pricing & Availability</h6>
+                <p class="mb-0">Define rental rates, security deposit, and available dates.</p>
+              </div>
+              <div class="step-card p-3 bg-light">
+                <h6 class="fw-bold text-primary">Step 5: Review & Publish</h6>
+                <p class="mb-0">Preview your listing and publish it to start receiving bookings.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Verification Process Section -->
+        <section id="verification-process" class="guide-section mb-5">
+          <div class="d-flex align-items-center mb-4">
+            <div class="feature-icon bg-success bg-opacity-10 text-success me-3">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <div>
+              <h2 class="fw-bold text-navy mb-1 section-title">Property Verification Process</h2>
+              <p class="text-muted mb-0">Get verified to build trust and increase bookings</p>
+            </div>
+          </div>
+
+          <div class="row g-3 g-md-4">
+            <div class="col-12 col-md-4">
+              <div class="card guide-card border-success h-100">
+                <div class="card-body text-center">
+                  <div class="card-icon text-success">
+                    <i class="bi bi-person-check"></i>
+                  </div>
+                  <h5 class="fw-bold">Identity Verification</h5>
+                  <p class="text-muted">Verify your identity as the property owner or authorized manager.</p>
+                  <span class="badge bg-success">Required</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="card guide-card border-warning h-100">
+                <div class="card-body text-center">
+                  <div class="card-icon text-warning">
+                    <i class="bi bi-house-check"></i>
+                  </div>
+                  <h5 class="fw-bold">Property Documentation</h5>
+                  <p class="text-muted">Submit ownership documents or rental authorization.</p>
+                  <span class="badge bg-warning">Recommended</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="card guide-card border-info h-100">
+                <div class="card-body text-center">
+                  <div class="card-icon text-info">
+                    <i class="bi bi-camera-video"></i>
+                  </div>
+                  <h5 class="fw-bold">Virtual Inspection</h5>
+                  <p class="text-muted">Schedule a virtual tour with our verification team.</p>
+                  <span class="badge bg-info">Optional</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card bg-success bg-opacity-10 border-success mt-4">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-award-fill text-success fs-1 me-3 d-none d-sm-block"></i>
+                <div>
+                  <h5 class="fw-bold text-success">Verification Benefits</h5>
+                  <p class="mb-0">Verified properties receive 60% more inquiries, appear higher in search results, and display a trust badge that increases conversion rates.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Management Tips Section -->
+        <section id="management-tips" class="guide-section mb-5">
+          <div class="d-flex align-items-center mb-4">
+            <div class="feature-icon bg-warning bg-opacity-10 text-warning me-3">
+              <i class="bi bi-gear"></i>
+            </div>
+            <div>
+              <h2 class="fw-bold text-navy mb-1 section-title">Property Management Tips</h2>
+              <p class="text-muted mb-0">Effective strategies for managing your rental properties</p>
+            </div>
+          </div>
+
+          <div class="row g-3 g-md-4">
+            <div class="col-12 col-md-6">
+              <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                  <h6 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Booking Management</h6>
+                </div>
+                <div class="card-body">
+                  <ul class="checklist-item">
+                    <li>Respond to inquiries within 24 hours</li>
+                    <li>Use the calendar to block unavailable dates</li>
+                    <li>Set clear check-in/check-out times</li>
+                    <li>Create house rules for tenants</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                  <h6 class="mb-0"><i class="bi bi-chat-dots me-2"></i>Tenant Communication</h6>
+                </div>
+                <div class="card-body">
+                  <ul class="checklist-item">
+                    <li>Be responsive to tenant messages</li>
+                    <li>Provide clear instructions for check-in</li>
+                    <li>Send reminders before arrival</li>
+                    <li>Request feedback after stay</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                  <h6 class="mb-0"><i class="bi bi-house me-2"></i>Maintenance</h6>
+                </div>
+                <div class="card-body">
+                  <ul class="checklist-item">
+                    <li>Schedule regular property inspections</li>
+                    <li>Address maintenance issues promptly</li>
+                    <li>Keep a record of repairs and upgrades</li>
+                    <li>Prepare for seasonal maintenance</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                  <h6 class="mb-0"><i class="bi bi-star me-2"></i>Review Management</h6>
+                </div>
+                <div class="card-body">
+                  <ul class="checklist-item">
+                    <li>Encourage tenants to leave reviews</li>
+                    <li>Respond professionally to all reviews</li>
+                    <li>Address negative feedback constructively</li>
+                    <li>Use feedback to improve your property</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Additional Sections (Pricing, Promotion, Troubleshooting) -->
+        <section id="pricing-strategy" class="guide-section mb-5">
+          <div class="d-flex align-items-center mb-4">
+            <div class="feature-icon bg-info bg-opacity-10 text-info me-3">
+              <i class="bi bi-currency-dollar"></i>
+            </div>
+            <div>
+              <h2 class="fw-bold text-navy mb-1 section-title">Pricing Strategy</h2>
+              <p class="text-muted mb-0">Optimize your rental rates for maximum profitability</p>
+            </div>
+          </div>
+          
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <p>Setting the right price is crucial for attracting tenants while maximizing your rental income. Consider these factors:</p>
+              <ul class="checklist-item">
+                <li>Research comparable properties in your area</li>
+                <li>Adjust prices based on seasonality and demand</li>
+                <li>Offer discounts for longer stays</li>
+                <li>Consider including or excluding utilities</li>
+                <li>Review and adjust pricing regularly</li>
+              </ul>
+              <div class="mt-3">
+                <a href="landlord-analytics.html" class="btn btn-outline-primary">View Pricing Analytics</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="promotion-tips" class="guide-section mb-5">
+          <div class="d-flex align-items-center mb-4">
+            <div class="feature-icon bg-primary bg-opacity-10 text-primary me-3">
+              <i class="bi bi-megaphone"></i>
+            </div>
+            <div>
+              <h2 class="fw-bold text-navy mb-1 section-title">Promotion Tips</h2>
+              <p class="text-muted mb-0">Increase visibility and attract more tenants</p>
+            </div>
+          </div>
+          
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <p>Promote your property effectively to reach more potential tenants:</p>
+              <ul class="checklist-item">
+                <li>Share your listing on social media</li>
+                <li>Use high-quality, professional photos</li>
+                <li>Highlight unique features and amenities</li>
+                <li>Offer special promotions for first-time tenants</li>
+                <li>Ask satisfied tenants for referrals</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="troubleshooting" class="guide-section">
+          <div class="d-flex align-items-center mb-4">
+            <div class="feature-icon bg-danger bg-opacity-10 text-danger me-3">
+              <i class="bi bi-tools"></i>
+            </div>
+            <div>
+              <h2 class="fw-bold text-navy mb-1 section-title">Troubleshooting Common Issues</h2>
+              <p class="text-muted mb-0">Solutions for common property management challenges</p>
+            </div>
+          </div>
+          
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <div class="accordion" id="troubleshootingAccordion">
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                      Low Booking Rates
+                    </button>
+                  </h2>
+                  <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#troubleshootingAccordion">
+                    <div class="accordion-body">
+                      <p>If your property isn't receiving enough bookings:</p>
+                      <ul class="checklist-item">
+                        <li>Review and improve your photos</li>
+                        <li>Adjust your pricing strategy</li>
+                        <li>Enhance your property description</li>
+                        <li>Consider offering promotions</li>
+                        <li>Ensure your calendar is up to date</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                      Tenant Communication Issues
+                    </button>
+                  </h2>
+                  <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                    <div class="accordion-body">
+                      <p>For improving communication with tenants:</p>
+                      <ul class="checklist-item">
+                        <li>Set clear expectations from the beginning</li>
+                        <li>Respond to messages promptly</li>
+                        <li>Use our messaging templates</li>
+                        <li>Provide multiple contact methods</li>
+                        <li>Send automated reminders for check-in/out</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                      Maintenance Problems
+                    </button>
+                  </h2>
+                  <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                    <div class="accordion-body">
+                      <p>For handling maintenance issues:</p>
+                      <ul class="checklist-item">
+                        <li>Create a network of reliable contractors</li>
+                        <li>Schedule regular property inspections</li>
+                        <li>Address issues promptly to prevent escalation</li>
+                        <li>Keep records of all maintenance activities</li>
+                        <li>Set aside funds for unexpected repairs</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Call to Action -->
+        <div class="card bg-gradient-primary text-white border-0 mt-5">
+          <div class="card-body text-center p-4 p-md-5">
+            <h3 class="fw-bold mb-3">Ready to List Your Property?</h3>
+            <p class="mb-4 opacity-75">Start earning rental income by listing your property on ResLinQ today.</p>
+            <a href="manage-properties.html" class="btn btn-warning btn-lg px-4">
+              <i class="bi bi-plus-circle me-2"></i>Add New Property
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Navigation -->
+  <div class="mobile-bottom-nav d-lg-none">
+    <a href="landlord-dashboard.html" class="mobile-nav-item">
+      <i class="bi bi-house"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="manage-properties.html" class="mobile-nav-item">
+      <i class="bi bi-building"></i>
+      <span>Properties</span>
+    </a>
+    <a href="landlord-booking.html" class="mobile-nav-item">
+      <i class="bi bi-calendar-check"></i>
+      <span>Bookings</span>
+    </a>
+    <a href="landlord-analytics.html" class="mobile-nav-item">
+      <i class="bi bi-bar-chart"></i>
+      <span>Analytics</span>
+    </a>
+    <a href="landlord-contact.html" class="mobile-nav-item">
+      <i class="bi bi-telephone"></i>
+      <span>Support</span>
+    </a>
+  </div>
+
+  <!-- Enhanced Footer -->
+  <footer class="py-4 bg-navy text-white mt-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for managing student accommodation properties efficiently.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Property Management</h6>
+          <ul class="list-unstyled">
+            <li><a href="manage-properties.html" class="text-light text-decoration-none">My Properties</a></li>
+            <li><a href="landlord-booking.html" class="text-light text-decoration-none">Bookings</a></li>
+            <li><a href="landlord-reports.html" class="text-light text-decoration-none">Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="landlord-analytics.html" class="text-light text-decoration-none">Analytics</a></li>
+            <li><a href="landlord-help.html" class="text-light text-decoration-none">Help</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Landlord Support</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa<br>
+            <i class="bi bi-clock me-2"></i>Mon-Fri: 9AM-5PM
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="navbar.js"></script>
+  
+  <!-- Animation Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Animate guide cards on scroll
+      const guideCards = document.querySelectorAll('.guide-card');
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animated');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      guideCards.forEach(card => {
+        observer.observe(card);
+      });
+
+      // Smooth scrolling for navigation
+      document.querySelectorAll('.nav-pills .nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          // Remove active class from all links
+          document.querySelectorAll('.nav-pills .nav-link').forEach(item => {
+            item.classList.remove('active');
+          });
+          
+          // Add active class to clicked link
+          this.classList.add('active');
+          
+          // Scroll to target section
+          const targetId = this.getAttribute('href');
+          const targetSection = document.querySelector(targetId);
+          if (targetSection) {
+            window.scrollTo({
+              top: targetSection.offsetTop - 120,
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+
+      // Update active nav link based on scroll position
+      window.addEventListener('scroll', function() {
+        const sections = document.querySelectorAll('.guide-section');
+        const navLinks = document.querySelectorAll('.nav-pills .nav-link');
+        
+        let currentSection = '';
+        
+        sections.forEach(section => {
+          const sectionTop = section.offsetTop - 150;
+          const sectionHeight = section.clientHeight;
+          if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+            currentSection = '#' + section.getAttribute('id');
+          }
+        });
+        
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === currentSection) {
+            link.classList.add('active');
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

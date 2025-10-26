@@ -1,0 +1,3571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports & Reviews | ResLinQ</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --success: #059669;
+      --warning: #f59e0b;
+      --info: #60a5fa;
+      --light-bg: #f8fafc;
+    }
+
+    body {
+      background-color: var(--light-bg);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    main {
+      flex: 1 0 auto;
+      padding-bottom: 2em;
+    }
+
+    footer {
+      flex-shrink: 0;
+    }
+
+    /* Enhanced Hero Section */
+    .reports-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, #9983e7 50%, var(--primary-light) 100%);
+      color: white;
+      padding: 4rem 0;
+      border-radius: 0 0 1.5rem 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      animation: heroReveal 1s ease-out 0.2s forwards;
+      display: flex;
+      align-items: center;
+    }
+
+    .reports-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+      animation: float 20s infinite linear;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-title {
+      animation: fadeInUp 0.8s ease-out 0.4s both;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .hero-subtitle {
+      animation: fadeInUp 0.8s ease-out 0.6s both;
+      font-size: 1.2rem;
+      margin-bottom: 1.5rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.5;
+    }
+
+    .hero-actions {
+      animation: fadeInUp 0.8s ease-out 0.8s both;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .hero-actions .btn {
+      border-radius: 50px;
+      padding: 0.6rem 1.5rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .hero-actions .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+
+    /* Enhanced Stats Cards */
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    @media (min-width: 768px) {
+      .stats-container {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+      }
+    }
+
+    .stats-card {
+      border: none;
+      border-radius: 0.75rem;
+      color: white;
+      text-align: center;
+      padding: 1rem 0.5rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      animation: fadeInScale 0.6s ease-out;
+    }
+
+    .stats-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .stats-card:hover::before {
+      left: 100%;
+    }
+
+    .stats-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .stats-card i {
+      font-size: 1.5rem;
+      opacity: 0.8;
+      margin-bottom: 0.5rem;
+    }
+
+    .stats-card h5 {
+      font-size: 1.25rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .stats-card small {
+      font-size: 0.7rem;
+    }
+
+    @media (min-width: 768px) {
+      .stats-card i {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+      }
+      
+      .stats-card h5 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+      }
+      
+      .stats-card small {
+        font-size: 0.8rem;
+      }
+    }
+
+    /* Enhanced Animations */
+    @keyframes heroReveal {
+      0% {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes float {
+      0% {
+        transform: translate(0, 0);
+      }
+      50% {
+        transform: translate(-5px, -5px);
+      }
+      100% {
+        transform: translate(0, 0);
+      }
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive Design for Hero */
+    @media (max-width: 768px) {
+      .reports-hero {
+        padding: 3rem 0;
+      }
+      
+      .hero-title {
+        font-size: 2rem;
+      }
+      
+      .hero-subtitle {
+        font-size: 1rem;
+        padding: 0 1rem;
+      }
+      
+      .hero-actions {
+        gap: 0.75rem;
+      }
+      
+      .hero-actions .btn {
+        padding: 0.5rem 1.25rem;
+        font-size: 0.9rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .reports-hero {
+        padding: 2.5rem 0;
+      }
+      
+      .hero-title {
+        font-size: 1.75rem;
+      }
+      
+      .hero-subtitle {
+        font-size: 0.95rem;
+      }
+      
+      .hero-actions {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .hero-actions .btn {
+        width: 200px;
+        justify-content: center;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .stats-card i {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+      }
+      .stats-card h5 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .stats-card small {
+        font-size: 0.8rem;
+      }
+    }
+
+    .review-card, .report-card {
+      border: none;
+      border-left: 4px solid #e9ecef;
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+      margin-bottom: 1rem;
+    }
+
+    .review-card:hover, .report-card:hover {
+      border-left-color: var(--primary);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .review-card.positive { border-left-color: var(--success); }
+    .review-card.negative { border-left-color: #dc3545; }
+    .review-card.neutral { border-left-color: #6c757d; }
+
+    .report-card.pending { border-left-color: var(--warning); }
+    .report-card.under_review { border-left-color: var(--info); }
+    .report-card.resolved { border-left-color: var(--success); }
+    .report-card.dismissed { border-left-color: #6c757d; }
+
+    .rating-stars {
+      color: var(--warning);
+    }
+
+    .rating-badge {
+      font-size: 0.8em;
+      padding: 0.3em 0.6em;
+      border-radius: 15px;
+    }
+
+    .priority-badge {
+      font-size: 0.7em;
+      padding: 0.3em 0.6em;
+      border-radius: 10px;
+    }
+
+    .priority-high { background-color: #dc3545; color: white; }
+    .priority-medium { background-color: #fd7e14; color: white; }
+    .priority-low { background-color: #6c757d; color: white; }
+    .priority-critical { background-color: #dc3545; color: white; font-weight: bold; }
+
+    .chart-container, 
+    .report-section {
+      background: white;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
+
+    .report-section {
+      height: auto;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: #6c757d;
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .nav-tabs {
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .nav-tabs .nav-link {
+      border: none;
+      color: #64748b;
+      font-weight: 500;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem 0.5rem 0 0;
+    }
+
+    .nav-tabs .nav-link.active {
+      color: var(--primary);
+      border-bottom: 3px solid var(--primary);
+      background: transparent;
+    }
+
+    .nav-tabs .nav-link:hover {
+      color: var(--primary);
+      border-color: transparent;
+    }
+
+    .progress {
+      height: 8px;
+      border-radius: 4px;
+    }
+
+    .review-actions .btn, .report-actions .btn {
+      margin: 0.05rem;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    .filter-section { margin-bottom: 1.5rem; }
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .filter-select {
+      flex: 1 1 calc(50% - 0.5rem);
+      min-width: 120px;
+    }
+
+    @media (min-width: 768px) {
+      .filter-select { flex: 0 1 auto; width: auto; }
+    }
+
+    .modal-dialog { margin: 1rem; }
+    @media (min-width: 576px) {
+      .modal-dialog { margin: 1.75rem auto; }
+    }
+
+    footer { font-size: 0.875rem; }
+
+    .text-truncate-fade {
+      position: relative;
+      line-height: 1.5em;
+      max-height: 3em;
+      overflow: hidden;
+    }
+    .text-truncate-fade::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 30%;
+      height: 1.5em;
+      background: linear-gradient(to right, transparent, white 50%);
+    }
+
+    .chart-wrapper {
+      position: relative;
+      height: 300px;
+      margin-bottom: 2rem;
+    }
+
+    .tab-content { padding-bottom: 2rem; }
+    #performance .row { margin-bottom: 2rem; }
+
+    /* ✅ Reviews list scroll */
+    #reviewsList, #reportsList {
+      max-height: 600px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .report-meta {
+      font-size: 0.85rem;
+      color: #6c757d;
+    }
+
+    .evidence-preview {
+      max-width: 80px;
+      max-height: 80px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      border: 1px solid #e9ecef;
+    }
+
+    /* NEW: Toast notification styles */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+    
+    .toast {
+      min-width: 250px;
+    }
+
+    /* Add these styles to your existing CSS */
+
+    .evidence-modal-preview {
+        max-width: 120px;
+        max-height: 120px;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        object-fit: cover;
+    }
+
+    .evidence-modal-preview:hover {
+        border-color: var(--primary-light);
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .evidence-item {
+        position: relative;
+    }
+
+    .evidence-item::after {
+        content: '🔍';
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .evidence-item:hover::after {
+        opacity: 1;
+    }
+
+    .modal-content {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        color: white;
+        border-radius: 1rem 1rem 0 0;
+        border-bottom: none;
+    }
+
+    .modal-header .btn-close {
+        filter: invert(1);
+    }
+
+    .form-label.small {
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+
+    .card.bg-light {
+        border: 1px solid #e9ecef;
+        border-radius: 0.5rem;
+    }
+
+    /* NEW: Payment Management Styles */
+    .payment-input-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .payment-input-group .form-control {
+      flex: 1;
+    }
+
+    .payment-item {
+      background: #f8f9fa;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      border-left: 4px solid var(--primary);
+    }
+
+    .payment-item.paid {
+      border-left-color: var(--success);
+      background: #f0fff4;
+    }
+
+    .net-revenue-card {
+      background: linear-gradient(135deg, var(--success) 0%, #047857 100%);
+      color: white;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    /* Mobile Responsive Styles for Report Details Modal */
+    @media (max-width: 768px) {
+      /* Make modal full width on mobile */
+      #reportDetailsModal .modal-dialog {
+        margin: 0.5rem;
+        max-width: none;
+      }
+      
+      /* Stack the columns vertically on mobile */
+      #reportDetailsModal .row {
+        flex-direction: column;
+      }
+      
+      #reportDetailsModal .col-md-6 {
+        width: 100%;
+        margin-bottom: 1rem;
+      }
+      
+      /* Reduce padding for better mobile fit */
+      #reportDetailsModal .modal-body {
+        padding: 1rem;
+      }
+      
+      #reportDetailsModal .modal-header {
+        padding: 1rem;
+      }
+      
+      #reportDetailsModal .modal-footer {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      
+      /* Make buttons full width on mobile */
+      #reportDetailsModal .modal-footer .btn {
+        width: 100%;
+        margin: 0;
+      }
+      
+      /* Adjust font sizes for mobile */
+      #reportDetailsModal .modal-title {
+        font-size: 1.25rem;
+      }
+      
+      #reportDetailsModal .form-label.small {
+        font-size: 0.7rem;
+      }
+      
+      #reportDetailsModal p,
+      #reportDetailsModal .badge {
+        font-size: 0.9rem;
+      }
+      
+      /* Make evidence images smaller on mobile */
+      #reportDetailsModal .evidence-modal-preview {
+        max-width: 80px;
+        max-height: 80px;
+      }
+      
+      /* Adjust alert padding */
+      #reportDetailsModal .alert {
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+      }
+      
+      /* Card adjustments */
+      #reportDetailsModal .card.bg-light {
+        margin-bottom: 1rem;
+      }
+      
+      #reportDetailsModal .card-body {
+        padding: 0.75rem;
+      }
+      
+      /* Better spacing for stacked layout */
+      #reportDetailsModal .mb-3 {
+        margin-bottom: 0.75rem !important;
+      }
+      
+      /* Adjust badge sizes */
+      #reportDetailsModal .badge {
+        font-size: 0.65rem;
+        padding: 0.25rem 0.5rem;
+      }
+      
+      /* Make priority badges more compact */
+      #reportDetailsModal .priority-badge {
+        font-size: 0.6rem;
+        padding: 0.2rem 0.4rem;
+      }
+    }
+
+    /* Extra small devices (phones, less than 576px) */
+    @media (max-width: 576px) {
+      #reportDetailsModal .modal-dialog {
+        margin: 0.25rem;
+      }
+      
+      #reportDetailsModal .modal-body {
+        padding: 0.75rem;
+      }
+      
+      #reportDetailsModal .modal-header,
+      #reportDetailsModal .modal-footer {
+        padding: 0.75rem;
+      }
+      
+      /* Even smaller evidence images */
+      #reportDetailsModal .evidence-modal-preview {
+        max-width: 60px;
+        max-height: 60px;
+      }
+      
+      /* Compact form labels */
+      #reportDetailsModal .form-label.small {
+        font-size: 0.65rem;
+        margin-bottom: 0.2rem;
+      }
+      
+      /* Adjust icon sizes */
+      #reportDetailsModal .bi {
+        font-size: 0.9em;
+      }
+    }
+
+    /* Very small devices (phones in landscape) */
+    @media (max-width: 480px) {
+      #reportDetailsModal .modal-dialog {
+        margin: 0.1rem;
+      }
+      
+      #reportDetailsModal .modal-content {
+        border-radius: 0.5rem;
+      }
+      
+      /* Stack evidence images vertically if needed */
+      #reportDetailsModal .d-flex.flex-wrap {
+        gap: 0.5rem;
+      }
+      
+      #reportDetailsModal .evidence-item {
+        flex: 0 0 auto;
+      }
+    }
+
+    /* Ensure modal doesn't get too tall on mobile */
+    @media (max-height: 600px) {
+      #reportDetailsModal .modal-dialog {
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      
+      #reportDetailsModal .modal-content {
+        max-height: 90vh;
+      }
+      
+      #reportDetailsModal .modal-body {
+        max-height: 60vh;
+        overflow-y: auto;
+      }
+    }
+
+    /* Fix for very small heights */
+    @media (max-height: 400px) {
+      #reportDetailsModal .modal-body {
+        max-height: 50vh;
+      }
+    }
+
+    /* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1C2B4A;
+    z-index: 1030;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .mobile-nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-nav-item.active {
+    color: #64748b;
+  }
+  
+  .mobile-nav-item i {
+    display: block;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Add padding to main content to account for bottom nav */
+  main {
+    margin-bottom: 80px;
+  }
+}
+
+#logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+  </style>
+</head>
+<body>
+
+  <!-- Redirect if not logged in as landlord -->
+  <script>
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    if (!token) {
+      alert("Please log in to access this page.");
+      window.location.href = "authorization.html";
+    } else if (user.role !== 'landlord') {
+      alert("This page is for landlords only.");
+      window.location.href = "index.html";
+    }
+  </script>
+
+  <!-- Toast Container -->
+  <div class="toast-container"></div>
+
+  <!-- Dynamic Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i>ResLinQ</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <!-- Navigation will be populated by navbar.js -->
+        </ul>
+      </div>
+      
+      <!-- Dynamic Auth Buttons -->
+      <div class="signup-login-buttons">
+        <!-- Content will be populated by navbar.js -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Enhanced Hero Section -->
+  <section class="reports-hero">
+    <div class="container hero-content">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <h1 class="display-6 fw-bold mb-2 hero-title">Reports & Reviews</h1>
+          <p class="lead mb-3 hero-subtitle">Monitor your property performance and tenant feedback</p>
+        </div>
+        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0 hero-actions">
+          <div class="d-flex gap-2 justify-content-lg-end">
+            <button class="btn btn-light btn-sm" onclick="reportsManager.exportReport()">
+                <i class="bi bi-download me-1"></i>Export Report
+            </button>
+            <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#generateReportModal">
+                <i class="bi bi-graph-up me-1"></i>Custom Report
+            </button>
+        </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+    <!-- Statistics Cards - Mobile Optimized -->
+    <div class="stats-container">
+      <div class="stats-card" style="background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);">
+        <i class="bi bi-star-fill"></i>
+        <h5 id="averageRating">0.0</h5>
+        <small>Avg Rating</small>
+      </div>
+      <div class="stats-card" style="background: linear-gradient(135deg, var(--success) 0%, #047857 100%);">
+        <i class="bi bi-chat-left-text"></i>
+        <h5 id="totalReviews">0</h5>
+        <small>Reviews</small>
+      </div>
+      <div class="stats-card" style="background: linear-gradient(135deg, var(--info) 0%, #3b82f6 100%);">
+        <i class="bi bi-flag"></i>
+        <h5 id="totalReports">0</h5>
+        <small>Open Reports</small>
+      </div>
+      <div class="stats-card" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
+        <i class="bi bi-house-check"></i>
+        <h5 id="reviewedProperties">0</h5>
+        <small>Properties</small>
+      </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <ul class="nav nav-tabs" id="reportsTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab">
+              <i class="bi bi-flag me-1"></i>Reports
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">
+              <i class="bi bi-chat-left-text me-1"></i>Reviews
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="performance-tab" data-bs-toggle="tab" data-bs-target="#performance" type="button" role="tab">
+              <i class="bi bi-graph-up me-1"></i>Performance
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="financial-tab" data-bs-toggle="tab" data-bs-target="#financial" type="button" role="tab">
+              <i class="bi bi-cash-coin me-1"></i>Financial
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="reportsTabsContent">
+      
+      <!-- Reports Tab -->
+      <div class="tab-pane fade show active" id="reports" role="tabpanel">
+        <div class="row">
+          <!-- Reports Summary -->
+          <div class="col-md-4">
+            <div class="report-section">
+              <h5 class="text-navy mb-4">Reports Summary</h5>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1 small">
+                  <span>Pending</span>
+                  <span id="pendingCount">0</span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar bg-warning" style="width: 0%"></div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1 small">
+                  <span>Under Review</span>
+                  <span id="underReviewCount">0</span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar bg-info" style="width: 0%"></div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1 small">
+                  <span>Resolved</span>
+                  <span id="resolvedCount">0</span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar bg-success" style="width: 0%"></div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1 small">
+                  <span>Dismissed</span>
+                  <span id="dismissedCount">0</span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar bg-secondary" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Report Types -->
+            <div class="report-section">
+              <h5 class="text-navy mb-4">Report Types</h5>
+              <div id="reportTypesList">
+                <!-- Report types will be populated here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Reports List -->
+          <div class="col-md-8">
+            <div class="report-section">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="text-navy mb-0">Recent Reports</h5>
+                <div class="d-flex gap-2">
+                  <select class="form-select form-select-sm" id="reportStatusFilter">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="under_review">Under Review</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="dismissed">Dismissed</option>
+                  </select>
+                  <select class="form-select form-select-sm" id="reportPriorityFilter">
+                    <option value="all">All Priority</option>
+                    <option value="critical">Critical</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div id="reportsList">
+                <!-- Reports will be populated here -->
+              </div>
+              
+              <!-- Load More Button -->
+              <div class="text-center mt-4">
+                <button class="btn btn-outline-primary btn-sm" onclick="reportsManager.refreshData()">
+                  <i class="bi bi-arrow-clockwise me-1"></i>Refresh Reports
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews & Ratings Tab -->
+      <div class="tab-pane fade" id="reviews" role="tabpanel">
+        <div class="row">
+          <!-- Rating Distribution -->
+          <div class="col-md-4">
+            <div class="report-section">
+              <h5 class="text-navy mb-4">Rating Distribution</h5>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1 small">
+                  <span>5 Stars</span>
+                  <span>0</span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar bg-success" style="width: 0%"></div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1 small">
+                  <span>4 Stars</span>
+                  <span>0</span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar bg-info" style="width: 0%"></div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1 small">
+                  <span>3 Stars</span>
+                  <span>0</span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar bg-warning" style="width: 0%"></div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1 small">
+                  <span>2 Stars</span>
+                  <span>0</span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar" style="background-color: #fd7e14; width: 0%"></div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1 small">
+                  <span>1 Star</span>
+                  <span>0</span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar bg-danger" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Property Ratings -->
+            <div class="report-section">
+              <h5 class="text-navy mb-4">Property Ratings</h5>
+              <div id="propertyRatingsList">
+                <!-- Property ratings will be populated here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Reviews List -->
+          <div class="col-md-8">
+            <div class="report-section">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="text-navy mb-0">Recent Reviews</h5>
+                <div>
+                  <select class="form-select form-select-sm" id="reviewFilter">
+                    <option value="all">All Reviews</option>
+                    <option value="positive">Positive</option>
+                    <option value="negative">Negative</option>
+                    <option value="unresponded">Unresponded</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div id="reviewsList">
+                <!-- Reviews will be populated here -->
+              </div>
+              
+              <!-- Load More Button -->
+              <div class="text-center mt-4">
+                <button class="btn btn-outline-primary btn-sm" onclick="reportsManager.refreshData()">
+                  <i class="bi bi-arrow-clockwise me-1"></i>Refresh Reviews
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Metrics Tab -->
+      <div class="tab-pane fade" id="performance" role="tabpanel">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="chart-container">
+              <h5 class="text-navy mb-4">Booking Performance</h5>
+              <div class="chart-wrapper">
+                <canvas id="bookingChart" width="400" height="300"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="chart-container">
+              <h5 class="text-navy mb-4">Occupancy Rate</h5>
+              <div class="chart-wrapper">
+                <canvas id="occupancyChart" width="400" height="300"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="report-section">
+              <h5 class="text-navy mb-4">Key Performance Indicators</h5>
+              <div class="row text-center">
+                <div class="col-md-3 mb-3">
+                  <h3 class="text-success" id="kpiOccupancyRate">0%</h3>
+                  <small class="text-muted">Occupancy Rate</small>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <h3 class="text-info">0</h3>
+                  <small class="text-muted">Avg. Booking Duration</small>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <h3 class="text-warning">0.0</h3>
+                  <small class="text-muted">Avg. Tenant Rating</small>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <h3 class="text-primary">0%</h3>
+                  <small class="text-muted">Renewal Rate</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financial Reports Tab -->
+      <div class="tab-pane fade" id="financial" role="tabpanel">
+        <div class="row">
+          <div class="col-md-8">
+            <div class="chart-container">
+              <h5 class="text-navy mb-4">Revenue Overview</h5>
+              <div class="chart-wrapper">
+                <canvas id="revenueChart" width="400" height="300"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="report-section">
+              <h5 class="text-navy mb-4">Financial Summary</h5>
+              <div class="mb-4">
+                <h6 class="text-muted small">Current Month Revenue</h6>
+                <h4 class="text-success" id="currentMonthRevenue">R 0</h4>
+                <small class="text-success" id="revenueChange">+0% from last month</small>
+              </div>
+              <div class="mb-4">
+                <h6 class="text-muted small">Total Revenue (YTD)</h6>
+                <h5 class="text-navy" id="ytdRevenue">R 0</h5>
+              </div>
+              
+              <!-- Payment Management Section -->
+              <div class="mb-4">
+                <h6 class="text-muted small">Monthly Payments</h6>
+                <div class="payment-input-group">
+                  <input type="number" class="form-control form-control-sm" id="paymentAmount" placeholder="Amount" min="0">
+                  <input type="text" class="form-control form-control-sm" id="paymentDescription" placeholder="Description">
+                  <button class="btn btn-primary btn-sm" onclick="reportsManager.addPayment()">
+                    <i class="bi bi-plus"></i>
+                  </button>
+                </div>
+                <div id="paymentsList">
+                  <!-- Payments will be populated here -->
+                </div>
+              </div>
+              
+              <!-- Net Revenue Card -->
+              <div class="net-revenue-card">
+                <h6 class="mb-2">Net Revenue This Month</h6>
+                <h3 class="mb-0" id="netRevenue">R 0</h3>
+                <small>After deductions</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Monthly Breakdown -->
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="report-section">
+              <h5 class="text-navy mb-4">Monthly Revenue Breakdown</h5>
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Month</th>
+                      <th>Revenue</th>
+                      <th>Properties</th>
+                      <th>Occupancy Rate</th>
+                      <th>YTD Cumulative</th>
+                    </tr>
+                  </thead>
+                  <tbody id="monthlyRevenueTable">
+                    <!-- Monthly data will be populated here -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Generate Report Modal -->
+  <div class="modal fade" id="generateReportModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Generate Custom Report</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="reportForm">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Report Type</label>
+                  <select class="form-select" name="reportType">
+                    <option value="financial">Financial Report</option>
+                    <option value="performance">Performance Report</option>
+                    <option value="reviews">Reviews Report</option>
+                    <option value="comprehensive">Comprehensive Report</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Date Range</label>
+                  <select class="form-select" name="dateRange">
+                    <option value="last7">Last 7 Days</option>
+                    <option value="last30">Last 30 Days</option>
+                    <option value="last90">Last 90 Days</option>
+                    <option value="ytd">Year to Date</option>
+                    <option value="custom">Custom Range</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Properties</label>
+                  <select class="form-select" name="properties">
+                    <option value="all">All Properties</option>
+                    <option value="selected">Selected Properties</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Format</label>
+                  <select class="form-select" name="format">
+                    <option value="pdf">PDF</option>
+                    <option value="excel">Excel</option>
+                    <option value="csv">CSV</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="reportsManager.generateCustomReport()">
+              <i class="bi bi-download me-1"></i>Generate Report
+          </button>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Response Modal -->
+  <div class="modal fade" id="responseModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Respond to Review</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="responseForm">
+            <input type="hidden" id="reviewId">
+            <div class="mb-3">
+              <label class="form-label">Your Response</label>
+              <textarea class="form-control" id="responseText" rows="4" placeholder="Type your response here..."></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="reportsManager.submitResponse()">Submit Response</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Update Report Status Modal -->
+  <div class="modal fade" id="updateReportModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Update Report Status</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="updateReportForm">
+            <input type="hidden" id="reportId">
+            <div class="mb-3">
+              <label class="form-label">Status</label>
+              <select class="form-select" id="reportStatus">
+                <option value="pending">Pending</option>
+                <option value="under_review">Under Review</option>
+                <option value="resolved">Resolved</option>
+                <option value="dismissed">Dismissed</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Admin Notes (Optional)</label>
+              <textarea class="form-control" id="adminNotes" rows="3" placeholder="Add any notes about this report..."></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="reportsManager.updateReportStatus()">Update Status</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Navigation -->
+<div class="mobile-bottom-nav d-lg-none">
+  <a href="landlord-dashboard.html" class="mobile-nav-item">
+    <i class="bi bi-house"></i>
+    <span>Dashboard</span>
+  </a>
+  <a href="manage-properties.html" class="mobile-nav-item">
+    <i class="bi bi-building"></i>
+    <span>Properties</span>
+  </a>
+  <a href="landlord-booking.html" class="mobile-nav-item">
+    <i class="bi bi-calendar-check"></i>
+    <span>Bookings</span>
+  </a>
+  <a href="landlord-analytics.html" class="mobile-nav-item active">
+    <i class="bi bi-bar-chart"></i>
+    <span>Analytics</span>
+  </a>
+  <a href="landlord-help.html" class="mobile-nav-item">
+      <i class="bi bi-question-circle"></i>
+      <span>Help</span>
+  </a>
+</div>
+
+  <!-- Enhanced Footer -->
+  <footer class="py-4 bg-navy text-white mt-auto">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for managing student accommodation properties efficiently.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Property Management</h6>
+          <ul class="list-unstyled">
+            <li><a href="manage-properties.html" class="text-light text-decoration-none">My Properties</a></li>
+            <li><a href="landlord-booking.html" class="text-light text-decoration-none">Bookings</a></li>
+            <li><a href="landlord-reports.html" class="text-light text-decoration-none">Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="landlord-analytics.html" class="text-light text-decoration-none">Analytics</a></li>
+            <li><a href="landlord-help.html" class="text-light text-decoration-none">Help</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Landlord Support</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa<br>
+            <i class="bi bi-clock me-2"></i>Mon-Fri: 9AM-5PM
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="navbar.js"></script>
+  
+  <!-- Reports Management Script -->
+  <!-- Reports Management Script -->
+<script>
+const API_BASE_URL = window.API_BASE_URL || 'https://linqs-backend.onrender.com/api';
+
+class ReportsManager {
+    constructor() {
+    this.token = localStorage.getItem("token");
+    this.user = JSON.parse(localStorage.getItem("user") || "{}");
+    this.reviews = [];
+    this.reports = [];
+    this.properties = [];
+    this.bookings = [];
+    
+    // FIXED: Load payments using landlord-specific method
+    this.payments = this.loadPayments();
+    
+    this.financialData = {
+        monthlyRevenue: {},
+        ytdRevenue: 0,
+        currentMonthRevenue: 0,
+        revenueProperties: 0
+    };
+    this.currentReviewFilter = 'all';
+    this.currentReportStatusFilter = 'all';
+    this.currentReportPriorityFilter = 'all';
+    this.bookingChart = null;
+    this.occupancyChart = null;
+    this.revenueChart = null;
+    this.init();
+}
+
+    async init() {
+        if (!this.token) return;
+
+        try {
+            await this.loadData();
+            await this.initializeCharts();
+            this.setupEventListeners();
+            this.setupRealTimeUpdates();
+            this.updatePaymentsUI();
+        } catch (error) {
+            console.error('Error initializing reports manager:', error);
+            this.showError('Failed to load reports data');
+        }
+    }
+
+    async loadData() {
+        try {
+            const [reviewsData, reportsData, propertiesData, bookingsData] = await Promise.all([
+                this.fetchReviews(),
+                this.fetchReports(),
+                this.fetchProperties(),
+                this.fetchBookings()
+            ]);
+
+            this.reviews = reviewsData;
+            this.reports = reportsData;
+            this.properties = propertiesData;
+            this.bookings = bookingsData;
+
+            await this.loadFinancialData();
+
+            this.updateDashboardStats();
+            this.loadReviews();
+            this.loadReports();
+            this.loadPropertyRatings();
+            this.updateReportsSummary();
+        } catch (error) {
+            console.error('Error loading data:', error);
+            throw error;
+        }
+    }
+
+    async fetchReviews() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/reviews/my-reviews`, {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return data.reviews || [];
+            }
+            return [];
+        } catch (error) {
+            console.warn('Failed to fetch reviews:', error);
+            return [];
+        }
+    }
+
+    async fetchReports() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/reports/landlord/my-reports`, {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return data.reports || [];
+            } else if (response.status === 403) {
+                console.warn('User is not a landlord');
+                this.showToast('Access denied - landlord reports only', 'warning');
+                return [];
+            } else {
+                console.error('Failed to fetch landlord reports:', response.status);
+                throw new Error(`Failed to load reports: ${response.status}`);
+            }
+        } catch (error) {
+            console.error('Error fetching landlord reports:', error);
+            this.showToast('Failed to load reports', 'error');
+            return [];
+        }
+    }
+
+    async fetchProperties() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/properties/user/my-properties`, {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return data.properties || [];
+            }
+            return [];
+        } catch (error) {
+            console.warn('Failed to fetch properties:', error);
+            return [];
+        }
+    }
+
+    async fetchBookings() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return data.bookings || [];
+            }
+            return [];
+        } catch (error) {
+            console.warn('Failed to fetch bookings:', error);
+            return [];
+        }
+    }
+
+    async loadFinancialData() {
+        try {
+            const monthlyRevenue = {};
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            // Initialize all months to 0
+            monthNames.forEach(month => {
+                monthlyRevenue[month] = 0;
+            });
+
+            let currentMonthRevenue = 0;
+            let ytdRevenue = 0;
+            let revenuePropertiesCount = 0;
+
+            // Find the earliest property creation date to determine start month
+            let earliestPropertyDate = new Date();
+            if (this.properties.length > 0) {
+                earliestPropertyDate = new Date(Math.min(...this.properties.map(p => new Date(p.createdAt || p.updatedAt || Date.now()))));
+            }
+
+            const currentYear = new Date().getFullYear();
+            const currentMonth = new Date().getMonth();
+            const earliestMonth = earliestPropertyDate.getMonth();
+            const earliestYear = earliestPropertyDate.getFullYear();
+
+            // Determine if we're in the same year or need to start from earliest month
+            const startMonth = (earliestYear === currentYear) ? earliestMonth : 0;
+            
+            for (const property of this.properties) {
+                try {
+                    let propertyRevenue = 0;
+                    let propertyHasRevenue = false;
+
+                    const response = await fetch(`${API_BASE_URL}/properties/${property._id}/rooms`, {
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const rooms = data.rooms || [];
+                        
+                        const occupiedRoomsRevenue = rooms
+                            .filter(room => !room.isAvailable)
+                            .reduce((sum, room) => sum + (room.price || 0), 0);
+                        
+                        if (occupiedRoomsRevenue > 0) {
+                            propertyHasRevenue = true;
+                            propertyRevenue = occupiedRoomsRevenue;
+                        }
+                    }
+
+                    if (!propertyHasRevenue && property.status === 'occupied') {
+                        propertyHasRevenue = true;
+                        propertyRevenue = property.price || 0;
+                    }
+
+                    if (propertyHasRevenue) {
+                        revenuePropertiesCount++;
+                        
+                        // Add revenue to current month
+                        if (currentMonth === new Date(property.createdAt || property.updatedAt || Date.now()).getMonth() || 
+                            property.status === 'occupied') {
+                            currentMonthRevenue += propertyRevenue;
+                        }
+
+                        // Distribute revenue across months starting from when property was added
+                        const propertyCreatedMonth = new Date(property.createdAt || property.updatedAt || Date.now()).getMonth();
+                        const propertyCreatedYear = new Date(property.createdAt || property.updatedAt || Date.now()).getFullYear();
+                        
+                        // Only count revenue for months that have passed and current month
+                        for (let i = 0; i <= currentMonth; i++) {
+                            // Only add revenue if this month is after or same as property creation month in current year
+                            // OR if property was created in previous years
+                            if ((propertyCreatedYear === currentYear && i >= propertyCreatedMonth) || 
+                                propertyCreatedYear < currentYear) {
+                                monthlyRevenue[monthNames[i]] += propertyRevenue;
+                            }
+                        }
+                    }
+
+                } catch (error) {
+                    console.error(`Error processing property ${property._id}:`, error);
+                }
+            }
+
+            // Calculate YTD revenue only from start month to current month
+            for (let i = startMonth; i <= currentMonth; i++) {
+                ytdRevenue += monthlyRevenue[monthNames[i]] || 0;
+            }
+
+            this.financialData.monthlyRevenue = monthlyRevenue;
+            this.financialData.currentMonthRevenue = currentMonthRevenue;
+            this.financialData.ytdRevenue = ytdRevenue;
+            this.financialData.revenueProperties = revenuePropertiesCount;
+
+            this.updateFinancialUI();
+            
+        } catch (error) {
+            console.error('Error loading financial data:', error);
+            throw error;
+        }
+    }
+
+    updateDashboardStats() {
+        const reviewsWithRatings = this.reviews.filter(review => review.rating && review.rating > 0);
+        const averageRating = reviewsWithRatings.length > 0 
+            ? (reviewsWithRatings.reduce((sum, review) => sum + review.rating, 0) / reviewsWithRatings.length).toFixed(1)
+            : '0.0';
+        
+        document.getElementById('averageRating').textContent = averageRating;
+        document.getElementById('totalReviews').textContent = this.reviews.length;
+
+        const openReports = this.reports.filter(report => 
+            report.status === 'pending' || report.status === 'under_review'
+        ).length;
+        document.getElementById('totalReports').textContent = openReports;
+
+        document.getElementById('reviewedProperties').textContent = this.properties.length;
+    }
+
+    updateFinancialUI() {
+        const currentMonthElement = document.getElementById('currentMonthRevenue');
+        if (currentMonthElement) {
+            currentMonthElement.textContent = `R ${this.financialData.currentMonthRevenue.toLocaleString()}`;
+        }
+
+        const ytdElement = document.getElementById('ytdRevenue');
+        if (ytdElement) {
+            ytdElement.textContent = `R ${this.financialData.ytdRevenue.toLocaleString()}`;
+        }
+
+        const revenueChangeElement = document.getElementById('revenueChange');
+        if (revenueChangeElement) {
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const currentMonth = new Date().getMonth();
+            const previousMonth = currentMonth > 0 ? currentMonth - 1 : 11;
+            
+            const currentRevenue = this.financialData.monthlyRevenue[monthNames[currentMonth]] || 0;
+            const previousRevenue = this.financialData.monthlyRevenue[monthNames[previousMonth]] || 0;
+            
+            let changeText = 'No previous data';
+            let changeClass = 'text-muted';
+            
+            if (previousRevenue > 0) {
+                const changePercent = ((currentRevenue - previousRevenue) / previousRevenue) * 100;
+                const changeSign = changePercent >= 0 ? '+' : '';
+                changeText = `${changeSign}${changePercent.toFixed(1)}% from last month`;
+                changeClass = changePercent >= 0 ? 'text-success' : 'text-danger';
+            }
+            
+            revenueChangeElement.textContent = changeText;
+            revenueChangeElement.className = changeClass;
+        }
+
+        // Update net revenue
+        this.updateNetRevenue();
+
+        this.updateRevenueChart();
+        this.updateMonthlyRevenueTable();
+    }
+
+    updateRevenueChart() {
+        const revenueCtx = document.getElementById('revenueChart')?.getContext('2d');
+        if (!revenueCtx) return;
+
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        
+        // Find earliest property date to determine start month
+        let earliestPropertyDate = new Date();
+        if (this.properties.length > 0) {
+            earliestPropertyDate = new Date(Math.min(...this.properties.map(p => new Date(p.createdAt || p.updatedAt || Date.now()))));
+        }
+        
+        const earliestMonth = earliestPropertyDate.getMonth();
+        const earliestYear = earliestPropertyDate.getFullYear();
+        
+        // Determine which months to show
+        const startMonth = (earliestYear === currentYear) ? earliestMonth : 0;
+        const labels = monthNames.slice(startMonth, currentMonth + 1);
+        const revenueData = labels.map(month => this.financialData.monthlyRevenue[month] || 0);
+        
+        // Create background colors based on month status
+        const backgroundColors = labels.map((month, index) => {
+            const monthIndex = monthNames.indexOf(month);
+            
+            // Past months - light blue
+            if (monthIndex < currentMonth) {
+                return 'rgba(59, 130, 246, 0.5)';
+            }
+            // Current month - darker blue
+            else if (monthIndex === currentMonth) {
+                return 'rgba(37, 99, 235, 0.7)';
+            }
+            // Future months - should not appear, but just in case
+            else {
+                return 'rgba(156, 163, 175, 0.3)';
+            }
+        });
+
+        if (this.revenueChart) {
+            this.revenueChart.destroy();
+        }
+
+        this.revenueChart = new Chart(revenueCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Monthly Revenue (R)',
+                    data: revenueData,
+                    backgroundColor: backgroundColors,
+                    borderColor: 'rgb(59, 130, 246)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Revenue: R ${context.parsed.y.toLocaleString()}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Revenue (R)' },
+                        ticks: {
+                            callback: function(value) {
+                                return 'R ' + value.toLocaleString();
+                            }
+                        }
+                    },
+                    x: {
+                        title: { display: true, text: 'Months' }
+                    }
+                }
+            }
+        });
+    }
+
+    updateMonthlyRevenueTable() {
+        const monthlyRevenueTable = document.getElementById('monthlyRevenueTable');
+        if (!monthlyRevenueTable) return;
+
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        
+        // Find earliest property date
+        let earliestPropertyDate = new Date();
+        if (this.properties.length > 0) {
+            earliestPropertyDate = new Date(Math.min(...this.properties.map(p => new Date(p.createdAt || p.updatedAt || Date.now()))));
+        }
+        
+        const earliestMonth = earliestPropertyDate.getMonth();
+        const earliestYear = earliestPropertyDate.getFullYear();
+        
+        // Determine which months to show
+        const startMonth = (earliestYear === currentYear) ? earliestMonth : 0;
+        const monthsToShow = monthNames.slice(startMonth, currentMonth + 1);
+        
+        let cumulativeRevenue = 0;
+        let tableRows = '';
+
+        monthsToShow.forEach((month, index) => {
+            const monthIndex = monthNames.indexOf(month);
+            const monthlyRevenue = this.financialData.monthlyRevenue[month] || 0;
+            cumulativeRevenue += monthlyRevenue;
+            
+            // Calculate occupancy rate for this month - USE THE SAME CALCULATION AS PERFORMANCE TAB
+            const totalPotentialRevenue = this.properties.reduce((sum, property) => {
+                const propertyCreated = new Date(property.createdAt || property.updatedAt || Date.now());
+                const propertyCreatedMonth = propertyCreated.getMonth();
+                const propertyCreatedYear = propertyCreated.getFullYear();
+                
+                // Only count properties that existed in this month
+                if ((propertyCreatedYear === currentYear && monthIndex >= propertyCreatedMonth) || 
+                    propertyCreatedYear < currentYear) {
+                    return sum + (property.price || 0);
+                }
+                return sum;
+            }, 0);
+            
+            // Use the same calculation as performance tab for consistency
+            const occupancyRate = totalPotentialRevenue > 0 ? 
+                Math.min(100, Math.round((monthlyRevenue / totalPotentialRevenue) * 100)) : 0;
+            
+            // Add row class based on month status
+            const rowClass = monthIndex === currentMonth ? 'table-primary' : '';
+            
+            tableRows += `
+                <tr class="${rowClass}">
+                    <td>${month}</td>
+                    <td>R ${monthlyRevenue.toLocaleString()}</td>
+                    <td>${this.financialData.revenueProperties}</td>
+                    <td>${occupancyRate}%</td>
+                    <td>R ${cumulativeRevenue.toLocaleString()}</td>
+                </tr>
+            `;
+        });
+
+        // Add note about data range if not starting from January
+        if (startMonth > 0) {
+            tableRows = `
+                <tr class="table-info">
+                    <td colspan="5" class="small text-center">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Data shown from ${monthNames[startMonth]} to ${monthNames[currentMonth]} ${currentYear} 
+                        (based on when you added your first property)
+                    </td>
+                </tr>
+                ${tableRows}
+            `;
+        }
+
+        monthlyRevenueTable.innerHTML = tableRows;
+    }
+
+    updateReportsSummary() {
+        const statusCounts = {
+            pending: 0,
+            under_review: 0,
+            resolved: 0,
+            dismissed: 0
+        };
+
+        this.reports.forEach(report => {
+            statusCounts[report.status] = (statusCounts[report.status] || 0) + 1;
+        });
+
+        const totalReports = this.reports.length;
+
+        document.getElementById('pendingCount').textContent = statusCounts.pending;
+        document.getElementById('underReviewCount').textContent = statusCounts.under_review;
+        document.getElementById('resolvedCount').textContent = statusCounts.resolved;
+        document.getElementById('dismissedCount').textContent = statusCounts.dismissed;
+
+        const updateProgressBar = (status, count) => {
+            const percentage = totalReports > 0 ? (count / totalReports) * 100 : 0;
+            const progressBar = document.querySelector(`.progress-bar.bg-${status === 'pending' ? 'warning' : status === 'under_review' ? 'info' : status === 'resolved' ? 'success' : 'secondary'}`);
+            if (progressBar) {
+                progressBar.style.width = `${percentage}%`;
+            }
+        };
+
+        updateProgressBar('pending', statusCounts.pending);
+        updateProgressBar('under_review', statusCounts.under_review);
+        updateProgressBar('resolved', statusCounts.resolved);
+        updateProgressBar('dismissed', statusCounts.dismissed);
+
+        this.updateReportTypes();
+    }
+
+    updateReportTypes() {
+        const typeCounts = {};
+        this.reports.forEach(report => {
+            typeCounts[report.reportType] = (typeCounts[report.reportType] || 0) + 1;
+        });
+
+        const reportTypesList = document.getElementById('reportTypesList');
+        if (reportTypesList) {
+            reportTypesList.innerHTML = Object.entries(typeCounts)
+                .map(([type, count]) => `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small">${this.formatReportType(type)}</span>
+                        <span class="badge bg-light text-dark">${count}</span>
+                    </div>
+                `)
+                .join('') || '<div class="text-muted small">No reports yet</div>';
+        }
+    }
+
+    formatReportType(type) {
+        const typeMap = {
+            'fake_listing': 'Fake Listing',
+            'inappropriate_behavior': 'Inappropriate Behavior',
+            'safety_concerns': 'Safety Concerns',
+            'fraud': 'Fraud',
+            'spam': 'Spam',
+            'harassment': 'Harassment',
+            'other': 'Other'
+        };
+        return typeMap[type] || type;
+    }
+
+    generateStars(rating) {
+        let stars = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= rating) {
+                stars += '<i class="bi bi-star-fill text-warning"></i>';
+            } else if (i === Math.ceil(rating) && !Number.isInteger(rating)) {
+                stars += '<i class="bi bi-star-half text-warning"></i>';
+            } else {
+                stars += '<i class="bi bi-star text-warning"></i>';
+            }
+        }
+        return stars;
+    }
+
+    generateReviewCard(review) {
+        const sentiment = this.getReviewSentiment(review.rating);
+        const hasResponse = review.landlordResponse && review.landlordResponse.comment;
+        const studentName = review.student?.username || 'Anonymous Student';
+        const propertyName = review.property?.title || 'Property';
+        const reviewType = review.reviewType === 'booking' ? 'Booking Review' : 'General Review';
+        
+        return `
+            <div class="card review-card ${sentiment}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                <i class="bi bi-person-fill text-white"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">${studentName}</h6>
+                                <small class="text-muted">${propertyName}</small>
+                                <br>
+                                <small class="text-info">${reviewType}</small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="rating-stars mb-1">
+                                ${this.generateStars(review.rating)}
+                            </div>
+                            <small class="text-muted">${new Date(review.createdAt).toLocaleDateString()}</small>
+                        </div>
+                    </div>
+                    
+                    <p class="mb-3">${review.comment}</p>
+                    
+                    ${hasResponse ? `
+                        <div class="alert alert-light border">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <strong>Your Response</strong>
+                                <small class="text-muted">${new Date(review.landlordResponse.respondedAt).toLocaleDateString()}</small>
+                            </div>
+                            <p class="mb-0">${review.landlordResponse.comment}</p>
+                        </div>
+                    ` : `
+                        <div class="alert alert-warning">
+                            <small>No response yet</small>
+                        </div>
+                    `}
+                    
+                    <div class="review-actions d-flex justify-content-end">
+                        ${!hasResponse ? `
+                            <button class="btn btn-sm btn-outline-primary" onclick="reportsManager.openResponseModal('${review._id}')">
+                                <i class="bi bi-reply me-1"></i>Respond
+                            </button>
+                        ` : `
+                            <button class="btn btn-sm btn-outline-secondary" onclick="reportsManager.openResponseModal('${review._id}')">
+                                <i class="bi bi-pencil me-1"></i>Edit Response
+                            </button>
+                        `}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    generateReportCard(report) {
+        const reporterName = report.reporter?.username || 'Anonymous User';
+        const propertyName = report.reportedProperty?.title || 'Unknown Property';
+        const priorityClass = `priority-${report.priority}`;
+        
+        return `
+            <div class="card report-card ${report.status}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-danger rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                <i class="bi bi-flag-fill text-white"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">${report.title}</h6>
+                                <div class="report-meta">
+                                    <span>By ${reporterName}</span> • 
+                                    <span>${propertyName}</span> • 
+                                    <span>${new Date(report.createdAt).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge ${priorityClass} priority-badge me-1">${report.priority}</span>
+                            <span class="badge bg-secondary">${report.status.replace('_', ' ')}</span>
+                        </div>
+                    </div>
+                    
+                    <p class="mb-3">${report.description}</p>
+                    
+                    ${report.evidence && report.evidence.length > 0 ? `
+                        <div class="mb-3">
+                            <strong>Evidence:</strong>
+                            <div class="mt-2">
+                                ${report.evidence.map(evidence => `
+                                    <img src="${evidence}" class="evidence-preview" alt="Evidence" onclick="window.open('${evidence}', '_blank')">
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${report.adminNotes ? `
+                        <div class="alert alert-info">
+                            <strong>Admin Notes:</strong>
+                            <p class="mb-0 mt-1">${report.adminNotes}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="report-actions d-flex justify-content-end gap-2">
+                        <button class="btn btn-sm btn-outline-primary" onclick="reportsManager.openUpdateReportModal('${report._id}')">
+                            <i class="bi bi-pencil me-1"></i>Update Status
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" onclick="reportsManager.viewReportDetails('${report._id}')">
+                            <i class="bi bi-eye me-1"></i>View Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    getReviewSentiment(rating) {
+        if (rating >= 4) return 'positive';
+        if (rating <= 2) return 'negative';
+        return 'neutral';
+    }
+
+    loadReviews() {
+        const reviewsList = document.getElementById('reviewsList');
+        if (!reviewsList) return;
+
+        const filteredReviews = this.filterReviews();
+        reviewsList.innerHTML = filteredReviews.map(review => this.generateReviewCard(review)).join('') || 
+            '<div class="empty-state"><i class="bi bi-chat-left-text"></i><p>No reviews yet</p></div>';
+
+        this.updateRatingDistribution();
+    }
+
+    loadReports() {
+        const reportsList = document.getElementById('reportsList');
+        if (!reportsList) return;
+
+        const filteredReports = this.filterReports();
+        reportsList.innerHTML = filteredReports.map(report => this.generateReportCard(report)).join('') || 
+            '<div class="empty-state"><i class="bi bi-flag"></i><p>No reports found</p></div>';
+    }
+
+    filterReviews() {
+        let filtered = this.reviews;
+        
+        switch (this.currentReviewFilter) {
+            case 'positive':
+                filtered = filtered.filter(review => review.rating >= 4);
+                break;
+            case 'negative':
+                filtered = filtered.filter(review => review.rating <= 2);
+                break;
+            case 'unresponded':
+                filtered = filtered.filter(review => !review.landlordResponse || !review.landlordResponse.comment);
+                break;
+        }
+        
+        return filtered;
+    }
+
+    filterReports() {
+        let filtered = this.reports;
+        
+        if (this.currentReportStatusFilter !== 'all') {
+            filtered = filtered.filter(report => report.status === this.currentReportStatusFilter);
+        }
+        
+        if (this.currentReportPriorityFilter !== 'all') {
+            filtered = filtered.filter(report => report.priority === this.currentReportPriorityFilter);
+        }
+        
+        return filtered;
+    }
+
+    updateRatingDistribution() {
+        const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+        this.reviews.forEach(review => {
+            const rating = Math.floor(review.rating);
+            if (distribution.hasOwnProperty(rating)) {
+                distribution[rating]++;
+            }
+        });
+
+        const totalReviews = this.reviews.length;
+        
+        [5, 4, 3, 2, 1].forEach((rating, index) => {
+            const count = distribution[rating] || 0;
+            const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+            
+            const ratingSections = document.querySelectorAll('#reviews .report-section .mb-3');
+            if (ratingSections[index]) {
+                const countSpan = ratingSections[index].querySelector('.d-flex.justify-content-between span:last-child');
+                if (countSpan) {
+                    countSpan.textContent = count;
+                }
+                
+                const progressBar = ratingSections[index].querySelector('.progress-bar');
+                if (progressBar) {
+                    progressBar.style.width = `${percentage}%`;
+                }
+            }
+        });
+    }
+
+    loadPropertyRatings() {
+        const propertyRatingsList = document.getElementById('propertyRatingsList');
+        if (!propertyRatingsList) return;
+
+        const propertyRatings = {};
+        
+        this.reviews.forEach(review => {
+            if (review.property && review.property._id) {
+                const propId = review.property._id;
+                if (!propertyRatings[propId]) {
+                    propertyRatings[propId] = {
+                        property: review.property,
+                        ratings: [],
+                        count: 0
+                    };
+                }
+                propertyRatings[propId].ratings.push(review.rating);
+                propertyRatings[propId].count++;
+            }
+        });
+
+        if (Object.keys(propertyRatings).length === 0 && this.properties.length > 0) {
+            propertyRatingsList.innerHTML = this.properties.map(property => `
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="mb-0 small">${property.title || 'Unknown Property'}</h6>
+                        <div class="rating-stars small">
+                            ${this.generateStars(0)}
+                            <span class="text-muted ms-1">No reviews</span>
+                        </div>
+                    </div>
+                    <span class="badge bg-light text-dark">0 reviews</span>
+                </div>
+            `).join('');
+            return;
+        }
+
+        const propertyRatingItems = Object.values(propertyRatings).map(item => {
+            const avgRating = item.ratings.length > 0 
+                ? (item.ratings.reduce((a, b) => a + b, 0) / item.ratings.length).toFixed(1)
+                : 0;
+            
+            return `
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="mb-0 small">${item.property.title || 'Unknown Property'}</h6>
+                        <div class="rating-stars small">
+                            ${this.generateStars(avgRating)}
+                            <span class="text-muted ms-1">${avgRating}</span>
+                        </div>
+                    </div>
+                    <span class="badge bg-light text-dark">${item.count} review${item.count !== 1 ? 's' : ''}</span>
+                </div>
+            `;
+        }).join('');
+
+        propertyRatingsList.innerHTML = propertyRatingItems || '<div class="text-muted small">No property reviews yet</div>';
+    }
+
+    async initializeCharts() {
+        await this.initializeBookingChart();
+        await this.initializeOccupancyChart();
+        this.updatePerformanceKPIs();
+    }
+
+    initializeBookingChart() {
+        const bookingCtx = document.getElementById('bookingChart')?.getContext('2d');
+        if (!bookingCtx) return;
+
+        const monthlyBookings = this.calculateMonthlyBookings();
+        
+        if (this.bookingChart) {
+            this.bookingChart.destroy();
+        }
+        
+        this.bookingChart = new Chart(bookingCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Bookings',
+                    data: monthlyBookings,
+                    borderColor: '#1e3a8a',
+                    backgroundColor: 'rgba(30, 58, 138, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    calculateMonthlyBookings() {
+        const monthlyCounts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        
+        this.bookings.forEach(booking => {
+            const bookingDate = new Date(booking.createdAt || booking.checkIn);
+            const month = bookingDate.getMonth();
+            monthlyCounts[month]++;
+        });
+        
+        return monthlyCounts;
+    }
+
+    async initializeOccupancyChart() {
+        const occupancyCtx = document.getElementById('occupancyChart')?.getContext('2d');
+        if (!occupancyCtx) return;
+
+        // Calculate occupancy data
+        const occupancyData = await this.calculateOccupancyData();
+        
+        if (this.occupancyChart) {
+            this.occupancyChart.destroy();
+        }
+        
+        this.occupancyChart = new Chart(occupancyCtx, {
+            type: 'bar',
+            data: {
+                labels: occupancyData.labels,
+                datasets: [{
+                    label: 'Occupancy Rate %',
+                    data: occupancyData.rates,
+                    backgroundColor: this.generateChartColors(occupancyData.labels.length),
+                    borderColor: '#1e3a8a',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Occupancy: ${context.parsed.y}%`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Occupancy Rate (%)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 30
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    async calculateOccupancyData() {
+    const labels = [];
+    const rates = [];
+    
+    // If no properties, return empty data
+    if (this.properties.length === 0) {
+        return { labels: [], rates: [] };
+    }
+    
+    // Use actual properties for the chart
+    const propertiesToShow = this.properties;
+    
+    for (const property of propertiesToShow) {
+        labels.push(property.title || `Property ${property._id?.slice(-4) || 'Unknown'}`);
+        
+        let occupancyRate = 0;
+        if (property.status === 'occupied' || property.availability === 'occupied') {
+            occupancyRate = 100;
+        } else {
+            occupancyRate = await this.calculateRoomBasedOccupancy(property._id);
+        }
+        
+        rates.push(occupancyRate);
+    }
+    
+    return { labels, rates };
+}
+
+    async calculateRoomBasedOccupancy(propertyId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms`, {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const rooms = data.rooms || [];
+                
+                if (rooms.length === 0) {
+                    return 0;
+                }
+                
+                const occupiedRooms = rooms.filter(room => !room.isAvailable).length;
+                const occupancyRate = (occupiedRooms / rooms.length) * 100;
+                return Math.round(occupancyRate);
+            } else {
+                console.warn(`Failed to fetch rooms for property ${propertyId}`);
+                return 0;
+            }
+        } catch (error) {
+            console.error(`Error calculating occupancy for property ${propertyId}:`, error);
+            return 0;
+        }
+    }
+
+    generateChartColors(count) {
+        const baseColors = [
+            '#059669', '#60a5fa', '#f59e0b', '#fd7e14', '#6f42c1',
+            '#dc2626', '#8b5cf6', '#10b981', '#f97316', '#3b82f6'
+        ];
+        
+        if (count <= baseColors.length) {
+            return baseColors.slice(0, count);
+        }
+        
+        // Generate additional colors if needed
+        const colors = [...baseColors];
+        for (let i = baseColors.length; i < count; i++) {
+            const hue = (i * 137.5) % 360;
+            colors.push(`hsl(${hue}, 70%, 60%)`);
+        }
+        return colors;
+    }
+
+    async updatePerformanceKPIs() {
+        const totalProperties = this.properties.length;
+        const totalBookings = this.bookings.length;
+        
+        const overallOccupancyRate = await this.calculateOverallOccupancyRate();
+        
+        const avgDuration = totalBookings > 0 ? 2.3 : 0;
+        
+        const avgRating = this.reviews.length > 0 
+            ? (this.reviews.reduce((sum, review) => sum + review.rating, 0) / this.reviews.length).toFixed(1)
+            : 0;
+        
+        const renewalRate = totalBookings > 0 ? 78 : 0;
+
+        // Update the KPI occupancy rate
+        const kpiOccupancyElement = document.getElementById('kpiOccupancyRate');
+        if (kpiOccupancyElement) {
+            kpiOccupancyElement.textContent = `${Math.round(overallOccupancyRate)}%`;
+        }
+
+        const kpiElements = document.querySelectorAll('#performance .report-section .row.text-center h3');
+        if (kpiElements.length >= 4) {
+            kpiElements[0].textContent = `${Math.round(overallOccupancyRate)}%`;
+            kpiElements[1].textContent = avgDuration;
+            kpiElements[2].textContent = avgRating;
+            kpiElements[3].textContent = `${renewalRate}%`;
+        }
+    }
+
+    async calculateOverallOccupancyRate() {
+        if (this.properties.length === 0) return 0;
+
+        let totalOccupancy = 0;
+        let propertyCount = 0;
+
+        for (const property of this.properties) {
+            try {
+                let propertyOccupancy = 0;
+                
+                if (property.status === 'occupied' || property.availability === 'occupied') {
+                    propertyOccupancy = 100;
+                } else {
+                    propertyOccupancy = await this.calculateRoomBasedOccupancy(property._id);
+                }
+                
+                totalOccupancy += propertyOccupancy;
+                propertyCount++;
+                
+            } catch (error) {
+                console.error(`Error processing property ${property._id}:`, error);
+            }
+        }
+
+        return propertyCount > 0 ? totalOccupancy / propertyCount : 0;
+    }
+
+    // NEW: Payment Management Methods
+    // NEW: Payment Management Methods - FIXED to be landlord-specific
+addPayment() {
+    const amountInput = document.getElementById('paymentAmount');
+    const descriptionInput = document.getElementById('paymentDescription');
+    
+    const amount = parseFloat(amountInput.value);
+    const description = descriptionInput.value.trim();
+    
+    if (!amount || amount <= 0) {
+        this.showToast('Please enter a valid payment amount', 'warning');
+        return;
+    }
+    
+    if (!description) {
+        this.showToast('Please enter a payment description', 'warning');
+        return;
+    }
+    
+    const payment = {
+        id: Date.now().toString(),
+        amount: amount,
+        description: description,
+        date: new Date().toISOString(),
+        paid: false
+    };
+    
+    this.payments.push(payment);
+    this.savePayments();
+    this.updatePaymentsUI();
+    
+    // Clear inputs
+    amountInput.value = '';
+    descriptionInput.value = '';
+    
+    this.showToast('Payment added successfully', 'success');
+}
+
+togglePaymentStatus(paymentId) {
+    const payment = this.payments.find(p => p.id === paymentId);
+    if (payment) {
+        payment.paid = !payment.paid;
+        this.savePayments();
+        this.updatePaymentsUI();
+        this.showToast(`Payment marked as ${payment.paid ? 'paid' : 'unpaid'}`, 'info');
+    }
+}
+
+deletePayment(paymentId) {
+    this.payments = this.payments.filter(p => p.id !== paymentId);
+    this.savePayments();
+    this.updatePaymentsUI();
+    this.showToast('Payment deleted', 'info');
+}
+
+// FIXED: Save payments with landlord-specific key
+savePayments() {
+    const landlordId = this.user.id || this.user._id;
+    if (!landlordId) {
+        console.error('No landlord ID found');
+        return;
+    }
+    localStorage.setItem(`landlordPayments_${landlordId}`, JSON.stringify(this.payments));
+}
+
+// FIXED: Load payments with landlord-specific key
+loadPayments() {
+    const landlordId = this.user.id || this.user._id;
+    if (!landlordId) {
+        console.error('No landlord ID found');
+        return [];
+    }
+    return JSON.parse(localStorage.getItem(`landlordPayments_${landlordId}`) || '[]');
+}
+
+updatePaymentsUI() {
+    const paymentsList = document.getElementById('paymentsList');
+    if (!paymentsList) return;
+
+    if (this.payments.length === 0) {
+        paymentsList.innerHTML = '<div class="text-muted small text-center">No payments added yet</div>';
+        this.updateNetRevenue();
+        return;
+    }
+
+    const currentMonthPayments = this.payments.filter(payment => {
+        const paymentDate = new Date(payment.date);
+        const currentDate = new Date();
+        return paymentDate.getMonth() === currentDate.getMonth() && 
+               paymentDate.getFullYear() === currentDate.getFullYear();
+    });
+
+    paymentsList.innerHTML = currentMonthPayments.map(payment => `
+        <div class="payment-item ${payment.paid ? 'paid' : ''}">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="fw-bold">${payment.description}</small>
+                    <br>
+                    <small class="text-muted">R ${payment.amount.toLocaleString()}</small>
+                </div>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-sm ${payment.paid ? 'btn-success' : 'btn-outline-success'}" 
+                            onclick="reportsManager.togglePaymentStatus('${payment.id}')">
+                        <i class="bi ${payment.paid ? 'bi-check-circle-fill' : 'bi-circle'}"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" 
+                            onclick="reportsManager.deletePayment('${payment.id}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    this.updateNetRevenue();
+}
+
+    updateNetRevenue() {
+    const netRevenueElement = document.getElementById('netRevenue');
+    if (!netRevenueElement) return;
+
+    const currentMonthRevenue = this.financialData.currentMonthRevenue;
+    
+    // Only consider current month payments
+    const totalDeductions = this.payments
+        .filter(payment => {
+            const paymentDate = new Date(payment.date);
+            const currentDate = new Date();
+            return paymentDate.getMonth() === currentDate.getMonth() && 
+                   paymentDate.getFullYear() === currentDate.getFullYear() &&
+                   payment.paid;
+        })
+        .reduce((sum, payment) => sum + payment.amount, 0);
+
+    const netRevenue = currentMonthRevenue - totalDeductions;
+    netRevenueElement.textContent = `R ${Math.max(0, netRevenue).toLocaleString()}`;
+
+    // Update color based on net revenue
+    if (netRevenue < 0) {
+        netRevenueElement.closest('.net-revenue-card').style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
+    } else {
+        netRevenueElement.closest('.net-revenue-card').style.background = 'linear-gradient(135deg, var(--success) 0%, #047857 100%)';
+    }
+}
+
+    setupEventListeners() {
+        const reviewFilter = document.getElementById('reviewFilter');
+        if (reviewFilter) {
+            reviewFilter.addEventListener('change', (e) => {
+                this.currentReviewFilter = e.target.value;
+                this.loadReviews();
+            });
+        }
+
+        const reportStatusFilter = document.getElementById('reportStatusFilter');
+        if (reportStatusFilter) {
+            reportStatusFilter.addEventListener('change', (e) => {
+                this.currentReportStatusFilter = e.target.value;
+                this.loadReports();
+            });
+        }
+
+        const reportPriorityFilter = document.getElementById('reportPriorityFilter');
+        if (reportPriorityFilter) {
+            reportPriorityFilter.addEventListener('change', (e) => {
+                this.currentReportPriorityFilter = e.target.value;
+                this.loadReports();
+            });
+        }
+    }
+
+    setupRealTimeUpdates() {
+        setInterval(() => {
+            this.refreshData();
+        }, 120000);
+        
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                this.refreshData();
+            }
+        });
+    }
+
+    async refreshData() {
+        try {
+            await this.loadData();
+            this.showToast('Data updated successfully', 'success');
+        } catch (error) {
+            console.error('Error refreshing data:', error);
+            this.showToast('Failed to update data', 'error');
+        }
+    }
+
+    showToast(message, type = 'info') {
+        const toastContainer = document.querySelector('.toast-container');
+        const toastId = 'toast-' + Date.now();
+        
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-bg-${type} border-0`;
+        toast.id = toastId;
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
+        });
+    }
+
+    async openResponseModal(reviewId) {
+        const review = this.reviews.find(r => r._id === reviewId);
+        if (review) {
+            document.getElementById('reviewId').value = reviewId;
+            document.getElementById('responseText').value = review.landlordResponse?.comment || '';
+            new bootstrap.Modal(document.getElementById('responseModal')).show();
+        }
+    }
+
+    async openUpdateReportModal(reportId) {
+        const report = this.reports.find(r => r._id === reportId);
+        if (report) {
+            document.getElementById('reportId').value = reportId;
+            document.getElementById('reportStatus').value = report.status;
+            document.getElementById('adminNotes').value = report.adminNotes || '';
+            new bootstrap.Modal(document.getElementById('updateReportModal')).show();
+        }
+    }
+
+    async submitResponse() {
+        const reviewId = document.getElementById('reviewId').value;
+        const responseText = document.getElementById('responseText').value.trim();
+        
+        if (!responseText) {
+            alert('Please enter a response');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}/response`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    response: responseText
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                
+                const reviewIndex = this.reviews.findIndex(r => r._id === reviewId);
+                if (reviewIndex !== -1) {
+                    this.reviews[reviewIndex] = result.review;
+                }
+
+                this.showToast('Response submitted successfully!', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('responseModal')).hide();
+                this.loadReviews();
+                this.updateDashboardStats();
+            } else {
+                const error = await response.json();
+                this.showToast('Error: ' + error.error, 'error');
+            }
+        } catch (error) {
+            console.error('Error submitting response:', error);
+            this.showToast('Failed to submit response. Please try again.', 'error');
+        }
+    }
+
+    async updateReportStatus() {
+        const reportId = document.getElementById('reportId').value;
+        const status = document.getElementById('reportStatus').value;
+        const adminNotes = document.getElementById('adminNotes').value.trim();
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/reports/${reportId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: status,
+                    adminNotes: adminNotes || undefined
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                
+                const reportIndex = this.reports.findIndex(r => r._id === reportId);
+                if (reportIndex !== -1) {
+                    this.reports[reportIndex] = result.report;
+                }
+
+                this.showToast('Report status updated successfully!', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('updateReportModal')).hide();
+                this.loadReports();
+                this.updateReportsSummary();
+                this.updateDashboardStats();
+            } else {
+                const error = await response.json();
+                this.showToast('Error: ' + error.error, 'error');
+            }
+        } catch (error) {
+            console.error('Error updating report status:', error);
+            this.showToast('Failed to update report status. Please try again.', 'error');
+        }
+    }
+
+    viewReportDetails(reportId) {
+        const report = this.reports.find(r => r._id === reportId);
+        if (report) {
+            this.showReportDetailsModal(report);
+        }
+    }
+
+    showReportDetailsModal(report) {
+        const modalHTML = `
+            <div class="modal fade" id="reportDetailsModal" tabindex="-1" aria-labelledby="reportDetailsModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="reportDetailsModalLabel">
+                                <i class="bi bi-flag-fill me-2"></i>Report Details
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <div class="report-field">
+                                        <label class="form-label fw-bold text-muted small">TITLE</label>
+                                        <p class="mb-0 text-break">${report.title}</p>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="report-field">
+                                        <label class="form-label fw-bold text-muted small">STATUS</label>
+                                        <div>
+                                            <span class="badge ${this.getStatusBadgeClass(report.status)}">
+                                                ${report.status.replace('_', ' ').toUpperCase()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="report-field">
+                                        <label class="form-label fw-bold text-muted small">PRIORITY</label>
+                                        <div>
+                                            <span class="badge ${this.getPriorityBadgeClass(report.priority)} priority-badge">
+                                                ${report.priority.toUpperCase()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="report-field">
+                                        <label class="form-label fw-bold text-muted small">DATE REPORTED</label>
+                                        <p class="mb-0">${new Date(report.createdAt).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="report-field mt-3">
+                                <label class="form-label fw-bold text-muted small">REPORTED BY</label>
+                                <p class="mb-0">
+                                    <i class="bi bi-person me-1"></i>
+                                    ${report.reporter?.username || 'Anonymous User'}
+                                </p>
+                            </div>
+
+                            <div class="report-field">
+                                <label class="form-label fw-bold text-muted small">PROPERTY</label>
+                                <p class="mb-0">
+                                    <i class="bi bi-house me-1"></i>
+                                    ${report.reportedProperty?.title || 'Unknown Property'}
+                                </p>
+                            </div>
+
+                            <div class="report-field">
+                                <label class="form-label fw-bold text-muted small">REPORT TYPE</label>
+                                <p class="mb-0">
+                                    <i class="bi bi-tag me-1"></i>
+                                    ${this.formatReportType(report.reportType)}
+                                </p>
+                            </div>
+
+                            <div class="report-field">
+                                <label class="form-label fw-bold text-muted small">DESCRIPTION</label>
+                                <div class="card bg-light">
+                                    <div class="card-body p-3">
+                                        <p class="mb-0">${report.description}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            ${report.evidence && report.evidence.length > 0 ? `
+                                <div class="report-field">
+                                    <label class="form-label fw-bold text-muted small">EVIDENCE</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        ${report.evidence.map(evidence => `
+                                            <div class="evidence-item">
+                                                <img src="${evidence}" class="evidence-modal-preview" alt="Evidence" 
+                                                     onclick="window.open('${evidence}', '_blank')"
+                                                     data-bs-toggle="tooltip" title="Click to view full size">
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            ${report.adminNotes ? `
+                                <div class="report-field">
+                                    <label class="form-label fw-bold text-muted small">ADMIN NOTES</label>
+                                    <div class="alert alert-info">
+                                        <p class="mb-0">${report.adminNotes}</p>
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            ${report.resolutionNotes ? `
+                                <div class="report-field">
+                                    <label class="form-label fw-bold text-muted small">RESOLUTION NOTES</label>
+                                    <div class="alert alert-success">
+                                        <p class="mb-0">${report.resolutionNotes}</p>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-circle me-1"></i>Close
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="reportsManager.openUpdateReportModalFromDetails('${report._id}')">
+                                <i class="bi bi-pencil me-1"></i>Update Status
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const existingModal = document.getElementById('reportDetailsModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        const modal = new bootstrap.Modal(document.getElementById('reportDetailsModal'));
+        modal.show();
+
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        document.getElementById('reportDetailsModal').addEventListener('hidden.bs.modal', function () {
+            this.remove();
+        });
+    }
+
+    openUpdateReportModalFromDetails(reportId) {
+        const detailsModal = bootstrap.Modal.getInstance(document.getElementById('reportDetailsModal'));
+        if (detailsModal) {
+            detailsModal.hide();
+        }
+        
+        setTimeout(() => {
+            this.openUpdateReportModal(reportId);
+        }, 300);
+    }
+
+    getStatusBadgeClass(status) {
+        const statusClasses = {
+            'pending': 'bg-warning',
+            'under_review': 'bg-info',
+            'resolved': 'bg-success',
+            'dismissed': 'bg-secondary'
+        };
+        return statusClasses[status] || 'bg-secondary';
+    }
+
+    getPriorityBadgeClass(priority) {
+        const priorityClasses = {
+            'critical': 'priority-critical',
+            'high': 'priority-high',
+            'medium': 'priority-medium',
+            'low': 'priority-low'
+        };
+        return priorityClasses[priority] || 'priority-low';
+    }
+
+    async exportReport() {
+        try {
+            this.showToast('Preparing export...', 'info');
+            
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                landlord: this.user.username,
+                summary: this.generateExportSummary(),
+                reviews: this.reviews,
+                reports: this.reports,
+                properties: this.properties,
+                financial: this.financialData,
+                payments: this.payments,
+                performance: this.generatePerformanceMetrics()
+            };
+
+            this.downloadJSON(exportData, `reslinq-report-${new Date().toISOString().split('T')[0]}.json`);
+            
+        } catch (error) {
+            console.error('Error exporting report:', error);
+            this.showToast('Failed to export report', 'error');
+        }
+    }
+
+    async generateCustomReport() {
+        try {
+            const form = document.getElementById('reportForm');
+            const formData = new FormData(form);
+            
+            const reportConfig = {
+                reportType: formData.get('reportType'),
+                dateRange: formData.get('dateRange'),
+                properties: formData.get('properties'),
+                format: formData.get('format'),
+                timestamp: new Date().toISOString()
+            };
+
+            this.showToast('Generating custom report...', 'info');
+
+            let reportData;
+            let filename;
+
+            switch (reportConfig.reportType) {
+                case 'financial':
+                    reportData = await this.generateFinancialReport(reportConfig);
+                    filename = `financial-report-${new Date().toISOString().split('T')[0]}`;
+                    break;
+                case 'performance':
+                    reportData = await this.generatePerformanceReport(reportConfig);
+                    filename = `performance-report-${new Date().toISOString().split('T')[0]}`;
+                    break;
+                case 'reviews':
+                    reportData = await this.generateReviewsReport(reportConfig);
+                    filename = `reviews-report-${new Date().toISOString().split('T')[0]}`;
+                    break;
+                case 'comprehensive':
+                    reportData = await this.generateComprehensiveReport(reportConfig);
+                    filename = `comprehensive-report-${new Date().toISOString().split('T')[0]}`;
+                    break;
+                default:
+                    throw new Error('Invalid report type');
+            }
+
+            switch (reportConfig.format) {
+                case 'pdf':
+                    this.generatePDFReport(reportData, filename);
+                    break;
+                case 'excel':
+                    this.generateExcelReport(reportData, filename);
+                    break;
+                case 'csv':
+                    this.generateCSVReport(reportData, filename);
+                    break;
+                default:
+                    this.downloadJSON(reportData, `${filename}.json`);
+            }
+
+            bootstrap.Modal.getInstance(document.getElementById('generateReportModal')).hide();
+            this.showToast('Custom report generated successfully!', 'success');
+
+        } catch (error) {
+            console.error('Error generating custom report:', error);
+            this.showToast('Failed to generate custom report: ' + error.message, 'error');
+        }
+    }
+
+    async generateFinancialReport(config) {
+        try {
+            const totalDeductions = this.payments
+                .filter(payment => payment.paid)
+                .reduce((sum, payment) => sum + payment.amount, 0);
+
+            return {
+                title: "Financial Report",
+                config: config,
+                summary: {
+                    totalRevenue: this.financialData.ytdRevenue,
+                    currentMonthRevenue: this.financialData.currentMonthRevenue,
+                    revenueProperties: this.financialData.revenueProperties,
+                    totalDeductions: totalDeductions,
+                    netRevenue: this.financialData.ytdRevenue - totalDeductions
+                },
+                monthlyBreakdown: this.financialData.monthlyRevenue,
+                payments: this.payments,
+                properties: this.properties.map(prop => ({
+                    name: prop.title,
+                    revenue: this.calculatePropertyRevenue(prop),
+                    status: prop.status,
+                    occupancy: this.calculatePropertyOccupancy(prop)
+                })),
+                generatedAt: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Error generating financial report:', error);
+            throw error;
+        }
+    }
+
+    async generatePerformanceReport(config) {
+        try {
+            const occupancyRate = await this.calculateOverallOccupancyRate();
+            const avgRating = this.reviews.length > 0 
+                ? (this.reviews.reduce((sum, review) => sum + review.rating, 0) / this.reviews.length).toFixed(1)
+                : 0;
+
+            return {
+                title: "Performance Report",
+                config: config,
+                kpis: {
+                    occupancyRate: Math.round(occupancyRate),
+                    averageRating: avgRating,
+                    totalBookings: this.bookings.length,
+                    renewalRate: this.bookings.length > 0 ? 78 : 0,
+                    responseRate: this.calculateResponseRate()
+                },
+                propertyPerformance: await this.getPropertyPerformance(),
+                reviewAnalysis: this.analyzeReviews(),
+                generatedAt: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Error generating performance report:', error);
+            throw error;
+        }
+    }
+
+    async generateReviewsReport(config) {
+        try {
+            const ratingDistribution = this.calculateRatingDistribution();
+            const sentimentAnalysis = this.analyzeReviewSentiment();
+
+            return {
+                title: "Reviews Report",
+                config: config,
+                summary: {
+                    totalReviews: this.reviews.length,
+                    averageRating: ratingDistribution.average,
+                    responseRate: this.calculateResponseRate()
+                },
+                distribution: ratingDistribution,
+                sentiment: sentimentAnalysis,
+                topProperties: this.getTopRatedProperties(),
+                recentReviews: this.reviews.slice(0, 10).map(review => ({
+                    property: review.property?.title,
+                    rating: review.rating,
+                    comment: review.comment,
+                    date: review.createdAt,
+                    hasResponse: !!(review.landlordResponse?.comment)
+                })),
+                generatedAt: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Error generating reviews report:', error);
+            throw error;
+        }
+    }
+
+    async generateComprehensiveReport(config) {
+        try {
+            const financial = await this.generateFinancialReport(config);
+            const performance = await this.generatePerformanceReport(config);
+            const reviews = await this.generateReviewsReport(config);
+
+            return {
+                title: "Comprehensive Report",
+                config: config,
+                executiveSummary: this.generateExecutiveSummary(),
+                financial: financial,
+                performance: performance,
+                reviews: reviews,
+                recommendations: this.generateRecommendations(),
+                generatedAt: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Error generating comprehensive report:', error);
+            throw error;
+        }
+    }
+
+    generateExportSummary() {
+        const totalDeductions = this.payments
+            .filter(payment => payment.paid)
+            .reduce((sum, payment) => sum + payment.amount, 0);
+
+        return {
+            totalProperties: this.properties.length,
+            totalReviews: this.reviews.length,
+            totalReports: this.reports.length,
+            openReports: this.reports.filter(r => ['pending', 'under_review'].includes(r.status)).length,
+            averageRating: this.reviews.length > 0 
+                ? (this.reviews.reduce((sum, review) => sum + review.rating, 0) / this.reviews.length).toFixed(1)
+                : 0,
+            totalRevenue: this.financialData.ytdRevenue,
+            totalDeductions: totalDeductions,
+            netRevenue: this.financialData.ytdRevenue - totalDeductions,
+            pendingPayments: this.payments.filter(p => !p.paid).length
+        };
+    }
+
+    generatePerformanceMetrics() {
+        return {
+            occupancyRate: this.calculateOverallOccupancyRate(),
+            bookingPerformance: this.calculateMonthlyBookings(),
+            responseRate: this.calculateResponseRate()
+        };
+    }
+
+    calculateRatingDistribution() {
+        const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+        this.reviews.forEach(review => {
+            const rating = Math.floor(review.rating);
+            if (distribution.hasOwnProperty(rating)) {
+                distribution[rating]++;
+            }
+        });
+
+        const total = this.reviews.length;
+        return {
+            distribution,
+            total,
+            average: total > 0 ? (this.reviews.reduce((sum, r) => sum + r.rating, 0) / total).toFixed(1) : 0
+        };
+    }
+
+    analyzeReviewSentiment() {
+        const sentiments = {
+            positive: this.reviews.filter(r => r.rating >= 4).length,
+            neutral: this.reviews.filter(r => r.rating === 3).length,
+            negative: this.reviews.filter(r => r.rating <= 2).length
+        };
+
+        const total = this.reviews.length;
+        return {
+            counts: sentiments,
+            percentages: {
+                positive: total > 0 ? ((sentiments.positive / total) * 100).toFixed(1) : 0,
+                neutral: total > 0 ? ((sentiments.neutral / total) * 100).toFixed(1) : 0,
+                negative: total > 0 ? ((sentiments.negative / total) * 100).toFixed(1) : 0
+            }
+        };
+    }
+
+    analyzeReviews() {
+        return {
+            total: this.reviews.length,
+            averageRating: this.reviews.length > 0 
+                ? (this.reviews.reduce((sum, review) => sum + review.rating, 0) / this.reviews.length).toFixed(1)
+                : 0,
+            responseRate: this.calculateResponseRate()
+        };
+    }
+
+    calculateResponseRate() {
+        const respondedReviews = this.reviews.filter(review => 
+            review.landlordResponse && review.landlordResponse.comment
+        ).length;
+        
+        return this.reviews.length > 0 
+            ? ((respondedReviews / this.reviews.length) * 100).toFixed(1)
+            : 0;
+    }
+
+    getTopRatedProperties() {
+        const propertyRatings = {};
+        
+        this.reviews.forEach(review => {
+            if (review.property && review.property._id) {
+                const propId = review.property._id;
+                if (!propertyRatings[propId]) {
+                    propertyRatings[propId] = {
+                        property: review.property,
+                        ratings: [],
+                        count: 0
+                    };
+                }
+                propertyRatings[propId].ratings.push(review.rating);
+                propertyRatings[propId].count++;
+            }
+        });
+
+        return Object.values(propertyRatings)
+            .map(item => ({
+                name: item.property.title,
+                averageRating: item.ratings.length > 0 
+                    ? (item.ratings.reduce((a, b) => a + b, 0) / item.ratings.length).toFixed(1)
+                    : 0,
+                reviewCount: item.count
+            }))
+            .sort((a, b) => b.averageRating - a.averageRating)
+            .slice(0, 5);
+    }
+
+    async getPropertyPerformance() {
+        const performance = [];
+        
+        for (const property of this.properties.slice(0, 10)) {
+            const occupancy = await this.calculatePropertyOccupancy(property);
+            const revenue = this.calculatePropertyRevenue(property);
+            const rating = this.calculatePropertyRating(property);
+            
+            performance.push({
+                name: property.title,
+                occupancy,
+                revenue,
+                rating,
+                status: property.status
+            });
+        }
+        
+        return performance;
+    }
+
+    calculatePropertyRevenue(property) {
+        return property.status === 'occupied' ? (property.price || 0) : 0;
+    }
+
+    calculatePropertyRating(property) {
+        const propertyReviews = this.reviews.filter(review => 
+            review.property && review.property._id === property._id
+        );
+        
+        return propertyReviews.length > 0 
+            ? (propertyReviews.reduce((sum, review) => sum + review.rating, 0) / propertyReviews.length).toFixed(1)
+            : 0;
+    }
+
+    async calculatePropertyOccupancy(property) {
+        if (property.status === 'occupied') return 100;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/properties/${property._id}/rooms`, {
+                headers: { 'Authorization': `Bearer ${this.token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const rooms = data.rooms || [];
+                
+                if (rooms.length === 0) return 0;
+                
+                const occupiedRooms = rooms.filter(room => !room.isAvailable).length;
+                return Math.round((occupiedRooms / rooms.length) * 100);
+            }
+        } catch (error) {
+            console.error(`Error calculating occupancy for ${property.title}:`, error);
+        }
+        
+        return 0;
+    }
+
+    filterDataByDateRange(dateRange) {
+        const now = new Date();
+        let startDate;
+
+        switch (dateRange) {
+            case 'last7':
+                startDate = new Date(now.setDate(now.getDate() - 7));
+                break;
+            case 'last30':
+                startDate = new Date(now.setDate(now.getDate() - 30));
+                break;
+            case 'last90':
+                startDate = new Date(now.setDate(now.getDate() - 90));
+                break;
+            case 'ytd':
+                startDate = new Date(now.getFullYear(), 0, 1);
+                break;
+            default:
+                startDate = new Date(0);
+        }
+
+        return {
+            startDate,
+            endDate: new Date()
+        };
+    }
+
+    generateExecutiveSummary() {
+        const totalRevenue = this.financialData.ytdRevenue;
+        const totalProperties = this.properties.length;
+        const avgRating = this.reviews.length > 0 
+            ? (this.reviews.reduce((sum, review) => sum + review.rating, 0) / this.reviews.length).toFixed(1)
+            : 0;
+        const openIssues = this.reports.filter(r => ['pending', 'under_review'].includes(r.status)).length;
+
+        return {
+            totalRevenue,
+            totalProperties,
+            averageRating: avgRating,
+            openIssues,
+            overallPerformance: this.calculateOverallPerformance(avgRating, openIssues)
+        };
+    }
+
+    calculateOverallPerformance(avgRating, openIssues) {
+        let score = 0;
+        
+        score += (avgRating / 5) * 60;
+        
+        const issuePenalty = Math.min(openIssues * 5, 40);
+        score += (40 - issuePenalty);
+        
+        return Math.min(100, Math.max(0, score));
+    }
+
+    generateRecommendations() {
+        const recommendations = [];
+        
+        const responseRate = this.calculateResponseRate();
+        if (responseRate < 80) {
+            recommendations.push({
+                area: 'Review Responses',
+                recommendation: 'Improve response rate to tenant reviews',
+                priority: 'medium',
+                details: `Current response rate: ${responseRate}%`
+            });
+        }
+
+        const openReports = this.reports.filter(r => ['pending', 'under_review'].includes(r.status)).length;
+        if (openReports > 5) {
+            recommendations.push({
+                area: 'Issue Resolution',
+                recommendation: 'Address pending reports promptly',
+                priority: 'high',
+                details: `${openReports} open reports need attention`
+            });
+        }
+
+        const distribution = this.calculateRatingDistribution();
+        if (distribution.distribution[1] + distribution.distribution[2] > distribution.total * 0.2) {
+            recommendations.push({
+                area: 'Tenant Satisfaction',
+                recommendation: 'Focus on improving low-rated areas',
+                priority: 'high',
+                details: 'More than 20% of reviews are 2 stars or below'
+            });
+        }
+
+        return recommendations.length > 0 ? recommendations : [{
+            area: 'General',
+            recommendation: 'Continue current management practices',
+            priority: 'low',
+            details: 'Performance metrics are within acceptable ranges'
+        }];
+    }
+
+    downloadJSON(data, filename) {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        this.downloadBlob(blob, filename);
+    }
+
+    generateCSVReport(data, filename) {
+        let csvContent = '';
+        
+        if (data.summary) {
+            csvContent += "Summary\n";
+            Object.entries(data.summary).forEach(([key, value]) => {
+                csvContent += `${key},${value}\n`;
+            });
+            csvContent += "\n";
+        }
+
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        this.downloadBlob(blob, `${filename}.csv`);
+    }
+
+    generateExcelReport(data, filename) {
+        this.generateCSVReport(data, filename);
+    }
+
+    generatePDFReport(data, filename) {
+        this.downloadJSON(data, `${filename}.json`);
+        this.showToast('PDF generation would require additional libraries. JSON format provided.', 'info');
+    }
+
+    downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    showError(message) {
+        console.error(message);
+        this.showToast(message, 'error');
+    }
+}
+
+// Initialize reports manager when page loads
+let reportsManager;
+document.addEventListener('DOMContentLoaded', function() {
+    reportsManager = new ReportsManager();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResLinQ | FAQ</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <!-- AOS CSS -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1C2B4A;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --secondary: #b6b1fb;
+      --accent: #f59e0b;
+      --text-dark: #1e293b;
+      --text-light: #64748b;
+      --bg-light: #f8fafc;
+    }
+
+    /* Floating Animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Pulse Animation */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Gradient Text */
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Enhanced Hero Section */
+    .faq-hero {
+      background: linear-gradient(135deg, #1e3a8a 0%, var(--secondary) 50%, #1e3a8a 100%);
+      color: white;
+      padding: 6rem 0;
+      margin-bottom: 3rem;
+      border-radius: 0 0 3rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .faq-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+
+    /* Floating Elements */
+    .floating-element {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-element:nth-child(1) {
+      width: 80px;
+      height: 80px;
+      top: 20%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      width: 120px;
+      height: 120px;
+      top: 60%;
+      right: 10%;
+      animation-delay: -2s;
+    }
+
+    .floating-element:nth-child(3) {
+      width: 60px;
+      height: 60px;
+      bottom: 20%;
+      left: 20%;
+      animation-delay: -4s;
+    }
+
+    /* Enhanced Search */
+    .search-container {
+      max-width: 600px;
+      margin: 2rem auto;
+      position: relative;
+    }
+
+    .search-input {
+      border-radius: 50px;
+      padding: 0.75rem 1.5rem;
+      border: 2px solid transparent;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 4px 15px rgba(30, 58, 138, 0.2);
+      transform: scale(1.02);
+    }
+
+    .search-icon {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+    }
+
+    /* Enhanced Category Cards */
+    .faq-category-card {
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 1.5rem;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 180px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .faq-category-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      z-index: 1;
+    }
+
+    .faq-category-card:hover {
+      transform: translateY(-10px);
+      border-color: var(--primary);
+      box-shadow: 0 20px 60px rgba(30, 58, 138, 0.2);
+    }
+
+    .faq-category-card.active {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      transform: translateY(-5px);
+    }
+
+    .faq-category-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: var(--primary);
+      transition: all 0.3s ease;
+    }
+
+    .faq-category-card:hover .faq-category-icon {
+      transform: scale(1.1) rotate(-5deg);
+    }
+
+    .faq-category-card.active .faq-category-icon {
+      color: white;
+    }
+
+    /* Enhanced Accordion */
+    .accordion-button {
+      border-radius: 1rem !important;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      padding: 1.25rem 1.5rem;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    .accordion-button:not(.collapsed) {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 4px 15px rgba(30, 58, 138, 0.2);
+    }
+
+    .accordion-button:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 0.25rem rgba(30, 58, 138, 0.25);
+    }
+
+    .accordion-body {
+      background-color: var(--bg-light);
+      border-radius: 0 0 1rem 1rem;
+      padding: 1.5rem;
+      border: 2px solid #e2e8f0;
+      border-top: none;
+    }
+
+    /* Back to Categories */
+    .back-to-categories {
+      cursor: pointer;
+      color: var(--primary);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 2rem;
+      transition: all 0.3s ease;
+      background: white;
+      border: 2px solid #e2e8f0;
+    }
+
+    .back-to-categories:hover {
+      color: var(--primary-dark);
+      background-color: var(--bg-light);
+      transform: translateX(-5px);
+    }
+
+    /* Contact Support Card */
+    .contact-support-card {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      border-radius: 2rem;
+      padding: 3rem;
+      margin-top: 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(30, 58, 138, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .contact-support-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M0 0h40v40H0V0zm1 1h38v38H1V1z'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .contact-support-card .card-body {
+      position: relative;
+      z-index: 2;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 4rem 1rem;
+      display: none;
+    }
+
+    .no-results i {
+      font-size: 4rem;
+      color: var(--text-light);
+      margin-bottom: 1rem;
+    }
+
+    /* Custom Button Styles */
+    .btn-gradient {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border: none;
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
+      color: white;
+    }
+
+    .quick-contact-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    .quick-contact-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    /* FAQ Content Animations */
+    .faq-content {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .faq-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Navbar Styles */
+    .bg-navy {
+      background-color: var(--primary) !important;
+    }
+
+    .text-navy {
+      color: var(--primary) !important;
+    }
+
+    .btn-navy {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .btn-navy:hover {
+      background-color: var(--primary-dark);
+      border-color: var(--primary-dark);
+      color: white;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .faq-hero {
+        padding: 4rem 0;
+        border-radius: 0 0 2rem 2rem;
+      }
+
+      .faq-category-card {
+        padding: 1.5rem 1rem;
+        min-height: 160px;
+      }
+
+      .faq-category-icon {
+        font-size: 2rem;
+      }
+
+      .search-container {
+        margin: 1.5rem auto;
+      }
+
+      .contact-support-card {
+        padding: 2rem;
+        margin-top: 2rem;
+      }
+
+      .back-to-categories {
+        padding: 0.5rem 1rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .faq-category-card {
+        min-height: 140px;
+        padding: 1.25rem 0.75rem;
+      }
+
+      .faq-category-icon {
+        font-size: 1.75rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .faq-category-card h5 {
+        font-size: 1rem;
+      }
+
+      .faq-category-card small {
+        font-size: 0.8rem;
+      }
+
+      .accordion-button {
+        padding: 1rem 1.25rem;
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1C2B4A;
+    z-index: 1030;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .mobile-nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-nav-item.active {
+    color: #64748b;
+  }
+  
+  .mobile-nav-item i {
+    display: block;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Add padding to main content to account for bottom nav */
+  main {
+    margin-bottom: 80px;
+  }
+}
+
+#logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+
+.hero-subtitle {
+        color:#e2e8f0;
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+        line-height: 1.5;
+        }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i>ResLinQ</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <i class="bi bi-house-door-fill"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="listings.html">
+              <i class="bi bi-building"></i> Listings
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="faq.html">
+              <i class="bi bi-question-circle-fill"></i> FAQ
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="help.html">
+              <i class="bi bi-headset"></i> Help
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="signup-login-buttons">
+        <a href="authorization.html" class="btn btn-outline-light me-2 nav-btn">Login</a>
+        <a href="signup.html" class="btn btn-light nav-btn">Sign Up</a>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Enhanced Hero Section -->
+  <section class="faq-hero">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    
+    <div class="container position-relative">
+      <div class="row justify-content-center text-center">
+        <div class="col-lg-8" data-aos="fade-up">
+          <h1 class="display-4 fw-bold mb-3 animate__animated animate__fadeInDown">
+            Frequently Asked <span class="gradient-text">Questions</span>
+          </h1>
+          <p class="lead mb-0 hero-subtitle fs-5 animate__animated animate__fadeInUp animate__delay-1s">
+            Find quick answers to common questions about student accommodation, bookings, and policies.
+          </p>
+        </div>
+      </div>
+      
+      <!-- Search Bar -->
+      <div class="search-container" data-aos="fade-up" data-aos-delay="200">
+        <div class="position-relative">
+          <input type="text" class="form-control search-input" id="faqSearch" placeholder="Search for answers...">
+          <i class="bi bi-search search-icon"></i>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="container my-5">
+    <!-- No Results Message -->
+    <div id="noResults" class="no-results">
+      <i class="bi bi-search"></i>
+      <h4 class="text-navy">No results found</h4>
+      <p class="text-muted">Try searching with different keywords or browse the categories below.</p>
+    </div>
+
+    <!-- Categories Grid -->
+    <div id="categoriesSection">
+      <h3 class="text-center mb-4 display-5 fw-bold gradient-text" data-aos="fade-up">Choose a Category</h3>
+      <div class="row g-4 justify-content-center" id="categoriesGrid">
+        <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="100">
+          <div class="faq-category-card" onclick="toggleFAQ('cancellation', this)">
+            <div class="faq-category-icon">
+              <i class="bi bi-calendar-x"></i>
+            </div>
+            <h5 class="fw-bold">Cancellations</h5>
+            <small class="text-muted">Booking & refund policies</small>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="200">
+          <div class="faq-category-card" onclick="toggleFAQ('payment', this)">
+            <div class="faq-category-icon">
+              <i class="bi bi-credit-card"></i>
+            </div>
+            <h5 class="fw-bold">Payment</h5>
+            <small class="text-muted">Payment methods & security</small>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="300">
+          <div class="faq-category-card" onclick="toggleFAQ('contracts', this)">
+            <div class="faq-category-icon">
+              <i class="bi bi-file-text"></i>
+            </div>
+            <h5 class="fw-bold">Contracts</h5>
+            <small class="text-muted">Lease terms & agreements</small>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="400">
+          <div class="faq-category-card" onclick="toggleFAQ('communications', this)">
+            <div class="faq-category-icon">
+              <i class="bi bi-chat-dots"></i>
+            </div>
+            <h5 class="fw-bold">Communications</h5>
+            <small class="text-muted">Contact & maintenance</small>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="100">
+          <div class="faq-category-card" onclick="toggleFAQ('room-types', this)">
+            <div class="faq-category-icon">
+              <i class="bi bi-door-closed"></i>
+            </div>
+            <h5 class="fw-bold">Room Types</h5>
+            <small class="text-muted">Room options & features</small>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="200">
+          <div class="faq-category-card" onclick="toggleFAQ('pricing', this)">
+            <div class="faq-category-icon">
+              <i class="bi bi-tag"></i>
+            </div>
+            <h5 class="fw-bold">Pricing</h5>
+            <small class="text-muted">Costs & inclusions</small>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="300">
+          <div class="faq-category-card" onclick="toggleFAQ('policies', this)">
+            <div class="faq-category-icon">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <h5 class="fw-bold">Property Policies</h5>
+            <small class="text-muted">Rules & regulations</small>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="400">
+          <div class="faq-category-card" onclick="toggleFAQ('facilities', this)">
+            <div class="faq-category-icon">
+              <i class="bi bi-wifi"></i>
+            </div>
+            <h5 class="fw-bold">Extra Facilities</h5>
+            <small class="text-muted">Amenities & services</small>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mx-auto" data-aos="fade-up" data-aos-delay="500">
+          <div class="faq-category-card" onclick="toggleFAQ('security', this)">
+            <div class="faq-category-icon">
+              <i class="bi bi-shield-lock"></i>
+            </div>
+            <h5 class="fw-bold">Security</h5>
+            <small class="text-muted">Safety & awareness</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ Details -->
+    <div id="faqDetailsSection" style="display: none;">
+      <div class="d-flex align-items-center mb-4" data-aos="fade-up">
+        <a class="back-to-categories me-3" onclick="showCategories()">
+          <i class="bi bi-arrow-left"></i> Back to Categories
+        </a>
+        <h3 class="text-navy mb-0 display-5 fw-bold gradient-text" id="currentCategoryTitle"></h3>
+      </div>
+
+      <!-- Cancellations -->
+      <div id="cancellation" class="faq-content">
+        <div class="accordion" id="accordionCancellation" data-aos="fade-up">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="cancel1">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCancel1">
+                Can I cancel 24hrs before booking?
+              </button>
+            </h2>
+            <div id="collapseCancel1" class="accordion-collapse collapse" data-bs-parent="#accordionCancellation">
+              <div class="accordion-body">
+                Yes, cancellations made at least 24 hours before viewing an accommodation are accepted.
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="cancel2">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCancel2">
+                What is the refund policy?
+              </button>
+            </h2>
+            <div id="collapseCancel2" class="accordion-collapse collapse" data-bs-parent="#accordionCancellation">
+              <div class="accordion-body">
+                Refunds are processed within 5-7 business days after cancellation.
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="cancel3">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCancel3">
+                What if I need to cancel due to an emergency?
+              </button>
+            </h2>
+            <div id="collapseCancel3" class="accordion-collapse collapse" data-bs-parent="#accordionCancellation">
+              <div class="accordion-body">
+                In case of emergencies, please contact our support team immediately. We'll review your situation on a case-by-case basis and work with you to find the best solution.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div id="payment" class="faq-content">
+        <div class="accordion" id="accordionPayment" data-aos="fade-up">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="pay1">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePay1">
+                Which payment methods are accepted by landlords?
+              </button>
+            </h2>
+            <div id="collapsePay1" class="accordion-collapse collapse" data-bs-parent="#accordionPayment">
+              <div class="accordion-body">
+                Landlords accept cash payments, EFTs, and bank transfers for cash-paying students. Please confirm with the landlord directly. 
+                <br><br>
+                Landlords accept all bursaries from NSFAS for undergraduates AND NRF for postgraduates etc.
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="pay2">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePay2">
+                Is payment secure?
+              </button>
+            </h2>
+            <div id="collapsePay2" class="accordion-collapse collapse" data-bs-parent="#accordionPayment">
+              <div class="accordion-body">
+                Yes, all payments are encrypted using SSL and processed securely.
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="pay3">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePay3">
+                When is rent due each month?
+              </button>
+            </h2>
+            <div id="collapsePay3" class="accordion-collapse collapse" data-bs-parent="#accordionPayment">
+              <div class="accordion-body">
+                Rent is typically due on the 1st of each month, but specific due dates may vary by property. Check your lease agreement for exact details.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contracts -->
+      <div id="contracts" class="faq-content">
+        <div class="accordion" id="accordionContracts" data-aos="fade-up">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="contract1">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseContract1">
+                What is the lease duration?
+              </button>
+            </h2>
+            <div id="collapseContract1" class="accordion-collapse collapse" data-bs-parent="#accordionContracts">
+              <div class="accordion-body">
+                The minimum lease duration is typically 10 months to a maximum of 12 months but this can vary by landlord.
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="contract2">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseContract2">
+                Can I negotiate my lease terms?
+              </button>
+            </h2>
+            <div id="collapseContract2" class="accordion-collapse collapse" data-bs-parent="#accordionContracts">
+              <div class="accordion-body">
+                Yes, you can negotiate lease terms directly with the landlord before signing.
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="contract3">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseContract3">
+                What happens if I need to break my lease early?
+              </button>
+            </h2>
+            <div id="collapseContract3" class="accordion-collapse collapse" data-bs-parent="#accordionContracts">
+              <div class="accordion-body">
+                Early lease termination may incur fees as specified in your contract. We recommend discussing your situation with the landlord as soon as possible to explore options.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Communications -->
+      <div id="communications" class="faq-content">
+        <div class="accordion" id="accordionCommunications" data-aos="fade-up">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="comm1">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseComm1">
+                How do I contact the landlord?
+              </button>
+            </h2>
+            <div id="collapseComm1" class="accordion-collapse collapse" data-bs-parent="#accordionCommunications">
+              <div class="accordion-body">
+                You can contact the landlord directly via email or phone. Their contact information is provided in your booking confirmation and property details.
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="comm2">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseComm2">
+                How quickly do landlords typically respond?
+              </button>
+            </h2>
+            <div id="collapseComm2" class="accordion-collapse collapse" data-bs-parent="#accordionCommunications">
+              <div class="accordion-body">
+                Most landlords respond within 24-48 hours. If you haven't received a response within this timeframe, please contact our support team for assistance.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Room Types -->
+      <div id="room-types" class="faq-content">
+        <div class="accordion" id="accordionRoomTypes" data-aos="fade-up">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="room1">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRoom1">
+                What types of rooms are available?
+              </button>
+            </h2>
+            <div id="collapseRoom1" class="accordion-collapse collapse" data-bs-parent="#accordionRoomTypes">
+              <div class="accordion-body">
+                We offer single rooms, shared rooms, and studio apartments. Each listing provides specific details about room types and configurations.
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="room2">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRoom2">
+                Are the rooms furnished?
+              </button>
+            </h2>
+            <div id="collapseRoom2" class="accordion-collapse collapse" data-bs-parent="#accordionRoomTypes">
+              <div class="accordion-body">
+                Most accommodations come fully furnished with a bed, desk, chair, and storage. Check individual property listings for specific furniture details.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing -->
+      <div id="pricing" class="faq-content">
+        <div class="accordion" id="accordionPricing" data-aos="fade-up">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="price1">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePrice1">
+                Are there any hidden fees?
+              </button>
+            </h2>
+            <div id="collapsePrice1" class="accordion-collapse collapse" data-bs-parent="#accordionPricing">
+              <div class="accordion-body">
+                No, all fees are clearly outlined in the listing details. We encourage transparency between students and landlords.
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="price2">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePrice2">
+                Is there a security deposit?
+              </button>
+            </h2>
+            <div id="collapsePrice2" class="accordion-collapse collapse" data-bs-parent="#accordionPricing">
+              <div class="accordion-body">
+                Most landlords require a security deposit, typically equivalent to one month's rent. This is refundable at the end of your lease, provided there's no damage to the property.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Property Policies -->
+      <div id="policies" class="faq-content">
+        <div class="accordion" id="accordionPolicies" data-aos="fade-up">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="policy1">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePolicy1">
+                What are the house rules?
+              </button>
+            </h2>
+            <div id="collapsePolicy1" class="accordion-collapse collapse" data-bs-parent="#accordionPolicies">
+              <div class="accordion-body">
+                House rules vary by property; please refer to the listing for specific policies. Common rules include quiet hours, guest policies, and maintenance responsibilities.
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="policy2">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePolicy2">
+                Are pets allowed?
+              </button>
+            </h2>
+            <div id="collapsePolicy2" class="accordion-collapse collapse" data-bs-parent="#accordionPolicies">
+              <div class="accordion-body">
+                Pet policies vary by property. Some landlords allow pets with an additional deposit, while others have a strict no-pet policy. Check individual listings for details.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Extra Facilities -->
+      <div id="facilities" class="faq-content">
+        <div class="accordion" id="accordionFacilities" data-aos="fade-up">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="facility1">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFacility1">
+                Are utilities included in the rent?
+              </button>
+            </h2>
+            <div id="collapseFacility1" class="accordion-collapse collapse" data-bs-parent="#accordionFacilities">
+              <div class="accordion-body">
+                Yes, utilities are typically included in the rent. This usually covers water and electricity. Internet may or may not be included depending on the property.
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="facility2">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFacility2">
+                Is there laundry facilities available?
+              </button>
+            </h2>
+            <div id="collapseFacility2" class="accordion-collapse collapse" data-bs-parent="#accordionFacilities">
+              <div class="accordion-body">
+                Most properties offer laundry facilities, either in-unit or shared. Check the property amenities section in each listing for specific details.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div id="security" class="faq-content">
+        <div class="accordion" id="accordionSecurity" data-aos="fade-up">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="security1">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSecurity1">
+                What security measures are in place?
+              </button>
+            </h2>
+            <div id="collapseSecurity1" class="accordion-collapse collapse" data-bs-parent="#accordionSecurity">
+              <div class="accordion-body">
+                Properties are equipped with 24/7 security, CCTV, and secure access controls. Many also have security personnel and emergency response protocols.
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="security2">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSecurity2">
+                What should I do in case of an emergency?
+              </button>
+            </h2>
+            <div id="collapseSecurity2" class="accordion-collapse collapse" data-bs-parent="#accordionSecurity">
+              <div class="accordion-body">
+                In case of emergency, contact local emergency services first, then notify your landlord and our support team. Emergency contact numbers are provided in your welcome package.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Support Card -->
+    <div class="contact-support-card" data-aos="zoom-in" data-aos-delay="100">
+      <div class="card-body">
+        <h4>Still have questions?</h4>
+        <p>Can't find the answer you're looking for? Our support team is here to help.</p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+          <a href="contact.html" class="btn btn-light btn-gradient">
+            <i class="bi bi-envelope me-2"></i>Contact Support
+          </a>
+          <a href="tel:+27123456789" class="btn quick-contact-btn">
+            <i class="bi bi-telephone me-2"></i>Call Now
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mobile Bottom Navigation -->
+<div class="mobile-bottom-nav d-lg-none">
+  <a href="home.html" class="mobile-nav-item">
+    <i class="bi bi-house"></i>
+    <span>Home</span>
+  </a>
+  <a href="listings.html" class="mobile-nav-item">
+    <i class="bi bi-building"></i>
+    <span>Listings</span>
+  </a>
+  <a href="my-bookings.html" class="mobile-nav-item">
+    <i class="bi bi-calendar-check"></i>
+    <span>Bookings</span>
+  </a>
+  <a href="help.html" class="mobile-nav-item ">
+    <i class="bi bi-question-circle"></i>
+    <span>Help</span>
+  </a>
+</div>
+
+  <!-- Enhanced Footer -->
+  <footer class="py-5 bg-navy text-white">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for finding the perfect student accommodation near your campus.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Quick Links</h6>
+          <ul class="list-unstyled">
+            <li><a href="home.html" class="text-light text-decoration-none">Home</a></li>
+            <li><a href="listings.html" class="text-light text-decoration-none">Listings</a></li>
+            <li><a href="faq.html" class="text-light text-decoration-none">FAQ</a></li>
+            <li><a href="about-us.html" class="text-light text-decoration-none">About Us</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="authorization.html" class="text-light text-decoration-none">Login</a></li>
+            <li><a href="signup.html" class="text-light text-decoration-none">Sign Up</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Get in Touch</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="navbar.js"></script>
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 1000,
+      once: true,
+      offset: 100
+    });
+
+    // Enhanced FAQ functionality with search and mobile optimizations
+    let currentActiveCard = null;
+    let currentCategory = null;
+
+    function toggleFAQ(id, cardElement) {
+      // Update active card styling
+      if (currentActiveCard) {
+        currentActiveCard.classList.remove('active');
+      }
+      cardElement.classList.add('active');
+      currentActiveCard = cardElement;
+      currentCategory = id;
+
+      // Hide categories and show FAQ details
+      document.getElementById('categoriesSection').style.display = 'none';
+      document.getElementById('faqDetailsSection').style.display = 'block';
+      document.getElementById('noResults').style.display = 'none';
+
+      // Hide all FAQ content
+      const contents = document.querySelectorAll('.faq-content');
+      contents.forEach(content => {
+        content.classList.remove('active');
+      });
+
+      // Show selected FAQ content
+      const selectedContent = document.getElementById(id);
+      selectedContent.classList.add('active');
+
+      // Update category title
+      const categoryTitle = cardElement.querySelector('h5').textContent;
+      document.getElementById('currentCategoryTitle').textContent = categoryTitle;
+
+      // Scroll to top of FAQ details
+      document.getElementById('faqDetailsSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function showCategories() {
+      // Show categories and hide FAQ details
+      document.getElementById('categoriesSection').style.display = 'block';
+      document.getElementById('faqDetailsSection').style.display = 'none';
+      document.getElementById('noResults').style.display = 'none';
+
+      // Remove active card styling
+      if (currentActiveCard) {
+        currentActiveCard.classList.remove('active');
+        currentActiveCard = null;
+      }
+      
+      currentCategory = null;
+
+      // Clear search
+      document.getElementById('faqSearch').value = '';
+
+      // Scroll to categories
+      document.getElementById('categoriesSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Search functionality
+    function initSearch() {
+      const searchInput = document.getElementById('faqSearch');
+      
+      searchInput.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        
+        // If we're in category view, search categories
+        if (document.getElementById('categoriesSection').style.display !== 'none') {
+          searchCategories(searchTerm);
+        } else {
+          // If we're in FAQ details view, search within current category
+          searchCurrentCategory(searchTerm);
+        }
+      });
+    }
+
+    function searchCategories(searchTerm) {
+      const categoryCards = document.querySelectorAll('.faq-category-card');
+      let foundMatches = false;
+      
+      if (searchTerm.length < 2) {
+        // If search term is too short, show all categories
+        categoryCards.forEach(card => {
+          card.style.display = 'flex';
+        });
+        document.getElementById('noResults').style.display = 'none';
+        return;
+      }
+      
+      categoryCards.forEach(card => {
+        const categoryName = card.querySelector('h5').textContent.toLowerCase();
+        const categoryDesc = card.querySelector('small').textContent.toLowerCase();
+        
+        if (categoryName.includes(searchTerm) || categoryDesc.includes(searchTerm)) {
+          card.style.display = 'flex';
+          foundMatches = true;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+      
+      // Show no results message if no matches found
+      if (!foundMatches) {
+        document.getElementById('noResults').style.display = 'block';
+      } else {
+        document.getElementById('noResults').style.display = 'none';
+      }
+    }
+
+    function searchCurrentCategory(searchTerm) {
+      if (!currentCategory) return;
+      
+      const currentFAQSection = document.getElementById(currentCategory);
+      const accordionItems = currentFAQSection.querySelectorAll('.accordion-item');
+      let foundMatches = false;
+      
+      if (searchTerm.length < 2) {
+        // If search term is too short, show all questions
+        accordionItems.forEach(item => {
+          item.style.display = 'block';
+        });
+        return;
+      }
+      
+      accordionItems.forEach(item => {
+        const question = item.querySelector('.accordion-button').textContent.toLowerCase();
+        const answer = item.querySelector('.accordion-body').textContent.toLowerCase();
+        
+        if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+          item.style.display = 'block';
+          foundMatches = true;
+          
+          // Auto-expand matching items
+          const collapseId = item.querySelector('.accordion-button').getAttribute('data-bs-target');
+          const collapseElement = document.querySelector(collapseId);
+          if (!collapseElement.classList.contains('show')) {
+            new bootstrap.Collapse(collapseElement, { toggle: true });
+          }
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    // Mobile optimizations
+    function optimizeForMobile() {
+      // Add touch-friendly improvements
+      if ('ontouchstart' in window) {
+        // Increase touch targets for mobile
+        const categoryCards = document.querySelectorAll('.faq-category-card');
+        categoryCards.forEach(card => {
+          card.style.minHeight = '140px';
+        });
+        
+        // Improve accordion touch targets
+        const accordionButtons = document.querySelectorAll('.accordion-button');
+        accordionButtons.forEach(button => {
+          button.style.padding = '1.25rem 1.5rem';
+        });
+      }
+    }
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      initSearch();
+      optimizeForMobile();
+    });
+  </script>
+</body>
+</html>

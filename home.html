@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResLinQ | Student Accommodation Platform</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <!-- AOS CSS -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --secondary: #b6b1fb;
+      --accent: #f59e0b;
+      --text-dark: #1e293b;
+      --text-light: #64748b;
+      --bg-light: #f8fafc;
+    }
+
+    /* Floating Animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Pulse Animation */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Gradient Text */
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Enhanced Hero Section */
+    .hero-section {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--primary) 100%);
+      color: white;
+      padding: 6rem 0;
+      margin-bottom: 3rem;
+      border-radius: 0 0 3rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+
+    /* Floating Elements */
+    .floating-element {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-element:nth-child(1) {
+      width: 80px;
+      height: 80px;
+      top: 20%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      width: 120px;
+      height: 120px;
+      top: 60%;
+      right: 10%;
+      animation-delay: -2s;
+    }
+
+    .floating-element:nth-child(3) {
+      width: 60px;
+      height: 60px;
+      bottom: 20%;
+      left: 20%;
+      animation-delay: -4s;
+    }
+
+    /* Enhanced Cards */
+    .feature-card {
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      border: none;
+      border-radius: 1.5rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      z-index: 1;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 60px rgba(30, 58, 138, 0.2);
+    }
+
+    .card-img-top {
+      height: 200px;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .feature-card:hover .card-img-top {
+      transform: scale(1.1);
+    }
+
+    .price-tag {
+      background: linear-gradient(45deg, #10b981, #059669);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-weight: bold;
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 2;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .location-badge {
+      background: rgba(255,255,255,0.95);
+      color: var(--primary);
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      z-index: 2;
+      backdrop-filter: blur(10px);
+    }
+
+    .amenities-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .amenities-list li {
+      display: inline-block;
+      background: #f1f5f9;
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      margin: 0.25rem;
+      font-size: 0.8rem;
+      color: #475569;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover .amenities-list li {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Enhanced Search Container */
+    .search-container {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(20px);
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      margin-top: 2rem;
+      border: 1px solid rgba(255,255,255,0.2);
+      position: relative;
+      z-index: 2;
+    }
+
+    .stats-section {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      border-radius: 2rem;
+      padding: 4rem 0;
+      margin-bottom: 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stats-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 1rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 800;
+      color: white;
+      display: block;
+      background: linear-gradient(135deg, #ffffff 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-number-label {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.9);
+      font-weight: 600;
+    }
+
+    .feature-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      color: white;
+      font-size: 2rem;
+      transition: all 0.3s ease;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .feature-icon:hover {
+      transform: scale(1.1);
+      animation: none;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 4rem;
+      color: #64748b;
+    }
+
+    .no-results i {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      color: #cbd5e1;
+    }
+
+    .filter-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .filter-tag {
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.3);
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      color: white;
+      backdrop-filter: blur(10px);
+    }
+
+    .filter-tag:hover, .filter-tag.active {
+      background: white;
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .welcome-card {
+      background: linear-gradient(135deg, #1e40af, #059669);
+      color: white;
+      border-radius: 1.5rem;
+      border: none;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .welcome-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M0 0h40v40H0V0zm1 1h38v38H1V1z'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .welcome-card .card-body {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Custom Button Styles */
+    .btn-gradient {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border: none;
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
+      color: white;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .hero-section {
+        padding: 4rem 0;
+        border-radius: 0 0 2rem 2rem;
+      }
+      
+      .search-container {
+        padding: 2rem 1.5rem;
+      }
+      
+      .stat-number {
+        font-size: 2.5rem;
+      }
+    }
+
+    /* Mobile Bottom Navigation */
+    .mobile-bottom-nav {
+      display: none;
+    }
+
+    @media (max-width: 767px) {
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #1C2B4A;
+        z-index: 1030;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      }
+      
+      .mobile-nav-item {
+        flex: 1;
+        text-align: center;
+        padding: 0.5rem;
+        color: #fff;
+        text-decoration: none;
+        font-size: 0.75rem;
+      }
+      
+      .mobile-nav-item.active {
+        color: #64748b;
+      }
+      
+      .mobile-nav-item i {
+        display: block;
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+      }
+      
+      /* Add padding to main content to account for bottom nav */
+      main {
+        margin-bottom: 80px;
+      }
+    }
+
+    .hero-subtitle {
+      color:#e2e8f0;
+      animation: fadeInUp 0.8s ease-out 0.6s both;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      opacity: 0.9;
+      line-height: 1.5;
+    }
+
+    /* FIX: Amenities layout for mobile */
+    .amenities-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .amenity-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem;
+      border-radius: 0.5rem;
+      background: #f8fafc;
+      font-size: 0.75rem;
+    }
+
+    .amenity-item i {
+      font-size: 0.875rem;
+    }
+
+    .rating {
+      display: flex;
+      align-items: center;
+    }
+
+    .no-listings-placeholder {
+      padding: 2rem;
+      background: #f8fafc;
+      border-radius: 1rem;
+      border: 2px dashed #e2e8f0;
+    }
+
+    /* Enhanced card hover effects */
+    .feature-card {
+      transition: all 0.3s ease;
+      border: 1px solid #e2e8f0;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(30, 58, 138, 0.15);
+      border-color: var(--primary-light);
+    }
+
+    /* Badge enhancements */
+    .badge {
+      font-weight: 500;
+      padding: 0.5rem 0.75rem;
+    }
+
+    /* FIX: Responsive adjustments for amenities */
+    @media (max-width: 768px) {
+      .amenities-grid {
+        grid-template-columns: 1fr 1fr; /* Keep side-by-side on mobile */
+        gap: 0.3rem; /* Reduce gap on mobile */
+      }
+      
+      .amenity-item {
+        font-size: 0.7rem; /* Slightly smaller text on mobile */
+        padding: 0.2rem;
+      }
+      
+      .feature-card .card-body {
+        padding: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .amenities-grid {
+        grid-template-columns: 1fr 1fr; /* Still side-by-side on very small screens */
+        gap: 0.2rem;
+      }
+    }
+
+    #logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+
+.text-muted.fs-5 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i>ResLinQ</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" href="index.html">
+              <i class="bi bi-house-door-fill"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="listings.html">
+              <i class="bi bi-building"></i> Listings
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="help.html">
+              <i class="bi bi-question-circle-fill"></i> Help
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="signup-login-buttons">
+        <!-- Dynamic content will be inserted by navbar.js -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container-fluid px-0">
+    <!-- Welcome Message -->
+    <div id="welcomeMessage" style="display: none;">
+      <div class="container mt-4">
+        <div class="welcome-card">
+          <div class="card-body p-4">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h4 class="mb-2">Welcome back, <span id="usernameDisplay"></span>! 👋</h4>
+                <p class="mb-0">Make your student accommodation dreams come true with ResLinQ. Browse listings, book viewings, and share your experience.</p>
+              </div>
+              <div class="col-md-4 text-end">
+                <a href="listings.html" class="btn btn-light">Browse Listings</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enhanced Hero Section -->
+    <section class="hero-section">
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+      
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-6" data-aos="fade-right">
+            <h1 class="display-4 fw-bold mb-3 animate__animated animate__fadeInDown">
+              Find Your Home  <span class="gradient-text">Away From Home</span>
+            </h1>
+            <p class="lead mb-0 hero-subtitle fs-5 animate__animated animate__fadeInUp animate__delay-1s">
+              Discover verified accommodations, book viewings instantly, and join a community of students finding their ideal living spaces.
+            </p>
+            
+            <!-- Quick Stats -->
+            <div class="row text-center mt-4" data-aos="fade-up" data-aos-delay="200">
+              <div class="col-4">
+                <div class="stat-number">500+</div>
+                <div class="stat-number-label">Listings</div>
+              </div>
+              <div class="col-4">
+                <div class="stat-number">2K+</div>
+                <div class="stat-number-label">Students</div>
+              </div>
+              <div class="col-4">
+                <div class="stat-number">98%</div>
+                <div class="stat-number-label">Satisfaction</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6" data-aos="fade-left" data-aos-delay="300">
+            <!-- Enhanced Search Container -->
+            <div class="search-container">
+              <h5 class="mb-3"><i class="bi bi-search me-2"></i>Find Your Accommodation</h5>
+              
+              <!-- Quick Filter Tags -->
+              <div class="filter-tags mb-3">
+                <button class="filter-tag active" data-location="">All Locations</button>
+                <button class="filter-tag" data-location="bloemfontein">Bloemfontein</button>
+                <button class="filter-tag" data-location="johannesburg">Johannesburg</button>
+                <button class="filter-tag" data-location="pretoria">Pretoria</button>
+                <button class="filter-tag" data-location="durban">Durban</button>
+                <button class="filter-tag" data-location="other">Pietermaritzburg</button>
+                <button class="filter-tag" data-price="5000">Under R5,000</button>
+              </div>
+              
+              <form id="searchForm" class="row g-2">
+                <div class="col-md-5">
+                  <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                      <i class="bi bi-geo-alt text-muted"></i>
+                    </span>
+                    <input type="text" id="searchLocation" class="form-control border-start-0" placeholder="City or Campus...">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                      <span class="text-muted" style="font-size: 1.1rem; font-weight: bold;">R</span>
+                    </span>
+                    <input type="number" id="maxPrice" class="form-control border-start-0" placeholder="Max budget...">
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <button type="submit" class="btn btn-light w-100">
+                    <i class="bi bi-search me-1"></i> Search
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5">
+      <div class="container">
+        <div class="row text-center mb-5" data-aos="fade-up">
+          <div class="col-lg-8 mx-auto">
+            <h2 class="display-5 fw-bold gradient-text mb-3">Why Choose ResLinQ?</h2>
+            <p class="text-muted fs-5">Everything you need to find your perfect student accommodation</p>
+          </div>
+        </div>
+        <div class="row g-4">
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="text-center">
+              <div class="feature-icon">
+                <i class="bi bi-shield-check"></i>
+              </div>
+              <h5 class="fw-bold">Verified Listings</h5>
+              <p class="text-muted">All accommodations are verified and reviewed by real students</p>
+            </div>
+          </div>
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="text-center">
+              <div class="feature-icon">
+                <i class="bi bi-calendar-check"></i>
+              </div>
+              <h5 class="fw-bold">Easy Booking</h5>
+              <p class="text-muted">Book viewings instantly with our simple scheduling system</p>
+            </div>
+          </div>
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="text-center">
+              <div class="feature-icon">
+                <i class="bi bi-chat-heart"></i>
+              </div>
+              <h5 class="fw-bold">Community Support</h5>
+              <p class="text-muted">Get help and share experiences with fellow students</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Listings -->
+    <section class="py-5 bg-lightgrey">
+      <div class="container">
+        <div class="row mb-4" data-aos="fade-up">
+          <div class="col-8">
+            <h2 class="display-5 fw-bold gradient-text">Featured Accommodations</h2>
+            <p class="text-muted fs-5"> AI-selected. Student-approved.</p>
+          </div>
+          <div class="col-4 text-end">
+            <a href="listings.html" class="btn btn-gradient">
+              <i class="bi bi-building me-1"></i>View All Listings
+            </a>
+          </div>
+        </div>
+
+        <div class="row g-4" id="listingContainer">
+          <!-- Listings will be dynamically loaded here -->
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="no-results" style="display: none;">
+          <i class="bi bi-search"></i>
+          <h4>No accommodations found</h4>
+          <p>Try adjusting your search criteria or browse all listings.</p>
+          <a href="listings.html" class="btn btn-gradient">Browse All Listings</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+      <div class="container">
+        <div class="row text-center">
+          <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+            <div class="stat-item">
+              <span class="stat-number">500+</span>
+              <span class="stat-number-label">Verified Listings</span>
+            </div>
+          </div>
+          <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+            <div class="stat-item">
+              <span class="stat-number">2,000+</span>
+              <span class="stat-number-label">Happy Students</span>
+            </div>
+          </div>
+          <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+            <div class="stat-item">
+              <span class="stat-number">15+</span>
+              <span class="stat-number-label">Campuses</span>
+            </div>
+          </div>
+          <div class="col-md-3" data-aos="fade-up" data-aos-delay="400">
+            <div class="stat-item">
+              <span class="stat-number">24/7</span>
+              <span class="stat-number-label">Support</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+   <!-- Mobile Bottom Navigation -->
+<div class="mobile-bottom-nav d-lg-none">
+  <a href="home.html" class="mobile-nav-item active">
+    <i class="bi bi-house"></i>
+    <span>Home</span>
+  </a>
+  <a href="listings.html" class="mobile-nav-item">
+    <i class="bi bi-building"></i>
+    <span>Listings</span>
+  </a>
+  <a href="my-bookings.html" class="mobile-nav-item">
+    <i class="bi bi-calendar-check"></i>
+    <span>Bookings</span>
+  </a>
+  <a href="help.html" class="mobile-nav-item ">
+    <i class="bi bi-question-circle"></i>
+    <span>Help</span>
+  </a>
+</div>
+
+  <!-- Footer -->
+  <footer class="py-5 bg-navy text-white">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for finding the perfect student accommodation near your campus.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Quick Links</h6>
+          <ul class="list-unstyled">
+            <li><a href="home.html" class="text-light text-decoration-none">Home</a></li>
+            <li><a href="listings.html" class="text-light text-decoration-none">Listings</a></li>
+            <li><a href="help.html" class="text-light text-decoration-none">Help</a></li>
+            <li><a href="about-us.html" class="text-light text-decoration-none">About Us</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="my-bookings.html" class="text-light text-decoration-none">My Bookings</a></li>
+            <li><a href="view-reports.html" class="text-light text-decoration-none">My Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Get in Touch</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+       <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="navbar.js"></script>
+
+  <script>
+    // Enhanced Homepage Featured Listings Manager
+    class HomepageFeaturedManager {
+        constructor() {
+            this.properties = [];
+            this.API_BASE_URL =window .API_BASE_URL || 'https://linqs-backend.onrender.com/api';
+            // Status configuration - MUST MATCH listings.js exactly
+            this.statusConfig = {
+                // Availability statuses (landlord-controlled)
+                available: { class: 'success', text: 'Available', icon: 'bi-check-circle' },
+                occupied: { class: 'warning', text: 'Occupied', icon: 'bi-person-check' },
+                maintenance: { class: 'danger', text: 'Maintenance', icon: 'bi-tools' },
+                
+                // Admin approval statuses
+                pending: { class: 'warning', text: 'Pending Approval', icon: 'bi-clock' },
+                approved: { class: 'success', text: 'Approved', icon: 'bi-check-circle' },
+                rejected: { class: 'danger', text: 'Rejected', icon: 'bi-x-circle' }
+            };
+
+            // Gender preference configuration
+            this.genderConfig = {
+                unisex: { icon: 'bi-people', text: 'Unisex', class: 'info' },
+                male: { icon: 'bi-gender-male', text: 'Male Only', class: 'primary' },
+                female: { icon: 'bi-gender-female', text: 'Female Only', class: 'danger' }
+            };
+
+            // Accreditation configuration
+            this.accreditationConfig = {
+                accredited: { icon: 'bi-award', text: 'Accredited', class: 'success' },
+                self: { icon: 'bi-house', text: 'Self-paying', class: 'info' }
+            };
+
+            this.amenityIcons = {
+                'wifi': 'bi-wifi',
+                'parking': 'bi-car-front-fill',
+                'laundry': 'bi-droplet-fill',
+                'study rooms': 'bi-journal-text',
+                'modern': 'bi-house-check',
+                'central': 'bi-geo-alt-fill',
+                'secure': 'bi-shield-check',
+                'furnished': 'bi-house-door-fill',
+                'shuttle': 'bi-bus-front',
+                'quiet': 'bi-volume-mute',
+                'study areas': 'bi-pencil-square',
+                'close to ufs': 'bi-geo-alt',
+                'gym': 'bi-activity',
+                'pool': 'bi-water',
+                'ac': 'bi-snow',
+                'heating': 'bi-thermometer-sun'
+            };
+
+            // Store ALL properties for filtering
+            this.allProperties = [];
+            // Store only the featured properties to display (max 4)
+            this.featuredProperties = [];
+        }
+
+        // UPDATED: Same status logic as listings.js
+        getPropertyStatus(property) {
+            // Priority 1: Use availability field (landlord-controlled - what students see)
+            if (property.availability) {
+                return property.availability; // available, occupied, maintenance
+            }
+            // Priority 2: Use status field (admin approval status)
+            if (property.status) {
+                // Only show approved properties to students, others are effectively unavailable
+                return property.status === 'approved' ? 'available' : 'occupied';
+            }
+            // Priority 3: Fallback to legacy isAvailable field
+            if (property.isAvailable !== undefined) {
+                return property.isAvailable ? 'available' : 'occupied';
+            }
+            // Default: treat as available
+            return 'available';
+        }
+
+        // UPDATED: Get admin approval status (for internal use)
+        getAdminStatus(property) {
+            if (property.status) {
+                return property.status; // pending, approved, rejected
+            }
+            return 'approved'; // Default to approved if no status field
+        }
+
+        // NEW: Calculate property score for ranking
+        calculatePropertyScore(property) {
+            let score = 0;
+            
+            // High rating = high score (up to 50 points)
+            const rating = property.averageRating || 0;
+            score += rating * 10; // 5 stars = 50 points
+            
+            // More reviews = higher score (up to 20 points)
+            const reviewCount = property.reviewCount || 0;
+            score += Math.min(reviewCount * 2, 20); // 10+ reviews = 20 points
+            
+            // More amenities = higher score (up to 15 points)
+            const amenitiesCount = property.amenities ? property.amenities.length : 0;
+            score += Math.min(amenitiesCount * 1.5, 15); // 10+ amenities = 15 points
+            
+            // Accredited properties get bonus (10 points)
+            if (property.accreditation === 'accredited') {
+                score += 10;
+            }
+            
+            // Premium amenities bonus
+            const premiumAmenities = ['gym', 'pool', 'shuttle', 'study rooms', 'modern'];
+            const hasPremiumAmenities = property.amenities ? 
+                property.amenities.some(amenity => premiumAmenities.includes(amenity)) : false;
+            if (hasPremiumAmenities) {
+                score += 5;
+            }
+            
+            return score;
+        }
+
+        // NEW: Sort and select best properties
+        selectFeaturedProperties(properties) {
+            // Filter only available and approved properties
+            const availableProperties = properties.filter(property => {
+                const propertyStatus = this.getPropertyStatus(property);
+                const adminStatus = this.getAdminStatus(property);
+                return propertyStatus === 'available' && adminStatus === 'approved';
+            });
+
+            if (availableProperties.length === 0) {
+                return [];
+            }
+
+            // Calculate scores for all available properties
+            const scoredProperties = availableProperties.map(property => ({
+                ...property,
+                score: this.calculatePropertyScore(property)
+            }));
+
+            // Sort by score (highest first), then by rating, then by review count
+            scoredProperties.sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                if (b.averageRating !== a.averageRating) return (b.averageRating || 0) - (a.averageRating || 0);
+                return (b.reviewCount || 0) - (a.reviewCount || 0);
+            });
+
+            // Return top 4 properties
+            return scoredProperties.slice(0, 4);
+        }
+
+        async loadFeaturedListings() {
+            try {
+                // UPDATED: Fetch ALL properties first
+                const token = localStorage.getItem("token");
+                const response = await fetch(`${this.API_BASE_URL}/properties`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const allProperties = data.properties || data || [];
+                    
+                    // Store ALL properties for filtering
+                    this.allProperties = allProperties;
+                    
+                    // Select only the best 4 properties for display
+                    this.featuredProperties = this.selectFeaturedProperties(allProperties);
+                    
+                    this.renderFeaturedListings(this.featuredProperties);
+                    
+                    console.log(`Loaded ${allProperties.length} total properties, showing ${this.featuredProperties.length} featured properties`);
+                } else {
+                    throw new Error('Failed to fetch properties');
+                }
+            } catch (error) {
+                console.log('Using enhanced demo featured listings with consistent logic');
+                const demoProperties = this.getEnhancedDemoFeatured();
+                
+                // Store ALL demo properties for filtering
+                this.allProperties = demoProperties;
+                
+                // Select only the best 4 properties for display
+                this.featuredProperties = this.selectFeaturedProperties(demoProperties);
+                
+                this.renderFeaturedListings(this.featuredProperties);
+                
+                console.log(`Using ${demoProperties.length} demo properties, showing ${this.featuredProperties.length} featured properties`);
+            }
+        }
+
+        getEnhancedDemoFeatured() {
+            return [
+                {
+                    _id: 'naval_heights',
+                    title: 'Naval Heights Residence',
+                    price: 3500,
+                    location: { 
+                        city: 'Bloemfontein',
+                        address: '123 University Road'
+                    },
+                    bedrooms: 2,
+                    bathrooms: 1,
+                    propertyType: 'apartment',
+                    accreditation: 'accredited',
+                    genderPreference: 'unisex',
+                    amenities: ['wifi', 'parking', 'laundry', 'study rooms', 'secure', 'modern', 'furnished'],
+                    images: ['https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3'],
+                    description: 'Close to UFS Main Campus with modern amenities and secure environment. Perfect for serious students.',
+                    availability: 'available',
+                    status: 'approved',
+                    averageRating: 4.8,
+                    reviewCount: 42
+                },
+                {
+                    _id: 'campus_view',
+                    title: 'Campus View Apartments',
+                    price: 4200,
+                    location: { 
+                        city: 'Bloemfontein',
+                        address: '67 Academic Avenue'
+                    },
+                    bedrooms: 2,
+                    bathrooms: 2,
+                    propertyType: 'apartment',
+                    accreditation: 'accredited',
+                    genderPreference: 'unisex',
+                    amenities: ['wifi', 'parking', 'study areas', 'modern', 'secure', 'gym', 'pool'],
+                    images: ['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3'],
+                    description: 'Modern apartments with stunning campus views and excellent study facilities.',
+                    availability: 'available',
+                    status: 'approved',
+                    averageRating: 4.9,
+                    reviewCount: 56
+                },
+                {
+                    _id: 'van_rooy',
+                    title: '8 Van Rooy Residence',
+                    price: 4500,
+                    location: { 
+                        city: 'Bloemfontein',
+                        address: '8 Van Rooy Street'
+                    },
+                    bedrooms: 2,
+                    bathrooms: 1,
+                    propertyType: 'house',
+                    accreditation: 'self',
+                    genderPreference: 'unisex',
+                    amenities: ['quiet', 'study areas', 'wifi', 'close to ufs', 'parking', 'furnished', 'shuttle'],
+                    images: ['images/8_VAN_ROOY.png'],
+                    description: 'Walking distance to UFS with quiet study areas and reliable free WiFi. Perfect for focused students.',
+                    availability: 'available',
+                    status: 'approved',
+                    averageRating: 4.7,
+                    reviewCount: 38
+                },
+                {
+                    _id: 'premium_suites',
+                    title: 'Premium Student Suites',
+                    price: 5500,
+                    location: { 
+                        city: 'Johannesburg',
+                        address: '89 Education Boulevard'
+                    },
+                    bedrooms: 1,
+                    bathrooms: 1,
+                    propertyType: 'studio',
+                    accreditation: 'accredited',
+                    genderPreference: 'unisex',
+                    amenities: ['wifi', 'parking', 'gym', 'pool', 'study rooms', 'modern', 'secure', 'ac'],
+                    images: ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?ixlib=rb-4.0.3'],
+                    description: 'Luxury student accommodation with premium amenities and excellent location.',
+                    availability: 'available',
+                    status: 'approved',
+                    averageRating: 4.6,
+                    reviewCount: 29
+                },
+                {
+                    _id: 'joburg_flats',
+                    title: 'Joburg Student Flats',
+                    price: 5000,
+                    location: { 
+                        city: 'Johannesburg',
+                        address: '45 Education Street'
+                    },
+                    bedrooms: 3,
+                    bathrooms: 2,
+                    propertyType: 'apartment',
+                    accreditation: 'self',
+                    genderPreference: 'female',
+                    amenities: ['modern', 'central', 'secure', 'furnished', 'laundry'],
+                    images: ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?ixlib=rb-4.0.3'],
+                    description: 'Walking distance to Wits University with modern facilities and great location in the city center.',
+                    availability: 'available',
+                    status: 'approved',
+                    averageRating: 4.3,
+                    reviewCount: 22
+                },
+                {
+                    _id: 'green_residence',
+                    title: 'Green Campus Residence',
+                    price: 3800,
+                    location: { 
+                        city: 'Pretoria',
+                        address: '34 Student Lane'
+                    },
+                    bedrooms: 2,
+                    bathrooms: 1,
+                    propertyType: 'apartment',
+                    accreditation: 'accredited',
+                    genderPreference: 'unisex',
+                    amenities: ['wifi', 'parking', 'study areas', 'quiet', 'modern'],
+                    images: ['https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3'],
+                    description: 'Eco-friendly student residence with modern amenities and study spaces.',
+                    availability: 'available',
+                    status: 'approved',
+                    averageRating: 4.4,
+                    reviewCount: 18
+                },
+                {
+                    _id: 'westwood_digs',
+                    title: 'Westwood Student Digs',
+                    price: 3800,
+                    location: { 
+                        city: 'Bloemfontein',
+                        address: '78 Campus View'
+                    },
+                    bedrooms: 1,
+                    bathrooms: 1,
+                    propertyType: 'studio',
+                    accreditation: 'accredited',
+                    genderPreference: 'male',
+                    amenities: ['shuttle', 'laundry', 'modern', 'wifi', 'study areas'],
+                    images: ['https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3'],
+                    description: 'Modern rooms with laundry facilities and convenient shuttle service to campus. All-inclusive pricing.',
+                    availability: 'occupied', // This will be filtered out
+                    status: 'approved',
+                    averageRating: 4.7,
+                    reviewCount: 31
+                },
+                {
+                    _id: 'pending_property',
+                    title: 'New Student Residence',
+                    price: 4000,
+                    location: { 
+                        city: 'Pretoria',
+                        address: '90 Student Lane'
+                    },
+                    bedrooms: 2,
+                    bathrooms: 1,
+                    propertyType: 'apartment',
+                    accreditation: 'self',
+                    genderPreference: 'unisex',
+                    amenities: ['wifi', 'parking', 'modern'],
+                    images: ['https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3'],
+                    description: 'Brand new student residence with modern amenities.',
+                    availability: 'available',
+                    status: 'pending', // This will be filtered out
+                    averageRating: 0,
+                    reviewCount: 0
+                },
+                {
+                    _id: 'basic_apartment',
+                    title: 'Basic Student Apartment',
+                    price: 3200,
+                    location: { 
+                        city: 'Bloemfontein',
+                        address: '12 Simple Street'
+                    },
+                    bedrooms: 1,
+                    bathrooms: 1,
+                    propertyType: 'apartment',
+                    accreditation: 'self',
+                    genderPreference: 'unisex',
+                    amenities: ['wifi', 'furnished'], // Few amenities
+                    images: ['https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3'],
+                    description: 'Basic but comfortable student accommodation.',
+                    availability: 'available',
+                    status: 'approved',
+                    averageRating: 3.8, // Lower rating
+                    reviewCount: 5 // Few reviews
+                }
+            ];
+        }
+
+        renderFeaturedListings(properties) {
+            const container = document.getElementById('listingContainer');
+            if (!container) return;
+
+            if (properties.length === 0) {
+                container.innerHTML = this.getNoListingsHTML();
+                return;
+            }
+
+            container.innerHTML = properties.map(property => `
+                <div class="col-md-6 col-lg-3 listing-card" 
+                     data-location="${property.location.city}" 
+                     data-price="${property.price}">
+                    ${this.createEnhancedPropertyCard(property)}
+                </div>
+            `).join('');
+        }
+
+        createEnhancedPropertyCard(property) {
+            const accreditation = property.accreditation || 'self';
+            const accreditationInfo = this.accreditationConfig[accreditation] || this.accreditationConfig.self;
+            
+            const genderPreference = property.genderPreference || 'unisex';
+            const genderInfo = this.genderConfig[genderPreference] || this.genderConfig.unisex;
+            
+            return `
+            <div class="card feature-card h-100">
+                <div class="position-relative">
+                    <img src="${property.images[0]}" class="card-img-top" alt="${property.title}" 
+                         style="height: 200px; object-fit: cover; width: 100%;">
+                    
+                    <!-- Status Badge - Always Available since we filtered -->
+                    <div class="position-absolute top-0 start-0 m-2">
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle-fill me-1"></i>Available
+                        </span>
+                    </div>
+                    
+                    <!-- Price Tag -->
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge bg-success fs-6">
+                            R${property.price}<small>/month</small>
+                        </span>
+                    </div>
+                    
+                    <!-- Accreditation Badge -->
+                    <div class="position-absolute bottom-0 start-0 m-2">
+                        <span class="badge bg-${accreditationInfo.class}">
+                            <i class="bi ${accreditationInfo.icon} me-1"></i>${accreditationInfo.text}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Property Title & Location -->
+                    <div class="mb-2">
+                        <h6 class="card-title text-navy fw-bold mb-1">${property.title}</h6>
+                        <div class="d-flex align-items-center text-muted small">
+                            <i class="bi bi-geo-alt-fill me-1"></i>
+                            <span>${property.location.city}</span>
+                        </div>
+                    </div>
+
+                    <!-- Property Description -->
+                    <p class="card-text text-muted small mb-3">
+                        ${property.description.substring(0, 80)}...
+                    </p>
+
+                    <!-- Property Details -->
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <div class="text-primary">
+                                <i class="bi bi-door-closed-fill fs-5"></i>
+                                <div class="small">${property.bedrooms} Bed</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-info">
+                                <i class="bi bi-droplet-fill fs-5"></i>
+                                <div class="small">${property.bathrooms} Bath</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-warning">
+                                <i class="bi ${genderInfo.icon} fs-5"></i>
+                                <div class="small">${property.genderPreference}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Amenities with Icons -->
+                    <div class="mb-3">
+                        <div class="amenities-grid">
+                            ${property.amenities.slice(0, 4).map(amenity => `
+                                <div class="amenity-item">
+                                    <i class="bi ${this.amenityIcons[amenity.toLowerCase()] || 'bi-check-circle'} text-primary"></i>
+                                    <span class="small">${amenity}</span>
+                                </div>
+                            `).join('')}
+                            ${property.amenities.length > 4 ? `
+                                <div class="amenity-item bg-primary text-white">
+                                    <i class="bi bi-plus-circle"></i>
+                                    <span class="small">+${property.amenities.length - 4} more</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Rating -->
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="rating">
+                            ${this.generateStarRating(property.averageRating || 0)}
+                            <small class="text-muted ms-1">(${property.reviewCount || 0})</small>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <div class="d-grid">
+                        <a href="property-details.html?id=${property._id}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-eye me-1"></i>View Details
+                        </a>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        generateStarRating(rating) {
+            let stars = '';
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            
+            for (let i = 1; i <= 5; i++) {
+                if (i <= fullStars) {
+                    stars += '<i class="bi bi-star-fill text-warning"></i>';
+                } else if (i === fullStars + 1 && hasHalfStar) {
+                    stars += '<i class="bi bi-star-half text-warning"></i>';
+                } else {
+                    stars += '<i class="bi bi-star text-warning"></i>';
+                }
+            }
+            return stars;
+        }
+
+        getNoListingsHTML() {
+            return `
+            <div class="col-12 text-center py-5">
+                <div class="no-listings-placeholder">
+                    <i class="bi bi-house-heart display-1 text-muted"></i>
+                    <h4 class="text-navy mt-3">No Available Listings</h4>
+                    <p class="text-muted">All our featured accommodations are currently occupied or pending approval</p>
+                    <a href="listings.html" class="btn btn-gradient">
+                        <i class="bi bi-building me-1"></i>Browse All Listings
+                    </a>
+                </div>
+            </div>`;
+        }
+        
+        // UPDATED: Filter from ALL properties, not just featured ones
+        filterProperties(locationFilter, priceFilter) {
+            if (!this.allProperties.length) return;
+            
+            // Filter from ALL properties
+            const filteredProperties = this.allProperties.filter(property => {
+                let show = true;
+                
+                // Filter by location
+                if (locationFilter && !property.location.city.toLowerCase().includes(locationFilter.toLowerCase())) {
+                    show = false;
+                }
+                
+                // Filter by price
+                if (priceFilter && property.price > parseInt(priceFilter)) {
+                    show = false;
+                }
+                
+                // Only show available and approved properties
+                const propertyStatus = this.getPropertyStatus(property);
+                const adminStatus = this.getAdminStatus(property);
+                if (!(propertyStatus === 'available' && adminStatus === 'approved')) {
+                    show = false;
+                }
+                
+                return show;
+            });
+            
+            // Select best 4 from filtered results
+            const bestFilteredProperties = this.selectFeaturedProperties(filteredProperties).slice(0, 4);
+            
+            this.renderFeaturedListings(bestFilteredProperties);
+            
+            // Show no results message if no properties match
+            const noResults = document.getElementById('noResults');
+            if (bestFilteredProperties.length === 0) {
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+            }
+        }
+    }
+
+    // Initialize AOS
+    AOS.init({
+        duration: 1000,
+        once: true,
+        offset: 100
+    });
+
+    // Enhanced Search Functionality
+    document.addEventListener("DOMContentLoaded", () => {
+        // Initialize Featured Listings
+        const featuredManager = new HomepageFeaturedManager();
+        featuredManager.loadFeaturedListings();
+
+        // Load user info
+        const user = JSON.parse(localStorage.getItem("user"));
+        const welcomeMessage = document.getElementById("welcomeMessage");
+        const usernameDisplay = document.getElementById("usernameDisplay");
+
+        if (user && user.role === 'student') {
+            welcomeMessage.style.display = 'block';
+            usernameDisplay.textContent = user.username;
+        } else {
+            welcomeMessage.style.display = 'none';
+        }
+
+        // Enhanced search functionality
+        const searchForm = document.getElementById("searchForm");
+        const filterTags = document.querySelectorAll(".filter-tag");
+        const noResults = document.getElementById("noResults");
+
+        // Filter tag functionality
+        filterTags.forEach(tag => {
+            tag.addEventListener("click", function() {
+                // Remove active class from all tags
+                filterTags.forEach(t => t.classList.remove("active"));
+                // Add active class to clicked tag
+                this.classList.add("active");
+                
+                // Get filter criteria
+                const location = this.getAttribute("data-location");
+                const price = this.getAttribute("data-price");
+                
+                // Apply filters using the manager
+                featuredManager.filterProperties(location, price);
+            });
+        });
+
+        // Search form functionality
+        searchForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+            const locationInput = document.getElementById("searchLocation").value;
+            const maxPriceInput = document.getElementById("maxPrice").value;
+            
+            // Apply filters using the manager
+            featuredManager.filterProperties(locationInput, maxPriceInput);
+        });
+
+        // Clear filters when search inputs are cleared
+        document.getElementById("searchLocation").addEventListener("input", function() {
+            if (!this.value) {
+                const maxPrice = document.getElementById("maxPrice").value;
+                featuredManager.filterProperties("", maxPrice);
+            }
+        });
+
+        document.getElementById("maxPrice").addEventListener("input", function() {
+            if (!this.value) {
+                const location = document.getElementById("searchLocation").value;
+                featuredManager.filterProperties(location, "");
+            }
+        });
+    });
+</script>
+</body>
+</html>

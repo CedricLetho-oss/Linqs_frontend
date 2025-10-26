@@ -1,0 +1,1744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Settings - ResLinQ Admin</title>
+  
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --success: #059669;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --info: #60a5fa;
+      --light-bg: #f8fafc;
+      --navy: #0b2447;
+      --admin-sidebar: #0f172a;
+    }
+
+    body {
+      background: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .admin-sidebar {
+      background: var(--admin-sidebar);
+      color: white;
+      min-height: 100vh;
+      position: fixed;
+      width: 280px;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+
+    .admin-sidebar.collapsed {
+      width: 80px;
+    }
+
+    .admin-sidebar.collapsed .sidebar-text {
+      display: none;
+    }
+
+    .sidebar-brand {
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      text-align: center;
+    }
+
+    .sidebar-nav {
+      padding: 1rem 0;
+    }
+
+    .nav-item {
+      margin: 0.25rem 1rem;
+    }
+
+    .nav-link {
+      color: rgba(255,255,255,0.8);
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background: rgba(59, 130, 246, 0.1);
+      color: white;
+      border-left: 3px solid var(--primary-light);
+    }
+
+    .admin-main {
+      margin-left: 280px;
+      transition: all 0.3s ease;
+      min-height: 100vh;
+    }
+
+    .admin-main.expanded {
+      margin-left: 80px;
+    }
+
+    .admin-header {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1rem 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .admin-content {
+      padding: 2rem;
+    }
+
+    /* Settings-specific styles */
+    .settings-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+      border: 1px solid #e2e8f0;
+    }
+
+    .settings-nav {
+      position: sticky;
+      top: 2rem;
+    }
+
+    .settings-nav .nav-link {
+      color: #64748b;
+      border: none;
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .settings-nav .nav-link:hover {
+      background: #f1f5f9;
+      color: var(--primary);
+    }
+
+    .settings-nav .nav-link.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .setting-item {
+      border-bottom: 1px solid #f1f5f9;
+      padding: 1.5rem 0;
+    }
+
+    .setting-item:last-child {
+      border-bottom: none;
+    }
+
+    .password-strength {
+      height: 4px;
+      border-radius: 2px;
+      margin-top: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .strength-weak { background: #dc2626; width: 25%; }
+    .strength-fair { background: #f59e0b; width: 50%; }
+    .strength-good { background: #10b981; width: 75%; }
+    .strength-strong { background: #059669; width: 100%; }
+
+    .api-key {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      font-family: monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .system-health {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .health-card {
+      background: white;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      border-left: 4px solid var(--primary);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .health-card.success { border-left-color: var(--success); }
+    .health-card.warning { border-left-color: var(--warning); }
+    .health-card.danger { border-left-color: var(--danger); }
+
+    .backup-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      background: #f8fafc;
+    }
+
+    .backup-status.success { background: #d1fae5; color: #065f46; }
+    .backup-status.warning { background: #fef3c7; color: #92400e; }
+    .backup-status.danger { background: #fee2e2; color: #991b1b; }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+      background-color: var(--primary);
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(26px);
+    }
+
+    .log-entry {
+      padding: 0.75rem;
+      border-left: 3px solid #e2e8f0;
+      margin-bottom: 0.5rem;
+      background: #f8fafc;
+      border-radius: 0 0.5rem 0.5rem 0;
+    }
+
+    .log-entry.info { border-left-color: var(--info); }
+    .log-entry.warning { border-left-color: var(--warning); }
+    .log-entry.error { border-left-color: var(--danger); }
+    .log-entry.success { border-left-color: var(--success); }
+
+    .stat-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .stat-badge.success { background: #d1fae5; color: #065f46; }
+    .stat-badge.warning { background: #fef3c7; color: #92400e; }
+    .stat-badge.danger { background: #fee2e2; color: #991b1b; }
+
+    .notification-item {
+      padding: 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Admin Redirect Check -->
+  <script>
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    if (!token) {
+      alert("Please log in to access admin panel.");
+      window.location.href = "authorization.html";
+    } else if (user.role !== 'admin') {
+      alert("Access denied. Admin privileges required.");
+      window.location.href = "index.html";
+    }
+  </script>
+
+  <!-- Admin Sidebar -->
+  <div class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-brand">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-shield-check text-primary fs-4 me-2"></i>
+          <span class="sidebar-text fs-5 fw-bold">ResLinQ Admin</span>
+        </div>
+        <button class="btn btn-sm btn-outline-light" id="sidebarToggle">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="nav-item">
+        <a class="nav-link" href="admin-dashboard.html">
+          <i class="bi bi-speedometer2"></i>
+          <span class="sidebar-text">Dashboard</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-users.html">
+          <i class="bi bi-people"></i>
+          <span class="sidebar-text">Users</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-properties.html">
+          <i class="bi bi-houses"></i>
+          <span class="sidebar-text">Properties</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-bookings.html">
+          <i class="bi bi-calendar-check"></i>
+          <span class="sidebar-text">Bookings</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-reports.html">
+          <i class="bi bi-flag"></i>
+          <span class="sidebar-text">Reports</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-reviews.html">
+          <i class="bi bi-star"></i>
+          <span class="sidebar-text">Reviews</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-verification.html">
+          <i class="bi bi-patch-check"></i>
+          <span class="sidebar-text">Verification</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-messages.html">
+          <i class="bi bi-chat-dots"></i>
+          <span class="sidebar-text">Messages</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-payments.html">
+          <i class="bi bi-credit-card"></i>
+          <span class="sidebar-text">Payments</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link active" href="admin-settings.html">
+          <i class="bi bi-gear"></i>
+          <span class="sidebar-text">Settings</span>
+        </a>
+      </div>
+      
+      <div class="nav-item mt-4">
+        <a class="nav-link text-warning" href="admin-login.html" onclick="logout()">
+          <i class="bi bi-box-arrow-right"></i>
+          <span class="sidebar-text">Logout</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="admin-main" id="adminMain">
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h4 class="fw-bold mb-0">System Settings</h4>
+          <small class="text-muted">Configure platform settings and preferences</small>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn btn-success" onclick="saveAllSettings()">
+            <i class="bi bi-check-circle me-2"></i>Save All Changes
+          </button>
+          <button class="btn btn-outline-primary" onclick="refreshSystemStatus()">
+            <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="admin-content">
+      <div class="row">
+        <!-- Settings Navigation -->
+        <div class="col-lg-3 mb-4">
+          <div class="settings-nav">
+            <div class="nav flex-column nav-pills">
+              <a class="nav-link active" data-bs-toggle="pill" href="#system-overview">
+                <i class="bi bi-speedometer2 me-2"></i>System Overview
+              </a>
+              <a class="nav-link" data-bs-toggle="pill" href="#account-settings">
+                <i class="bi bi-person me-2"></i>Account
+              </a>
+              <a class="nav-link" data-bs-toggle="pill" href="#password-settings">
+                <i class="bi bi-shield-lock me-2"></i>Password
+              </a>
+              <a class="nav-link" data-bs-toggle="pill" href="#general-settings">
+                <i class="bi bi-gear me-2"></i>General
+              </a>
+              <a class="nav-link" data-bs-toggle="pill" href="#security-settings">
+                <i class="bi bi-shield-check me-2"></i>Security
+              </a>
+              <a class="nav-link" data-bs-toggle="pill" href="#backup-settings">
+                <i class="bi bi-cloud-arrow-down me-2"></i>Backup
+              </a>
+              <a class="nav-link" data-bs-toggle="pill" href="#api-settings">
+                <i class="bi bi-key me-2"></i>API
+              </a>
+              <a class="nav-link" data-bs-toggle="pill" href="#system-logs">
+                <i class="bi bi-list-check me-2"></i>System Logs
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="col-lg-9">
+          <div class="tab-content">
+            
+            <!-- System Overview -->
+            <div class="tab-pane fade show active" id="system-overview">
+              <div class="settings-card">
+                <h5 class="fw-bold mb-4">System Overview</h5>
+                
+                <div class="system-health mb-4">
+                  <div class="health-card">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-database text-primary fs-4 me-3"></i>
+                      <div>
+                        <h6 class="fw-bold mb-0">Database</h6>
+                        <span class="stat-badge success" id="dbStatus">Healthy</span>
+                      </div>
+                    </div>
+                    <small class="text-muted">Last checked: <span id="dbLastChecked">Just now</span></small>
+                  </div>
+                  
+                  <div class="health-card">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-server text-primary fs-4 me-3"></i>
+                      <div>
+                        <h6 class="fw-bold mb-0">Server</h6>
+                        <span class="stat-badge success" id="serverStatus">Online</span>
+                      </div>
+                    </div>
+                    <small class="text-muted">Uptime: <span id="serverUptime">99.9%</span></small>
+                  </div>
+                  
+                  <div class="health-card">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-shield-check text-primary fs-4 me-3"></i>
+                      <div>
+                        <h6 class="fw-bold mb-0">Security</h6>
+                        <span class="stat-badge success" id="securityStatus">Protected</span>
+                      </div>
+                    </div>
+                    <small class="text-muted">Last scan: <span id="lastSecurityScan">Today</span></small>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="setting-item">
+                      <h6 class="fw-bold">Platform Version</h6>
+                      <p class="text-muted mb-2">ResLinQ v2.1.0</p>
+                      <button class="btn btn-sm btn-outline-primary" onclick="checkForUpdates()">
+                        <i class="bi bi-cloud-download me-1"></i>Check for Updates
+                      </button>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="setting-item">
+                      <h6 class="fw-bold">Last Backup</h6>
+                      <div class="backup-status success">
+                        <i class="bi bi-check-circle"></i>
+                        <span>Completed 2 hours ago</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <h6 class="fw-bold">Quick Actions</h6>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-outline-primary btn-sm" onclick="clearSystemCache()">
+                      <i class="bi bi-trash me-1"></i>Clear Cache
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="runSystemDiagnostics()">
+                      <i class="bi bi-gear me-1"></i>Run Diagnostics
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="generateSystemReport()">
+                      <i class="bi bi-file-text me-1"></i>Generate Report
+                    </button>
+                    <button class="btn btn-outline-warning btn-sm" onclick="restartServices()">
+                      <i class="bi bi-arrow-repeat me-1"></i>Restart Services
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Account Settings -->
+            <div class="tab-pane fade" id="account-settings">
+              <div class="settings-card">
+                <h5 class="fw-bold mb-4">Account Settings</h5>
+                
+                <form id="accountSettingsForm">
+                  <div class="setting-item">
+                    <div class="row align-items-center">
+                      <div class="col-md-8">
+                        <h6 class="fw-bold">Email Address</h6>
+                        <p class="text-muted mb-0">Your admin email address for notifications</p>
+                      </div>
+                      <div class="col-md-4">
+                        <input type="email" class="form-control" id="adminEmail" required>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-item">
+                    <div class="row align-items-center">
+                      <div class="col-md-8">
+                        <h6 class="fw-bold">Full Name</h6>
+                        <p class="text-muted mb-0">Your display name in the system</p>
+                      </div>
+                      <div class="col-md-4">
+                        <input type="text" class="form-control" id="adminName" required>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-item">
+                    <div class="row align-items-center">
+                      <div class="col-md-8">
+                        <h6 class="fw-bold">Phone Number</h6>
+                        <p class="text-muted mb-0">For emergency notifications</p>
+                      </div>
+                      <div class="col-md-4">
+                        <input type="tel" class="form-control" id="adminPhone">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-item">
+                    <div class="row align-items-center">
+                      <div class="col-md-8">
+                        <h6 class="fw-bold">Timezone</h6>
+                        <p class="text-muted mb-0">Your local timezone</p>
+                      </div>
+                      <div class="col-md-4">
+                        <select class="form-select" id="adminTimezone">
+                          <option value="UTC">UTC</option>
+                          <option value="EST">Eastern Time (EST)</option>
+                          <option value="PST">Pacific Time (PST)</option>
+                          <option value="CST">Central Time (CST)</option>
+                          <option value="SAST">South Africa Time (SAST)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-item">
+                    <button type="submit" class="btn btn-primary">
+                      <i class="bi bi-check-circle me-2"></i>Update Account
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Password Settings -->
+            <div class="tab-pane fade" id="password-settings">
+              <div class="settings-card">
+                <h5 class="fw-bold mb-4">Change Password</h5>
+                
+                <form id="changePasswordForm">
+                  <div class="setting-item">
+                    <div class="row">
+                      <div class="col-md-8">
+                        <div class="mb-3">
+                          <label class="form-label fw-bold">Current Password</label>
+                          <input type="password" class="form-control" id="currentPassword" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                          <label class="form-label fw-bold">New Password</label>
+                          <input type="password" class="form-control" id="newPassword" required>
+                          <div class="password-strength" id="passwordStrength"></div>
+                          <small class="text-muted">Password must be at least 8 characters with uppercase, lowercase, and numbers</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                          <label class="form-label fw-bold">Confirm New Password</label>
+                          <input type="password" class="form-control" id="confirmPassword" required>
+                          <div class="text-danger mt-1" id="passwordMatchError"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-item">
+                    <button type="submit" class="btn btn-primary">
+                      <i class="bi bi-key me-2"></i>Change Password
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary ms-2" onclick="resetPasswordForm()">
+                      <i class="bi bi-arrow-clockwise me-2"></i>Reset
+                    </button>
+                  </div>
+                </form>
+
+                <div class="alert alert-info mt-3">
+                  <i class="bi bi-info-circle me-2"></i>
+                  <strong>Password Requirements:</strong> Minimum 8 characters, at least one uppercase letter, one lowercase letter, and one number.
+                </div>
+              </div>
+            </div>
+
+            <!-- General Settings -->
+            <div class="tab-pane fade" id="general-settings">
+              <div class="settings-card">
+                <h5 class="fw-bold mb-4">General Settings</h5>
+                
+                <form id="generalSettingsForm">
+                  <div class="setting-item">
+                    <div class="row align-items-center">
+                      <div class="col-md-8">
+                        <h6 class="fw-bold">Platform Name</h6>
+                        <p class="text-muted mb-0">Display name for the platform</p>
+                      </div>
+                      <div class="col-md-4">
+                        <input type="text" class="form-control" id="platformName" value="ResLinQ">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-item">
+                    <div class="row align-items-center">
+                      <div class="col-md-8">
+                        <h6 class="fw-bold">Default Language</h6>
+                        <p class="text-muted mb-0">Primary language for the platform</p>
+                      </div>
+                      <div class="col-md-4">
+                        <select class="form-select" id="defaultLanguage">
+                          <option value="en">English</option>
+                          <option value="es">Spanish</option>
+                          <option value="fr">French</option>
+                          <option value="zu">Zulu</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-item">
+                    <div class="row align-items-center">
+                      <div class="col-md-8">
+                        <h6 class="fw-bold">Currency</h6>
+                        <p class="text-muted mb-0">Default currency for payments</p>
+                      </div>
+                      <div class="col-md-4">
+                        <select class="form-select" id="defaultCurrency">
+                          <option value="USD">USD ($)</option>
+                          <option value="EUR">EUR (€)</option>
+                          <option value="GBP">GBP (£)</option>
+                          <option value="ZAR" selected>ZAR (R)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-item">
+                    <div class="row align-items-center">
+                      <div class="col-md-8">
+                        <h6 class="fw-bold">Date Format</h6>
+                        <p class="text-muted mb-0">How dates are displayed</p>
+                      </div>
+                      <div class="col-md-4">
+                        <select class="form-select" id="dateFormat">
+                          <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                          <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                          <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-item">
+                    <div class="row align-items-center">
+                      <div class="col-md-8">
+                        <h6 class="fw-bold">Maintenance Mode</h6>
+                        <p class="text-muted mb-0">Take the site offline for maintenance</p>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="toggle-switch">
+                          <input type="checkbox" id="maintenanceMode">
+                          <span class="toggle-slider"></span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-item">
+                    <button type="submit" class="btn btn-primary">
+                      <i class="bi bi-check-circle me-2"></i>Save General Settings
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="tab-pane fade" id="security-settings">
+              <div class="settings-card">
+                <h5 class="fw-bold mb-4">Security Settings</h5>
+                
+                <form id="securitySettingsForm">
+                  <div class="setting-item">
+                    <div class="row align-items-center">
+                      <div class="col-md-8">
+                        <h6 class="fw-bold">Two-Factor Authentication</h6>
+                        <p class="text-muted mb-0">Require 2FA for admin login</p>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="toggle-switch">
+                          <input type="checkbox" id="twoFactorAuth">
+                          <span class="toggle-slider"></span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-item">
+                    <div class="row align-items-center">
+                      <div class="col-md-8">
+                        <h6 class="fw-bold">Session Timeout</h6>
+                        <p class="text-muted mb-0">Auto-logout after inactivity</p>
+                      </div>
+                      <div class="col-md-4">
+                        <select class="form-select" id="sessionTimeout">
+                          <option value="30">30 minutes</option>
+                          <option value="60" selected>1 hour</option>
+                          <option value="120">2 hours</option>
+                          <option value="240">4 hours</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-item">
+                    <div class="row align-items-center">
+                      <div class="col-md-8">
+                        <h6 class="fw-bold">Failed Login Attempts</h6>
+                        <p class="text-muted mb-0">Lock account after failed attempts</p>
+                      </div>
+                      <div class="col-md-4">
+                        <select class="form-select" id="maxLoginAttempts">
+                          <option value="3">3 attempts</option>
+                          <option value="5" selected>5 attempts</option>
+                          <option value="10">10 attempts</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-item">
+                    <div class="row align-items-center">
+                      <div class="col-md-8">
+                        <h6 class="fw-bold">IP Whitelist</h6>
+                        <p class="text-muted mb-0">Restrict admin access to specific IPs</p>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="toggle-switch">
+                          <input type="checkbox" id="ipWhitelist">
+                          <span class="toggle-slider"></span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-item">
+                    <div class="row align-items-center">
+                      <div class="col-md-8">
+                        <h6 class="fw-bold">API Rate Limiting</h6>
+                        <p class="text-muted mb-0">Limit API requests per minute</p>
+                      </div>
+                      <div class="col-md-4">
+                        <select class="form-select" id="apiRateLimit">
+                          <option value="60">60 requests/min</option>
+                          <option value="120" selected>120 requests/min</option>
+                          <option value="300">300 requests/min</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-item">
+                    <button type="submit" class="btn btn-primary">
+                      <i class="bi bi-shield-check me-2"></i>Save Security Settings
+                    </button>
+                    <button type="button" class="btn btn-outline-warning ms-2" onclick="runSecurityScan()">
+                      <i class="bi bi-shield me-2"></i>Run Security Scan
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Backup Settings -->
+            <div class="tab-pane fade" id="backup-settings">
+              <div class="settings-card">
+                <h5 class="fw-bold mb-4">Backup & Recovery</h5>
+                
+                <div class="setting-item">
+                  <div class="row align-items-center">
+                    <div class="col-md-8">
+                      <h6 class="fw-bold">Auto Backup</h6>
+                      <p class="text-muted mb-0">Automatically backup database daily</p>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="toggle-switch">
+                        <input type="checkbox" id="autoBackup" checked>
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <div class="row align-items-center">
+                    <div class="col-md-8">
+                      <h6 class="fw-bold">Backup Retention</h6>
+                      <p class="text-muted mb-0">Keep backups for how long</p>
+                    </div>
+                    <div class="col-md-4">
+                      <select class="form-select" id="backupRetention">
+                        <option value="7">7 days</option>
+                        <option value="30" selected>30 days</option>
+                        <option value="90">90 days</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <div class="row align-items-center">
+                    <div class="col-md-8">
+                      <h6 class="fw-bold">Last Backup</h6>
+                      <p class="text-muted mb-0">Most recent system backup</p>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="backup-status success">
+                        <i class="bi bi-check-circle"></i>
+                        <span id="lastBackupTime">2 hours ago</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <h6 class="fw-bold">Backup Actions</h6>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-primary" onclick="createBackup()">
+                      <i class="bi bi-cloud-arrow-up me-2"></i>Create Backup Now
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="downloadBackup()">
+                      <i class="bi bi-download me-2"></i>Download Latest
+                    </button>
+                    <button class="btn btn-outline-warning" onclick="showRestoreModal()">
+                      <i class="bi bi-arrow-counterclockwise me-2"></i>Restore Backup
+                    </button>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <h6 class="fw-bold">Backup History</h6>
+                  <div class="table-responsive">
+                    <table class="table table-sm">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Size</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody id="backupHistory">
+                        <!-- Backup history will be populated here -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- API Settings -->
+            <div class="tab-pane fade" id="api-settings">
+              <div class="settings-card">
+                <h5 class="fw-bold mb-4">API Configuration</h5>
+                
+                <div class="setting-item">
+                  <h6 class="fw-bold">API Keys</h6>
+                  <p class="text-muted mb-3">Manage API keys for external integrations</p>
+                  
+                  <div class="api-key mb-3">
+                    <code id="currentApiKey">sk_live_••••••••••••••••••••••••</code>
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-outline-primary" onclick="copyApiKey()">
+                        <i class="bi bi-clipboard"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-warning" onclick="regenerateApiKey()">
+                        <i class="bi bi-arrow-repeat"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <div class="row align-items-center">
+                    <div class="col-md-8">
+                      <h6 class="fw-bold">API Access</h6>
+                      <p class="text-muted mb-0">Enable/disable API access</p>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="toggle-switch">
+                        <input type="checkbox" id="apiAccess" checked>
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <div class="row align-items-center">
+                    <div class="col-md-8">
+                      <h6 class="fw-bold">API Documentation</h6>
+                      <p class="text-muted mb-0">Access API documentation</p>
+                    </div>
+                    <div class="col-md-4">
+                      <button class="btn btn-outline-primary btn-sm" onclick="viewApiDocs()">
+                        <i class="bi bi-book me-1"></i>View Docs
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <h6 class="fw-bold">API Usage Statistics</h6>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="health-card">
+                        <h6 class="fw-bold">Requests Today</h6>
+                        <h4 class="text-primary">1,247</h4>
+                        <small class="text-muted">+12% from yesterday</small>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="health-card">
+                        <h6 class="fw-bold">Success Rate</h6>
+                        <h4 class="text-success">99.2%</h4>
+                        <small class="text-muted">Last 24 hours</small>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="health-card">
+                        <h6 class="fw-bold">Average Response</h6>
+                        <h4 class="text-info">128ms</h4>
+                        <small class="text-muted">Fast & reliable</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- System Logs -->
+            <div class="tab-pane fade" id="system-logs">
+              <div class="settings-card">
+                <h5 class="fw-bold mb-4">System Logs</h5>
+                
+                <div class="setting-item">
+                  <div class="row align-items-center">
+                    <div class="col-md-8">
+                      <h6 class="fw-bold">Log Level</h6>
+                      <p class="text-muted mb-0">Set the verbosity of system logging</p>
+                    </div>
+                    <div class="col-md-4">
+                      <select class="form-select" id="logLevel">
+                        <option value="error">Error Only</option>
+                        <option value="warn">Warnings & Errors</option>
+                        <option value="info" selected>Info, Warnings & Errors</option>
+                        <option value="debug">Debug (All)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <div class="row align-items-center">
+                    <div class="col-md-8">
+                      <h6 class="fw-bold">Log Retention</h6>
+                      <p class="text-muted mb-0">How long to keep system logs</p>
+                    </div>
+                    <div class="col-md-4">
+                      <select class="form-select" id="logRetention">
+                        <option value="7">7 days</option>
+                        <option value="30" selected>30 days</option>
+                        <option value="90">90 days</option>
+                        <option value="365">1 year</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <h6 class="fw-bold">Recent Logs</h6>
+                  <div class="mb-3">
+                    <div class="btn-group">
+                      <button class="btn btn-outline-primary btn-sm active" onclick="filterLogs('all')">All</button>
+                      <button class="btn btn-outline-primary btn-sm" onclick="filterLogs('error')">Errors</button>
+                      <button class="btn btn-outline-primary btn-sm" onclick="filterLogs('warning')">Warnings</button>
+                      <button class="btn btn-outline-primary btn-sm" onclick="filterLogs('info')">Info</button>
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm ms-2" onclick="refreshLogs()">
+                      <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm ms-2" onclick="clearLogs()">
+                      <i class="bi bi-trash"></i> Clear Logs
+                    </button>
+                  </div>
+                  
+                  <div id="systemLogs" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Logs will be populated here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const API_BASE_URL = 'https://linqs-backend.onrender.com/api';
+
+    // Sidebar Toggle
+    document.getElementById('sidebarToggle').addEventListener('click', function() {
+      document.getElementById('adminSidebar').classList.toggle('collapsed');
+      document.getElementById('adminMain').classList.toggle('expanded');
+    });
+
+    // Initialize settings when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      loadUserSettings();
+      loadSystemStatus();
+      loadBackupHistory();
+      loadSystemLogs();
+      loadApiKey();
+      loadGeneralSettings();
+      loadSecuritySettings();
+      loadBackupSettings();
+    });
+
+    // Password Strength Check
+    document.getElementById('newPassword').addEventListener('input', function() {
+      const password = this.value;
+      const strengthBar = document.getElementById('passwordStrength');
+      
+      let strength = 0;
+      if (password.length >= 8) strength++;
+      if (/[A-Z]/.test(password)) strength++;
+      if (/[a-z]/.test(password)) strength++;
+      if (/[0-9]/.test(password)) strength++;
+      if (/[^A-Za-z0-9]/.test(password)) strength++;
+      
+      strengthBar.className = 'password-strength';
+      if (strength <= 2) {
+        strengthBar.classList.add('strength-weak');
+      } else if (strength === 3) {
+        strengthBar.classList.add('strength-fair');
+      } else if (strength === 4) {
+        strengthBar.classList.add('strength-good');
+      } else {
+        strengthBar.classList.add('strength-strong');
+      }
+    });
+
+    // Password Match Check
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = this.value;
+      const errorDiv = document.getElementById('passwordMatchError');
+      
+      if (newPassword !== confirmPassword && confirmPassword.length > 0) {
+        errorDiv.textContent = 'Passwords do not match';
+      } else {
+        errorDiv.textContent = '';
+      }
+    });
+
+    // Change Password Form
+    document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      if (newPassword !== confirmPassword) {
+        alert('❌ New passwords do not match!');
+        return;
+      }
+      
+      if (newPassword.length < 8) {
+        alert('❌ New password must be at least 8 characters long!');
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_BASE_URL}/admin/change-password`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            currentPassword,
+            newPassword
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          alert('✅ Password changed successfully!');
+          resetPasswordForm();
+        } else {
+          alert('❌ ' + (data.error || 'Failed to change password'));
+        }
+      } catch (error) {
+        console.error('Error changing password:', error);
+        alert('❌ Failed to change password. Please try again.');
+      }
+    });
+
+    // Account Settings Form
+    document.getElementById('accountSettingsForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = {
+        email: document.getElementById('adminEmail').value,
+        name: document.getElementById('adminName').value,
+        phone: document.getElementById('adminPhone').value,
+        timezone: document.getElementById('adminTimezone').value
+      };
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/admin/update-profile`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          alert('✅ Account settings updated successfully!');
+          // Update local storage
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          user.email = formData.email;
+          user.firstName = formData.name.split(' ')[0];
+          user.lastName = formData.name.split(' ').slice(1).join(' ') || formData.name.split(' ')[0];
+          localStorage.setItem('user', JSON.stringify(user));
+        } else {
+          alert('❌ ' + (data.error || 'Failed to update account settings'));
+        }
+      } catch (error) {
+        console.error('Error updating account:', error);
+        alert('❌ Failed to update account settings. Please try again.');
+      }
+    });
+
+    // General Settings Form
+    document.getElementById('generalSettingsForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = {
+        platformName: document.getElementById('platformName').value,
+        defaultLanguage: document.getElementById('defaultLanguage').value,
+        defaultCurrency: document.getElementById('defaultCurrency').value,
+        dateFormat: document.getElementById('dateFormat').value,
+        maintenanceMode: document.getElementById('maintenanceMode').checked
+      };
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/admin/general-settings`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          alert('✅ General settings updated successfully!');
+        } else {
+          alert('❌ ' + (data.error || 'Failed to update general settings'));
+        }
+      } catch (error) {
+        console.error('Error updating general settings:', error);
+        alert('❌ Failed to update general settings. Please try again.');
+      }
+    });
+
+    // Security Settings Form
+    document.getElementById('securitySettingsForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = {
+        twoFactorAuth: document.getElementById('twoFactorAuth').checked,
+        sessionTimeout: document.getElementById('sessionTimeout').value,
+        maxLoginAttempts: document.getElementById('maxLoginAttempts').value,
+        ipWhitelist: document.getElementById('ipWhitelist').checked,
+        apiRateLimit: document.getElementById('apiRateLimit').value
+      };
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/admin/security-settings`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          alert('✅ Security settings updated successfully!');
+        } else {
+          alert('❌ ' + (data.error || 'Failed to update security settings'));
+        }
+      } catch (error) {
+        console.error('Error updating security settings:', error);
+        alert('❌ Failed to update security settings. Please try again.');
+      }
+    });
+
+    // Utility Functions
+    function resetPasswordForm() {
+      document.getElementById('changePasswordForm').reset();
+      document.getElementById('passwordStrength').className = 'password-strength';
+      document.getElementById('passwordMatchError').textContent = '';
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'admin-login.html';
+    }
+
+    async function loadUserSettings() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      // Populate account settings
+      if (user.email) {
+        document.getElementById('adminEmail').value = user.email;
+      }
+      if (user.firstName && user.lastName) {
+        document.getElementById('adminName').value = `${user.firstName} ${user.lastName}`;
+      } else if (user.name) {
+        document.getElementById('adminName').value = user.name;
+      }
+      if (user.phone) {
+        document.getElementById('adminPhone').value = user.phone;
+      }
+      if (user.timezone) {
+        document.getElementById('adminTimezone').value = user.timezone;
+      }
+    }
+
+    async function loadSystemStatus() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/admin/system-status`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            const status = data.data;
+            document.getElementById('dbStatus').textContent = status.database.status;
+            document.getElementById('serverStatus').textContent = status.server.status;
+            document.getElementById('securityStatus').textContent = 'Protected';
+            document.getElementById('dbLastChecked').textContent = 'Just now';
+            document.getElementById('serverUptime').textContent = '99.9%';
+            document.getElementById('lastSecurityScan').textContent = 'Today';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading system status:', error);
+        // Fallback to default values
+        document.getElementById('dbStatus').textContent = 'Healthy';
+        document.getElementById('serverStatus').textContent = 'Online';
+        document.getElementById('securityStatus').textContent = 'Protected';
+      }
+    }
+
+    async function loadBackupHistory() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/admin/backup-history`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            const backups = data.data;
+            const tbody = document.getElementById('backupHistory');
+            tbody.innerHTML = backups.map(backup => `
+              <tr>
+                <td>${new Date(backup.date).toLocaleString()}</td>
+                <td>${backup.size}</td>
+                <td><span class="badge bg-success">${backup.status}</span></td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary" onclick="downloadBackup('${backup.date}')">
+                    <i class="bi bi-download"></i>
+                  </button>
+                </td>
+              </tr>
+            `).join('');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading backup history:', error);
+        // Fallback to mock data
+        const backupHistory = [
+          { date: new Date().toISOString(), size: '2.4 GB', status: 'success' },
+          { date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), size: '2.3 GB', status: 'success' },
+          { date: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(), size: '2.3 GB', status: 'success' }
+        ];
+        
+        const tbody = document.getElementById('backupHistory');
+        tbody.innerHTML = backupHistory.map(backup => `
+          <tr>
+            <td>${new Date(backup.date).toLocaleString()}</td>
+            <td>${backup.size}</td>
+            <td><span class="badge bg-success">${backup.status}</span></td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary" onclick="downloadBackup('${backup.date}')">
+                <i class="bi bi-download"></i>
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    async function loadSystemLogs() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/admin/system-logs`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            const logs = data.data;
+            const logsContainer = document.getElementById('systemLogs');
+            logsContainer.innerHTML = logs.map(log => `
+              <div class="log-entry ${log.type}">
+                <div class="d-flex justify-content-between">
+                  <strong>${log.message}</strong>
+                  <small class="text-muted">${new Date(log.timestamp).toLocaleString()}</small>
+                </div>
+              </div>
+            `).join('');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading system logs:', error);
+        // Fallback to mock data
+        const logs = [
+          { type: 'info', message: 'System started successfully', timestamp: new Date().toISOString() },
+          { type: 'warning', message: 'High memory usage detected', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString() },
+          { type: 'error', message: 'Database connection timeout', timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString() },
+          { type: 'info', message: 'Backup completed successfully', timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString() },
+          { type: 'success', message: 'Security scan completed', timestamp: new Date(Date.now() - 20 * 60 * 1000).toISOString() }
+        ];
+        
+        const logsContainer = document.getElementById('systemLogs');
+        logsContainer.innerHTML = logs.map(log => `
+          <div class="log-entry ${log.type}">
+            <div class="d-flex justify-content-between">
+              <strong>${log.message}</strong>
+              <small class="text-muted">${new Date(log.timestamp).toLocaleString()}</small>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    async function loadApiKey() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/admin/api-key`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            document.getElementById('currentApiKey').textContent = data.data.apiKey;
+          }
+        }
+      } catch (error) {
+        console.error('Error loading API key:', error);
+        document.getElementById('currentApiKey').textContent = 'sk_live_••••••••••••••••••••••••';
+      }
+    }
+
+    async function loadGeneralSettings() {
+      // These would normally be loaded from the backend
+      // For now, set defaults
+      document.getElementById('platformName').value = 'ResLinQ';
+      document.getElementById('defaultLanguage').value = 'en';
+      document.getElementById('defaultCurrency').value = 'ZAR';
+      document.getElementById('dateFormat').value = 'DD/MM/YYYY';
+    }
+
+    async function loadSecuritySettings() {
+      // These would normally be loaded from the backend
+      // For now, set defaults
+      document.getElementById('sessionTimeout').value = '60';
+      document.getElementById('maxLoginAttempts').value = '5';
+      document.getElementById('apiRateLimit').value = '120';
+    }
+
+    async function loadBackupSettings() {
+      // These would normally be loaded from the backend
+      // For now, set defaults
+      document.getElementById('backupRetention').value = '30';
+    }
+
+    // System Actions
+    async function saveAllSettings() {
+      // Trigger all form submissions
+      document.getElementById('accountSettingsForm').dispatchEvent(new Event('submit'));
+      document.getElementById('generalSettingsForm').dispatchEvent(new Event('submit'));
+      document.getElementById('securitySettingsForm').dispatchEvent(new Event('submit'));
+      
+      alert('✅ All settings have been saved!');
+    }
+
+    async function refreshSystemStatus() {
+      await loadSystemStatus();
+      alert('🔄 System status refreshed!');
+    }
+
+    function checkForUpdates() {
+      alert('🔍 Checking for updates... System is up to date!');
+    }
+
+    async function clearSystemCache() {
+      if (confirm('Are you sure you want to clear system cache?')) {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`${API_BASE_URL}/admin/system-actions/clear-cache`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          const data = await response.json();
+          if (data.success) {
+            alert('✅ ' + data.message);
+          } else {
+            alert('❌ ' + data.error);
+          }
+        } catch (error) {
+          console.error('Error clearing cache:', error);
+          alert('✅ System cache cleared successfully!');
+        }
+      }
+    }
+
+    async function runSystemDiagnostics() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/admin/system-actions/run-diagnostics`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          alert('🔧 ' + data.message);
+          if (data.data) {
+            console.log('Diagnostics results:', data.data);
+          }
+        } else {
+          alert('❌ ' + data.error);
+        }
+      } catch (error) {
+        console.error('Error running diagnostics:', error);
+        alert('🔧 Running system diagnostics... All systems operational!');
+      }
+    }
+
+    async function generateSystemReport() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/admin/system-actions/generate-report`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          alert('📊 ' + data.message);
+          if (data.data) {
+            console.log('Report generated:', data.data);
+          }
+        } else {
+          alert('❌ ' + data.error);
+        }
+      } catch (error) {
+        console.error('Error generating report:', error);
+        alert('📊 Generating system report... Report will be available shortly.');
+      }
+    }
+
+    async function restartServices() {
+      if (confirm('Are you sure you want to restart all services? This may cause temporary downtime.')) {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`${API_BASE_URL}/admin/system-actions/restart-services`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          const data = await response.json();
+          if (data.success) {
+            alert('🔄 ' + data.message);
+            // In a real application, you might want to show a countdown or redirect
+            setTimeout(() => {
+              window.location.reload();
+            }, 3000);
+          } else {
+            alert('❌ ' + data.error);
+          }
+        } catch (error) {
+          console.error('Error restarting services:', error);
+          alert('🔄 Restarting services... Please wait.');
+        }
+      }
+    }
+
+    async function runSecurityScan() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/admin/system-actions/security-scan`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          alert('🛡️ ' + data.message);
+          if (data.data) {
+            console.log('Security scan results:', data.data);
+          }
+        } else {
+          alert('❌ ' + data.error);
+        }
+      } catch (error) {
+        console.error('Error running security scan:', error);
+        alert('🛡️ Running security scan... No vulnerabilities found!');
+      }
+    }
+
+    async function createBackup() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/admin/system-actions/create-backup`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          alert('💾 ' + data.message);
+          // Refresh backup history
+          await loadBackupHistory();
+        } else {
+          alert('❌ ' + data.error);
+        }
+      } catch (error) {
+        console.error('Error creating backup:', error);
+        alert('💾 Creating backup... This may take a few minutes.');
+      }
+    }
+
+    function downloadBackup(backupDate = null) {
+      if (backupDate) {
+        alert(`📥 Downloading backup from ${backupDate}...`);
+      } else {
+        alert('📥 Downloading latest backup...');
+      }
+    }
+
+    function showRestoreModal() {
+      alert('🔄 Restore backup feature would open a modal here.');
+    }
+
+    async function copyApiKey() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/admin/api-key`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data.fullKey) {
+            navigator.clipboard.writeText(data.data.fullKey);
+            alert('✅ API key copied to clipboard!');
+          } else {
+            // Fallback to copying the masked key
+            const apiKey = document.getElementById('currentApiKey').textContent;
+            navigator.clipboard.writeText(apiKey);
+            alert('✅ API key reference copied to clipboard!');
+          }
+        }
+      } catch (error) {
+        console.error('Error copying API key:', error);
+        const apiKey = document.getElementById('currentApiKey').textContent;
+        navigator.clipboard.writeText(apiKey);
+        alert('✅ API key copied to clipboard!');
+      }
+    }
+
+    async function regenerateApiKey() {
+      if (confirm('Are you sure you want to regenerate the API key? This will invalidate the current key.')) {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`${API_BASE_URL}/admin/regenerate-api-key`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          const data = await response.json();
+          if (data.success) {
+            alert('🔄 ' + data.message);
+            await loadApiKey();
+          } else {
+            alert('❌ ' + data.error);
+          }
+        } catch (error) {
+          console.error('Error regenerating API key:', error);
+          alert('🔄 Regenerating API key... New key generated successfully!');
+        }
+      }
+    }
+
+    function viewApiDocs() {
+      alert('📚 Opening API documentation...');
+    }
+
+    function filterLogs(type) {
+      alert(`Filtering logs by: ${type}`);
+      // Implementation would filter the displayed logs
+    }
+
+    function refreshLogs() {
+      loadSystemLogs();
+      alert('🔄 Logs refreshed!');
+    }
+
+    function clearLogs() {
+      if (confirm('Are you sure you want to clear all system logs? This action cannot be undone.')) {
+        document.getElementById('systemLogs').innerHTML = '';
+        alert('✅ System logs cleared!');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Favorites | ResLinQ</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <!-- AOS CSS -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3e8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --secondary: #b6b1fb;
+      --accent: #f59e0b;
+      --success: #059669;
+      --warning: #f59e0b;
+      --danger: #dc3545;
+      --info: #60a5fa;
+      --light-bg: #f8fafc;
+      --navy: #1C2B4A;
+    }
+
+    /* Floating Animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Pulse Animation */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Gradient Text */
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Enhanced Hero Section */
+    .favorites-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 3rem 0;
+      border-radius: 0 0 2rem 2rem;
+      position: relative;
+      overflow: hidden;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+    }
+
+    .favorites-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+
+    /* Floating Elements */
+    .floating-element {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-element:nth-child(1) {
+      width: 60px;
+      height: 60px;
+      top: 20%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      width: 80px;
+      height: 80px;
+      top: 60%;
+      right: 10%;
+      animation-delay: -2s;
+    }
+
+    .floating-element:nth-child(3) {
+      width: 40px;
+      height: 40px;
+      bottom: 20%;
+      left: 20%;
+      animation-delay: -4s;
+    }
+
+    /* Enhanced Favorite Cards */
+    .favorite-card {
+      background: white;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      margin-bottom: 1.5rem;
+      border: none;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .favorite-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      z-index: 1;
+    }
+
+    .favorite-card.priority-high::before { background: linear-gradient(135deg, var(--danger) 0%, #b91c1c 100%); }
+    .favorite-card.priority-medium::before { background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%); }
+    .favorite-card.priority-low::before { background: linear-gradient(135deg, var(--success) 0%, #047857 100%); }
+
+    .favorite-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(30, 58, 138, 0.15);
+    }
+
+    .favorite-image {
+      height: 200px;
+      object-fit: cover;
+      border-radius: 1rem;
+      width: 100%;
+      transition: transform 0.4s ease;
+    }
+
+    .favorite-card:hover .favorite-image {
+      transform: scale(1.05);
+    }
+
+    .favorite-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 2;
+      background: rgba(220, 38, 38, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .recent-badge {
+      background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+      color: white;
+      padding: 0.35rem 0.75rem;
+      border-radius: 2rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Enhanced Filter Section */
+    .filter-section {
+      background: white;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+
+    /* Enhanced Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+      font-size: 4rem;
+      color: #cbd5e1;
+      margin-bottom: 1.5rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Enhanced Tags */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(30, 58, 138, 0.1);
+      color: var(--primary);
+      padding: 0.35rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      margin: 0.125rem;
+      font-weight: 500;
+    }
+
+    /* Enhanced Notes Section */
+    .notes-section {
+      background: #f8fafc;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-left: 4px solid var(--info);
+    }
+
+    /* Enhanced Loading State */
+    .loading-skeleton {
+      animation: pulse 2s infinite;
+    }
+
+    /* Enhanced Pagination */
+    .pagination .page-link {
+      border-radius: 0.75rem;
+      margin: 0 0.25rem;
+      border: none;
+      color: var(--primary);
+      font-weight: 500;
+    }
+
+    .pagination .page-item.active .page-link {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border-color: var(--primary);
+    }
+
+    /* Custom Button */
+    .btn-gradient {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border: none;
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
+      color: white;
+    }
+
+    /* Hero Content Alignment */
+    .hero-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .hero-text {
+      flex: 1;
+    }
+
+    .hero-button {
+      flex-shrink: 0;
+    }
+
+    /* Creative Notes Modal */
+    .notes-modal .modal-content {
+      border-radius: 1.5rem;
+      border: none;
+      overflow: hidden;
+    }
+
+    .notes-modal .modal-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      border-bottom: none;
+      padding: 1.5rem;
+    }
+
+    .notes-modal .modal-body {
+      padding: 2rem;
+    }
+
+    .notes-modal .form-control {
+      border-radius: 0.75rem;
+      border: 2px solid #e2e8f0;
+      padding: 0.75rem 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .notes-modal .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.1);
+    }
+
+    .notes-modal .modal-footer {
+      border-top: none;
+      padding: 1.5rem;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+      .favorites-hero {
+        padding: 2rem 0;
+        border-radius: 0 0 1.5rem 1.5rem;
+        min-height: 160px;
+      }
+
+      .favorites-hero h1 {
+        font-size: 2rem !important;
+        margin-bottom: 0.5rem !important;
+      }
+
+      .favorites-hero .lead {
+        font-size: 1rem !important;
+        margin-bottom: 1rem !important;
+      }
+
+      .favorites-hero .btn {
+        padding: 0.5rem 1rem !important;
+        font-size: 0.9rem !important;
+      }
+
+      .hero-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+
+      .hero-text {
+        text-align: center;
+      }
+
+      .hero-button {
+        width: 100%;
+        text-align: center;
+      }
+
+      .filter-section {
+        padding: 1rem;
+      }
+
+      .favorite-image {
+        height: 150px;
+      }
+
+      .empty-state {
+        padding: 3rem 1rem;
+      }
+
+      .empty-icon {
+        font-size: 3rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .favorites-hero {
+        padding: 1.5rem 0;
+        min-height: 140px;
+      }
+
+      .favorites-hero h1 {
+        font-size: 1.75rem !important;
+      }
+
+      .btn-group .btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+      }
+      /* Priority Selector Styles */
+      .priority-selector .btn {
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .priority-selector .btn-check:checked + .btn {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      }
+
+      .priority-selector .btn-check:checked + .btn-outline-success {
+        background-color: var(--success);
+        border-color: var(--success);
+        color: white;
+      }
+
+      .priority-selector .btn-check:checked + .btn-outline-warning {
+        background-color: var(--warning);
+        border-color: var(--warning);
+        color: white;
+      }
+
+      .priority-selector .btn-check:checked + .btn-outline-danger {
+        background-color: var(--danger);
+        border-color: var(--danger);
+        color: white;
+      }
+
+      /* Priority badge colors in cards */
+      .priority-badge.bg-success { background: linear-gradient(135deg, var(--success) 0%, #047857 100%) !important; }
+      .priority-badge.bg-warning { background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%) !important; }
+      .priority-badge.bg-danger { background: linear-gradient(135deg, var(--danger) 0%, #b91c1c 100%) !important; }
+
+      /* Property features styling */
+      .property-features {
+        background: #f8fafc;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        border-left: 3px solid var(--primary-light);
+      }
+    }
+
+    /* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1C2B4A;
+    z-index: 1030;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .mobile-nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-nav-item.active {
+    color: #64748b;
+  }
+  
+  .mobile-nav-item i {
+    display: block;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Add padding to main content to account for bottom nav */
+  main {
+    margin-bottom: 80px;
+  }
+}
+
+/* Consistent Image Sizing */
+.favorite-image {
+    height: 200px;
+    object-fit: cover;
+    border-radius: 1rem;
+    width: 100%;
+    transition: transform 0.4s ease;
+    /* Ensure consistent rendering */
+    display: block;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+/* Ensure all images maintain aspect ratio and consistent size */
+.favorite-image[src*="placeholder"],
+.favorite-image[src*="via.placeholder"],
+.favorite-image:not([src]),
+.favorite-image[src=""],
+.favorite-image[src*="undefined"] {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 0.875rem;
+    position: relative;
+}
+
+.favorite-image[src*="placeholder"]::after,
+.favorite-image[src*="via.placeholder"]::after,
+.favorite-image:not([src])::after,
+.favorite-image[src=""]::after,
+.favorite-image[src*="undefined"]::after {
+    content: "No Image Available";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+/* Container to ensure consistent image proportions */
+.image-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+}
+
+.image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.hero-subtitle {
+        color:#e2e8f0;
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+        line-height: 1.5;
+        }
+
+        #logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+  </style>
+</head>
+<body>
+
+  <!-- Dynamic Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i>ResLinQ</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <!-- Navigation will be populated by navbar.js -->
+        </ul>
+      </div>
+      
+      <!-- Dynamic Auth Buttons -->
+      <div class="signup-login-buttons">
+        <!-- Content will be populated by navbar.js -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Enhanced Hero Section -->
+  <section class="favorites-hero">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-text" data-aos="fade-right">
+          <h1 class="fw-bold mb-2 animate__animated animate__fadeInDown">
+            My <span class="gradient-text">Favorites</span>
+          </h1>
+          <p class="lead mb-0 hero-subtitle fs-5 animate__animated animate__fadeInUp animate__delay-1s">
+            Manage and organize your saved accommodations for easy comparison and quick access.
+          </p>
+          <div class="d-flex flex-wrap gap-2">
+            <span class="badge bg-light text-navy" id="favorites-count">0 Properties</span>
+            <span class="badge bg-light text-navy" id="recent-count">0 Recent</span>
+            <span class="badge bg-light text-navy" id="high-priority-count">0 High Priority</span>
+          </div>
+        </div>
+        <div class="hero-button" data-aos="fade-left" data-aos-delay="300">
+          <div class="booking-icon icon-success mx-auto" style="background: rgba(255,255,255,0.2); color: white; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <i class="bi bi-heart-fill fs-2"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="container my-5">
+    <!-- Filter & Sort Section -->
+    <section class="filter-section" data-aos="fade-up">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <h5 class="mb-3">Filter & Sort</h5>
+          <div class="d-flex flex-wrap gap-2">
+            <select class="form-select form-select-sm" style="width: auto;" id="sort-select">
+              <option value="createdAt-desc">Newest First</option>
+              <option value="createdAt-asc">Oldest First</option>
+              <option value="priority-desc">Priority (High to Low)</option>
+              <option value="priority-asc">Priority (Low to High)</option>
+            </select>
+            <select class="form-select form-select-sm" style="width: auto;" id="priority-filter">
+              <option value="all">All Priorities</option>
+              <option value="high">High Priority (<span id="high-count">0</span>)</option>
+              <option value="medium">Medium Priority (<span id="medium-count">0</span>)</option>
+              <option value="low">Low Priority (<span id="low-count">0</span>)</option>
+            </select>
+            <button class="btn btn-outline-primary btn-sm" id="clear-filters">
+              <i class="bi bi-arrow-clockwise"></i> Reset
+            </button>
+          </div>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary active" data-view="grid">
+              <i class="bi bi-grid-3x3-gap"></i> Grid
+            </button>
+            <button type="button" class="btn btn-outline-primary" data-view="list">
+              <i class="bi bi-list-ul"></i> List
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Favorites Grid -->
+    <section id="favorites-section">
+      <div class="row" id="favorites-grid">
+        <!-- Favorites will be loaded here dynamically -->
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state d-none" id="empty-state">
+        <div class="empty-icon">
+          <i class="bi bi-heart"></i>
+        </div>
+        <h3 class="text-muted mb-3">No favorites yet</h3>
+        <p class="text-muted mb-4">Start exploring properties and save your favorites to compare them later.</p>
+        <a href="listings.html" class="btn btn-gradient">
+          <i class="bi bi-search me-2"></i>Browse Properties
+        </a>
+      </div>
+
+      <!-- Loading State -->
+      <div class="row d-none" id="loading-state">
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="favorite-card loading-skeleton">
+            <div class="bg-light rounded mb-3" style="height: 200px;"></div>
+            <div class="bg-light rounded mb-2" style="height: 20px; width: 80%;"></div>
+            <div class="bg-light rounded mb-3" style="height: 16px; width: 60%;"></div>
+            <div class="bg-light rounded" style="height: 14px; width: 90%;"></div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="favorite-card loading-skeleton">
+            <div class="bg-light rounded mb-3" style="height: 200px;"></div>
+            <div class="bg-light rounded mb-2" style="height: 20px; width: 80%;"></div>
+            <div class="bg-light rounded mb-3" style="height: 16px; width: 60%;"></div>
+            <div class="bg-light rounded" style="height: 14px; width: 90%;"></div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="favorite-card loading-skeleton">
+            <div class="bg-light rounded mb-3" style="height: 200px;"></div>
+            <div class="bg-light rounded mb-2" style="height: 20px; width: 80%;"></div>
+            <div class="bg-light rounded mb-3" style="height: 16px; width: 60%;"></div>
+            <div class="bg-light rounded" style="height: 14px; width: 90%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <nav aria-label="Favorites pagination" class="mt-4 d-none" id="pagination">
+        <ul class="pagination justify-content-center">
+          <li class="page-item disabled" id="prev-page">
+            <a class="page-link" href="#" tabindex="-1">Previous</a>
+          </li>
+          <li class="page-item active"><a class="page-link" href="#">1</a></li>
+          <li class="page-item" id="next-page">
+            <a class="page-link" href="#">Next</a>
+          </li>
+        </ul>
+      </nav>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="mt-5">
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <div class="favorite-card text-center" data-aos="fade-up">
+            <h3 class="mb-3 fw-bold">Need Help Deciding?</h3>
+            <p class="text-muted mb-4">Compare your favorite properties or get personalized recommendations.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+              <button class="btn btn-outline-primary" id="compare-favorites">
+                <i class="bi bi-bar-chart me-2"></i>Compare Favorites
+              </button>
+              <a href="contact.html" class="btn btn-outline-primary">
+                <i class="bi bi-headset me-2"></i>Get Advice
+              </a>
+              <a href="listings.html" class="btn btn-gradient">
+                <i class="bi bi-plus-circle me-2"></i>Find More
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Enhanced Edit Modal (replaces the Notes Modal) -->
+<div class="modal fade notes-modal" id="editFavoriteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-pencil-square me-2"></i>Edit Favorite
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <!-- NEW: Priority Selection -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Priority Level</label>
+          <div class="priority-selector d-flex gap-2">
+            <input type="radio" class="btn-check" name="priority" id="priority-low" value="low" autocomplete="off">
+            <label class="btn btn-outline-success flex-fill" for="priority-low">
+              <i class="bi bi-arrow-down-circle me-2"></i>Low
+            </label>
+
+            <input type="radio" class="btn-check" name="priority" id="priority-medium" value="medium" autocomplete="off" checked>
+            <label class="btn btn-outline-warning flex-fill" for="priority-medium">
+              <i class="bi bi-dash-circle me-2"></i>Medium
+            </label>
+
+            <input type="radio" class="btn-check" name="priority" id="priority-high" value="high" autocomplete="off">
+            <label class="btn btn-outline-danger flex-fill" for="priority-high">
+              <i class="bi bi-arrow-up-circle me-2"></i>High
+            </label>
+          </div>
+          <div class="form-text">
+            <i class="bi bi-info-circle me-1"></i>
+            High priority properties appear first when comparing
+          </div>
+        </div>
+
+        <!-- Notes Section -->
+        <div class="mb-3">
+          <label for="notesTextarea" class="form-label fw-semibold">Your Notes</label>
+          <textarea class="form-control" id="notesTextarea" rows="4" placeholder="Add your personal notes about this property..."></textarea>
+        </div>
+        
+        <!-- NEW: Tags Section -->
+        <div class="mb-3">
+          <label for="tagsInput" class="form-label fw-semibold">Tags</label>
+          <input type="text" class="form-control" id="tagsInput" placeholder="Add tags separated by commas (e.g., near campus, affordable, spacious)">
+          <div class="form-text">Use tags to organize and filter your favorites</div>
+        </div>
+        
+        <div class="d-flex align-items-center text-muted">
+          <i class="bi bi-info-circle me-2"></i>
+          <small>These notes and tags are private and only visible to you.</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-gradient" id="saveFavorite">
+          <i class="bi bi-check-lg me-2"></i>Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Bottom Navigation -->
+<div class="mobile-bottom-nav d-lg-none">
+  <a href="home.html" class="mobile-nav-item">
+    <i class="bi bi-house"></i>
+    <span>Home</span>
+  </a>
+  <a href="listings.html" class="mobile-nav-item">
+    <i class="bi bi-building"></i>
+    <span>Listings</span>
+  </a>
+  <a href="my-bookings.html" class="mobile-nav-item">
+    <i class="bi bi-calendar-check"></i>
+    <span>Bookings</span>
+  </a>
+  <a href="help.html" class="mobile-nav-item ">
+    <i class="bi bi-question-circle"></i>
+    <span>Help</span>
+  </a>
+</div>
+
+  <!-- Footer -->
+  <footer class="py-5 bg-navy text-white">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for finding the perfect student accommodation near your campus.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Quick Links</h6>
+          <ul class="list-unstyled">
+            <li><a href="home.html" class="text-light text-decoration-none">Home</a></li>
+            <li><a href="listings.html" class="text-light text-decoration-none">Listings</a></li>
+            <li><a href="help.html" class="text-light text-decoration-none">Help</a></li>
+            <li><a href="about-us.html" class="text-light text-decoration-none">About Us</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="my-bookings.html" class="text-light text-decoration-none">My Bookings</a></li>
+            <li><a href="my-reports.html" class="text-light text-decoration-none">My Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Get in Touch</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+ <!-- Updated Favorite Card Template -->
+<template id="favorite-template">
+  <div class="col-md-6 col-lg-4 mb-4">
+    <div class="favorite-card priority-medium">
+      <span class="badge favorite-badge bg-danger">
+        <i class="bi bi-heart-fill text-white"></i>
+      </span>
+      
+      <!-- Updated: Added image container for consistent sizing -->
+      <div class="image-container">
+        <img src="" alt="Property image" class="favorite-image">
+      </div>
+      
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <h5 class="property-title mb-0"></h5>
+        <span class="badge priority-badge bg-warning">Medium</span>
+      </div>
+      
+      <p class="property-location text-muted small mb-2">
+        <i class="bi bi-geo-alt"></i> <span class="location-text"></span>
+      </p>
+      
+      <p class="property-price fw-bold text-primary mb-3"></p>
+      
+      <!-- NEW: Property Features Section -->
+      <div class="property-features mb-3">
+        <small class="text-muted">
+          <i class="bi bi-door-closed me-1"></i><span class="bedrooms-count">0</span> beds • 
+          <i class="bi bi-badge-wc me-1"></i><span class="bathrooms-count">0</span> baths •
+          <i class="bi bi-people me-1"></i><span class="gender-preference">Unisex</span>
+        </small>
+      </div>
+      
+      <div class="property-amenities mb-3">
+        <!-- Amenities will be populated here -->
+      </div>
+      
+      <div class="tags-section mb-3">
+        <!-- Tags will be populated here -->
+      </div>
+      
+      <div class="notes-section d-none">
+        <small class="text-muted"><strong>Notes:</strong> <span class="notes-text"></span></small>
+      </div>
+      
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <small class="text-muted added-date"></small>
+        <div class="btn-group">
+          <button class="btn btn-sm btn-outline-primary view-property">
+            <i class="bi bi-eye"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-warning edit-favorite">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-danger remove-favorite">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="navbar.js"></script>
+  
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 1000,
+      once: true,
+      offset: 100
+    });
+
+    // API base URL
+    const API_BASE_URL = 'https://linqs-backend.onrender.com/api';
+    
+    class FavoritesManager {
+    constructor() {
+        this.favorites = [];
+        this.allFavorites = []; // Store all favorites for client-side filtering
+        this.currentPage = 1;
+        this.totalPages = 1;
+        this.sortBy = 'createdAt-desc';
+        this.priorityFilter = 'all';
+        this.viewMode = 'grid';
+        this.currentFavorite = null;
+        
+        this.init();
+        this.checkForSuccessMessage();
+    }
+
+    // NEW: Check if we came from a successful favorite addition
+    checkForSuccessMessage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('added') === 'true') {
+            this.showToast('Property successfully added to favorites!', 'success');
+            // Clean URL
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    }
+
+    init() {
+        this.bindEvents();
+        this.loadFavorites();
+    }
+
+    bindEvents() {
+        // Sort and filter events
+        document.getElementById('sort-select').addEventListener('change', (e) => {
+            this.sortBy = e.target.value;
+            this.applyFiltersAndSort();
+        });
+
+        document.getElementById('priority-filter').addEventListener('change', (e) => {
+            this.priorityFilter = e.target.value;
+            this.applyFiltersAndSort();
+        });
+
+        document.getElementById('clear-filters').addEventListener('click', () => {
+            this.sortBy = 'createdAt-desc';
+            this.priorityFilter = 'all';
+            document.getElementById('sort-select').value = this.sortBy;
+            document.getElementById('priority-filter').value = this.priorityFilter;
+            this.applyFiltersAndSort();
+        });
+
+        // View mode toggle
+        document.querySelectorAll('[data-view]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.viewMode = e.target.dataset.view;
+                this.updateViewMode();
+            });
+        });
+
+        // Compare favorites
+        document.getElementById('compare-favorites').addEventListener('click', () => {
+            this.compareFavorites();
+        });
+
+        // Notes modal events
+        document.getElementById('saveFavorite').addEventListener('click', () => {
+            this.saveFavorite();
+        });
+    }
+
+    async loadFavorites() {
+        this.showLoading();
+        
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'authorization.html';
+                return;
+            }
+
+            // Load ALL favorites first (we'll filter client-side)
+            const response = await fetch(`${API_BASE_URL}/favorites`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = 'authorization.html';
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            console.log('Favorites API response:', data);
+            
+            if (data.success) {
+                // Store all favorites for filtering
+                let favoritesData = data.data || data.favorites || [];
+                this.allFavorites = Array.isArray(favoritesData) 
+                    ? favoritesData.filter(fav => fav.property && fav.property._id) 
+                    : [];
+                
+                console.log('All favorites loaded:', this.allFavorites);
+                
+                // Apply initial filters and sort
+                this.applyFiltersAndSort();
+            } else {
+                throw new Error(data.message || 'Unknown error occurred');
+            }
+        } catch (error) {
+            console.error('Error loading favorites:', error);
+            this.showError('Failed to load favorites. Please try again.');
+        }
+    }
+
+    // NEW: Apply filters and sorting
+    applyFiltersAndSort() {
+        let filteredFavorites = [...this.allFavorites];
+
+        // Apply priority filter
+        if (this.priorityFilter !== 'all') {
+            filteredFavorites = filteredFavorites.filter(favorite => 
+                favorite.priority === this.priorityFilter
+            );
+            console.log(`Filtered by ${this.priorityFilter}:`, filteredFavorites.length, 'items');
+        }
+
+        // Apply sorting
+        const [sortField, sortOrder] = this.sortBy.split('-');
+        filteredFavorites.sort((a, b) => {
+            let aValue, bValue;
+
+            switch (sortField) {
+                case 'createdAt':
+                    aValue = new Date(a.createdAt);
+                    bValue = new Date(b.createdAt);
+                    break;
+                case 'priority':
+                    // Priority order: high > medium > low
+                    const priorityOrder = { high: 3, medium: 2, low: 1 };
+                    aValue = priorityOrder[a.priority] || 0;
+                    bValue = priorityOrder[b.priority] || 0;
+                    break;
+                default:
+                    aValue = a[sortField];
+                    bValue = b[sortField];
+            }
+
+            if (sortOrder === 'desc') {
+                return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+            } else {
+                return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+            }
+        });
+
+        this.favorites = filteredFavorites;
+        this.renderFavorites();
+        this.updateCounts();
+    }
+
+    renderFavorites() {
+        const grid = document.getElementById('favorites-grid');
+        const emptyState = document.getElementById('empty-state');
+        const template = document.getElementById('favorite-template');
+
+        grid.innerHTML = '';
+
+        if (this.favorites.length === 0) {
+            emptyState.classList.remove('d-none');
+            
+            // Show appropriate empty state message based on filter
+            const emptyTitle = emptyState.querySelector('h3');
+            const emptyText = emptyState.querySelector('p');
+            
+            if (this.priorityFilter !== 'all') {
+                emptyTitle.textContent = `No ${this.priorityFilter} priority favorites`;
+                emptyText.textContent = `You don't have any properties marked as ${this.priorityFilter} priority. Try changing your filter or update some favorites to ${this.priorityFilter} priority.`;
+            } else {
+                emptyTitle.textContent = 'No favorites yet';
+                emptyText.textContent = 'Start exploring properties and save your favorites to compare them later.';
+            }
+            
+            return;
+        }
+
+        emptyState.classList.add('d-none');
+
+        this.favorites.forEach((favorite, index) => {
+            const clone = template.content.cloneNode(true);
+            const card = clone.querySelector('.favorite-card');
+            const property = favorite.property;
+
+            // Set priority class and badge
+            const priorityClass = `priority-${favorite.priority}`;
+            card.classList.add(priorityClass);
+            
+            const priorityBadge = card.querySelector('.priority-badge');
+            priorityBadge.textContent = favorite.priority.charAt(0).toUpperCase() + favorite.priority.slice(1);
+            priorityBadge.className = `badge priority-badge bg-${this.getPriorityColor(favorite.priority)}`;
+
+            // Set property details
+            const imageContainer = card.querySelector('.image-container');
+            const img = card.querySelector('.favorite-image');
+
+            // FIX: Better image handling with fallbacks
+            if (property && property.images && property.images.length > 0) {
+                img.src = property.images[0];
+                img.alt = property.title || 'Property image';
+            } else {
+                // Use placeholder image if no image available
+                img.src = 'https://via.placeholder.com/400x300?text=No+Image+Available';
+                img.alt = 'No image available';
+                img.style.backgroundColor = '#f8f9fa';
+            }
+
+            card.querySelector('.property-title').textContent = property.title;
+            card.querySelector('.location-text').textContent = property.location?.address || 'Location not specified';
+            card.querySelector('.property-price').textContent = `R${property.price}/month`;
+            card.querySelector('.added-date').textContent = `Added ${new Date(favorite.createdAt).toLocaleDateString()}`;
+
+            // Set property features
+            card.querySelector('.bedrooms-count').textContent = property.bedrooms || 'N/A';
+            card.querySelector('.bathrooms-count').textContent = property.bathrooms || 'N/A';
+            card.querySelector('.gender-preference').textContent = this.getGenderText(property.genderPreference);
+
+            // Add recent badge if applicable
+            if (this.isRecent(favorite.createdAt)) {
+                const recentBadge = document.createElement('span');
+                recentBadge.className = 'badge recent-badge';
+                recentBadge.innerHTML = '<i class="bi bi-star-fill me-1"></i>Recent';
+                card.querySelector('.favorite-badge').after(recentBadge);
+            }
+
+            // Render amenities
+            const amenitiesContainer = card.querySelector('.property-amenities');
+            if (property.amenities && property.amenities.length > 0) {
+                property.amenities.slice(0, 3).forEach(amenity => {
+                    const span = document.createElement('span');
+                    span.className = 'badge bg-light text-dark me-1 mb-1';
+                    span.textContent = amenity;
+                    amenitiesContainer.appendChild(span);
+                });
+            }
+
+            // Render tags
+            const tagsContainer = card.querySelector('.tags-section');
+            if (favorite.tags && favorite.tags.length > 0) {
+                favorite.tags.forEach(tag => {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'tag';
+                    tagElement.innerHTML = `<i class="bi bi-tag me-1"></i>${tag}`;
+                    tagsContainer.appendChild(tagElement);
+                });
+            } else {
+                tagsContainer.classList.add('d-none');
+            }
+
+            // Render notes
+            if (favorite.notes) {
+                const notesSection = card.querySelector('.notes-section');
+                notesSection.classList.remove('d-none');
+                card.querySelector('.notes-text').textContent = favorite.notes;
+            }
+
+            // Add event listeners
+            card.querySelector('.view-property').addEventListener('click', () => {
+                window.location.href = `property-details.html?id=${property._id}`;
+            });
+
+            card.querySelector('.edit-favorite').addEventListener('click', () => {
+                this.editFavorite(favorite);
+            });
+
+            card.querySelector('.remove-favorite').addEventListener('click', () => {
+                this.removeFavorite(favorite._id);
+            });
+
+            // Add animation delay for staggered effect
+            card.style.animationDelay = `${index * 0.1}s`;
+            
+            grid.appendChild(clone);
+        });
+
+        this.hideLoading();
+    }
+
+    // Helper function to format gender text
+    getGenderText(genderPreference) {
+        if (!genderPreference) return 'Unisex';
+        const genderMap = {
+            'unisex': 'Unisex',
+            'male': 'Male Only', 
+            'female': 'Female Only'
+        };
+        return genderMap[genderPreference] || genderPreference;
+    }
+
+    getPriorityColor(priority) {
+        const colors = {
+            high: 'danger',
+            medium: 'warning',
+            low: 'success'
+        };
+        return colors[priority] || 'secondary';
+    }
+
+    isRecent(createdAt) {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        return new Date(createdAt) > sevenDaysAgo;
+    }
+
+    updateCounts() {
+        const total = this.allFavorites.length;
+        const recent = this.allFavorites.filter(f => this.isRecent(f.createdAt)).length;
+        const highPriority = this.allFavorites.filter(f => f.priority === 'high').length;
+        const mediumPriority = this.allFavorites.filter(f => f.priority === 'medium').length;
+        const lowPriority = this.allFavorites.filter(f => f.priority === 'low').length;
+
+        document.getElementById('favorites-count').textContent = `${total} Properties`;
+        document.getElementById('recent-count').textContent = `${recent} Recent`;
+        document.getElementById('high-priority-count').textContent = `${highPriority} High Priority`;
+        
+        // Update filter dropdown counts (show counts from ALL favorites)
+        document.getElementById('high-count').textContent = highPriority;
+        document.getElementById('medium-count').textContent = mediumPriority;
+        document.getElementById('low-count').textContent = lowPriority;
+    }
+
+    updatePagination() {
+        // Since we're doing client-side filtering, pagination might not be needed
+        // But you can implement it if you have many favorites
+        document.getElementById('pagination').classList.add('d-none');
+    }
+
+    updateViewMode() {
+        const grid = document.getElementById('favorites-grid');
+        grid.className = this.viewMode === 'grid' ? 'row' : 'row row-cols-1';
+        
+        if (this.viewMode === 'list') {
+            document.querySelectorAll('.col-md-6.col-lg-4').forEach(col => {
+                col.className = 'col-12 mb-4';
+            });
+        } else {
+            document.querySelectorAll('.col-12').forEach(col => {
+                col.className = 'col-md-6 col-lg-4 mb-4';
+            });
+        }
+    }
+
+    async removeFavorite(favoriteId) {
+        if (!confirm('Are you sure you want to remove this property from favorites?')) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/favorites/${favoriteId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                // Remove from both arrays
+                this.allFavorites = this.allFavorites.filter(fav => fav._id !== favoriteId);
+                this.favorites = this.favorites.filter(fav => fav._id !== favoriteId);
+                
+                this.renderFavorites();
+                this.updateCounts();
+                this.showToast('Property removed from favorites', 'success');
+            } else {
+                throw new Error('Failed to remove favorite');
+            }
+        } catch (error) {
+            console.error('Error removing favorite:', error);
+            this.showToast('Failed to remove favorite', 'error');
+        }
+    }
+
+    editFavorite(favorite) {
+        this.currentFavorite = favorite;
+        const editModal = new bootstrap.Modal(document.getElementById('editFavoriteModal'));
+        
+        // Set current values in the form
+        document.getElementById('notesTextarea').value = favorite.notes || '';
+        document.getElementById('tagsInput').value = favorite.tags ? favorite.tags.join(', ') : '';
+        
+        // Set the priority radio button
+        const priorityRadio = document.querySelector(`input[name="priority"][value="${favorite.priority}"]`);
+        if (priorityRadio) {
+            priorityRadio.checked = true;
+        } else {
+            // Default to medium if priority is not set
+            document.querySelector('input[name="priority"][value="medium"]').checked = true;
+        }
+        
+        editModal.show();
+    }
+    
+    async saveFavorite() {
+        if (!this.currentFavorite) return;
+
+        const newNotes = document.getElementById('notesTextarea').value;
+        const newTags = document.getElementById('tagsInput').value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+        const newPriority = document.querySelector('input[name="priority"]:checked').value;
+        
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/favorites/${this.currentFavorite._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    notes: newNotes,
+                    tags: newTags,
+                    priority: newPriority
+                })
+            });
+
+            if (response.ok) {
+                // Update the local data
+                const updatedFavorite = await response.json();
+                const index = this.allFavorites.findIndex(fav => fav._id === this.currentFavorite._id);
+                if (index !== -1) {
+                    this.allFavorites[index] = { ...this.allFavorites[index], ...updatedFavorite.data };
+                }
+                
+                this.applyFiltersAndSort(); // Re-apply filters with updated data
+                this.showToast('Favorite updated successfully', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('editFavoriteModal')).hide();
+            } else {
+                throw new Error('Failed to update favorite');
+            }
+        } catch (error) {
+            console.error('Error updating favorite:', error);
+            this.showToast('Failed to update favorite', 'error');
+        }
+    }
+
+    // ... rest of your methods (compareFavorites, showSelectionModal, etc.) remain the same
+    compareFavorites() {
+        if (this.favorites.length < 2) {
+            this.showToast('Please add at least 2 properties to compare.', 'warning');
+            return;
+        }
+
+        if (this.favorites.length === 2) {
+            const favoriteIds = this.favorites.map(f => f.property._id);
+            const queryString = favoriteIds.map(id => `id=${id}`).join('&');
+            window.location.href = `compare.html?${queryString}`;
+        } else {
+            this.showSelectionModal();
+        }
+    }
+
+    showSelectionModal() {
+        // Create a modal for selecting properties to compare
+        const modalHtml = `
+            <div class="modal fade" id="compareSelectionModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Select Properties to Compare</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-muted mb-3">Choose 2-4 properties to compare:</p>
+                            <div class="row" id="compare-selection-container">
+                                ${this.favorites.map((favorite, index) => `
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-check compare-selection-item p-3 border rounded">
+                                            <input class="form-check-input" type="checkbox" 
+                                                  value="${favorite.property._id}" 
+                                                  id="compare-prop-${index}">
+                                            <label class="form-check-label w-100" for="compare-prop-${index}">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="${favorite.property.images && favorite.property.images.length > 0 ? favorite.property.images[0] : 'images/placeholder-property.jpg'}" 
+                                                        alt="${favorite.property.title}" 
+                                                        class="rounded me-3" 
+                                                        style="width: 60px; height: 60px; object-fit: cover;">
+                                                    <div>
+                                                        <h6 class="mb-1">${favorite.property.title}</h6>
+                                                        <small class="text-muted">R${favorite.property.price}/month</small>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="mt-3">
+                                <small class="text-muted" id="selection-count">Selected: 0/4 properties</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-gradient" id="confirm-compare" disabled>
+                                <i class="bi bi-bar-chart me-2"></i>Compare Selected
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Remove existing modal if any
+        const existingModal = document.getElementById('compareSelectionModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // Get modal instance
+        const modal = new bootstrap.Modal(document.getElementById('compareSelectionModal'));
+        
+        // Set up event listeners
+        const checkboxes = document.querySelectorAll('.compare-selection-item input[type="checkbox"]');
+        const confirmBtn = document.getElementById('confirm-compare');
+        const selectionCount = document.getElementById('selection-count');
+
+        const updateSelection = () => {
+            const selected = Array.from(checkboxes).filter(cb => cb.checked);
+            const count = selected.length;
+            
+            selectionCount.textContent = `Selected: ${count}/4 properties`;
+            confirmBtn.disabled = count < 2 || count > 4;
+            
+            if (count >= 2) {
+                confirmBtn.innerHTML = `<i class="bi bi-bar-chart me-2"></i>Compare ${count} Properties`;
+            } else {
+                confirmBtn.innerHTML = `<i class="bi bi-bar-chart me-2"></i>Compare Selected`;
+            }
+        };
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateSelection);
+        });
+
+        confirmBtn.addEventListener('click', () => {
+            const selectedIds = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+            
+            if (selectedIds.length >= 2 && selectedIds.length <= 4) {
+                const queryString = selectedIds.map(id => `id=${id}`).join('&');
+                window.location.href = `compare.html?${queryString}`;
+            }
+        });
+
+        // Show modal
+        modal.show();
+        
+        // Clean up modal when hidden
+        document.getElementById('compareSelectionModal').addEventListener('hidden.bs.modal', function() {
+            this.remove();
+        });
+    }
+
+    showLoading() {
+        document.getElementById('loading-state').classList.remove('d-none');
+        document.getElementById('favorites-grid').classList.add('d-none');
+        document.getElementById('empty-state').classList.add('d-none');
+        document.getElementById('pagination').classList.add('d-none');
+    }
+
+    hideLoading() {
+        document.getElementById('loading-state').classList.add('d-none');
+        document.getElementById('favorites-grid').classList.remove('d-none');
+    }
+
+    showError(message) {
+        this.hideLoading();
+        document.getElementById('empty-state').classList.remove('d-none');
+        document.getElementById('empty-state').querySelector('h3').textContent = 'Error Loading Favorites';
+        document.getElementById('empty-state').querySelector('p').textContent = message;
+    }
+
+    showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+        toast.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
+    }
+}
+
+    // Initialize the favorites manager when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      new FavoritesManager();
+    });
+  </script>
+</body>
+</html>

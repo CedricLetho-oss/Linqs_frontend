@@ -1,0 +1,393 @@
+/* Color Variables */
+:root {
+  --white: #FFFFFF;
+  --lightgrey: #F5F5F5;
+  --mediumgrey: #6C757D;
+  --navy: #1C2B4A;
+  --beige: #E0E0E0;
+}
+
+/* Navbar */
+.bg-navy {
+  background-color: var(--navy) !important;
+}
+
+.text-navy {
+  color: var(--navy) !important;
+}
+
+.btn-navy {
+  background-color: var(--navy);
+  color: var(--white);
+  border: none;
+  transition: 0.3s;
+}
+.btn-navy:hover {
+  background-color: #142033;
+}
+
+
+/* Hero Section */
+.hero {
+  min-height: 70vh;
+  background-color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Cards */
+.res-card {
+  border: 1px solid var(--beige);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.res-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* Backgrounds */
+.bg-lightgrey {
+  background-color: var(--lightgrey);
+}
+
+/* Footer */
+footer {
+  font-size: 0.9rem;
+}
+
+/* Star Rating Styles */
+.star-rating {
+  font-size: 1.8rem;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.star-rating .star.selected,
+.star-rating .star:hover,
+.star-rating .star:hover ~ .star {
+  color: #FFD700; /* Gold stars */
+}
+
+/* Headings */
+.fw-bold.text-dark {
+  color: #1C2B4A !important; /* Dark Navy */
+}
+
+/* Muted text (distance info) */
+.text-muted {
+  color: #6C757D !important; /* Grey */
+}
+
+/* Price text */
+.fs-5.text-dark {
+  color: #1C2B4A !important; /* Dark Navy */
+}
+
+.mb-4 {
+  color: #1C2B4A !important;
+}
+
+.navbar-brand {
+    font-family: 'Poppins', sans-serif;
+    font-weight: bold;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+}
+
+.col-md-6.info-box {
+  padding-left: 30px;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* On small screens, stack image on top */
+@media (max-width: 767px) {
+  .col-md-6 {
+    padding-left: 0;
+    margin-top: 20px;
+  }
+}
+    
+
+.col-md-6 img {
+    align-self: left;
+    width: 100%;
+    height: auto;
+}
+
+/* Cards hover effect */
+.card:hover {
+  transform: translateY(-5px);
+  transition: 0.3s ease-in-out;
+}
+
+/* Hero search bar */
+input.form-control {
+  border-radius: 25px;
+  padding: 12px 20px;
+}
+
+.fw-bold {
+    color: #1C2B4A !important;
+}
+
+/* Navbar button styling */
+.nav-btn {
+  font-weight: 500;
+  border-radius: 25px;
+  padding: 6px 18px;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Hover effects */
+.nav-btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+.signup-login-buttons {
+  display: flex;
+  justify-content: flex-end;
+  
+}
+
+/* Auth Section */
+.auth-section {
+  min-height: 80vh;
+  background: #f8f9fa;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.btn-navy {
+  background-color: #001f3f;
+  color: white;
+}
+
+.btn-navy:hover {
+  background-color: #001f3f;
+  color: #001f3f;
+}
+
+.btn-outline-navy {
+  border: 1px solid #001f3f;
+  color: #001f3f;
+}
+
+.btn-outline-navy:hover {
+  background-color: #001f3f;
+  color: white;
+}
+
+/* General theme consistency */
+.bg-navy {
+  background-color: #0a2a43;
+}
+
+.text-navy {
+  color: #0a2a43;
+}
+
+.btn-navy {
+  background-color: #0a2a43;
+  color: #fff;
+}
+
+.btn-navy:hover {
+  background-color: #083152;
+  color: #fff;
+}
+
+.signup-section {
+  background: #f8f9fa;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+}
+
+.card {
+  border-radius: 20px;
+}
+
+.card h2 {
+  font-weight: bold;
+}
+
+.form-control:focus {
+  border-color: #0a2a43;
+  box-shadow: 0 0 0 0.2rem rgba(10, 42, 67, 0.25);
+}
+
+/* Hero Section */
+.contact-hero {
+  background : linear-gradient(rgba(10, 42, 67, 0.8), rgba(10, 42, 67, 0.8)), 
+              url('images/support.jpg') center/cover no-repeat;
+  height: 40vh;
+}
+
+.bg-navy {
+  background-color: #0a2a43;
+}
+
+.text-navy {
+  color: #0a2a43;
+}
+
+.btn-navy {
+  background-color: #0a2a43;
+  color: #fff;
+}
+
+.btn-navy:hover {
+  background-color: #083152;
+  color: #fff;
+}
+
+/* Support Image with Overlay */
+.support-img-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.support-img {
+  border-radius: 20px;
+}
+
+.support-overlay {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 42, 67, 0.85);
+  color: #fff;
+  padding: 15px 20px;
+  border-radius: 15px;
+  text-align: center;
+  max-width: 90%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.card {
+  border-radius: 20px;
+}
+
+.form-control:focus {
+  border-color: #0a2a43;
+  box-shadow: 0 0 0 0.2rem rgba(10, 42, 67, 0.25);
+}
+
+.fw-bold-contact {
+  color: #6C757D !important; /* Dark Navy */
+}
+
+.faq-card {
+  background: #0a2a43;
+  color: #fff;
+  border-radius: 15px;
+  text-align: center;
+  padding: 30px 20px;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.faq-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+.faq-content {
+  display: none;
+  background: #f1f1f1;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.faq-content h4 {
+  margin-bottom: 15px;
+}
+
+body {
+  background-color: #f9f9f9;
+}
+
+.text-navy {
+  color: #001f3f;
+}
+
+.bg-navy {
+  background-color: #001f3f;
+}
+
+.bg-lightgrey {
+  background-color: #f5f5f5;
+}
+
+.form-step {
+  display: none;
+}
+
+.form-step.active {
+  display: block;
+}
+
+.progress-bar {
+  transition: width 0.3s ease;
+}
+
+/* Curved/Oval Description Box */
+.property-description .description-box {
+  background: #ffffff;
+  border-radius: 50px;   /* Oval/curvy shape */
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+  line-height: 1.6;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Add subtle hover effect */
+.property-description .description-box:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+}
+
+/* Terms Page Styling */
+.terms-section {
+  background-color: #f8f9fa;
+  min-height: 70vh;
+}
+
+.terms-card {
+  border-radius: 15px;
+  background: #fff;
+  line-height: 1.6;
+}
+
+.terms-card h5 {
+  color: #0a2a43;
+  margin-top: 1.5rem;
+}
+
+.terms-card p,
+.terms-card ul {
+  color: #555;
+}
+
+.btn-navy {
+  background-color: #0a2a43;
+  color: white;
+  border-radius: 25px;
+}
+
+.btn-navy:hover {
+  background-color: #093154;
+}
+
+.fw-bold-footer {
+  color: #FFFFFF !important; /* White */
+  font-weight: bold;
+}

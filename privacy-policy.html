@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResLinQ | Privacy Policy</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --secondary: #f59e0b;
+      --success: #059669;
+      --light-bg: #f8fafc;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Enhanced Background */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 40%;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      clip-path: polygon(0 0, 100% 0, 100% 80%, 0 100%);
+      z-index: -1;
+    }
+
+    /* Floating Elements */
+    .floating-elements {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .floating-element {
+      position: absolute;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 50%;
+      animation: floatElement 20s infinite linear;
+    }
+
+    .floating-element:nth-child(1) {
+      width: 80px;
+      height: 80px;
+      top: 15%;
+      right: 10%;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      width: 120px;
+      height: 120px;
+      top: 65%;
+      left: 5%;
+      animation-delay: -7s;
+    }
+
+    .floating-element:nth-child(3) {
+      width: 60px;
+      height: 60px;
+      bottom: 20%;
+      right: 15%;
+      animation-delay: -14s;
+    }
+
+    @keyframes floatElement {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+      }
+      33% {
+        transform: translateY(-20px) rotate(120deg);
+      }
+      66% {
+        transform: translateY(15px) rotate(240deg);
+      }
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1 0 auto;
+      padding: 2rem 1rem;
+      width: 100%;
+    }
+
+    /* Enhanced Privacy Container */
+    .privacy-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      max-width: 1000px;
+      margin: 0 auto;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      position: relative;
+    }
+
+    .privacy-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .privacy-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+      background-size: 15px 15px;
+      animation: float 20s linear infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(-15px, -15px) rotate(360deg); }
+    }
+
+    .logo {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .privacy-content {
+      padding: 2.5rem;
+      max-height: 60vh;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    /* Enhanced Typography */
+    .privacy-section {
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .privacy-section:last-child {
+      border-bottom: none;
+    }
+
+    .privacy-section h5 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .privacy-section h5 i {
+      color: var(--secondary);
+    }
+
+    .privacy-section h6 {
+      color: var(--primary-dark);
+      margin: 1.25rem 0 0.75rem 0;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .privacy-section p {
+      color: #374151;
+      line-height: 1.6;
+      margin-bottom: 0.75rem;
+    }
+
+    .privacy-section ul {
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .privacy-section li {
+      color: #374151;
+      line-height: 1.6;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+
+    .privacy-section li::before {
+      content: '•';
+      color: var(--primary-light);
+      font-weight: bold;
+      position: absolute;
+      left: -1rem;
+    }
+
+    /* Important Notice Styling */
+    .important-notice {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border: 2px solid #f59e0b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      position: relative;
+    }
+
+    .important-notice::before {
+      content: '⚠️';
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      background: white;
+      padding: 0 10px;
+      font-size: 1.2rem;
+    }
+
+    .important-notice h6 {
+      color: #92400e;
+      margin-bottom: 0.5rem;
+    }
+
+    .important-notice p {
+      color: #92400e;
+      margin-bottom: 0;
+    }
+
+    /* Data Rights Section */
+    .rights-section {
+      background: #f0f9ff;
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 2rem 0;
+      border-left: 4px solid var(--primary-light);
+    }
+
+    .rights-section h5 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    /* Progress Indicator */
+    .progress-indicator {
+      position: sticky;
+      top: 0;
+      background: white;
+      padding: 1rem 0;
+      border-bottom: 1px solid #e2e8f0;
+      z-index: 10;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    /* Enhanced Footer */
+    footer {
+      flex-shrink: 0;
+      background: #1C2B4A;
+      color: white;
+      padding: 1.5rem 0;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+      text-align: center;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .privacy-content {
+        padding: 1.5rem;
+        max-height: 50vh;
+      }
+
+      .privacy-header {
+        padding: 2rem 1.5rem;
+      }
+
+      body::before {
+        height: 30%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .privacy-content {
+        padding: 1rem;
+      }
+
+      .privacy-header {
+        padding: 1.5rem 1rem;
+      }
+
+      .logo {
+        font-size: 2.5rem;
+      }
+    }
+
+    /* Scrollbar Styling */
+    .privacy-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .privacy-content::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 3px;
+    }
+
+    .privacy-content::-webkit-scrollbar-thumb {
+      background: var(--primary-light);
+      border-radius: 3px;
+    }
+
+    .privacy-content::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
+    }
+
+    /* Section Highlight on Scroll */
+    .privacy-section {
+      transition: all 0.3s ease;
+    }
+
+    .privacy-section.highlighted {
+      background: #f0f9ff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 0 -1rem 1.5rem -1rem;
+      border-left: 4px solid var(--primary-light);
+    }
+
+    /* Contact Information Box */
+    .contact-box {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      border: 2px solid #10b981;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .contact-box h6 {
+      color: #065f46;
+      margin-bottom: 1rem;
+    }
+
+    .contact-box p {
+      color: #065f46;
+      margin-bottom: 0.5rem;
+    }
+
+    #logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+  </style>
+</head>
+<body>
+  <!-- Floating Background Elements -->
+  <div class="floating-elements">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="privacy-container animate__animated animate__fadeInUp">
+      <div class="privacy-header">
+        <i class="bi bi-shield-lock-fill logo"></i>
+        <h2>Privacy Policy</h2>
+        <p class="mb-0">Last Updated: October 2025 | POPIA Compliant</p>
+      </div>
+
+      <!-- Progress Indicator -->
+      <div class="progress-indicator">
+        <div class="progress-text">
+          <i class="bi bi-clock me-2"></i>Estimated reading time: 8 minutes
+        </div>
+      </div>
+
+      <div class="privacy-content">
+        <div class="important-notice">
+          <h6>Important Privacy Information</h6>
+          <p>This Privacy Policy explains how ResLinQ collects, uses, discloses, and safeguards your information when you use our student accommodation platform. We comply with the Protection of Personal Information Act (POPIA) and other applicable data protection laws.</p>
+        </div>
+
+        <div class="privacy-section">
+          <h5><i class="bi bi-check-circle"></i>1. Introduction and Scope</h5>
+          <p>ResLinQ ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy applies to all users of our platform, including students seeking accommodation and landlords offering accommodation.</p>
+          <p>By using ResLinQ, you consent to the data practices described in this policy.</p>
+        </div>
+
+        <div class="privacy-section">
+          <h5><i class="bi bi-collection"></i>2. Information We Collect</h5>
+          
+          <h6>2.1 Personal Information</h6>
+          <p>We collect the following personal information:</p>
+          <ul>
+            <li><strong>Account Information:</strong> Name, email, phone number, profile photo</li>
+            <li><strong>Student Information:</strong> Educational institution, student number, study details</li>
+            <li><strong>Landlord Information:</strong> Property ownership details, contact information</li>
+            <li><strong>Identity Verification:</strong> Government-issued ID (for verification purposes)</li>
+          </ul>
+
+          <h6>2.2 Property and Accommodation Information</h6>
+          <ul>
+            <li>Property details, photos, and descriptions</li>
+            <li>Rental terms and pricing information</li>
+            <li>Location data and amenities</li>
+          </ul>
+
+          <h6>2.3 Usage and Technical Information</h6>
+          <ul>
+            <li>IP addresses, browser type, device information</li>
+            <li>Platform usage patterns and preferences</li>
+            <li>Cookies and similar tracking technologies</li>
+          </ul>
+
+          <h6>2.4 Communication Data</h6>
+          <ul>
+            <li>Messages between students and landlords</li>
+            <li>Customer support communications</li>
+            <li>Feedback and survey responses</li>
+          </ul>
+        </div>
+
+        <div class="privacy-section">
+          <h5><i class="bi bi-gear"></i>3. How We Use Your Information</h5>
+          
+          <h6>3.1 Platform Operations</h6>
+          <ul>
+            <li>Facilitate connections between students and landlords</li>
+            <li>Manage user accounts and profiles</li>
+            <li>Process and manage accommodation listings</li>
+            <li>Enable communication between users</li>
+          </ul>
+
+          <h6>3.2 Service Improvement</h6>
+          <ul>
+            <li>Analyze platform usage to improve our services</li>
+            <li>Develop new features and functionality</li>
+            <li>Personalize user experience</li>
+          </ul>
+
+          <h6>3.3 Legal and Security Purposes</h6>
+          <ul>
+            <li>Comply with legal obligations under POPIA</li>
+            <li>Prevent fraud and ensure platform security</li>
+            <li>Enforce our Terms and Conditions</li>
+            <li>Protect the rights and safety of our users</li>
+          </ul>
+
+          <h6>3.4 Communication</h6>
+          <ul>
+            <li>Send important service notifications</li>
+            <li>Provide customer support</li>
+            <li>Send promotional communications (with consent)</li>
+          </ul>
+        </div>
+
+        <div class="privacy-section">
+          <h5><i class="bi bi-share"></i>4. Information Sharing and Disclosure</h5>
+          
+          <h6>4.1 With Other Users</h6>
+          <p>We share limited information to facilitate accommodation arrangements:</p>
+          <ul>
+            <li><strong>Students see:</strong> Landlord name, property details, contact information</li>
+            <li><strong>Landlords see:</strong> Student name, educational institution, contact information</li>
+          </ul>
+
+          <h6>4.2 Service Providers</h6>
+          <p>We may share information with trusted service providers who assist in:</p>
+          <ul>
+            <li>Platform hosting and maintenance</li>
+            <li>Payment processing (if applicable)</li>
+            <li>Customer support services</li>
+            <li>Analytics and performance monitoring</li>
+          </ul>
+
+          <h6>4.3 Legal Requirements</h6>
+          <p>We may disclose information when required by law:</p>
+          <ul>
+            <li>To comply with legal processes</li>
+            <li>To protect our rights and property</li>
+            <li>To prevent fraud or security issues</li>
+            <li>To protect the safety of our users</li>
+          </ul>
+
+          <h6>4.4 Business Transfers</h6>
+          <p>In the event of a merger, acquisition, or sale of assets, user information may be transferred to the new entity.</p>
+        </div>
+
+        <div class="privacy-section">
+          <h5><i class="bi bi-shield-lock"></i>5. Data Security</h5>
+          
+          <h6>5.1 Security Measures</h6>
+          <p>We implement appropriate technical and organizational measures to protect your personal information:</p>
+          <ul>
+            <li>Encryption of sensitive data</li>
+            <li>Secure server infrastructure</li>
+            <li>Regular security assessments</li>
+            <li>Access controls and authentication</li>
+          </ul>
+
+          <h6>5.2 Data Retention</h6>
+          <p>We retain personal information only as long as necessary for:</p>
+          <ul>
+            <li>Providing our services</li>
+            <li>Complying with legal obligations</li>
+            <li>Resolving disputes</li>
+            <li>Enforcing our agreements</li>
+          </ul>
+          <p><strong>Typical retention periods:</strong></p>
+          <ul>
+            <li>Active accounts: Until account deletion</li>
+            <li>Inactive accounts: 3 years</li>
+            <li>Financial records: 5 years (as required by law)</li>
+          </ul>
+        </div>
+
+        <div class="rights-section">
+          <h5><i class="bi bi-person-check"></i>6. Your Rights Under POPIA</h5>
+          
+          <p>As a data subject, you have the following rights:</p>
+          
+          <h6>6.1 Right to Access</h6>
+          <p>You may request access to the personal information we hold about you.</p>
+
+          <h6>6.2 Right to Correction</h6>
+          <p>You may request correction of inaccurate or incomplete personal information.</p>
+
+          <h6>6.3 Right to Deletion</h6>
+          <p>You may request deletion of your personal information, subject to legal limitations.</p>
+
+          <h6>6.4 Right to Object</h6>
+          <p>You may object to the processing of your personal information in certain circumstances.</p>
+
+          <h6>6.5 Right to Complain</h6>
+          <p>You have the right to lodge a complaint with the Information Regulator.</p>
+
+          <h6>6.6 How to Exercise Your Rights</h6>
+          <p>To exercise any of these rights, please contact us using the information in Section 10.</p>
+        </div>
+
+        <div class="privacy-section">
+          <h5><i class="bi bi-cookie"></i>7. Cookies and Tracking Technologies</h5>
+          
+          <h6>7.1 Types of Cookies We Use</h6>
+          <ul>
+            <li><strong>Essential Cookies:</strong> Required for platform functionality</li>
+            <li><strong>Performance Cookies:</strong> Help us understand how users interact with our platform</li>
+            <li><strong>Functionality Cookies:</strong> Remember your preferences and settings</li>
+            <li><strong>Advertising Cookies:</strong> Deliver relevant advertisements</li>
+          </ul>
+
+          <h6>7.2 Cookie Management</h6>
+          <p>You can control cookie settings through your browser. However, disabling essential cookies may affect platform functionality.</p>
+        </div>
+
+        <div class="privacy-section">
+          <h5><i class="bi bi-phone"></i>8. Third-Party Links and Services</h5>
+          <p>Our platform may contain links to third-party websites or services. This Privacy Policy does not apply to third-party practices. We encourage you to review their privacy policies.</p>
+        </div>
+
+        <div class="privacy-section">
+          <h5><i class="bi bi-globe"></i>9. International Data Transfers</h5>
+          <p>We primarily store and process data within South Africa. If we transfer data internationally, we ensure adequate protection as required by POPIA.</p>
+        </div>
+
+        <div class="privacy-section">
+          <h5><i class="bi bi-people"></i>10. Children's Privacy</h5>
+          <p>ResLinQ is not intended for users under 18 years of age. We do not knowingly collect personal information from children. If we become aware of such collection, we will take steps to delete the information.</p>
+        </div>
+
+        <div class="privacy-section">
+          <h5><i class="bi bi-arrow-clockwise"></i>11. Policy Updates</h5>
+          <p>We may update this Privacy Policy periodically. We will notify users of material changes through platform notifications or email. Continued use of ResLinQ after changes constitutes acceptance of the updated policy.</p>
+        </div>
+
+        <div class="contact-box">
+          <h6><i class="bi bi-envelope me-2"></i>Contact Information</h6>
+          <p><strong>Information Officer:</strong> ResLinQ Privacy Team</p>
+          <p><strong>Email:</strong> reslinqco@gmail.com</p>
+          <p><strong>Phone:</strong> +27 82 305 6754</p>
+          <p><strong>Address:</strong> South Africa</p>
+          <p><strong>Information Regulator Complaints:</strong> complaints.IR@justice.gov.za</p>
+        </div>
+
+        <div class="privacy-section">
+          <h5><i class="bi bi-file-earmark-check"></i>12. Consent and Acceptance</h5>
+          <p>By using ResLinQ, you acknowledge that you have read and understood this Privacy Policy and consent to the collection, use, and disclosure of your personal information as described herein.</p>
+          
+          <div class="important-notice">
+            <h6>POPIA Compliance Notice</h6>
+            <p>ResLinQ is committed to compliance with the Protection of Personal Information Act 4 of 2013. We process personal information lawfully and responsibly, respecting your privacy rights.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-grid">
+        <div class="footer-section">
+          <h5><i class="bi bi-house-heart-fill me-2"></i>ResLinQ</h5>
+          <p>Your trusted platform for student accommodation. Connecting students with quality housing solutions.</p>
+        </div>
+        
+        <div class="footer-section">
+          <h5>Quick Links</h5>
+          <ul>
+            <li><a href="home.html">Home</a></li>
+            <li><a href="listings.html">Listings</a></li>
+            <li><a href="help.html">Help Center</a></li>
+            <li><a href="about.html">About Us</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h5>Legal</h5>
+          <ul>
+            <li><a href="privacy-policy.html">Privacy Policy</a></li>
+            <li><a href="terms_conditions.html">Terms of Service</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="safety-guide.html">Safety Guidelines</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h5>Contact Info</h5>
+          <ul>
+            <li><i class="bi bi-envelope me-2"></i>reslinqco@gmail.com</li>
+            <li><i class="bi bi-telephone me-2"></i>+27 82 305 6754</li>
+            <li><i class="bi bi-geo-alt me-2"></i>South Africa</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Scroll highlighting
+    const sections = document.querySelectorAll('.privacy-section');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('highlighted');
+        } else {
+          entry.target.classList.remove('highlighted');
+        }
+      });
+    }, { threshold: 0.3 });
+
+    sections.forEach(section => {
+      observer.observe(section);
+    });
+
+    // Reading progress
+    let startTime = Date.now();
+    const content = document.querySelector('.privacy-content');
+
+    content.addEventListener('scroll', function() {
+      const scrollPercentage = (content.scrollTop / (content.scrollHeight - content.clientHeight)) * 100;
+      if (scrollPercentage > 80) {
+        document.querySelector('.progress-text').innerHTML = 
+          '<i class="bi bi-check-circle me-2"></i>Thank you for reviewing our Privacy Policy';
+      }
+    });
+
+    // Update last read time
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible') {
+        startTime = Date.now();
+      }
+    });
+  </script>
+</body>
+</html>

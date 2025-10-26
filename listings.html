@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResLinQ | Listings</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <!-- AOS CSS -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --secondary: #b6b1fb;
+      --accent: #f59e0b;
+      --text-dark: #1e293b;
+      --text-light: #64748b;
+      --bg-light: #f8fafc;
+    }
+
+    /* Floating Animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Pulse Animation */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Gradient Text */
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Enhanced Hero Section */
+    .hero-section {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--primary) 100%);
+      color: white;
+      padding: 4rem 0;
+      border-radius: 0 0 3rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+
+    /* Floating Elements */
+    .floating-element {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-element:nth-child(1) {
+      width: 80px;
+      height: 80px;
+      top: 20%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      width: 120px;
+      height: 120px;
+      top: 60%;
+      right: 10%;
+      animation-delay: -2s;
+    }
+
+    .floating-element:nth-child(3) {
+      width: 60px;
+      height: 60px;
+      bottom: 20%;
+      left: 20%;
+      animation-delay: -4s;
+    }
+
+    /* Enhanced Cards */
+    .listing-card {
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      border: none;
+      border-radius: 1.5rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .listing-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      z-index: 1;
+    }
+
+    .listing-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 60px rgba(30, 58, 138, 0.2);
+    }
+
+    .card-img-top {
+      height: 200px;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .listing-card:hover .card-img-top {
+      transform: scale(1.1);
+    }
+
+    .price-tag {
+      background: linear-gradient(45deg, #10b981, #059669);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-weight: bold;
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 2;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .location-badge {
+      background: rgba(255,255,255,0.95);
+      color: var(--primary);
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      z-index: 2;
+      backdrop-filter: blur(10px);
+    }
+
+    .amenities-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .amenities-list li {
+      display: inline-block;
+      background: #f1f5f9;
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      margin: 0.25rem;
+      font-size: 0.8rem;
+      color: #475569;
+      transition: all 0.3s ease;
+    }
+
+    .listing-card:hover .amenities-list li {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Enhanced Filter Card */
+    .filter-card {
+      position: sticky;
+      top: 2rem;
+      border: none;
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .filter-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    }
+
+    .search-box {
+      border-radius: 2rem;
+      padding: 0.75rem 1.5rem;
+      border: 2px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+
+    .search-box:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .sort-select {
+      border-radius: 2rem;
+      border: 2px solid #e2e8f0;
+      padding: 0.75rem 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .sort-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .results-count {
+      color: var(--primary);
+      font-size: 1rem;
+      font-weight: 600;
+      background: rgba(30, 58, 138, 0.1);
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+    }
+
+    .filter-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .filter-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .clear-filters {
+      color: var(--text-light);
+      text-decoration: none;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      background: rgba(30, 58, 138, 0.1);
+    }
+
+    .clear-filters:hover {
+      color: var(--primary);
+      background: rgba(30, 58, 138, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .accreditation-badge {
+      font-size: 0.75rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 2rem;
+      font-weight: 600;
+    }
+
+    .stats-card {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      border-radius: 1.5rem;
+      border: none;
+      box-shadow: 0 10px 40px rgba(30, 58, 138, 0.3);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .stats-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M0 0h40v40H0V0zm1 1h38v38H1V1z'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .stats-card .card-body {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Custom Button Styles */
+    .btn-gradient {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border: none;
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
+      color: white;
+    }
+
+    /* Form Enhancements */
+    .form-select, .form-control {
+      border-radius: 1rem;
+      border: 2px solid #e2e8f0;
+      padding: 0.75rem 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-select:focus, .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.1);
+      transform: translateY(-2px);
+    }
+
+    /* Add status badge styles */
+    .status-badge {
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 2rem;
+        font-weight: bold;
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        z-index: 2;
+        font-size: 0.8rem;
+        backdrop-filter: blur(10px);
+        background: rgba(255,255,255,0.2);
+    }
+
+    /* Adjust location badge position to accommodate status badge */
+    .location-badge {
+        background: rgba(255,255,255,0.95);
+        color: var(--primary);
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        position: absolute;
+        top: 3.5rem; /* Changed from 1rem to 3.5rem */
+        left: 1rem;
+        z-index: 2;
+        backdrop-filter: blur(10px);
+    }
+
+    /* Style for occupied cards */
+    .listing-card.occupied {
+        opacity: 0.8;
+    }
+
+    .listing-card.occupied::before {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .listing-card.maintenance::before {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    }
+
+    /* NEW: Filter Toggle Button Styles */
+    .filter-toggle-btn {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+    }
+
+    .filter-toggle-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(30, 58, 138, 0.4);
+    }
+
+    .filter-toggle-btn i {
+      transition: transform 0.3s ease;
+    }
+
+    .filter-toggle-btn.rotated i {
+      transform: rotate(180deg);
+    }
+
+    /* NEW: Mobile Filter Overlay */
+    .filter-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1040;
+      display: none;
+    }
+
+    .filter-overlay.active {
+      display: block;
+    }
+
+    /* NEW: Mobile Filter Panel */
+    .mobile-filter-panel {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: 85%;
+      max-width: 350px;
+      height: 100%;
+      background: white;
+      z-index: 1050;
+      transition: left 0.3s ease;
+      overflow-y: auto;
+      box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .mobile-filter-panel.active {
+      left: 0;
+    }
+
+    .mobile-filter-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mobile-filter-body {
+      padding: 1.5rem;
+    }
+
+    .mobile-filter-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .hero-section {
+        padding: 3rem 0;
+        border-radius: 0 0 2rem 2rem;
+      }
+      
+      .filter-card {
+        position: static;
+        margin-bottom: 2rem;
+      }
+
+      /* NEW: Hide filter sidebar on mobile by default */
+      .filter-sidebar {
+        display: none;
+      }
+
+      /* NEW: Show filter toggle button on mobile */
+      .filter-toggle-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+    }
+
+    @media (min-width: 769px) {
+      /* NEW: Hide filter toggle button on desktop */
+      .filter-toggle-container {
+        display: none;
+      }
+    }
+
+     /* Mobile Bottom Navigation */
+    .mobile-bottom-nav {
+      display: none;
+    }
+
+    @media (max-width: 767px) {
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #1C2B4A;
+        z-index: 1030;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      }
+      
+      .mobile-nav-item {
+        flex: 1;
+        text-align: center;
+        padding: 0.5rem;
+        color: #fff;
+        text-decoration: none;
+        font-size: 0.75rem;
+      }
+      
+      .mobile-nav-item.active {
+        color: #64748b;
+      }
+      
+      .mobile-nav-item i {
+        display: block;
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .mobile-nav-item span {
+        display: none;
+      }
+      
+      /* Add padding to main content to account for bottom nav */
+      main {
+        margin-bottom: 80px;
+      }
+    }
+
+.hero-subtitle {
+  color:#e2e8f0;
+  animation: fadeInUp 0.8s ease-out 0.6s both;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+
+#logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+
+  </style>
+
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-navy">
+  <div class="container">
+    <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i>ResLinQ</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="index.html">
+            <i class="bi bi-house-door-fill"></i> Home
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="listings.html">
+            <i class="bi bi-building"></i> Listings
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="help.html">
+            <i class="bi bi-question-circle-fill"></i> Help
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class="signup-login-buttons">
+        <a href="authorization.html" class="btn btn-outline-light me-2 nav-btn">Login</a>
+        <a href="signup.html" class="btn btn-primary nav-btn">Sign Up</a>
+    </div>
+  </div>
+</nav>
+
+  <!-- Enhanced Hero Section -->
+  <section class="hero-section">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-8" data-aos="fade-right">
+          <h1 class="display-4 fw-bold mb-3 animate__animated animate__fadeInDown">
+            Your Ideal Student <span class="gradient-text">Space Awaits</span>
+          </h1>
+          <p class="lead mb-0 hero-subtitle fs-5 animate__animated animate__fadeInUp animate__delay-1s">
+            Browse through accredited and non-accredited student accommodations with verified reviews and ratings.
+          </p>
+        </div>
+        <div class="col-lg-4" data-aos="fade-left" data-aos-delay="300">
+          <div class="stats-card">
+            <div class="card-body text-center p-4">
+              <h4 class="mb-2">50+ Listings</h4>
+              <p class="mb-0">Verified accommodations near your campus</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEW: Mobile Filter Overlay -->
+  <div class="filter-overlay" id="filterOverlay"></div>
+
+  <!-- NEW: Mobile Filter Panel -->
+  <div class="mobile-filter-panel" id="mobileFilterPanel">
+    <div class="mobile-filter-header">
+      <h5 class="mb-0 fw-bold"><i class="bi bi-funnel me-2"></i>Filters</h5>
+      <button class="mobile-filter-close" id="mobileFilterClose">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="mobile-filter-body">
+      <!-- Accreditation Filter -->
+      <div class="filter-section">
+        <label class="form-label fw-semibold">Accreditation</label>
+        <select class="form-select" id="mobileFilterAccreditation">
+          <option value="all">All Listings</option>
+          <option value="accredited">Accredited (Bursary)</option>
+          <option value="self">Self-Paying</option>
+        </select>
+      </div>
+
+      <!-- Availability Filter -->
+      <div class="filter-section">
+          <label class="form-label fw-semibold">Availability</label>
+          <select class="form-select" id="mobileFilterAvailability">
+              <option value="all">All Properties</option>
+              <option value="available">Available Only</option>
+              <option value="occupied">Occupied Only</option>
+          </select>
+      </div>
+
+      <!-- Price Filter -->
+      <div class="filter-section">
+        <label class="form-label fw-semibold">Max Monthly Price</label>
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0">
+            <strong class="text-muted" style="font-size: 1rem; font-weight: bold;">R</strong>
+          </span>
+          <input type="number" class="form-control border-start-0" id="mobileFilterPrice" placeholder="e.g. 4000">
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="filter-section">
+        <label class="form-label fw-semibold">Location</label>
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0">
+            <i class="bi bi-geo-alt text-muted"></i>
+          </span>
+          <input type="text" class="form-control border-start-0" id="mobileFilterLocation" placeholder="e.g. Bloemfontein">
+        </div>
+      </div>
+
+      <button class="btn btn-gradient w-100 mt-3" id="mobileApplyFilters">
+        <i class="bi bi-funnel me-1"></i>Apply Filters
+      </button>
+      
+      <a class="clear-filters d-block text-center mt-3" onclick="clearAllFilters()">Clear All Filters</a>
+    </div>
+  </div>
+
+  <!-- Filters + Listings -->
+  <section class="py-5">
+    <div class="container">
+      <div class="row">
+        
+        <!-- NEW: Filter Toggle Button for Mobile -->
+        <div class="col-12 d-lg-none mb-3 filter-toggle-container">
+          <h5 class="text-navy mb-0 fw-bold"><i class="bi bi-funnel me-2"></i>Filters</h5>
+          <button class="filter-toggle-btn" id="filterToggleBtn">
+            <i class="bi bi-chevron-down"></i>
+          </button>
+        </div>
+        
+        <!-- Enhanced Filter Sidebar -->
+        <aside class="col-lg-3 mb-4 filter-sidebar">
+          <div class="card shadow-sm filter-card" data-aos="fade-right">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="text-navy mb-0 fw-bold"><i class="bi bi-funnel me-2"></i>Filters</h5>
+                <a class="clear-filters" onclick="clearAllFilters()">Clear All</a>
+              </div>
+
+              <!-- Accreditation Filter -->
+              <div class="filter-section">
+                <label class="form-label fw-semibold">Accreditation</label>
+                <select class="form-select" id="filterAccreditation">
+                  <option value="all">All Listings</option>
+                  <option value="accredited">Accredited (Bursary)</option>
+                  <option value="self">Self-Paying</option>
+                </select>
+              </div>
+
+              <!-- Availability Filter -->
+              <div class="filter-section">
+                  <label class="form-label fw-semibold">Availability</label>
+                  <select class="form-select" id="filterAvailability">
+                      <option value="all">All Properties</option>
+                      <option value="available">Available Only</option>
+                      <option value="occupied">Occupied Only</option>
+                  </select>
+              </div>
+
+              <!-- Price Filter -->
+              <div class="filter-section">
+                <label class="form-label fw-semibold">Max Monthly Price</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-white border-end-0">
+                    <strong class="text-muted" style="font-size: 1rem; font-weight: bold;">R</strong>
+                  </span>
+                  <input type="number" class="form-control border-start-0" id="filterPrice" placeholder="e.g. 4000">
+                </div>
+              </div>
+
+              <!-- Location -->
+              <div class="filter-section">
+                <label class="form-label fw-semibold">Location</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-white border-end-0">
+                    <i class="bi bi-geo-alt text-muted"></i>
+                  </span>
+                  <input type="text" class="form-control border-start-0" id="filterLocation" placeholder="e.g. Bloemfontein">
+                </div>
+              </div>
+
+              <button class="btn btn-gradient w-100 mt-3" onclick="applyFilters()">
+                <i class="bi bi-funnel me-1"></i>Apply Filters
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Listings -->
+        <div class="col-lg-9">
+          
+          <!-- Enhanced Sort + Search -->
+          <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-up">
+            <div class="d-flex align-items-center gap-3">
+              <div class="input-group" style="width: 300px;">
+                <span class="input-group-text bg-white border-end-0">
+                  <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" id="searchBar" class="form-control border-start-0 search-box" placeholder="Search by name...">
+              </div>
+              <span class="results-count" id="resultsCount">6 listings found</span>
+            </div>
+            
+            <select class="form-select sort-select" id="sortOptions" style="width: 200px;">
+              <option value="default">Sort by: Recommended</option>
+              <option value="priceLow">Price: Low to High</option>
+              <option value="priceHigh">Price: High to Low</option>
+            </select>
+          </div>
+
+          <!-- Accommodation Cards -->
+          <div class="row g-4" id="listingsContainer">
+            <!-- Listing cards will be dynamically inserted here by listings.js -->
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mobile Bottom Navigation -->
+<div class="mobile-bottom-nav d-lg-none">
+  <a href="home.html" class="mobile-nav-item">
+    <i class="bi bi-house"></i>
+    <span>Home</span>
+  </a>
+  <a href="listings.html" class="mobile-nav-item active">
+    <i class="bi bi-building"></i>
+    <span>Listings</span>
+  </a>
+  <a href="my-bookings.html" class="mobile-nav-item">
+    <i class="bi bi-calendar-check"></i>
+    <span>Bookings</span>
+  </a>
+  <a href="help.html" class="mobile-nav-item ">
+    <i class="bi bi-question-circle"></i>
+    <span>Help</span>
+  </a>
+</div>
+
+  <!-- Footer -->
+  <footer class="py-5 bg-navy text-white">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for finding the perfect student accommodation near your campus.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Quick Links</h6>
+          <ul class="list-unstyled">
+            <li><a href="home.html" class="text-light text-decoration-none">Home</a></li>
+            <li><a href="listings.html" class="text-light text-decoration-none">Listings</a></li>
+            <li><a href="help.html" class="text-light text-decoration-none">Help</a></li>
+            <li><a href="about-us.html" class="text-light text-decoration-none">About Us</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="my-bookings.html" class="text-light text-decoration-none">My Bookings</a></li>
+            <li><a href="view-reports.html" class="text-light text-decoration-none">My Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Get in Touch</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="navbar.js"></script>
+  <script src="listings.js"></script>
+
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 1000,
+      once: true,
+      offset: 100
+    });
+
+    // NEW: Filter Toggle Functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const filterToggleBtn = document.getElementById('filterToggleBtn');
+      const mobileFilterPanel = document.getElementById('mobileFilterPanel');
+      const filterOverlay = document.getElementById('filterOverlay');
+      const mobileFilterClose = document.getElementById('mobileFilterClose');
+      const mobileApplyFilters = document.getElementById('mobileApplyFilters');
+      
+      // Toggle mobile filter panel
+      if (filterToggleBtn) {
+        filterToggleBtn.addEventListener('click', function() {
+          mobileFilterPanel.classList.add('active');
+          filterOverlay.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        });
+      }
+      
+      // Close mobile filter panel
+      if (mobileFilterClose) {
+        mobileFilterClose.addEventListener('click', function() {
+          mobileFilterPanel.classList.remove('active');
+          filterOverlay.classList.remove('active');
+          document.body.style.overflow = '';
+        });
+      }
+      
+      // Close mobile filter panel when overlay is clicked
+      if (filterOverlay) {
+        filterOverlay.addEventListener('click', function() {
+          mobileFilterPanel.classList.remove('active');
+          filterOverlay.classList.remove('active');
+          document.body.style.overflow = '';
+        });
+      }
+      
+      // Apply filters from mobile panel
+      if (mobileApplyFilters) {
+        mobileApplyFilters.addEventListener('click', function() {
+          // Sync mobile filter values with desktop filters
+          document.getElementById('filterAccreditation').value = document.getElementById('mobileFilterAccreditation').value;
+          document.getElementById('filterAvailability').value = document.getElementById('mobileFilterAvailability').value;
+          document.getElementById('filterPrice').value = document.getElementById('mobileFilterPrice').value;
+          document.getElementById('filterLocation').value = document.getElementById('mobileFilterLocation').value;
+          
+          // Apply filters
+          applyFilters();
+          
+          // Close mobile panel
+          mobileFilterPanel.classList.remove('active');
+          filterOverlay.classList.remove('active');
+          document.body.style.overflow = '';
+        });
+      }
+      
+      // Sync filter values when mobile panel opens
+      if (filterToggleBtn) {
+        filterToggleBtn.addEventListener('click', function() {
+          document.getElementById('mobileFilterAccreditation').value = document.getElementById('filterAccreditation').value;
+          document.getElementById('mobileFilterAvailability').value = document.getElementById('filterAvailability').value;
+          document.getElementById('mobileFilterPrice').value = document.getElementById('filterPrice').value;
+          document.getElementById('mobileFilterLocation').value = document.getElementById('filterLocation').value;
+        });
+      }
+    });
+
+    // UPDATED: Unified Filter Functionality for both Desktop and Mobile
+    // Grab elements
+    const container = document.getElementById('listingsContainer');
+    const resultsCount = document.getElementById('resultsCount');
+    const accSelect = document.getElementById('filterAccreditation');
+    const priceInput = document.getElementById('filterPrice');
+    const locationInput = document.getElementById('filterLocation');
+    const sortSelect = document.getElementById('sortOptions');
+    const searchBar = document.getElementById('searchBar');
+
+    // Mobile filter elements
+    const mobileAccSelect = document.getElementById('mobileFilterAccreditation');
+    const mobilePriceInput = document.getElementById('mobileFilterPrice');
+    const mobileLocationInput = document.getElementById('mobileFilterLocation');
+    const mobileAvailabilitySelect = document.getElementById('mobileFilterAvailability');
+
+    // Helper - get only top-level listing cards (outer columns)
+    function getListingCards() {
+      return Array.from(container.querySelectorAll(':scope > .col-md-6'));
+    }
+
+    // UPDATED: Unified applyFilters function that works with both desktop and mobile
+    function applyFilters(){
+      // Get values from desktop OR mobile filters (they should be synced)
+      const accFilter = accSelect.value;
+      const priceFilterRaw = priceInput.value;
+      const priceFilter = priceFilterRaw === '' ? null : Number(priceFilterRaw);
+      const locationFilter = (locationInput.value || '').trim().toLowerCase();
+      const searchQuery = (searchBar.value || '').trim().toLowerCase();
+      const availabilityFilter = document.getElementById('filterAvailability') ? document.getElementById('filterAvailability').value : 'all';
+
+      const cards = getListingCards();
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        // Read data attributes from the outer column
+        const price = Number(card.dataset.price);
+        const acc = card.dataset.accreditation;
+        const loc = (card.dataset.location || '').toLowerCase();
+        const status = card.dataset.status || 'available';
+        const adminStatus = card.dataset.adminStatus || 'approved';
+
+        // name: look inside the card to find the title
+        const titleEl = card.querySelector('.card-title');
+        const name = titleEl ? titleEl.textContent.toLowerCase() : '';
+
+        let visible = true;
+
+        // Accreditation filter
+        if (accFilter !== 'all' && acc !== accFilter) {
+          visible = false;
+        }
+
+        // Price filter (only if a number entered)
+        if (priceFilter !== null) {
+          if (!Number.isFinite(price) || price > priceFilter) {
+            visible = false;
+          }
+        }
+
+        // Location filter
+        if (locationFilter) {
+          if (!loc.includes(locationFilter)) {
+            visible = false;
+          }
+        }
+
+        // Search filter
+        if (searchQuery) {
+          if (!name.includes(searchQuery)) {
+            visible = false;
+          }
+        }
+
+        // Availability filter
+        if (availabilityFilter !== 'all') {
+          if (availabilityFilter === 'available' && status !== 'available') {
+            visible = false;
+          } else if (availabilityFilter === 'occupied' && status !== 'occupied') {
+            visible = false;
+          }
+        }
+
+        // Admin status filter - only show approved properties
+        if (adminStatus !== 'approved') {
+          visible = false;
+        }
+
+        // Use '' (empty) to let the grid determine proper display rather than forcing block
+        card.style.display = visible ? '' : 'none';
+
+        if (visible) visibleCount++;
+      });
+
+      // Update results count (pluralized nicely)
+      resultsCount.textContent = `${visibleCount} listing${visibleCount === 1 ? '' : 's'} found`;
+    }
+
+    // UPDATED: Enhanced sorting function
+    sortSelect.addEventListener('change', function() {
+      const cards = getListingCards();
+      
+      if (this.value === 'priceLow') {
+        cards.sort((a, b) => {
+          const pa = Number(a.dataset.price) || 0;
+          const pb = Number(b.dataset.price) || 0;
+          return pa - pb;
+        });
+      } else if (this.value === 'priceHigh') {
+        cards.sort((a, b) => {
+          const pa = Number(a.dataset.price) || 0;
+          const pb = Number(b.dataset.price) || 0;
+          return pb - pa;
+        });
+      } else {
+        // "default" - sort by availability first, then by rating
+        cards.sort((a, b) => {
+          const statusA = a.dataset.status || 'available';
+          const statusB = b.dataset.status || 'available';
+          
+          // Available properties first
+          if (statusA === 'available' && statusB !== 'available') return -1;
+          if (statusA !== 'available' && statusB === 'available') return 1;
+          
+          // Then by creation date or other criteria
+          return 0;
+        });
+      }
+
+      // Re-append in the sorted order
+      cards.forEach(card => container.appendChild(card));
+      
+      // Update results count after sorting
+      const visibleCards = cards.filter(card => card.style.display !== 'none');
+      resultsCount.textContent = `${visibleCards.length} listing${visibleCards.length === 1 ? '' : 's'} found`;
+    });
+
+    // UPDATED: Event listeners for all filter inputs
+    function setupFilterEventListeners() {
+      // Desktop filter events
+      if (accSelect) accSelect.addEventListener('change', applyFilters);
+      if (priceInput) priceInput.addEventListener('input', applyFilters);
+      if (locationInput) locationInput.addEventListener('input', applyFilters);
+      if (searchBar) searchBar.addEventListener('input', applyFilters);
+      if (sortSelect) sortSelect.addEventListener('change', applyFilters);
+      
+      // Availability filter
+      const availabilitySelect = document.getElementById('filterAvailability');
+      if (availabilitySelect) availabilitySelect.addEventListener('change', applyFilters);
+      
+      // Mobile filter events (for real-time filtering if desired)
+      if (mobileAccSelect) mobileAccSelect.addEventListener('change', function() {
+        accSelect.value = this.value;
+        applyFilters();
+      });
+      
+      if (mobilePriceInput) mobilePriceInput.addEventListener('input', function() {
+        priceInput.value = this.value;
+        applyFilters();
+      });
+      
+      if (mobileLocationInput) mobileLocationInput.addEventListener('input', function() {
+        locationInput.value = this.value;
+        applyFilters();
+      });
+      
+      if (mobileAvailabilitySelect) mobileAvailabilitySelect.addEventListener('change', function() {
+        const desktopAvailability = document.getElementById('filterAvailability');
+        if (desktopAvailability) desktopAvailability.value = this.value;
+        applyFilters();
+      });
+    }
+
+    // Clear all filters - UPDATED for both desktop and mobile
+    function clearAllFilters() {
+      // Clear desktop filters
+      if (accSelect) accSelect.value = 'all';
+      if (priceInput) priceInput.value = '';
+      if (locationInput) locationInput.value = '';
+      if (searchBar) searchBar.value = '';
+      if (sortSelect) sortSelect.value = 'default';
+      
+      const availabilitySelect = document.getElementById('filterAvailability');
+      if (availabilitySelect) availabilitySelect.value = 'all';
+      
+      // Clear mobile filters
+      if (mobileAccSelect) mobileAccSelect.value = 'all';
+      if (mobilePriceInput) mobilePriceInput.value = '';
+      if (mobileLocationInput) mobileLocationInput.value = '';
+      if (mobileAvailabilitySelect) mobileAvailabilitySelect.value = 'all';
+      
+      applyFilters();
+    }
+
+    // Initialize everything when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      setupFilterEventListeners();
+      applyFilters(); // Initial filter application
+    });
+
+    // Expose functions to global scope
+    window.clearAllFilters = clearAllFilters;
+    window.applyFilters = applyFilters;
+  </script>
+</body>
+</html>

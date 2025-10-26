@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResLinQ | Booking & Payments Help</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --success: #059669;
+      --warning: #f59e0b;
+      --info: #60a5fa;
+      --light-bg: #f8fafc;
+    }
+
+    .booking-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, #9983e7 50%, var(--primary-light) 100%);
+      color: white;
+      padding: 2rem 0;
+      border-radius: 0 0 1.5rem 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    @media (min-width: 768px) {
+      .booking-hero {
+        padding: 3rem 0;
+        border-radius: 0 0 2rem 2rem;
+      }
+    }
+    
+    .booking-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="%23ffffff" opacity="0.1"><path d="M500 50L550 30L600 50L650 30L700 50L750 30L800 50L850 30L900 50L950 30L1000 50V100H0V50Z"/></svg>');
+      background-size: cover;
+    }
+    
+    .booking-card {
+      border: none;
+      border-radius: 1rem;
+      transition: all 0.3s ease;
+      height: 100%;
+      opacity: 0;
+      transform: translateY(30px);
+      margin-bottom: 1rem;
+    }
+    
+    .booking-card.animated {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .booking-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+    }
+    
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      transition: transform 0.3s ease;
+    }
+    
+    @media (min-width: 768px) {
+      .card-icon {
+        font-size: 2.5rem;
+      }
+    }
+    
+    .booking-card:hover .card-icon {
+      transform: scale(1.1) rotate(5deg);
+    }
+    
+    .feature-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    @media (min-width: 768px) {
+      .feature-icon {
+        width: 60px;
+        height: 60px;
+      }
+    }
+    
+    .feature-item:hover .feature-icon {
+      transform: scale(1.1) rotate(10deg);
+    }
+    
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.8s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .bounce-in {
+      animation: bounceIn 0.8s ease-out;
+    }
+    
+    @keyframes bounceIn {
+      0% { opacity: 0; transform: scale(0.3); }
+      50% { opacity: 1; transform: scale(1.05); }
+      70% { transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    
+    .booking-section {
+      scroll-margin-top: 80px;
+    }
+    
+    @media (min-width: 768px) {
+      .booking-section {
+        scroll-margin-top: 100px;
+      }
+    }
+    
+    .nav-pills .nav-link.active {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .nav-pills .nav-link {
+      color: var(--primary);
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
+      white-space: nowrap;
+      font-size: 0.85rem;
+      padding: 0.5rem 0.75rem;
+    }
+    
+    @media (min-width: 768px) {
+      .nav-pills .nav-link {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+      }
+    }
+    
+    .nav-pills .nav-link:hover {
+      background-color: rgba(30, 58, 138, 0.1);
+    }
+    
+    .checklist-item {
+      padding-left: 1.5rem;
+      position: relative;
+    }
+    
+    .checklist-item::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: bold;
+    }
+    
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+    }
+    
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--primary-light);
+    }
+    
+    .timeline-item {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+    
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -2rem;
+      top: 0.25rem;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+    
+    .plan-card {
+      border-radius: 1rem;
+      transition: all 0.3s ease;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    
+    .plan-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .plan-header {
+      padding: 1.5rem;
+      text-align: center;
+      color: white;
+    }
+    
+    .plan-popular {
+      position: relative;
+    }
+    
+    @media (min-width: 768px) {
+      .plan-popular {
+        transform: scale(1.05);
+      }
+    }
+    
+    .plan-popular::before {
+      content: 'MOST POPULAR';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--warning);
+      color: white;
+      padding: 0.25rem 1rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      z-index: 2;
+    }
+    
+    .payment-method {
+      border: 2px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      margin-bottom: 0.75rem;
+    }
+    
+    .payment-method:hover, .payment-method.selected {
+      border-color: var(--primary);
+      background-color: rgba(30, 58, 138, 0.05);
+    }
+    
+    .commission-badge {
+      position: absolute;
+      top: -10px;
+      right: 10px;
+      background: var(--warning);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    /* Mobile-specific styles */
+    .mobile-sticky-nav {
+      position: sticky;
+      top: 56px;
+      z-index: 1020;
+      background-color: #f8f9fa;
+    }
+    
+    @media (max-width: 767px) {
+      .mobile-sticky-nav {
+        top: 0;
+      }
+      
+      .mobile-sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        z-index: 1030;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        padding: 0.5rem;
+      }
+      
+      .mobile-sidebar .btn {
+        font-size: 0.75rem;
+        padding: 0.5rem;
+      }
+      
+      .mobile-sidebar .btn i {
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+      }
+      
+      .content-area {
+        margin-bottom: 80px; /* Space for mobile bottom navigation */
+      }
+      
+      .booking-hero h1 {
+        font-size: 1.75rem;
+      }
+      
+      .booking-hero p.lead {
+        font-size: 1rem;
+      }
+      
+      .section-title {
+        font-size: 1.5rem;
+      }
+      
+      .card-body {
+        padding: 1rem;
+      }
+      
+      .plan-header {
+        padding: 1rem;
+      }
+      
+      .plan-header h4 {
+        font-size: 1.25rem;
+      }
+      
+      .plan-header .h2 {
+        font-size: 1.75rem;
+      }
+      
+      .timeline {
+        padding-left: 1.5rem;
+      }
+      
+      .timeline-item::before {
+        left: -1.5rem;
+      }
+    }
+    
+    /* Improved responsive grid */
+    @media (max-width: 575px) {
+      .container {
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+      
+      .row {
+        margin-left: -8px;
+        margin-right: -8px;
+      }
+      
+      .col, .col-1, .col-2, .col-3, .col-4, .col-5, .col-6, 
+      .col-7, .col-8, .col-9, .col-10, .col-11, .col-12 {
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+    }
+    
+    /* Improved typography for mobile */
+    @media (max-width: 767px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+      h3 { font-size: 1.25rem; }
+      h4 { font-size: 1.1rem; }
+      h5 { font-size: 1rem; }
+      h6 { font-size: 0.9rem; }
+      
+      .display-5 {
+        font-size: 2rem;
+      }
+    }
+    
+    /* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1C2B4A;
+    z-index: 1030;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .mobile-nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-nav-item.active {
+    color: #64748b;
+  }
+  
+  .mobile-nav-item i {
+    display: block;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  #logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+
+/* Quick z-index fix */
+.navbar { z-index: 1030 !important; }
+.dropdown-menu { z-index: 1050 !important; }
+.modal { z-index: 1060 !important; }
+  
+  /* Add padding to main content to account for bottom nav */
+  main {
+    margin-bottom: 80px;
+  }
+}
+    
+    /* Stats cards mobile optimization */
+    @media (max-width: 767px) {
+      .stats-card .card-body {
+        padding: 0.75rem;
+      }
+      
+      .stats-card h4 {
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+      }
+      
+      .stats-card small {
+        font-size: 0.7rem;
+      }
+    }
+
+    /* Fix navbar and dropdown z-index issues */
+.navbar {
+  z-index: 1030 !important;
+  position: sticky;
+  top: 0;
+}
+
+.navbar-collapse {
+  z-index: 1031;
+}
+
+/* Critical dropdown fixes */
+.dropdown {
+  position: relative !important;
+}
+
+.dropdown-menu {
+  z-index: 1050 !important;
+}
+
+.navbar .dropdown-menu {
+  z-index: 1060 !important;
+}
+
+/* Ensure dropdowns stay above all other content */
+.signup-login-buttons {
+  position: relative;
+  z-index: 1032;
+}
+
+.signup-login-buttons .dropdown-menu {
+  z-index: 1070 !important;
+}
+
+/* Modal z-index fixes */
+.modal {
+  z-index: 1080 !important;
+}
+
+.modal-backdrop {
+  z-index: 1075 !important;
+}
+
+/* Mobile bottom nav z-index */
+.mobile-bottom-nav {
+  z-index: 1040;
+}
+
+/* Sticky nav fixes */
+.mobile-sticky-nav {
+  z-index: 1025;
+}
+
+/* Ensure cards and other elements don't interfere */
+.booking-card {
+  z-index: 1;
+  position: relative;
+}
+
+.plan-card {
+  z-index: 1;
+  position: relative;
+}
+  </style>
+</head>
+<body>
+
+  <!-- Redirect if not logged in as landlord -->
+  <script>
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    if (!token) {
+      alert("Please log in to access this page.");
+      window.location.href = "authorization.html";
+    } else if (user.role !== 'landlord') {
+      alert("This page is for landlords only.");
+      window.location.href = "index.html";
+    }
+  </script>
+
+  <!-- Dynamic Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i><span class="d-none d-sm-inline">ResLinQ</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <!-- Navigation will be populated by navbar.js -->
+        </ul>
+      </div>
+      
+      <!-- Dynamic Auth Buttons -->
+      <div class="signup-login-buttons">
+        <!-- Content will be populated by navbar.js -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="booking-hero">
+    <div class="container position-relative">
+      <div class="row justify-content-center text-center">
+        <div class="col-12 fade-in">
+          <h1 class="display-5 fw-bold mb-3">Booking & Payments Management</h1>
+          <p class="lead mb-4">Master booking management, handle payments efficiently, and understand our commission structure to maximize your earnings.</p>
+          
+          <!-- Stats Cards -->
+          <div class="row justify-content-center mt-4">
+            <div class="col-12 bounce-in">
+              <div class="row g-2 g-md-3">
+                <div class="col-6 col-md-3">
+                  <div class="card bg-white bg-opacity-20 border-0 text-white stats-card">
+                    <div class="card-body py-2 py-md-3">
+                      <h4 class="fw-bold mb-0">24/7</h4>
+                      <small class="text-light fw-bold">Booking Support</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-md-3">
+                  <div class="card bg-white bg-opacity-20 border-0 text-white stats-card">
+                    <div class="card-body py-2 py-md-3">
+                      <h4 class="fw-bold mb-0">0%</h4>
+                      <small class="text-light fw-bold">Commission</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-md-3">
+                  <div class="card bg-white bg-opacity-20 border-0 text-white stats-card">
+                    <div class="card-body py-2 py-md-3">
+                      <h4 class="fw-bold mb-0">48h</h4>
+                      <small class="text-light fw-bold">Fast Payouts</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-md-3">
+                  <div class="card bg-white bg-opacity-20 border-0 text-white stats-card">
+                    <div class="card-body py-2 py-md-3">
+                      <h4 class="fw-bold mb-0">99.8%</h4>
+                      <small class="text-light fw-bold">Uptime Guarantee</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Guide Navigation -->
+  <section class="py-3 bg-light mobile-sticky-nav">
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <div class="nav-scrollable">
+            <ul class="nav nav-pills justify-content-start flex-nowrap overflow-auto pb-1">
+              <li class="nav-item">
+                <a class="nav-link active" href="#booking-management">Bookings</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#payment-processing">Payments</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#subscription-plans">Plans</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#cancellation-policy">Cancellations</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#troubleshooting">Help</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <div class="container my-4 my-md-5">
+    <div class="row">
+      <!-- Sidebar - Hidden on mobile, shown on desktop -->
+      <div class="col-lg-3 d-none d-lg-block mb-4">
+        <div class="card shadow-sm border-0 sticky-top" style="top: 150px;">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Quick Actions</h5>
+          </div>
+          <div class="card-body">
+            <div class="d-grid gap-2">
+              <a href="landlord-booking.html" class="btn btn-outline-primary btn-sm text-start">
+                <i class="bi bi-calendar-check me-2"></i>View Bookings
+              </a>
+              <a href="manage-properties.html" class="btn btn-outline-primary btn-sm text-start">
+                <i class="bi bi-gear me-2"></i>Manage Availability
+              </a>
+              <a href="landlord-reports.html" class="btn btn-outline-primary btn-sm text-start">
+                <i class="bi bi-graph-up me-2"></i>Payment Reports
+              </a>
+              <a href="landlord-help.html" class="btn btn-outline-primary btn-sm text-start">
+                <i class="bi bi-question-circle me-2"></i>Help Center
+              </a>
+            </div>
+          </div>
+          <div class="card-footer bg-light">
+            <h6 class="mb-2">Support</h6>
+            <p class="small mb-1"><i class="bi bi-telephone me-2"></i>+27 12 345 6789</p>
+            <p class="small mb-0"><i class="bi bi-envelope me-2"></i>bookings@reslinq.com</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div class="col-12 col-lg-9 content-area">
+        <!-- Booking Management Section -->
+        <section id="booking-management" class="booking-section mb-5">
+          <div class="d-flex align-items-center mb-4">
+            <div class="feature-icon bg-primary bg-opacity-10 text-primary me-3">
+              <i class="bi bi-calendar-check"></i>
+            </div>
+            <div>
+              <h2 class="fw-bold text-navy mb-1 section-title">Booking Management</h2>
+              <p class="text-muted mb-0">Efficiently manage reservations and optimize your property's occupancy</p>
+            </div>
+          </div>
+
+          <div class="row g-3 g-md-4 mb-4">
+            <div class="col-12 col-md-6">
+              <div class="card booking-card h-100">
+                <div class="card-body">
+                  <div class="card-icon text-primary">
+                    <i class="bi bi-inbox"></i>
+                  </div>
+                  <h4 class="fw-bold text-navy">Booking Requests</h4>
+                  <p class="text-muted">Manage incoming booking requests and respond promptly to maximize conversions.</p>
+                  <ul class="checklist-item">
+                    <li>Respond within 24 hours for higher visibility</li>
+                    <li>Set automatic reply templates for common queries</li>
+                    <li>Review tenant profiles before accepting</li>
+                    <li>Use the calendar sync to avoid double bookings</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="card booking-card h-100">
+                <div class="card-body">
+                  <div class="card-icon text-success">
+                    <i class="bi bi-calendar-week"></i>
+                  </div>
+                  <h4 class="fw-bold text-navy">Availability Calendar</h4>
+                  <p class="text-muted">Keep your calendar updated to maximize bookings and minimize gaps.</p>
+                  <ul class="checklist-item">
+                    <li>Block dates for maintenance or personal use</li>
+                    <li>Set seasonal pricing for high-demand periods</li>
+                    <li>Sync with external calendars (Google, Outlook)</li>
+                    <li>Enable instant booking for verified tenants</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card bg-light border-0 mb-4">
+            <div class="card-body">
+              <h5 class="fw-bold text-navy mb-3">
+                <i class="bi bi-lightning text-warning me-2"></i>
+                Pro Tip: Instant Booking Advantage
+              </h5>
+              <p class="mb-0">Properties with instant booking enabled receive 47% more bookings. Consider enabling this feature for verified tenants to increase your conversion rate.</p>
+            </div>
+          </div>
+
+          <!-- Booking Status Guide -->
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Understanding Booking Status</h5>
+            </div>
+            <div class="card-body">
+              <div class="row g-2 g-md-3">
+                <div class="col-6 col-md-4">
+                  <div class="d-flex align-items-center">
+                    <span class="status-badge bg-warning me-2">Pending</span>
+                    <small class="text-muted">Awaiting response</small>
+                  </div>
+                </div>
+                <div class="col-6 col-md-4">
+                  <div class="d-flex align-items-center">
+                    <span class="status-badge bg-success me-2">Confirmed</span>
+                    <small class="text-muted">Booking is active</small>
+                  </div>
+                </div>
+                <div class="col-6 col-md-4">
+                  <div class="d-flex align-items-center">
+                    <span class="status-badge bg-danger me-2">Cancelled</span>
+                    <small class="text-muted">Booking cancelled</small>
+                  </div>
+                </div>
+                <div class="col-6 col-md-4">
+                  <div class="d-flex align-items-center">
+                    <span class="status-badge bg-info me-2">Completed</span>
+                    <small class="text-muted">Stay has ended</small>
+                  </div>
+                </div>
+                <div class="col-6 col-md-4">
+                  <div class="d-flex align-items-center">
+                    <span class="status-badge bg-secondary me-2">Expired</span>
+                    <small class="text-muted">Response time elapsed</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Payment Processing Section -->
+        <section id="payment-processing" class="booking-section mb-5">
+          <div class="d-flex align-items-center mb-4">
+            <div class="feature-icon bg-success bg-opacity-10 text-success me-3">
+              <i class="bi bi-credit-card"></i>
+            </div>
+            <div>
+              <h2 class="fw-bold text-navy mb-1 section-title">Payment Processing</h2>
+              <p class="text-muted mb-0">Secure payment handling and fast payout systems</p>
+            </div>
+          </div>
+
+          <div class="row g-3 g-md-4">
+            <div class="col-12 col-md-6">
+              <div class="card booking-card border-success h-100">
+                <div class="card-body">
+                  <h4 class="fw-bold text-navy mb-3">Booking Flow</h4>
+                  <div class="timeline">
+                    <div class="timeline-item">
+                      <h6 class="fw-bold">Booking Request</h6>
+                      <p class="small text-muted mb-0">Tenant submits booking request</p>
+                    </div>
+                    <div class="timeline-item">
+                      <h6 class="fw-bold">Booking Confirmed</h6>
+                      <p class="small text-muted mb-0">You approve or deny the request</p>
+                    </div>
+                    <div class="timeline-item">
+                      <h6 class="fw-bold">Meet up with Tenant</h6>
+                      <p class="small text-muted mb-0">Meet at the property for a walkthrough</p>
+                    </div>
+                    <div class="timeline-item">
+                      <h6 class="fw-bold">Booking Completed</h6>
+                      <p class="small text-muted mb-0">Tenant moves in and booking is finalized</p>
+                    </div>
+                    <div class="timeline-item">
+                      <h6 class="fw-bold">Receive Deposit</h6>
+                      <p class="small text-muted mb-0">Tenant pays security deposit and admin fee</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="card booking-card border-success h-100">
+                <div class="card-body">
+                  <h4 class="fw-bold text-navy mb-3">Payment Methods</h4>
+                  <div class="mb-3">
+                    <div class="payment-method">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="bankTransfer">
+                        <label class="form-check-label w-100" for="bankTransfer">
+                          <div class="d-flex align-items-center">
+                            <i class="bi bi-bank2 text-primary fs-4 me-3"></i>
+                            <div>
+                              <h6 class="mb-0">Bank Transfer via Ozow</h6>
+                              <small class="text-muted">Instant • No fees</small>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="payment-method">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="paypal">
+                        <label class="form-check-label w-100" for="paypal">
+                          <div class="d-flex align-items-center">
+                            <i class="bi bi-paypal text-info fs-4 me-3"></i>
+                            <div>
+                              <h6 class="mb-0">PayFast</h6>
+                              <small class="text-muted">Instant EFT</small>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="payment-method">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard">
+                        <label class="form-check-label w-100" for="creditCard">
+                          <div class="d-flex align-items-center">
+                            <i class="bi bi-credit-card text-success fs-4 me-3"></i>
+                            <div>
+                              <h6 class="mb-0">Direct Deposit</h6>
+                              <small class="text-muted">24-48 hours • No fees</small>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="alert alert-info">
+                    <small><i class="bi bi-info-circle me-1"></i> Payout method can be changed in your account settings at any time</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card bg-success bg-opacity-10 border-success mt-4">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-shield-check text-success fs-1 me-3 d-none d-sm-block"></i>
+                <div>
+                  <h5 class="fw-bold text-success">Payment Protection</h5>
+                  <p class="mb-0">All payments are secured through our escrow system. You'll receive payments notification instantly after paying subscription.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Subscription Plans Section -->
+        <section id="subscription-plans" class="booking-section mb-5">
+          <div class="d-flex align-items-center mb-4">
+            <div class="feature-icon bg-warning bg-opacity-10 text-warning me-3">
+              <i class="bi bi-graph-up"></i>
+            </div>
+            <div>
+              <h2 class="fw-bold text-navy mb-1 section-title">Subscription Plans</h2>
+              <p class="text-muted mb-0">Choose the annual plan that works best for your property portfolio</p>
+            </div>
+          </div>
+
+          <div class="row g-3 g-md-4">
+            <!-- Basic Plan -->
+            <div class="col-12 col-md-4">
+              <div class="card plan-card border-0 shadow-sm h-100">
+                <div class="plan-header bg-primary">
+                  <h4 class="fw-bold">Basic</h4>
+                  <div class="d-flex align-items-baseline justify-content-center">
+                    <span class="h2 fw-bold">R999</span>
+                  </div>
+                  <small>per property / year</small>
+                </div>
+                <div class="card-body">
+                  <ul class="checklist-item mb-4">
+                    <li>1 Property Listing</li>
+                    <li>Standard Search Visibility</li>
+                    <li>Basic Analytics Dashboard</li>
+                    <li>Email Support</li>
+                    <li>Student Inquiry Management</li>
+                  </ul>
+                  <div class="d-grid">
+                    <button class="btn btn-outline-primary">Choose Basic Plan</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Premium Plan -->
+            <div class="col-12 col-md-4">
+              <div class="card plan-card border-0 shadow-sm h-100 plan-popular">
+                <div class="commission-badge">SAVE 33%</div>
+                <div class="plan-header bg-warning">
+                  <h4 class="fw-bold">Premium</h4>
+                  <div class="d-flex align-items-baseline justify-content-center">
+                    <span class="h2 fw-bold">R1,999</span>
+                  </div>
+                  <small>for 3 properties / year</small>
+                </div>
+                <div class="card-body">
+                  <ul class="checklist-item mb-4">
+                    <li><strong>3 Property Listings</strong></li>
+                    <li>Enhanced Search Visibility</li>
+                    <li>Advanced Analytics + Insights</li>
+                    <li>Priority Phone & Email Support</li>
+                    <li>Student Matching Algorithm</li>
+                    <li>Automated Messaging</li>
+                    <li>Booking Calendar Sync</li>
+                  </ul>
+                  <div class="d-grid">
+                    <button class="btn btn-warning">Choose Premium Plan</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Elite Plan -->
+            <div class="col-12 col-md-4">
+              <div class="card plan-card border-0 shadow-sm h-100">
+                <div class="plan-header bg-success">
+                  <h4 class="fw-bold">Elite</h4>
+                  <div class="d-flex align-items-baseline justify-content-center">
+                    <span class="h2 fw-bold">R3,999</span>
+                  </div>
+                  <small>unlimited properties / year</small>
+                </div>
+                <div class="card-body">
+                  <ul class="checklist-item mb-4">
+                    <li><strong>Unlimited Property Listings</strong></li>
+                    <li>Premium Search Placement</li>
+                    <li>Full Analytics Dashboard</li>
+                    <li>Dedicated Account Manager</li>
+                    <li>24/7 Priority Support</li>
+                    <li>Bulk Management Tools</li>
+                    <li>API Access</li>
+                    <li>Custom Reporting</li>
+                  </ul>
+                  <div class="d-grid">
+                    <button class="btn btn-outline-success">Choose Elite Plan</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Benefits of Annual Subscription -->
+          <div class="row mt-4">
+            <div class="col-12">
+              <div class="card bg-light border-0">
+                <div class="card-body">
+                  <h5 class="fw-bold text-navy mb-3">
+                    <i class="bi bi-star-fill text-warning me-2"></i>
+                    Why Choose Annual Subscription?
+                  </h5>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="d-flex align-items-start mb-3">
+                        <i class="bi bi-currency-dollar text-success fs-5 me-3"></i>
+                        <div>
+                          <h6 class="fw-bold">No Commission Fees</h6>
+                          <p class="small text-muted mb-0">Keep 100% of your rental income</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="d-flex align-items-start mb-3">
+                        <i class="bi bi-calendar-check text-primary fs-5 me-3"></i>
+                        <div>
+                          <h6 class="fw-bold">Predictable Costs</h6>
+                          <p class="small text-muted mb-0">One annual fee, no surprises</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="d-flex align-items-start mb-3">
+                        <i class="bi bi-shield-check text-success fs-5 me-3"></i>
+                        <div>
+                          <h6 class="fw-bold">Priority Support</h6>
+                          <p class="small text-muted mb-0">Faster response times</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card bg-warning bg-opacity-10 border-warning mt-4">
+            <div class="card-body text-center">
+              <h5 class="fw-bold text-warning">30-Day Money Back Guarantee</h5>
+              <p class="mb-3">Not satisfied with your plan? Get a full refund within 30 days. No questions asked.</p>
+              <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <a href="subscription-plans.html" class="btn btn-warning me-2">View All Plans</a>
+                <a href="contact.html" class="btn btn-outline-warning">Get Personalized Advice</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Cancellation Policy Section -->
+        <section id="cancellation-policy" class="booking-section mb-5">
+          <div class="d-flex align-items-center mb-4">
+            <div class="feature-icon bg-info bg-opacity-10 text-info me-3">
+              <i class="bi bi-x-circle"></i>
+            </div>
+            <div>
+              <h2 class="fw-bold text-navy mb-1 section-title">Cancellation Policies</h2>
+              <p class="text-muted mb-0">Set fair cancellation rules that protect your income</p>
+            </div>
+          </div>
+
+          <div class="row g-3 g-md-4">
+            <div class="col-12 col-md-6">
+              <div class="card booking-card h-100">
+                <div class="card-body">
+                  <h4 class="fw-bold text-navy mb-3">Flexible Policy</h4>
+                  <p class="text-muted">Full refund if canceled at least 14 days before check-in. 50% refund if canceled at least 7 days before check-in.</p>
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    <span>Best for: New landlords building reviews</span>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-people text-primary me-2"></i>
+                    <span>Increases bookings by 23%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="card booking-card h-100">
+                <div class="card-body">
+                  <h4 class="fw-bold text-navy mb-3">Moderate Policy</h4>
+                  <p class="text-muted">Full refund if canceled at least 30 days before check-in. 50% refund if canceled at least 14 days before check-in.</p>
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    <span>Best for: Established properties</span>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-graph-up text-primary me-2"></i>
+                    <span>Balances flexibility and protection</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="card booking-card h-100">
+                <div class="card-body">
+                  <h4 class="fw-bold text-navy mb-3">Strict Policy</h4>
+                  <p class="text-muted">50% refund up until 30 days before check-in. No refunds for cancellations within 30 days of check-in.</p>
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    <span>Best for: High-demand locations</span>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-shield-check text-primary me-2"></i>
+                    <span>Maximum income protection</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="card booking-card h-100">
+                <div class="card-body">
+                  <h4 class="fw-bold text-navy mb-3">Custom Policy</h4>
+                  <p class="text-muted">Create your own cancellation rules tailored to your specific needs and property type.</p>
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    <span>Best for: Unique property types</span>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-gear text-primary me-2"></i>
+                    <span>Complete flexibility</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Troubleshooting Section -->
+        <section id="troubleshooting" class="booking-section">
+          <div class="d-flex align-items-center mb-4">
+            <div class="feature-icon bg-danger bg-opacity-10 text-danger me-3">
+              <i class="bi bi-tools"></i>
+            </div>
+            <div>
+              <h2 class="fw-bold text-navy mb-1 section-title">Troubleshooting Common Issues</h2>
+              <p class="text-muted mb-0">Quick solutions for frequent booking and payment problems</p>
+            </div>
+          </div>
+          
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <div class="accordion" id="troubleshootingAccordion">
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                      Payment Not Received
+                    </button>
+                  </h2>
+                  <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#troubleshootingAccordion">
+                    <div class="accordion-body">
+                      <p>If you haven't received a payment:</p>
+                      <ul class="checklist-item">
+                        <li>Check the booking status - payment is released 24 hours after check-in</li>
+                        <li>Verify your payout method in account settings</li>
+                        <li>Ensure your banking details are correct</li>
+                        <li>Contact support if payment is delayed beyond 3 business days</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                      Double Booking Prevention
+                    </button>
+                  </h2>
+                  <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                    <div class="accordion-body">
+                      <p>To prevent double bookings:</p>
+                      <ul class="checklist-item">
+                        <li>Always update your calendar immediately after accepting a booking</li>
+                        <li>Use the calendar sync feature with external calendars</li>
+                        <li>Set a buffer period between bookings for cleaning/maintenance</li>
+                        <li>Enable instant booking only if you can manage rapid responses</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                      Commission Calculation Issues
+                    </button>
+                  </h2>
+                  <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                    <div class="accordion-body">
+                      <p>If commission calculations seem incorrect:</p>
+                      <ul class="checklist-item">
+                        <li>Verify which commission plan you're currently on</li>
+                        <li>Check if the booking was affected by any promotions</li>
+                        <li>Review the detailed breakdown in your transaction history</li>
+                        <li>Contact support for a detailed explanation of any charge</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Call to Action -->
+        <div class="card bg-gradient-primary text-white border-0 mt-5">
+          <div class="card-body text-center p-4 p-md-5">
+            <h3 class="fw-bold mb-3">Need Immediate Assistance?</h3>
+            <p class="mb-4 opacity-75">Our dedicated booking support team is available 24/7 to help with urgent issues.</p>
+            <div class="d-flex justify-content-center gap-2 gap-md-3 flex-wrap">
+              <a href="contact.html" class="btn btn-warning px-3 px-md-4">
+                <i class="bi bi-envelope me-2"></i>Email Support
+              </a>
+              <a href="tel:+27123456789" class="btn btn-outline-light px-3 px-md-4">
+                <i class="bi bi-telephone me-2"></i>Call +27 12 345 6789
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Navigation -->
+  <div class="mobile-bottom-nav d-lg-none">
+    <a href="landlord-dashboard.html" class="mobile-nav-item">
+      <i class="bi bi-house"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="manage-properties.html" class="mobile-nav-item">
+      <i class="bi bi-building"></i>
+      <span>Properties</span>
+    </a>
+    <a href="landlord-booking.html" class="mobile-nav-item">
+      <i class="bi bi-calendar-check"></i>
+      <span>Bookings</span>
+    </a>
+    <a href="landlord-analytics.html" class="mobile-nav-item">
+      <i class="bi bi-bar-chart"></i>
+      <span>Analytics</span>
+    </a>
+    <a href="landlord-help.html" class="mobile-nav-item">
+      <i class="bi bi-question-circle"></i>
+      <span>Help</span>
+    </a>
+  </div>
+
+  <!-- Enhanced Footer -->
+  <footer class="py-4 bg-navy text-white mt-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for managing student accommodation properties efficiently.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Property Management</h6>
+          <ul class="list-unstyled">
+            <li><a href="manage-properties.html" class="text-light text-decoration-none">My Properties</a></li>
+            <li><a href="landlord-booking.html" class="text-light text-decoration-none">Bookings</a></li>
+            <li><a href="landlord-reports.html" class="text-light text-decoration-none">Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="landlord-analytics.html" class="text-light text-decoration-none">Analytics</a></li>
+            <li><a href="landlord-help.html" class="text-light text-decoration-none">Help</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Landlord Support</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa<br>
+            <i class="bi bi-clock me-2"></i>Mon-Fri: 8AM-6PM, Sat: 9AM-1PM
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="navbar.js"></script>
+  
+  <!-- Animation Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Animate booking cards on scroll
+      const bookingCards = document.querySelectorAll('.booking-card');
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animated');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      bookingCards.forEach(card => {
+        observer.observe(card);
+      });
+
+      // Smooth scrolling for navigation
+      document.querySelectorAll('.nav-pills .nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          // Remove active class from all links
+          document.querySelectorAll('.nav-pills .nav-link').forEach(item => {
+            item.classList.remove('active');
+          });
+          
+          // Add active class to clicked link
+          this.classList.add('active');
+          
+          // Scroll to target section
+          const targetId = this.getAttribute('href');
+          const targetSection = document.querySelector(targetId);
+          if (targetSection) {
+            window.scrollTo({
+              top: targetSection.offsetTop - 120,
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+
+      // Update active nav link based on scroll position
+      window.addEventListener('scroll', function() {
+        const sections = document.querySelectorAll('.booking-section');
+        const navLinks = document.querySelectorAll('.nav-pills .nav-link');
+        
+        let currentSection = '';
+        
+        sections.forEach(section => {
+          const sectionTop = section.offsetTop - 150;
+          const sectionHeight = section.clientHeight;
+          if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+            currentSection = '#' + section.getAttribute('id');
+          }
+        });
+        
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === currentSection) {
+            link.classList.add('active');
+          }
+        });
+      });
+
+      // Payment method selection
+      document.querySelectorAll('.payment-method').forEach(method => {
+        method.addEventListener('click', function() {
+          document.querySelectorAll('.payment-method').forEach(m => {
+            m.classList.remove('selected');
+          });
+          this.classList.add('selected');
+          const radio = this.querySelector('input[type="radio"]');
+          if (radio) radio.checked = true;
+        });
+      });
+
+      // Plan selection - UPDATED TO REDIRECT TO PAYMENT PAGE
+      document.querySelectorAll('.plan-card .btn').forEach(button => {
+          button.addEventListener('click', function() {
+              const planCard = this.closest('.plan-card');
+              const planName = planCard.querySelector('h4').textContent.trim();
+              const planPrice = planCard.querySelector('.h2').textContent.trim();
+              const planType = planCard.querySelector('.plan-header small').textContent.trim();
+              
+              // Get plan details
+              let planDetails = {
+                  name: planName,
+                  price: planPrice,
+                  type: planType,
+                  features: []
+              };
+              
+              // Extract features from the checklist
+              const featureItems = planCard.querySelectorAll('.checklist-item li');
+              featureItems.forEach(item => {
+                  planDetails.features.push(item.textContent.trim());
+              });
+              
+              // Store plan details in localStorage to use on payment page
+              localStorage.setItem('selectedPlan', JSON.stringify(planDetails));
+
+              // Redirect to subscription plans page
+              window.location.href = 'subscription-plans.html';
+          });
+        });
+      });
+  </script>
+</body>
+</html>

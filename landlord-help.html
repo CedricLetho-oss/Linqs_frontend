@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResLinQ | Landlord Help & Support</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --success: #059669;
+      --warning: #f59e0b;
+      --info: #60a5fa;
+      --light-bg: #f8fafc;
+    }
+
+    .help-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, #9983e7 50%, var(--primary-light) 100%);
+      color: white;
+      padding: 4rem 0;
+      border-radius: 0 0 2rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    @media (max-width: 767px) {
+      .help-hero {
+        padding: 2rem 0;
+        border-radius: 0 0 1.5rem 1.5rem;
+      }
+    }
+    
+    .help-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="%23ffffff" opacity="0.1"><path d="M500 50L550 30L600 50L650 30L700 50L750 30L800 50L850 30L900 50L950 30L1000 50V100H0V50Z"/></svg>');
+      background-size: cover;
+    }
+    .help-card {
+      border: none;
+      border-radius: 1rem;
+      transition: all 0.3s ease;
+      height: 100%;
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    .help-card.animated {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .help-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+    }
+    .card-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      transition: transform 0.3s ease;
+    }
+    
+    @media (max-width: 767px) {
+      .card-icon {
+        font-size: 2rem;
+      }
+    }
+    
+    .help-card:hover .card-icon {
+      transform: scale(1.1) rotate(5deg);
+    }
+    .search-help {
+      border-radius: 2rem;
+      padding: 0.75rem 1.5rem;
+      border: 2px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+    .search-help:focus {
+      border-color: #1e3a8a;
+      box-shadow: 0 0 0 0.3rem rgba(30, 58, 138, 0.15);
+      transform: scale(1.02);
+    }
+    .btn-help {
+      border-radius: 2rem;
+      padding: 0.5rem 1.5rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    .btn-help:hover {
+      transform: translateY(-2px);
+    }
+    .feature-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    @media (max-width: 767px) {
+      .feature-icon {
+        width: 50px;
+        height: 50px;
+      }
+    }
+    
+    .feature-item:hover .feature-icon {
+      transform: scale(1.1) rotate(10deg);
+    }
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .fade-in {
+      animation: fadeIn 0.8s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .bounce-in {
+      animation: bounceIn 0.8s ease-out;
+    }
+    @keyframes bounceIn {
+      0% { opacity: 0; transform: scale(0.3); }
+      50% { opacity: 1; transform: scale(1.05); }
+      70% { transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .quick-action-item {
+      transition: all 0.3s ease;
+      border-radius: 0.75rem;
+    }
+    .quick-action-item:hover {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      transform: translateX(10px);
+    }
+    
+    /* Mobile-specific styles */
+    .mobile-sticky-nav {
+      position: sticky;
+      top: 56px;
+      z-index: 1020;
+      background-color: #f8f9fa;
+    }
+    
+    @media (max-width: 767px) {
+      .mobile-sticky-nav {
+        top: 0;
+      }
+      
+      .mobile-sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        z-index: 1030;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        padding: 0.5rem;
+      }
+      
+      .mobile-sidebar .btn {
+        font-size: 0.75rem;
+        padding: 0.5rem;
+      }
+      
+      .mobile-sidebar .btn i {
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+      }
+      
+      .content-area {
+        margin-bottom: 80px; /* Space for mobile bottom navigation */
+      }
+      
+      .help-hero h1 {
+        font-size: 1.75rem;
+      }
+      
+      .help-hero p.lead {
+        font-size: 1rem;
+      }
+      
+      .section-title {
+        font-size: 1.5rem;
+      }
+      
+      .card-body {
+        padding: 1rem;
+      }
+    }
+    
+    /* Improved responsive grid */
+    @media (max-width: 575px) {
+      .container {
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+      
+      .row {
+        margin-left: -8px;
+        margin-right: -8px;
+      }
+      
+      .col, .col-1, .col-2, .col-3, .col-4, .col-5, .col-6, 
+      .col-7, .col-8, .col-9, .col-10, .col-11, .col-12 {
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+    }
+    
+    /* Improved typography for mobile */
+    @media (max-width: 767px) {
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+      h3 { font-size: 1.25rem; }
+      h4 { font-size: 1.1rem; }
+      h5 { font-size: 1rem; }
+      h6 { font-size: 0.9rem; }
+      
+      .display-5 {
+        font-size: 2rem;
+      }
+    }
+    
+    /* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1C2B4A;
+    z-index: 1030;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .mobile-nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-nav-item.active {
+    color: #64748b;
+  }
+  
+  .mobile-nav-item i {
+    display: block;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Add padding to main content to account for bottom nav */
+  main {
+    margin-bottom: 80px;
+  }
+}
+    /* Stats cards mobile optimization */
+    @media (max-width: 767px) {
+      .stats-card .card-body {
+        padding: 0.75rem;
+      }
+      
+      .stats-card h4 {
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+      }
+      
+      .stats-card small {
+        font-size: 0.7rem;
+      }
+    }
+    
+    /* Help navigation pills */
+    .nav-pills .nav-link.active {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .nav-pills .nav-link {
+      color: var(--primary);
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
+      white-space: nowrap;
+      font-size: 0.85rem;
+      padding: 0.5rem 0.75rem;
+    }
+    
+    @media (min-width: 768px) {
+      .nav-pills .nav-link {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+      }
+    }
+    
+    .nav-pills .nav-link:hover {
+      background-color: rgba(30, 58, 138, 0.1);
+    }
+    
+    .help-section {
+      scroll-margin-top: 80px;
+    }
+    
+    @media (min-width: 768px) {
+      .help-section {
+        scroll-margin-top: 100px;
+      }
+    }
+    #logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+
+/* Quick z-index fix */
+.navbar { z-index: 1030 !important; }
+.dropdown-menu { z-index: 1050 !important; }
+.modal { z-index: 1060 !important; }
+  </style>
+</head>
+<body>
+
+  <!-- Redirect if not logged in as landlord -->
+  <script>
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    if (!token) {
+      alert("Please log in to access this page.");
+      window.location.href = "authorization.html";
+    } else if (user.role !== 'landlord') {
+      alert("This page is for landlords only.");
+      window.location.href = "index.html";
+    }
+  </script>
+
+  <!-- Dynamic Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i><span class="d-none d-sm-inline">ResLinQ</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <!-- Navigation will be populated by navbar.js -->
+        </ul>
+      </div>
+      
+      <!-- Dynamic Auth Buttons -->
+      <div class="signup-login-buttons">
+        <!-- Content will be populated by navbar.js -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Enhanced Hero Section -->
+  <section class="help-hero">
+    <div class="container position-relative">
+      <div class="row justify-content-center text-center">
+        <div class="col-lg-8 fade-in">
+          <h1 class="display-5 fw-bold mb-3">Landlord Support Center</h1>
+          <p class="lead mb-0">Expert assistance for property management, bookings, payments, and growing your accommodation business.</p>
+          
+          <!-- Enhanced Search -->
+          <div class="row justify-content-center mt-4">
+            <div class="col-lg-8 bounce-in">
+              <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                  <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" class="form-control border-start-0 search-help" placeholder="Search landlord help (e.g. property listing, payments, bookings)">
+                <button class="btn btn-navy px-4" type="button">Search</button>
+              </div>
+              <div class="mt-2">
+                <small class="text-light">Popular: <a href="#" class="text-light text-decoration-underline">Property verification</a> • <a href="#" class="text-light text-decoration-underline">Payment setup</a> • <a href="#" class="text-light text-decoration-underline">Booking management</a></small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Help Navigation -->
+  <section class="py-3 bg-light mobile-sticky-nav">
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <div class="nav-scrollable">
+            <ul class="nav nav-pills justify-content-start flex-nowrap overflow-auto pb-1">
+              <li class="nav-item">
+                <a class="nav-link active" href="#quick-actions">Quick Actions</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#property-management">Property Management</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#bookings-payments">Bookings & Payments</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#support">Direct Support</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#analytics">Analytics</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#verification">Verification</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <div class="container my-4 my-md-5">
+    <div class="row">
+      <!-- Sidebar - Hidden on mobile, shown on desktop -->
+      <div class="col-lg-3 d-none d-lg-block mb-4">
+        <div class="card shadow-sm border-0 sticky-top" style="top: 150px;">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Help Categories</h5>
+          </div>
+          <div class="card-body">
+            <div class="d-grid gap-2">
+              <a href="#quick-actions" class="btn btn-outline-primary btn-sm text-start">
+                <i class="bi bi-lightning me-2"></i>Quick Actions
+              </a>
+              <a href="manage-properties.html" class="btn btn-outline-primary btn-sm text-start">
+                <i class="bi bi-building me-2"></i>Property Management
+              </a>
+              <a href="landlord-booking.html" class="btn btn-outline-primary btn-sm text-start">
+                <i class="bi bi-credit-card me-2"></i>Bookings 
+              </a>
+              <a href="contact.html" class="btn btn-outline-primary btn-sm text-start">
+                <i class="bi bi-headset me-2"></i>Direct Support
+              </a>
+              <a href="landlord-analytics.html" class="btn btn-outline-primary btn-sm text-start">
+                <i class="bi bi-graph-up me-2"></i>Analytics & Reports
+              </a>
+              <a href="landlord-verification.html" class="btn btn-outline-primary btn-sm text-start">
+                <i class="bi bi-shield-check me-2"></i>Verification
+              </a>
+            </div>
+          </div>
+          <div class="card-footer bg-light">
+            <h6 class="mb-2">Need Immediate Help?</h6>
+            <p class="small mb-1"><i class="bi bi-telephone me-2"></i>+27 82 305 6754</p>
+            <p class="small mb-0"><i class="bi bi-envelope me-2"></i>reslinqco@gmail.com</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div class="col-12 col-lg-9 content-area">
+        <!-- Quick Actions Section -->
+        <section id="quick-actions" class="help-section mb-5">
+          <div class="d-flex align-items-center mb-4">
+            <div class="feature-icon bg-primary bg-opacity-10 text-primary me-3">
+              <i class="bi bi-lightning-charge"></i>
+            </div>
+            <div>
+              <h2 class="fw-bold text-navy mb-1 section-title">Quick Actions</h2>
+              <p class="text-muted mb-0">Get immediate help with common landlord tasks</p>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-3 col-6">
+              <div class="quick-action-item p-3 text-center bg-white rounded shadow-sm">
+                <div class="feature-icon bg-primary bg-opacity-10 text-primary mx-auto">
+                  <i class="bi bi-plus-circle"></i>
+                </div>
+                <h6 class="fw-bold">Add Property</h6>
+                <small class="text-muted">List new accommodation</small>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="quick-action-item p-3 text-center bg-white rounded shadow-sm">
+                <div class="feature-icon bg-success bg-opacity-10 text-success mx-auto">
+                  <i class="bi bi-calendar-check"></i>
+                </div>
+                <h6 class="fw-bold">Manage Bookings</h6>
+                <small class="text-muted">View & update reservations</small>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="quick-action-item p-3 text-center bg-white rounded shadow-sm">
+                <div class="feature-icon bg-warning bg-opacity-10 text-warning mx-auto">
+                  <i class="bi bi-graph-up"></i>
+                </div>
+                <h6 class="fw-bold">View Reports</h6>
+                <small class="text-muted">Performance analytics</small>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="quick-action-item p-3 text-center bg-white rounded shadow-sm">
+                <div class="feature-icon bg-info bg-opacity-10 text-info mx-auto">
+                  <i class="bi bi-credit-card"></i>
+                </div>
+                <h6 class="fw-bold">Payment Setup</h6>
+                <small class="text-muted">Configure payment methods</small>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Enhanced Help Options -->
+        <section id="property-management" class="help-section mb-5">
+          <div class="d-flex align-items-center mb-4">
+            <div class="feature-icon bg-primary bg-opacity-10 text-primary me-3">
+              <i class="bi bi-building"></i>
+            </div>
+            <div>
+              <h2 class="fw-bold text-navy mb-1 section-title">Property Management</h2>
+              <p class="text-muted mb-0">Learn how to list, verify, and manage your properties effectively</p>
+            </div>
+          </div>
+
+          <div class="row g-4">
+            <!-- Property Management Card -->
+            <div class="col-md-4">
+              <div class="card shadow-sm help-card border-primary">
+                <div class="card-body text-center p-4">
+                  <div class="card-icon text-primary">
+                    <i class="bi bi-building"></i>
+                  </div>
+                  <h4 class="fw-bold text-navy mb-3">Property Management</h4>
+                  <p class="text-muted mb-4">Learn how to list, verify, and manage your properties effectively with our comprehensive guides.</p>
+                  <a href="landlord-property-guide.html" class="btn btn-outline-primary btn-help">
+                    <i class="bi bi-building me-2"></i>Property Guides
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Booking & Payments Card -->
+            <div class="col-md-4">
+              <div class="card shadow-sm help-card border-success pulse-animation">
+                <div class="card-body text-center p-4">
+                  <div class="card-icon text-success">
+                    <i class="bi bi-credit-card"></i>
+                  </div>
+                  <h4 class="fw-bold text-navy mb-3">Bookings & Payments</h4>
+                  <p class="text-muted mb-4">Manage reservations, handle payments, and understand our commission structure.</p>
+                  <a href="Landlord-booking-help.html" class="btn btn-outline-success btn-help">
+                    <i class="bi bi-credit-card me-2"></i>Payment Help
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Support Card -->
+            <div class="col-md-4">
+              <div class="card shadow-sm help-card border-warning">
+                <div class="card-body text-center p-4">
+                  <div class="card-icon text-warning">
+                    <i class="bi bi-headset"></i>
+                  </div>
+                  <h4 class="fw-bold text-navy mb-3">Direct Support</h4>
+                  <p class="text-muted mb-4">Get personalized assistance from our dedicated landlord support team via multiple channels.</p>
+                  <a href="landlord-contact.html" class="btn btn-outline-warning btn-help">
+                    <i class="bi bi-envelope me-2"></i>Contact Support
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Additional Resources Section -->
+        <section id="analytics" class="help-section mb-5">
+          <div class="d-flex align-items-center mb-4">
+            <div class="feature-icon bg-success bg-opacity-10 text-success me-3">
+              <i class="bi bi-graph-up"></i>
+            </div>
+            <div>
+              <h2 class="fw-bold text-navy mb-1 section-title">Analytics & Reports</h2>
+              <p class="text-muted mb-0">Understand your property performance with detailed analytics</p>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-6">
+              <div class="card bg-light border-0 h-100">
+                <div class="card-body p-4">
+                  <h5 class="fw-bold text-navy mb-3">
+                    <i class="bi bi-graph-up text-success me-2"></i>
+                    Analytics & Reports
+                  </h5>
+                  <p class="text-muted mb-3">Understand your property performance with detailed analytics and reporting tools.</p>
+                  <ul class="list-unstyled">
+                    <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Occupancy rate tracking</li>
+                    <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Revenue analytics</li>
+                    <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Performance insights</li>
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Booking trends</li>
+                  </ul>
+                  <a href="landlord-analytics.html" class="btn btn-sm btn-outline-success">View Analytics</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="card bg-light border-0 h-100">
+                <div class="card-body p-4">
+                  <h5 class="fw-bold text-navy mb-3">
+                    <i class="bi bi-shield-check text-primary me-2"></i>
+                    Verification & Trust
+                  </h5>
+                  <p class="text-muted mb-3">Get your properties verified and build trust with potential tenants.</p>
+                  <ul class="list-unstyled">
+                    <li class="mb-2"><i class="bi bi-check-circle text-primary me-2"></i>Property accreditation</li>
+                    <li class="mb-2"><i class="bi bi-check-circle text-primary me-2"></i>Background verification</li>
+                    <li class="mb-2"><i class="bi bi-check-circle text-primary me-2"></i>Trust badge benefits</li>
+                    <li><i class="bi bi-check-circle text-primary me-2"></i>Review management</li>
+                  </ul>
+                  <a href="landlord-verification.html" class="btn btn-sm btn-outline-primary">Get Verified</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Enhanced Support Section -->
+        <section id="support" class="help-section">
+          <div class="d-flex align-items-center mb-4">
+            <div class="feature-icon bg-warning bg-opacity-10 text-warning me-3">
+              <i class="bi bi-headset"></i>
+            </div>
+            <div>
+              <h2 class="fw-bold text-navy mb-1 section-title">Priority Landlord Support</h2>
+              <p class="text-muted mb-0">As a valued landlord partner, you receive priority support</p>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-8 mx-auto">
+              <div class="card bg-gradient-primary text-white border-0">
+                <div class="card-body text-center p-5">
+                  <h3 class="fw-bold mb-3">Priority Landlord Support</h3>
+                  <p class="mb-4 opacity-75">As a valued landlord partner, you receive priority support with dedicated response times.</p>
+                  <div class="row g-4">
+                    <div class="col-md-4">
+                      <div class="d-flex align-items-center justify-content-center">
+                        <i class="bi bi-envelope-fill text-warning me-2 fs-5"></i>
+                        <div class="text-start">
+                          <small class=" fw-bold opacity-75">Email</small>
+                          <div class="fw-bold">reslinqco@gmail.com</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="d-flex align-items-center justify-content-center">
+                        <i class="bi bi-telephone-fill text-warning me-2 fs-5"></i>
+                        <div class="text-start">
+                          <small class="fw-bold opacity-75">Phone</small>
+                          <div class="fw-bold">+27 82 305 6754</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="d-flex align-items-center justify-content-center">
+                        <i class="bi bi-whatsapp text-warning me-2 fs-5"></i>
+                        <div class="text-start">
+                          <small class="fw-bold opacity-75">WhatsApp</small>
+                          <div class="fw-bold">+27 82 305 6754</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mt-4 pt-3 border-top border-white border-opacity-25">
+                    <small class=" fw-bold opacity-75">
+                      <i class="bi bi-clock me-1"></i>
+                      Support Hours: Mon-Fri 9:00 AM - 5:00 PM | Sat 9:00 AM - 1:00 PM
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Navigation -->
+  <div class="mobile-bottom-nav d-lg-none">
+    <a href="landlord-dashboard.html" class="mobile-nav-item">
+      <i class="bi bi-house"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="manage-properties.html" class="mobile-nav-item">
+      <i class="bi bi-building"></i>
+      <span>Properties</span>
+    </a>
+    <a href="landlord-booking.html" class="mobile-nav-item">
+      <i class="bi bi-calendar-check"></i>
+      <span>Bookings</span>
+    </a>
+    <a href="landlord-analytics.html" class="mobile-nav-item">
+      <i class="bi bi-bar-chart"></i>
+      <span>Analytics</span>
+    </a>
+    <a href="landlord-help.html" class="mobile-nav-item active">
+      <i class="bi bi-question-circle"></i>
+      <span>Help</span>
+    </a>
+  </div>
+
+  <!-- Enhanced Footer -->
+  <footer class="py-4 bg-navy text-white mt-auto">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for managing student accommodation properties efficiently.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Property Management</h6>
+          <ul class="list-unstyled">
+            <li><a href="manage-properties.html" class="text-light text-decoration-none">My Properties</a></li>
+            <li><a href="landlord-booking.html" class="text-light text-decoration-none">Bookings</a></li>
+            <li><a href="landlord-reports.html" class="text-light text-decoration-none">Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="landlord-analytics.html" class="text-light text-decoration-none">Analytics</a></li>
+            <li><a href="landlord-help.html" class="text-light text-decoration-none">Help</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Landlord Support</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa<br>
+            <i class="bi bi-clock me-2"></i>Mon-Fri: 9AM-5PM
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="navbar.js"></script>
+  
+  <!-- Animation Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Animate help cards on scroll
+      const helpCards = document.querySelectorAll('.help-card');
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animated');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      helpCards.forEach(card => {
+        observer.observe(card);
+      });
+
+      // Add hover effects to quick action items
+      const quickActions = document.querySelectorAll('.quick-action-item');
+      quickActions.forEach(action => {
+        action.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-5px)';
+        });
+        action.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateY(0)';
+        });
+      });
+
+      // Search functionality
+      const searchInput = document.querySelector('.search-help');
+      const searchButton = document.querySelector('.btn-navy');
+
+      searchButton.addEventListener('click', function() {
+        const searchTerm = searchInput.value.trim();
+        if (searchTerm) {
+          alert(`Searching for: ${searchTerm}\n\nThis would trigger a search in a real implementation.`);
+          // In a real implementation, you would redirect to search results or filter content
+        }
+      });
+
+      searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          searchButton.click();
+        }
+      });
+
+      // Smooth scrolling for navigation
+      document.querySelectorAll('.nav-pills .nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          // Remove active class from all links
+          document.querySelectorAll('.nav-pills .nav-link').forEach(item => {
+            item.classList.remove('active');
+          });
+          
+          // Add active class to clicked link
+          this.classList.add('active');
+          
+          // Scroll to target section
+          const targetId = this.getAttribute('href');
+          const targetSection = document.querySelector(targetId);
+          if (targetSection) {
+            window.scrollTo({
+              top: targetSection.offsetTop - 120,
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+
+      // Update active nav link based on scroll position
+      window.addEventListener('scroll', function() {
+        const sections = document.querySelectorAll('.help-section');
+        const navLinks = document.querySelectorAll('.nav-pills .nav-link');
+        
+        let currentSection = '';
+        
+        sections.forEach(section => {
+          const sectionTop = section.offsetTop - 150;
+          const sectionHeight = section.clientHeight;
+          if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+            currentSection = '#' + section.getAttribute('id');
+          }
+        });
+        
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === currentSection) {
+            link.classList.add('active');
+          }
+        });
+      });
+    });
+
+    // Add some interactive animations
+    function animateValue(id, start, end, duration) {
+      const obj = document.getElementById(id);
+      if (!obj) return;
+      
+      let startTimestamp = null;
+      const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        obj.innerHTML = Math.floor(progress * (end - start) + start);
+        if (progress < 1) {
+          window.requestAnimationFrame(step);
+        }
+      };
+      window.requestAnimationFrame(step);
+    }
+
+    // Animate stats when they come into view
+    const statsObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          // You can add number animation here if you have stats to show
+          entry.target.classList.add('pulse-animation');
+        }
+      });
+    });
+
+    // Observe any elements you want to animate when they come into view
+    document.querySelectorAll('.feature-icon').forEach(icon => {
+      statsObserver.observe(icon);
+    });
+  </script>
+</body>
+</html>

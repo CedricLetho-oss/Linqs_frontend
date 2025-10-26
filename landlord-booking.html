@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Bookings | ResLinQ</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+  --primary: #1e3a8a;
+  --primary-light: #3b82f6;
+  --primary-dark: #1e40af;
+  --success: #059669;
+  --warning: #f59e0b;
+  --info: #60a5fa;
+  --light-bg: #f8fafc;
+}
+
+body {
+  background-color: var(--light-bg);
+}
+
+/* Enhanced Hero Section */
+.booking-hero {
+  background: linear-gradient(135deg, var(--primary) 0%, #9983e7 50%, var(--primary-light) 100%);
+  color: white;
+  padding: 4rem 0;
+  border-radius: 0 0 1.5rem 1.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  animation: heroReveal 1s ease-out 0.2s forwards;
+  display: flex;
+  align-items: center;
+  min-height: 250px;
+}
+
+.booking-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+  animation: float 20s infinite linear;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+.hero-title {
+  animation: fadeInUp 0.8s ease-out 0.4s both;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.hero-subtitle {
+  animation: fadeInUp 0.8s ease-out 0.6s both;
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.5;
+}
+
+.hero-actions {
+  animation: fadeInUp 0.8s ease-out 0.8s both;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.hero-actions .btn {
+  border-radius: 50px;
+  padding: 0.6rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.hero-actions .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+/* Stats Cards - Mobile Responsive */
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .stats-container {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
+  }
+}
+
+.stats-card {
+  border: none;
+  border-radius: 0.75rem;
+  color: white;
+  text-align: center;
+  padding: 1rem 0.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  animation: fadeInScale 0.6s ease-out;
+}
+
+.stats-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.stats-card:hover::before {
+  left: 100%;
+}
+
+.stats-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.stats-card i {
+  font-size: 1.5rem;
+  opacity: 0.8;
+  margin-bottom: 0.5rem;
+}
+
+.stats-card h5 {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.stats-card small {
+  font-size: 0.7rem;
+}
+
+@media (min-width: 768px) {
+  .stats-card i {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .stats-card h5 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .stats-card small {
+    font-size: 0.8rem;
+  }
+}
+
+/* Filter and Search - Mobile Optimized */
+.filter-section {
+  margin-bottom: 1.5rem;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.filter-select {
+  flex: 1 1 calc(50% - 0.5rem);
+  min-width: 120px;
+}
+
+@media (min-width: 768px) {
+  .filter-select {
+    flex: 0 1 auto;
+    width: auto;
+  }
+}
+
+.search-container {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.search-container .form-control {
+  flex: 1;
+}
+
+/* Table Responsive */
+.table-responsive {
+  font-size: 0.875rem;
+}
+
+/* Status Badges */
+.status-badge {
+  font-size: 0.7em;
+  padding: 0.3em 0.6em;
+  border-radius: 15px;
+}
+
+/* Student Avatar */
+.student-avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.8rem;
+}
+
+.action-buttons .btn {
+  margin: 0.05rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #6c757d;
+}
+.empty-state i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e9ecef;
+}
+.timeline-item {
+  position: relative;
+  margin-bottom: 1rem;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -2rem;
+  top: 0.3rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #6c757d;
+}
+.timeline-item.active::before { background: var(--primary); }
+.timeline-item.completed::before { background: var(--success); }
+
+/* Notification Badge - FIXED POSITIONING */
+.notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  z-index: 10;
+}
+
+.stats-card-pending {
+  position: relative;
+}
+
+.stats-card {
+  position: relative; /* Add this so the badge anchors properly */
+}
+
+/* Calendar Styling */
+#calendar {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.fc-toolbar {
+  flex-wrap: wrap;
+}
+
+.fc-toolbar-title {
+  font-size: 1.25rem;
+}
+
+.fc-event {
+  border-radius: 4px;
+  font-size: 0.8rem;
+  padding: 2px 4px;
+}
+
+.fc-event.pending { background-color: var(--warning); border-color: var(--warning); }
+.fc-event.confirmed { background-color: var(--success); border-color: var(--success); }
+.fc-event.cancelled { background-color: #dc3545; border-color: #dc3545; }
+.fc-event.completed { background-color: #6c757d; border-color: #6c757d; }
+
+/* Modal Improvements for Mobile */
+.modal-dialog {
+  margin: 1rem;
+}
+
+@media (min-width: 576px) {
+  .modal-dialog {
+    margin: 1.75rem auto;
+  }
+}
+
+/* Footer Improvements */
+footer {
+  font-size: 0.875rem;
+}
+
+/* Utility Classes */
+.text-truncate-fade {
+  position: relative;
+  line-height: 1.5em;
+  max-height: 3em; /* 2 lines */
+  overflow: hidden;
+}
+
+.text-truncate-fade::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 30%;
+  height: 1.5em;
+  background: linear-gradient(to right, transparent, white 50%);
+}
+
+/* Ensure proper spacing between content and footer */
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1 0 auto;
+    padding-bottom: 2rem; /* Increased bottom padding */
+}
+
+footer {
+    flex-shrink: 0;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Add this to your existing CSS */
+.btn .loading-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+/* Enhanced Animations */
+@keyframes heroReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-5px, -5px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design for Hero */
+@media (max-width: 768px) {
+  .booking-hero {
+    padding: 3rem 0;
+    min-height: 200px;
+  }
+  
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
+  
+  .hero-actions {
+    gap: 0.75rem;
+  }
+  
+  .hero-actions .btn {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .booking-hero {
+    padding: 2.5rem 0;
+    min-height: 180px;
+  }
+  
+  .hero-title {
+    font-size: 1.75rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 0.95rem;
+  }
+  
+  .hero-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .hero-actions .btn {
+    width: 200px;
+    justify-content: center;
+  }
+}
+
+/* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1C2B4A;
+    z-index: 1030;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .mobile-nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-nav-item.active {
+    color: #64748b;
+  }
+  
+  .mobile-nav-item i {
+    display: block;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Add padding to main content to account for bottom nav */
+  main {
+    margin-bottom: 80px;
+  }
+}
+
+#logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+  </style>
+</head>
+<body>
+
+  <!-- Redirect if not logged in as landlord -->
+  <script>
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    if (!token) {
+      alert("Please log in to access this page.");
+      window.location.href = "authorization.html";
+    } else if (user.role !== 'landlord') {
+      alert("This page is for landlords only.");
+      window.location.href = "index.html";
+    }
+  </script>
+
+  <!-- Dynamic Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i>ResLinQ</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <!-- Navigation will be populated by navbar.js -->
+        </ul>
+      </div>
+      
+      <!-- Dynamic Auth Buttons -->
+      <div class="signup-login-buttons">
+        <!-- Content will be populated by navbar.js -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Enhanced Hero Section -->
+  <section class="booking-hero">
+    <div class="container hero-content">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <h1 class="display-6 fw-bold mb-2 hero-title">Manage Bookings</h1>
+          <p class="lead mb-3 hero-subtitle">Review and manage viewing requests for your properties</p>
+        </div>
+        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0 hero-actions">
+          <div class="d-flex gap-2 justify-content-lg-end">
+            <button class="btn btn-light btn-sm" onclick="exportBookings()">
+              <i class="bi bi-download me-1"></i>Export
+            </button>
+            <button class="btn btn-light btn-sm" onclick="viewBookingStats()">
+              <i class="bi bi-graph-up me-1"></i>View Stats
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+    <!-- Quick Stats - Mobile Optimized -->
+    <div class="stats-container">
+      <div class="stats-card" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
+        <i class="bi bi-calendar-check"></i>
+        <h5 id="totalBookings">0</h5>
+        <small>Total</small>
+      </div>
+      <div class="stats-card stats-card-pending" style="background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);">
+        <i class="bi bi-clock"></i>
+        <h5 id="pendingBookings">0</h5>
+        <small>Pending</small>
+        <span id="pendingBadge" class="badge bg-danger notification-badge" style="display: none;">!</span>
+      </div>
+      <div class="stats-card" style="background: linear-gradient(135deg, var(--success) 0%, #047857 100%);">
+        <i class="bi bi-check-circle"></i>
+        <h5 id="confirmedBookings">0</h5>
+        <small>Confirmed</small>
+      </div>
+      <div class="stats-card" style="background: linear-gradient(135deg, var(--info) 0%, #3b82f6 100%);">
+        <i class="bi bi-calendar-event"></i>
+        <h5 id="upcomingBookings">0</h5>
+        <small>Upcoming</small>
+      </div>
+      <div class="stats-card" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);">
+        <i class="bi bi-check2-all"></i>
+        <h5 id="completedBookings">0</h5>
+        <small>Completed</small>
+      </div>
+      <div class="stats-card" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);">
+        <i class="bi bi-x-circle"></i>
+        <h5 id="cancelledBookings">0</h5>
+        <small>Cancelled</small>
+      </div>
+    </div>
+
+    <!-- Filter and Search - Mobile Optimized -->
+    <div class="filter-section">
+      <div class="row">
+        <div class="col-md-8 mb-2">
+          <div class="filter-row">
+            <select class="form-select filter-select" id="propertyFilter">
+              <option value="">All Properties</option>
+              <!-- Properties will be populated dynamically -->
+            </select>
+            <select class="form-select filter-select" id="statusFilter">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="completed">Completed</option>
+            </select>
+            <input type="date" class="form-control filter-select" id="dateFilter" placeholder="Filter by date">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="search-container">
+            <input type="text" class="form-control" placeholder="Search student or property..." id="searchInput">
+            <button class="btn btn-primary" onclick="filterBookings()">
+              <i class="bi bi-search"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="row mt-4" id="loadingState">
+      <div class="col-12 text-center">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Loading bookings...</p>
+      </div>
+    </div>
+
+    <!-- Bookings Table View -->
+    <div class="card" id="bookingsCard" style="display: none;">
+      <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="bookingsTab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="list-tab" data-bs-toggle="tab" data-bs-target="#list" type="button">
+              <i class="bi bi-list-ul me-1"></i>List View
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendar" type="button">
+              <i class="bi bi-calendar-week me-1"></i>Calendar View
+            </button>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="card-body">
+        <div class="tab-content" id="bookingsTabContent">
+          
+          <!-- List View -->
+          <div class="tab-pane fade show active" id="list" role="tabpanel">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Property</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="bookingsTable">
+                  <!-- Bookings will be populated here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Calendar View -->
+          <div class="tab-pane fade" id="calendar" role="tabpanel">
+            <div id="calendarView">
+              <div id="calendar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="row mt-4" id="emptyState" style="display: none;">
+      <div class="col-12">
+        <div class="empty-state">
+          <i class="bi bi-calendar-x"></i>
+          <h4>No booking requests yet</h4>
+          <p class="text-muted">When students book viewings for your properties, they'll appear here.</p>
+          <a href="manage-properties.html" class="btn btn-primary">Manage Properties</a>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Booking Details Modal -->
+  <div class="modal fade" id="bookingDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Booking Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="bookingDetailsContent">
+          <!-- Content will be populated dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Modal -->
+  <div class="modal fade" id="bookingStatsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Booking Statistics</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="statsContent">
+            <!-- Stats will be populated dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Navigation -->
+<div class="mobile-bottom-nav d-lg-none">
+  <a href="landlord-dashboard.html" class="mobile-nav-item">
+    <i class="bi bi-house"></i>
+    <span>Dashboard</span>
+  </a>
+  <a href="manage-properties.html" class="mobile-nav-item">
+    <i class="bi bi-building"></i>
+    <span>Properties</span>
+  </a>
+  <a href="landlord-booking.html" class="mobile-nav-item active">
+    <i class="bi bi-calendar-check"></i>
+    <span>Bookings</span>
+  </a>
+  <a href="landlord-analytics.html" class="mobile-nav-item">
+    <i class="bi bi-bar-chart"></i>
+    <span>Analytics</span>
+  </a>
+  <a href="landlord-help.html" class="mobile-nav-item">
+      <i class="bi bi-question-circle"></i>
+      <span>Help</span>
+  </a>
+</div>
+
+  <!-- Enhanced Footer -->
+  <footer class="py-4 bg-navy text-white">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for managing student accommodation properties efficiently.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Property Management</h6>
+          <ul class="list-unstyled">
+            <li><a href="manage-properties.html" class="text-light text-decoration-none">My Properties</a></li>
+            <li><a href="landlord-booking.html" class="text-light text-decoration-none">Bookings</a></li>
+            <li><a href="landlord-reports.html" class="text-light text-decoration-none">Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="landlord-analytics.html" class="text-light text-decoration-none">Analytics</a></li>
+            <li><a href="landlord-help.html" class="text-light text-decoration-none">Help</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Landlord Support</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa<br>
+            <i class="bi bi-clock me-2"></i>Mon-Fri: 9AM-5PM
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="navbar.js"></script>
+  <!-- FullCalendar JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+  
+    <!-- Bookings Management Script -->
+  <script>
+    // Global variables
+    let allBookings = [];
+    let filteredBookings = [];
+    let calendar;
+    const API_BASE_URL = 'https://linqs-backend.onrender.com/api';
+
+    // Status configuration
+    const statusConfig = {
+      pending: { class: 'warning', text: 'Pending', icon: 'bi-clock' },
+      confirmed: { class: 'success', text: 'Confirmed', icon: 'bi-check-circle' },
+      cancelled: { class: 'danger', text: 'Cancelled', icon: 'bi-x-circle' },
+      completed: { class: 'secondary', text: 'Completed', icon: 'bi-check-lg' }
+    };
+
+    // Format date and time
+    function formatDateTime(dateString) {
+      const date = new Date(dateString);
+      const options = { 
+        weekday: 'short', 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      };
+      return date.toLocaleDateString('en-ZA', options);
+    }
+
+    // Format date only
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-ZA', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+
+    // Get initials for avatar
+    function getInitials(name) {
+      return name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : '?';
+    }
+
+    // Generate table row for booking
+    function generateBookingRow(booking) {
+      const status = statusConfig[booking.status];
+      const isUpcoming = booking.status === 'confirmed' && new Date(booking.checkIn) > new Date();
+      const studentName = booking.student?.username || 'Unknown Student';
+      const propertyName = booking.property?.title || 'Unknown Property';
+      
+      return `
+        <tr class="booking-row" data-booking-id="${booking._id}">
+          <td>
+            <div class="d-flex align-items-center">
+              <div class="student-avatar me-2">${getInitials(studentName)}</div>
+              <div>
+                <div class="fw-bold small">${studentName}</div>
+                <small class="text-muted">${booking.student?.email || 'No email'}</small>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="fw-bold small">${propertyName}</div>
+            <small class="text-muted">R${booking.property?.price || 0}/month</small>
+          </td>
+          <td>
+            <div class="small">${formatDateTime(booking.checkIn)}</div>
+            <small class="text-muted">${booking.numberOfGuests || 1} guest(s)</small>
+            ${isUpcoming ? '<small class="text-info d-block">Upcoming</small>' : ''}
+          </td>
+          <td>
+            <span class="badge bg-${status.class} status-badge">
+              <i class="${status.icon} me-1"></i>${status.text}
+            </span>
+          </td>
+          <td>
+            <div class="action-buttons d-flex gap-1">
+              <button class="btn btn-sm btn-outline-primary" onclick="viewBookingDetails('${booking._id}')" title="View Details">
+                <i class="bi bi-eye"></i>
+              </button>
+              ${booking.status === 'pending' ? `
+                <button class="btn btn-sm btn-outline-success" onclick="updateBookingStatus('${booking._id}', 'confirmed')" title="Confirm">
+                  <i class="bi bi-check-lg"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="updateBookingStatus('${booking._id}', 'cancelled')" title="Cancel">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              ` : ''}
+              ${booking.status === 'confirmed' ? `
+                <button class="btn btn-sm btn-outline-secondary" onclick="updateBookingStatus('${booking._id}', 'completed')" title="Mark Completed">
+                  <i class="bi bi-check2-all"></i>
+                </button>
+              ` : ''}
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+    
+    // Load bookings from backend - FIXED VERSION
+    async function loadBookings() {
+        try {
+            // Only show loading state if not already loaded
+            if (allBookings.length === 0) {
+                showLoadingState();
+            }
+            
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error('No authentication token found');
+            }
+
+            const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch bookings: ${response.status}`);
+            }
+
+            const data = await response.json();
+            allBookings = data.bookings || [];
+            filteredBookings = [...allBookings];
+
+            hideLoadingState();
+            renderFilteredBookings();
+            populatePropertyFilter();
+            
+            // Initialize calendar after bookings are loaded - FIXED
+            if (document.getElementById('calendar')) {
+                initializeCalendar();
+            }
+            
+        } catch (error) {
+            console.error('Error loading bookings:', error);
+            hideLoadingState();
+            showEmptyState();
+            alert('Failed to load bookings: ' + error.message);
+        }
+    }
+
+    // Populate property filter dropdown
+    function populatePropertyFilter() {
+      const propertyFilter = document.getElementById('propertyFilter');
+      // Clear existing options except the first one
+      const firstOption = propertyFilter.options[0];
+      propertyFilter.innerHTML = '';
+      propertyFilter.appendChild(firstOption);
+      
+      const properties = [...new Set(allBookings
+        .filter(b => b.property)
+        .map(b => b.property.title))];
+          
+      properties.forEach(property => {
+        propertyFilter.innerHTML += `<option value="${property}">${property}</option>`;
+      });
+    }
+
+    // Filter bookings function
+    function filterBookings() {
+      const propertyFilter = document.getElementById('propertyFilter').value;
+      const statusFilter = document.getElementById('statusFilter').value;
+      const dateFilter = document.getElementById('dateFilter').value;
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      
+      filteredBookings = allBookings.filter(booking => {
+        // Property filter
+        if (propertyFilter && booking.property?.title !== propertyFilter) {
+          return false;
+        }
+        
+        // Status filter
+        if (statusFilter && booking.status !== statusFilter) {
+          return false;
+        }
+        
+        // Date filter
+        if (dateFilter) {
+          const bookingDate = new Date(booking.checkIn).toISOString().split('T')[0];
+          if (bookingDate !== dateFilter) {
+            return false;
+          }
+        }
+        
+        // Search term filter
+        if (searchTerm) {
+          const searchFields = [
+            booking.student?.username,
+            booking.student?.email,
+            booking.property?.title,
+            booking.property?.location?.address,
+            booking.specialRequests
+          ];
+          const matchesSearch = searchFields.some(field => 
+            field && field.toLowerCase().includes(searchTerm)
+          );
+          if (!matchesSearch) {
+            return false;
+          }
+        }
+        
+        return true;
+      });
+      
+      renderFilteredBookings();
+    }
+
+    // Render filtered bookings
+    function renderFilteredBookings() {
+      // Update stats based on filtered bookings
+      document.getElementById('totalBookings').textContent = filteredBookings.length;
+      document.getElementById('pendingBookings').textContent = filteredBookings.filter(b => b.status === 'pending').length;
+      document.getElementById('confirmedBookings').textContent = filteredBookings.filter(b => b.status === 'confirmed').length;
+      document.getElementById('upcomingBookings').textContent = filteredBookings.filter(b => 
+        b.status === 'confirmed' && new Date(b.checkIn) > new Date()
+      ).length;
+      document.getElementById('completedBookings').textContent = filteredBookings.filter(b => b.status === 'completed').length;
+      document.getElementById('cancelledBookings').textContent = filteredBookings.filter(b => b.status === 'cancelled').length;
+
+      // Show notification badge for pending bookings
+      const pendingBadge = document.getElementById('pendingBadge');
+      const pendingCount = filteredBookings.filter(b => b.status === 'pending').length;
+      pendingBadge.style.display = pendingCount > 0 ? 'block' : 'none';
+      if (pendingCount > 0) {
+        pendingBadge.textContent = pendingCount > 9 ? '9+' : pendingCount;
+      }
+
+      // Show empty state if no bookings match filters
+      if (filteredBookings.length === 0) {
+        document.getElementById('emptyState').style.display = 'block';
+        document.getElementById('bookingsCard').style.display = 'none';
+        document.getElementById('bookingsTable').innerHTML = '';
+      } else {
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('bookingsCard').style.display = 'block';
+        document.getElementById('bookingsTable').innerHTML = filteredBookings.map(booking => generateBookingRow(booking)).join('');
+      }
+
+      // Update calendar if it exists
+      if (calendar) {
+        updateCalendar();
+      }
+    }
+
+    // Initialize FullCalendar - FIXED VERSION
+    function initializeCalendar() {
+      const calendarEl = document.getElementById('calendar');
+      if (!calendarEl) return;
+      
+      // DESTROY EXISTING CALENDAR FIRST to prevent multiple instances
+      if (calendar) {
+        calendar.destroy();
+      }
+      
+      calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: generateCalendarEvents(),
+        eventClick: function(info) {
+          const bookingId = info.event.extendedProps.bookingId;
+          viewBookingDetails(bookingId);
+        },
+        eventClassNames: function(arg) {
+          return [arg.event.extendedProps.status];
+        },
+        height: 'auto',
+        eventTimeFormat: {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        },
+        businessHours: {
+          daysOfWeek: [1, 2, 3, 4, 5],
+          startTime: '09:00',
+          endTime: '18:00',
+        },
+        slotMinTime: '08:00',
+        slotMaxTime: '20:00'
+      });
+      
+      calendar.render();
+    }
+
+    // Generate calendar events from bookings
+    function generateCalendarEvents() {
+      return filteredBookings.map(booking => {
+        const studentName = booking.student?.username || 'Unknown';
+        const propertyName = booking.property?.title || 'Unknown';
+        
+        return {
+          title: `${studentName} - ${propertyName}`,
+          start: booking.checkIn,
+          end: booking.checkOut,
+          extendedProps: {
+            bookingId: booking._id,
+            status: booking.status
+          },
+          className: `fc-event ${booking.status}`
+        };
+      });
+    }
+
+    // Update calendar with current filtered bookings - FIXED
+    function updateCalendar() {
+      if (calendar) {
+        calendar.removeAllEvents();
+        calendar.addEventSource(generateCalendarEvents());
+      }
+    }
+
+    // Cleanup calendar on page unload
+    function cleanupCalendar() {
+      if (calendar) {
+        calendar.destroy();
+        calendar = null;
+      }
+    }
+
+    // Update booking status
+    async function updateBookingStatus(bookingId, status) {
+      const action = status === 'confirmed' ? 'confirm' : 
+                    status === 'cancelled' ? 'cancel' : 'complete';
+      
+      if (!confirm(`Are you sure you want to ${action} this booking?`)) {
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        const requestBody = { status };
+        if (status === 'cancelled') {
+          const reason = prompt('Please provide a reason for cancellation:');
+          if (reason) {
+            requestBody.cancellationReason = reason;
+          }
+        }
+
+        const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to update booking status');
+        }
+
+        const result = await response.json();
+        
+        // Update local booking data
+        const bookingIndex = allBookings.findIndex(b => b._id === bookingId);
+        if (bookingIndex !== -1) {
+          allBookings[bookingIndex] = result.booking;
+        }
+
+        alert(`Booking ${action}ed successfully!`);
+        filterBookings();
+        
+      } catch (error) {
+        console.error('Error updating booking status:', error);
+        alert('Failed to update booking: ' + error.message);
+      }
+    }
+
+    // View booking details
+    async function viewBookingDetails(bookingId) {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch booking details');
+        }
+
+        const data = await response.json();
+        const booking = data.booking;
+
+        const modalContent = `
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Student Information</h6>
+              <p><strong>Name:</strong> ${booking.student?.username || 'Unknown'}</p>
+              <p><strong>Email:</strong> ${booking.student?.email || 'No email'}</p>
+              <p><strong>Phone:</strong> ${booking.student?.phone || 'No phone'}</p>
+            </div>
+            <div class="col-md-6">
+              <h6>Booking Details</h6>
+              <p><strong>Property:</strong> ${booking.property?.title || 'Unknown'}</p>
+              <p><strong>Check-in:</strong> ${formatDateTime(booking.checkIn)}</p>
+              <p><strong>Check-out:</strong> ${formatDateTime(booking.checkOut)}</p>
+              <p><strong>Guests:</strong> ${booking.numberOfGuests || 1}</p>
+              <p><strong>Total Price:</strong> R${booking.totalPrice || 0}</p>
+              <p><strong>Status:</strong> <span class="badge bg-${statusConfig[booking.status].class}">${statusConfig[booking.status].text}</span></p>
+            </div>
+          </div>
+          ${booking.specialRequests ? `
+          <div class="row mt-3">
+            <div class="col-12">
+              <h6>Special Requests</h6>
+              <div class="alert alert-light">${booking.specialRequests}</div>
+            </div>
+          </div>
+          ` : ''}
+          ${booking.cancellationReason ? `
+          <div class="row mt-3">
+            <div class="col-12">
+              <h6>Cancellation Reason</h6>
+              <div class="alert alert-warning">${booking.cancellationReason}</div>
+            </div>
+          </div>
+          ` : ''}
+          <div class="timeline mt-3">
+            <div class="timeline-item completed">
+              <small class="text-muted">Booking Requested</small>
+              <div>${formatDateTime(booking.createdAt)}</div>
+            </div>
+            <div class="timeline-item ${['confirmed', 'completed'].includes(booking.status) ? 'completed' : booking.status === 'pending' ? 'active' : ''}">
+              <small class="text-muted">Scheduled Viewing</small>
+              <div>${formatDateTime(booking.checkIn)}</div>
+            </div>
+            <div class="timeline-item ${booking.status === 'completed' ? 'completed' : ''}">
+              <small class="text-muted">Viewing Completed</small>
+              <div>${booking.status === 'completed' ? 'Completed' : 'Pending'}</div>
+            </div>
+          </div>
+        `;
+        
+        document.getElementById('bookingDetailsContent').innerHTML = modalContent;
+        new bootstrap.Modal(document.getElementById('bookingDetailsModal')).show();
+        
+      } catch (error) {
+        console.error('Error loading booking details:', error);
+        alert('Failed to load booking details: ' + error.message);
+      }
+    }
+
+    // View booking statistics
+    function viewBookingStats() {
+      const stats = calculateBookingStats();
+      
+      const statsContent = `
+        <div class="row text-center mb-4">
+          <div class="col-md-4">
+            <div class="card bg-light">
+              <div class="card-body p-2">
+                <h4 class="text-primary">${stats.approvalRate}%</h4>
+                <small>Approval Rate</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card bg-light">
+              <div class="card-body p-2">
+                <h4 class="text-success">${stats.avgResponseTime}h</h4>
+                <small>Avg Response Time</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card bg-light">
+              <div class="card-body p-2">
+                <h4 class="text-info">${stats.conversionRate}%</h4>
+                <small>Conversion Rate</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row mb-4">
+          <div class="col-12">
+            <h6>Booking Status Distribution</h6>
+            <div class="progress mb-2" style="height: 25px;">
+              <div class="progress-bar bg-warning" style="width: ${stats.statusDistribution.pending}%">
+                Pending (${stats.statusCounts.pending})
+              </div>
+              <div class="progress-bar bg-success" style="width: ${stats.statusDistribution.confirmed}%">
+                Confirmed (${stats.statusCounts.confirmed})
+              </div>
+              <div class="progress-bar bg-danger" style="width: ${stats.statusDistribution.cancelled}%">
+                Cancelled (${stats.statusCounts.cancelled})
+              </div>
+              <div class="progress-bar bg-secondary" style="width: ${stats.statusDistribution.completed}%">
+                Completed (${stats.statusCounts.completed})
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <h6>Top Properties by Bookings</h6>
+            <div class="list-group">
+              ${stats.topProperties.map(prop => `
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                  <span class="small">${prop.name}</span>
+                  <span class="badge bg-primary rounded-pill">${prop.count}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <h6>Monthly Trends</h6>
+            <div class="list-group">
+              <div class="list-group-item">
+                <small>This Month: <strong>${stats.monthlyStats.currentMonth}</strong> bookings</small>
+              </div>
+              <div class="list-group-item">
+                <small>Last Month: <strong>${stats.monthlyStats.lastMonth}</strong> bookings</small>
+              </div>
+              <div class="list-group-item">
+                <small>Monthly Change: 
+                  <strong class="${stats.monthlyStats.change >= 0 ? 'text-success' : 'text-danger'}">
+                    ${stats.monthlyStats.change >= 0 ? '+' : ''}${stats.monthlyStats.change}%
+                  </strong>
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="d-flex justify-content-between">
+              <button class="btn btn-outline-primary btn-sm" onclick="exportBookingStats()">
+                <i class="bi bi-download me-1"></i>Export Stats
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="refreshStats()">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('statsContent').innerHTML = statsContent;
+      new bootstrap.Modal(document.getElementById('bookingStatsModal')).show();
+    }
+
+    // Calculate booking statistics with real data
+    function calculateBookingStats() {
+        const totalBookings = filteredBookings.length;
+        
+        // Status counts
+        const statusCounts = {
+            pending: filteredBookings.filter(b => b.status === 'pending').length,
+            confirmed: filteredBookings.filter(b => b.status === 'confirmed').length,
+            cancelled: filteredBookings.filter(b => b.status === 'cancelled').length,
+            completed: filteredBookings.filter(b => b.status === 'completed').length
+        };
+        
+        // Status distribution percentages
+        const statusDistribution = {
+            pending: totalBookings > 0 ? (statusCounts.pending / totalBookings) * 100 : 0,
+            confirmed: totalBookings > 0 ? (statusCounts.confirmed / totalBookings) * 100 : 0,
+            cancelled: totalBookings > 0 ? (statusCounts.cancelled / totalBookings) * 100 : 0,
+            completed: totalBookings > 0 ? (statusCounts.completed / totalBookings) * 100 : 0
+        };
+        
+        // REAL APPROVAL RATE: confirmed bookings vs (confirmed + cancelled)
+        const totalDecided = statusCounts.confirmed + statusCounts.cancelled;
+        const approvalRate = totalDecided > 0 
+            ? Math.round((statusCounts.confirmed / totalDecided) * 100)
+            : 0;
+        
+        // REAL CONVERSION RATE: completed bookings vs confirmed bookings
+        const conversionRate = statusCounts.confirmed > 0 
+            ? Math.round((statusCounts.completed / statusCounts.confirmed) * 100)
+            : 0;
+        
+        // REAL AVERAGE RESPONSE TIME
+        let totalResponseTime = 0;
+        let responseCount = 0;
+        
+        filteredBookings.forEach(booking => {
+            if (booking.status !== 'pending' && booking.createdAt && booking.updatedAt) {
+                const created = new Date(booking.createdAt);
+                const updated = new Date(booking.updatedAt);
+                if (updated > created) {
+                    const responseTime = (updated - created) / (1000 * 60 * 60);
+                    totalResponseTime += responseTime;
+                    responseCount++;
+                }
+            }
+        });
+        
+        const avgResponseTime = responseCount > 0 ? (totalResponseTime / responseCount).toFixed(1) : '0.0';
+        
+        // REAL MONTHLY TRENDS
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        
+        const currentMonthBookings = filteredBookings.filter(booking => {
+            const bookingDate = new Date(booking.createdAt);
+            return bookingDate.getMonth() === currentMonth && bookingDate.getFullYear() === currentYear;
+        }).length;
+        
+        let lastMonth = currentMonth - 1;
+        let lastMonthYear = currentYear;
+        if (lastMonth < 0) {
+            lastMonth = 11;
+            lastMonthYear = currentYear - 1;
+        }
+        
+        const lastMonthBookings = filteredBookings.filter(booking => {
+            const bookingDate = new Date(booking.createdAt);
+            return bookingDate.getMonth() === lastMonth && bookingDate.getFullYear() === lastMonthYear;
+        }).length;
+        
+        let monthlyChange = 0;
+        if (lastMonthBookings > 0) {
+            monthlyChange = Math.round(((currentMonthBookings - lastMonthBookings) / lastMonthBookings) * 100);
+        } else if (currentMonthBookings > 0) {
+            monthlyChange = 100;
+        }
+        
+        const monthlyStats = {
+            currentMonth: currentMonthBookings,
+            lastMonth: lastMonthBookings,
+            change: monthlyChange
+        };
+        
+        // Top properties by bookings
+        const propertyCounts = {};
+        filteredBookings.forEach(booking => {
+            const propName = booking.property?.title || 'Unknown Property';
+            propertyCounts[propName] = (propertyCounts[propName] || 0) + 1;
+        });
+        
+        const topProperties = Object.entries(propertyCounts)
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 3);
+        
+        return {
+            statusCounts,
+            statusDistribution,
+            approvalRate,
+            conversionRate,
+            avgResponseTime,
+            topProperties,
+            monthlyStats
+        };
+    }
+
+    // Export booking stats to CSV
+    function exportBookingStats() {
+      const stats = calculateBookingStats();
+      
+      // Create CSV content
+      let csvContent = "Booking Statistics Report\n\n";
+      csvContent += "Metric,Value\n";
+      csvContent += `Approval Rate,${stats.approvalRate}%\n`;
+      csvContent += `Average Response Time,${stats.avgResponseTime} hours\n`;
+      csvContent += `Conversion Rate,${stats.conversionRate}%\n\n`;
+      
+      csvContent += "Status Distribution\n";
+      csvContent += "Status,Count,Percentage\n";
+      csvContent += `Pending,${stats.statusCounts.pending},${stats.statusDistribution.pending.toFixed(1)}%\n`;
+      csvContent += `Confirmed,${stats.statusCounts.confirmed},${stats.statusDistribution.confirmed.toFixed(1)}%\n`;
+      csvContent += `Cancelled,${stats.statusCounts.cancelled},${stats.statusDistribution.cancelled.toFixed(1)}%\n`;
+      csvContent += `Completed,${stats.statusCounts.completed},${stats.statusDistribution.completed.toFixed(1)}%\n\n`;
+      
+      csvContent += "Monthly Trends\n";
+      csvContent += "Period,Bookings\n";
+      csvContent += `This Month,${stats.monthlyStats.currentMonth}\n`;
+      csvContent += `Last Month,${stats.monthlyStats.lastMonth}\n`;
+      csvContent += `Monthly Change,${stats.monthlyStats.change}%\n\n`;
+      
+      csvContent += "Top Properties\n";
+      csvContent += "Property,Bookings\n";
+      stats.topProperties.forEach(prop => {
+        csvContent += `${prop.name},${prop.count}\n`;
+      });
+      
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `booking-stats-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      alert('Booking statistics exported successfully!');
+    }
+
+    // Refresh stats - ONLY updates the stats modal without reloading everything
+    async function refreshStats() {
+        try {
+            // Show loading indicator in the refresh button
+            const refreshBtn = document.querySelector('#statsContent .btn-primary');
+            if (refreshBtn) {
+                const originalText = refreshBtn.innerHTML;
+                refreshBtn.innerHTML = '<span class="loading-spinner"></span> Refreshing...';
+                refreshBtn.disabled = true;
+                
+                // SIMPLY RECALCULATE STATISTICS - DON'T RELOAD BOOKINGS
+                // This prevents the background darkening issue
+                const stats = calculateBookingStats();
+                
+                // Update the stats content directly
+                const statsContent = `
+                    <div class="row text-center mb-4">
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body p-2">
+                                    <h4 class="text-primary">${stats.approvalRate}%</h4>
+                                    <small>Approval Rate</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body p-2">
+                                    <h4 class="text-success">${stats.avgResponseTime}h</h4>
+                                    <small>Avg Response Time</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body p-2">
+                                    <h4 class="text-info">${stats.conversionRate}%</h4>
+                                    <small>Conversion Rate</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6>Booking Status Distribution</h6>
+                            <div class="progress mb-2" style="height: 25px;">
+                                <div class="progress-bar bg-warning" style="width: ${stats.statusDistribution.pending}%">
+                                    Pending (${stats.statusCounts.pending})
+                                </div>
+                                <div class="progress-bar bg-success" style="width: ${stats.statusDistribution.confirmed}%">
+                                    Confirmed (${stats.statusCounts.confirmed})
+                                </div>
+                                <div class="progress-bar bg-danger" style="width: ${stats.statusDistribution.cancelled}%">
+                                    Cancelled (${stats.statusCounts.cancelled})
+                                </div>
+                                <div class="progress-bar bg-secondary" style="width: ${stats.statusDistribution.completed}%">
+                                    Completed (${stats.statusCounts.completed})
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Top Properties by Bookings</h6>
+                            <div class="list-group">
+                                ${stats.topProperties.map(prop => `
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span class="small">${prop.name}</span>
+                                        <span class="badge bg-primary rounded-pill">${prop.count}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Monthly Trends</h6>
+                            <div class="list-group">
+                                <div class="list-group-item">
+                                    <small>This Month: <strong>${stats.monthlyStats.currentMonth}</strong> bookings</small>
+                                </div>
+                                <div class="list-group-item">
+                                    <small>Last Month: <strong>${stats.monthlyStats.lastMonth}</strong> bookings</small>
+                                </div>
+                                <div class="list-group-item">
+                                    <small>Monthly Change: 
+                                        <strong class="${stats.monthlyStats.change >= 0 ? 'text-success' : 'text-danger'}">
+                                            ${stats.monthlyStats.change >= 0 ? '+' : ''}${stats.monthlyStats.change}%
+                                        </strong>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-outline-primary btn-sm" onclick="exportBookingStats()">
+                                    <i class="bi bi-download me-1"></i>Export Stats
+                                </button>
+                                <button class="btn btn-primary btn-sm" onclick="refreshStats()">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('statsContent').innerHTML = statsContent;
+                
+                // Restore button state
+                refreshBtn.innerHTML = originalText;
+                refreshBtn.disabled = false;
+            }
+        } catch (error) {
+            console.error('Error refreshing stats:', error);
+            alert('Failed to refresh statistics. Please try again.');
+            
+            // Restore button state even on error
+            const refreshBtn = document.querySelector('#statsContent .btn-primary');
+            if (refreshBtn) {
+                refreshBtn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Refresh';
+                refreshBtn.disabled = false;
+            }
+        }
+    }
+
+    // Export bookings to CSV
+    function exportBookings() {
+      if (filteredBookings.length === 0) {
+        alert('No bookings to export.');
+        return;
+      }
+
+      // Create CSV content
+      let csvContent = "Booking ID,Student Name,Student Email,Property,Check-in,Check-out,Guests,Status,Total Price,Special Requests\n";
+      
+      filteredBookings.forEach(booking => {
+        const studentName = booking.student?.username || 'Unknown';
+        const studentEmail = booking.student?.email || '';
+        const propertyName = booking.property?.title || 'Unknown';
+        const checkIn = formatDateTime(booking.checkIn);
+        const checkOut = formatDateTime(booking.checkOut);
+        const guests = booking.numberOfGuests || 1;
+        const status = booking.status;
+        const totalPrice = booking.totalPrice || 0;
+        const specialRequests = (booking.specialRequests || '').replace(/,/g, ';'); // Escape commas
+        
+        csvContent += `${booking._id},${studentName},${studentEmail},${propertyName},${checkIn},${checkOut},${guests},${status},${totalPrice},"${specialRequests}"\n`;
+      });
+      
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `bookings-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      alert(`Successfully exported ${filteredBookings.length} bookings!`);
+    }
+
+    // UI state management
+    function showLoadingState() {
+      document.getElementById('loadingState').style.display = 'block';
+      document.getElementById('bookingsCard').style.display = 'none';
+      document.getElementById('emptyState').style.display = 'none';
+    }
+
+    function hideLoadingState() {
+      document.getElementById('loadingState').style.display = 'none';
+    }
+
+    function showEmptyState() {
+      document.getElementById('emptyState').style.display = 'block';
+      document.getElementById('bookingsCard').style.display = 'none';
+      document.getElementById('loadingState').style.display = 'none';
+    }
+
+    // Initialize when page loads - FIXED VERSION
+    document.addEventListener('DOMContentLoaded', function() {
+      loadBookings();
+      
+      // Use event delegation on the document body
+      document.body.addEventListener('change', function(e) {
+        if (e.target.matches('#propertyFilter, #statusFilter, #dateFilter')) {
+          filterBookings();
+        }
+      });
+      
+      document.body.addEventListener('keyup', function(e) {
+        if (e.target.matches('#searchInput')) {
+          filterBookings();
+        }
+      });
+      
+      document.body.addEventListener('keypress', function(e) {
+        if (e.target.matches('#searchInput') && e.key === 'Enter') {
+          filterBookings();
+        }
+      });
+      
+      // Handle tab changes to reinitialize calendar when needed
+      const calendarTab = document.getElementById('calendar-tab');
+      if (calendarTab) {
+        calendarTab.addEventListener('click', function() {
+          setTimeout(() => {
+            if (!calendar) {
+              initializeCalendar();
+            } else if (calendar.getEvents().length === 0) {
+              updateCalendar();
+            }
+          }, 100);
+        });
+      }
+      
+      // Cleanup on page unload
+      window.addEventListener('beforeunload', cleanupCalendar);
+    });
+  </script>
+</body>
+</html>

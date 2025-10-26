@@ -1,0 +1,2473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Property Details | ResLinQ</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --success: #059669;
+      --warning: #f59e0b;
+      --info: #60a5fa;
+      --light-bg: #f8fafc;
+    }
+    
+    body {
+      background-color: var(--light-bg);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .property-hero {
+        background: linear-gradient(135deg, var(--primary) 0%, #9983e7 50%, var(--primary-light) 100%);
+        color: white;
+        padding: 1.5rem 0;
+        border-radius: 0 0 1.5rem 1.5rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+    
+    .main-image {
+      width: 100%;
+      height: 400px;
+      object-fit: cover;
+      border-radius: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .thumbnail-container {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+    
+    .thumbnail {
+      width: 80px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+    
+    .thumbnail:hover, .thumbnail.active {
+      border-color: var(--primary);
+    }
+    
+    .property-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      margin-bottom: 1.5rem;
+      border: 1px solid #e2e8f0;
+    }
+
+    .property-cards {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      margin-bottom: 1.5rem;
+      border: 1px solid #e2e8f0;
+    }
+    
+    
+    .price-tag {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+    
+    .amenity-badge {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0.5rem 1rem;
+      margin: 0.25rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .room-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid #e2e8f0;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .room-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .room-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 0.5rem;
+    }
+    
+    .review-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .rating-stars {
+      color: #f59e0b;
+    }
+    
+    .feature-badge {
+      background: var(--primary);
+      color: white;
+      border-radius: 2rem;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    
+    .landlord-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      text-align: center;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .landlord-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 1rem;
+    }
+    
+    .action-btn {
+      border-radius: 2rem;
+      padding: 0.75rem 2rem;
+      font-weight: 500;
+      margin: 0.25rem;
+    }
+    
+    /* Location Map Styles */
+    .map-container {
+      border-radius: 1rem;
+      overflow: hidden;
+      height: 400px;
+      position: relative;
+      border: 1px solid #e2e8f0;
+    }
+    
+    #propertyMap {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .map-placeholder {
+      background: #e2e8f0;
+      border-radius: 1rem;
+      height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+    }
+    
+    .map-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      background: white;
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .section-title {
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .room-feature {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .room-feature i {
+      color: var(--success);
+      width: 20px;
+    }
+    
+    .sticky-booking-card {
+      position: sticky;
+      top: 2rem;
+      z-index: 100;
+      height: fit-content;
+    }
+    
+    /* Loading states */
+    .loading-skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: 0.5rem;
+    }
+    
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .main-image {
+        height: 300px;
+      }
+      
+      .price-tag {
+        font-size: 1.5rem;
+      }
+      
+      .sticky-booking-card {
+        position: static;
+        margin-top: 2rem;
+      }
+      
+      .map-container {
+        height: 300px;
+      }
+    }
+    
+    /* Review form styles */
+    .review-form {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .star-rating {
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    
+    .star-rating .bi {
+      color: #d1d5db;
+      transition: color 0.2s ease;
+    }
+    
+    .star-rating .bi.active {
+      color: #f59e0b;
+    }
+    
+    /* Room gallery modal */
+    .room-gallery-modal .modal-dialog {
+      max-width: 90vw;
+    }
+    
+    .room-gallery-img {
+      width: 100%;
+      height: 400px;
+      object-fit: cover;
+      border-radius: 0.5rem;
+    }
+
+    /* Review button styles */
+    .review-btn {
+      background: linear-gradient(135deg, var(--warning) 0%, #f59e0b 100%);
+      border: none;
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: 2rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .review-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+      color: white;
+    }
+
+    .review-btn:disabled {
+      background: #9ca3af;
+      transform: none;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    /* Report button styles */
+    .report-btn {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      border: none;
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: 2rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .report-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(220, 38, 38, 0.3);
+      color: white;
+    }
+
+    /* Toast notification styles */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+    
+    .toast {
+      min-width: 250px;
+    }
+
+    /* Room status borders */
+    .room-card.border-success {
+      border-left: 4px solid var(--success);
+    }
+    
+    .room-card.border-warning {
+      border-left: 4px solid var(--warning);
+    }
+
+    /* Room Details Modal Styles */
+    .room-info-section {
+      padding: 0.5rem;
+    }
+    
+    .price-section {
+      border-bottom: 2px solid #e9ecef;
+      padding-bottom: 1rem;
+    }
+    
+    .specs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    
+    .spec-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background: #f8f9fa;
+      border-radius: 0.5rem;
+    }
+    
+    .spec-item i {
+      font-size: 1.2rem;
+    }
+    
+    .description-section, .features-section {
+      border-top: 1px solid #e9ecef;
+      padding-top: 1rem;
+    }
+    
+    .feature-badge-sm {
+      background: #e3f2fd;
+      border: 1px solid #bbdefb;
+      color: #1976d2;
+      border-radius: 1rem;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    
+    .carousel-item img {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+      border-radius: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .specs-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Mobile Bottom Navigation */
+    .mobile-bottom-nav {
+      display: none;
+    }
+
+    @media (max-width: 767px) {
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #1C2B4A;
+        z-index: 1030;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      }
+      
+      .mobile-nav-item {
+        flex: 1;
+        text-align: center;
+        padding: 0.5rem;
+        color: #fff;
+        text-decoration: none;
+        font-size: 0.75rem;
+      }
+      
+      .mobile-nav-item.active {
+        color: #64748b;
+      }
+      
+      .mobile-nav-item i {
+        display: block;
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+      }
+      
+      /* Add padding to main content to account for bottom nav */
+      main {
+        margin-bottom: 80px;
+      }
+    }
+
+    /* Map loading and error states */
+    .map-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      height: 100%;
+      background: #f8f9fa;
+    }
+
+    .map-error {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      height: 100%;
+      background: #f8f9fa;
+      color: #dc3545;
+    }
+
+    /* Location info styles */
+    .location-info {
+      background: #f8f9fa;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Scrollable Reviews Card Styles */
+.reviews-scrollable-card {
+  background: #f8f9fa;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.reviews-container {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Custom scrollbar for reviews container */
+.reviews-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.reviews-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.reviews-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.reviews-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Review card adjustments for scrollable layout */
+.reviews-container .review-card {
+  margin-bottom: 1rem;
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  border: 1px solid #e2e8f0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reviews-container .review-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.reviews-container .review-card:last-child {
+  margin-bottom: 0;
+}
+
+/* Scroll indicator animation */
+.scroll-indicator {
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-5px);
+  }
+  60% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .reviews-container {
+    max-height: 350px;
+  }
+  
+  .reviews-scrollable-card {
+    padding: 1rem;
+  }
+}
+
+#logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+  </style>
+</head>
+<body>
+
+  <!-- Redirect if not logged in -->
+  <script>
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    if (!token) {
+      alert("Please log in to access this page.");
+      window.location.href = "authorization.html";
+    }
+  </script>
+
+  <!-- Toast Container -->
+  <div class="toast-container"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i>ResLinQ</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <i class="bi bi-house-door-fill"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="listings.html">
+              <i class="bi bi-building"></i> Listings
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="help.html">
+              <i class="bi bi-question-circle-fill"></i> Help
+            </a>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="signup-login-buttons">
+        <a href="authorization.html" class="btn btn-outline-light me-2 nav-btn">Login</a>
+        <a href="signup.html" class="btn btn-primary nav-btn">Sign Up</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Property Hero Section -->
+  <section class="property-hero">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+              <li class="breadcrumb-item active text-light" id="propertyBreadcrumb">Property Details</li> 
+            </ol>
+          </nav>
+          <h1 class="display-6 fw-bold mb-2" id="propertyTitle">Loading Property...</h1>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <span class="badge bg-light text-navy" id="propertyTypeBadge">Loading...</span>
+            <span class="badge bg-success" id="propertyStatusBadge">Available</span>
+            <span class="badge bg-info" id="propertyGenderBadge">Unisex</span>
+            <span class="badge bg-warning" id="propertyAccreditationBadge">Self-paying</span>
+          </div>
+        </div>
+        <div class="col-md-4 text-md-end">
+          <div class="price-tag" id="propertyPrice">R0</div>
+          <small class="text-light">per month</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+    <div class="row">
+      <!-- Main Content Column -->
+      <div class="col-lg-8">
+        <!-- Image Gallery -->
+        <div class="property-card">
+          <div id="propertyImageGallery">
+            <div class="loading-skeleton" style="height: 400px;"></div>
+          </div>
+          <div class="thumbnail-container mt-2" id="propertyThumbnails">
+            <!-- Thumbnails will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Property Details -->
+        <div class="property-card">
+          <h3 class="section-title">Property Details</h3>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="room-feature">
+                <i class="bi bi-door-closed"></i>
+                <span><strong id="bedroomsCount">0</strong> Bedrooms</span>
+              </div>
+              <div class="room-feature">
+                <i class="bi bi-droplet"></i>
+                <span><strong id="bathroomsCount">0</strong> Bathrooms</span>
+              </div>
+              <div class="room-feature">
+                <i class="bi bi-geo-alt"></i>
+                <span id="propertyLocation">Loading location...</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="room-feature">
+                <i class="bi bi-building"></i>
+                <span id="propertyType">Loading type...</span>
+              </div>
+              <div class="room-feature">
+                <i class="bi bi-people"></i>
+                <span id="propertyGender">Loading gender preference...</span>
+              </div>
+              <div class="room-feature">
+                <i class="bi bi-award"></i>
+                <span id="propertyAccreditation">Loading accreditation...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="property-card">
+          <h3 class="section-title">Description</h3>
+          <p id="propertyDescription" class="mb-0">Loading description...</p>
+        </div>
+
+        <!-- Amenities -->
+        <div class="property-card">
+          <h3 class="section-title">Amenities & Features</h3>
+          <div id="propertyAmenities">
+            <div class="loading-skeleton" style="height: 100px;"></div>
+          </div>
+        </div>
+
+        <!-- Rooms Section -->
+        <div class="property-card">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="section-title mb-0">Available Rooms</h3>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-primary btn-sm" onclick="filterRooms('all')">
+                <i class="bi bi-grid me-1"></i>All Rooms
+              </button>
+              <button class="btn btn-outline-success btn-sm" onclick="filterRooms('available')">
+                <i class="bi bi-check-circle me-1"></i>Available
+              </button>
+              <button class="btn btn-outline-warning btn-sm" onclick="filterRooms('occupied')">
+                <i class="bi bi-person-check me-1"></i>Occupied
+              </button>
+            </div>
+          </div>
+          
+          <div class="row" id="propertyRooms">
+            <div class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading rooms...</span>
+              </div>
+              <p class="mt-2 text-muted">Loading available rooms...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Location Section -->
+        <div class="property-card">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="section-title mb-0">Location</h3>
+            <button class="btn btn-outline-primary btn-sm" onclick="openGoogleMaps()">
+              <i class="bi bi-geo-alt me-1"></i>Open in Maps
+            </button>
+          </div>
+          
+          <div class="location-info mb-4">
+            <p class="mb-2" id="propertyFullAddress">Loading address...</p>
+            <div class="d-flex flex-wrap gap-3">
+              <span class="badge bg-light text-dark">
+                <i class="bi bi-geo me-1"></i>
+                <span id="distanceInfo">Location details loading...</span>
+              </span>
+              <span class="badge bg-light text-dark">
+                <i class="bi bi-building me-1"></i>
+                <span id="campusInfo">Near university area</span>
+              </span>
+            </div>
+          </div>
+          
+          <div class="map-container">
+            <div id="propertyMap" class="map-placeholder">
+              <div class="map-loading">
+                <div class="spinner-border text-primary mb-2" role="status">
+                  <span class="visually-hidden">Loading map...</span>
+                </div>
+                <p class="text-muted">Loading location map...</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-3">
+            <small class="text-muted">
+              <i class="bi bi-info-circle me-1"></i>
+              The map shows the approximate location of the property
+            </small>
+          </div>
+        </div>
+
+        <!-- Replace the entire Reviews & Ratings section with this code -->
+<!-- Reviews & Ratings -->
+<div class="property-card">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="section-title mb-0">Reviews & Ratings</h3>
+    <button class="btn review-btn" id="writeReviewBtn" onclick="showReviewForm()">
+      <i class="bi bi-pencil-square me-2"></i>Write Review
+    </button>
+  </div>
+  
+  <!-- Rating Summary -->
+  <div class="row mb-4">
+    <div class="col-md-4 text-center">
+      <div class="display-4 fw-bold text-primary" id="averageRating">0.0</div>
+      <div class="rating-stars mb-2" id="averageRatingStars">
+        <!-- Stars will be populated -->
+      </div>
+      <small class="text-muted" id="reviewCount">0 reviews</small>
+    </div>
+    <div class="col-md-8">
+      <div id="ratingBreakdown">
+        <!-- Rating breakdown will be populated -->
+      </div>
+    </div>
+  </div>
+  
+  <!-- Scrollable Reviews Card -->
+  <div class="reviews-scrollable-card">
+    <div class="reviews-header d-flex justify-content-between align-items-center mb-3">
+      <h6 class="mb-0 text-navy">Recent Reviews</h6>
+      <small class="text-muted" id="reviewsShowing">Showing <span id="visibleReviewsCount">0</span> of <span id="totalReviewsCount">0</span> reviews</small>
+    </div>
+    
+    <div class="reviews-container" id="propertyReviews">
+      <div class="text-center py-4">
+        <i class="bi bi-chat-square-text display-4 text-muted mb-3"></i>
+        <p class="text-muted">No reviews yet</p>
+        <small>Be the first to review this property</small>
+      </div>
+    </div>
+    
+    <!-- Scroll indicator -->
+    <div class="scroll-indicator mt-3 text-center" id="scrollIndicator" style="display: none;">
+      <small class="text-muted">
+        <i class="bi bi-arrow-down me-1"></i>
+        Scroll for more reviews
+      </small>
+    </div>
+  </div>
+</div>
+
+        <!-- Review Form -->
+        <div class="review-form" id="reviewFormSection" style="display: none;">
+          <h3 class="section-title">Write a Review</h3>
+          <form id="reviewForm">
+            <input type="hidden" id="reviewPropertyId">
+            
+            <div class="mb-3" id="bookingSelectionSection">
+              <label class="form-label fw-semibold">Select Booking to Review (Optional)</label>
+              <select class="form-select" id="reviewBookingId" name="bookingId">
+                <option value="">No specific booking - General review</option>
+                <!-- Bookings will be populated here -->
+              </select>
+              <div class="form-text">If you stayed here through a booking, select it above. Otherwise leave as "General review"</div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Overall Rating</label>
+              <div class="star-rating" id="reviewStarRating">
+                <i class="bi bi-star" data-rating="1"></i>
+                <i class="bi bi-star" data-rating="2"></i>
+                <i class="bi bi-star" data-rating="3"></i>
+                <i class="bi bi-star" data-rating="4"></i>
+                <i class="bi bi-star" data-rating="5"></i>
+              </div>
+              <input type="hidden" id="reviewRating" name="rating" required>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Cleanliness</label>
+                <select class="form-select" id="cleanlinessRating" name="cleanliness">
+                  <option value="5">Excellent</option>
+                  <option value="4">Very Good</option>
+                  <option value="3">Good</option>
+                  <option value="2">Fair</option>
+                  <option value="1">Poor</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Location</label>
+                <select class="form-select" id="locationRating" name="location">
+                  <option value="5">Excellent</option>
+                  <option value="4">Very Good</option>
+                  <option value="3">Good</option>
+                  <option value="2">Fair</option>
+                  <option value="1">Poor</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Value</label>
+                <select class="form-select" id="valueRating" name="value">
+                  <option value="5">Excellent</option>
+                  <option value="4">Very Good</option>
+                  <option value="3">Good</option>
+                  <option value="2">Fair</option>
+                  <option value="1">Poor</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Review Title</label>
+              <input type="text" class="form-control" id="reviewTitle" name="title" required>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Your Review</label>
+              <textarea class="form-control" id="reviewComment" name="comment" rows="4" required placeholder="Share your experience with this property..."></textarea>
+            </div>
+            
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="recommendProperty" name="isRecommended" checked>
+              <label class="form-check-label" for="recommendProperty">
+                I recommend this property
+              </label>
+            </div>
+            
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn review-btn">
+                <i class="bi bi-send me-2"></i>Submit Review
+              </button>
+              <button type="button" class="btn btn-outline-secondary action-btn" onclick="hideReviewForm()">
+                <i class="bi bi-x me-2"></i>Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Sidebar Column -->
+      <div class="col-lg-4">
+        <!-- Booking Card -->
+        <div class="property-card ">
+          <h4 class="text-navy mb-3">Book This Property</h4>
+          
+          <div class="d-grid gap-2">
+            <button class="btn btn-primary action-btn" onclick="submitBookingRequest()">
+              <i class="bi bi-calendar-check me-2"></i>Request to Book
+            </button>
+
+            <button class="btn btn-outline-success action-btn" onclick="viewMyFavorites()">
+              <i class="bi bi-heart me-2"></i>View My Favorites
+            </button>
+            
+            <button class="btn report-btn" onclick="reportProperty()">
+              <i class="bi bi-flag me-2"></i>Report Property
+            </button>
+            
+            <button class="btn btn-outline-primary action-btn" onclick="saveToFavorites()">
+              <i class="bi bi-heart me-2"></i>Save to Favorites
+            </button>
+            <button class="btn btn-outline-secondary action-btn" onclick="shareProperty()">
+              <i class="bi bi-share me-2"></i>Share Property
+            </button>
+          </div>
+        </div>
+
+        <!-- Landlord Info -->
+        <div class="landlord-card">
+          <img src="https://via.placeholder.com/80" alt="Landlord" class="landlord-avatar" id="landlordAvatar">
+          <h5 id="landlordName">Loading...</h5>
+          <p class="text-muted small mb-2" id="landlordRole">Property Landlord</p>
+          <div class="mb-3">
+            <span class="badge bg-success" id="landlordVerified">
+              <i class="bi bi-patch-check me-1"></i>Verified
+            </span>
+          </div>
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-primary btn-sm" onclick="contactLandlord()">
+              <i class="bi bi-envelope me-1"></i>Contact Landlord
+            </button>
+          </div>
+        </div>
+
+        <!-- Safety Features -->
+        <div class="property-cards">
+          <h5 class="text-navy mb-3">Safety & Verification</h5>
+          <div class="room-feature">
+            <i class="bi bi-shield-check text-success"></i>
+            <span>Verified Property</span>
+          </div>
+          <div class="room-feature">
+            <i class="bi bi-camera-video text-success"></i>
+            <span>Security Measures</span>
+          </div>
+          <div class="room-feature">
+            <i class="bi bi-telephone text-success"></i>
+            <span>24/7 Support</span>
+          </div>
+          <div class="room-feature">
+            <i class="bi bi-file-check text-success"></i>
+            <span>Legal Compliance</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Room Gallery Modal -->
+  <div class="modal fade room-gallery-modal" id="roomGalleryModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="roomGalleryTitle">Room Gallery</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <img src="" class="room-gallery-img" id="roomGalleryImage" alt="Room Image">
+          <div class="thumbnail-container mt-2" id="roomGalleryThumbnails">
+            <!-- Room thumbnails will be populated here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Room Details Modal -->
+  <div class="modal fade" id="roomDetailsModal" tabindex="-1" aria-labelledby="roomDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="roomDetailsModalLabel">Room Details</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <!-- Room Images -->
+            <div class="col-md-6">
+              <div id="roomDetailsCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner" id="roomDetailsCarouselInner">
+                  <!-- Carousel items will be populated dynamically -->
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#roomDetailsCarousel" data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#roomDetailsCarousel" data-bs-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Next</span>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Room Information -->
+            <div class="col-md-6">
+              <div class="room-info-section">
+                <h4 id="roomDetailsName" class="text-primary mb-3"></h4>
+                
+                <!-- Room Status -->
+                <div class="mb-3">
+                  <span id="roomDetailsStatus" class="badge"></span>
+                  <span id="roomDetailsType" class="badge bg-secondary ms-2"></span>
+                </div>
+                
+                <!-- Price -->
+                <div class="price-section mb-3">
+                  <h3 id="roomDetailsPrice" class="text-success mb-1"></h3>
+                  <small class="text-muted">per month</small>
+                </div>
+                
+                <!-- Room Specifications -->
+                <div class="specs-grid mb-4">
+                  <div class="spec-item">
+                    <i class="bi bi-arrows-fullscreen text-primary"></i>
+                    <span id="roomDetailsSize"></span>
+                  </div>
+                  <div class="spec-item">
+                    <i class="bi bi-door-closed text-primary"></i>
+                    <span id="roomDetailsRoomType"></span>
+                  </div>
+                </div>
+                
+                <!-- Description -->
+                <div class="description-section mb-4">
+                  <h6 class="text-navy mb-2">Description</h6>
+                  <p id="roomDetailsDescription" class="text-muted"></p>
+                </div>
+                
+                <!-- Features -->
+                <div class="features-section">
+                  <h6 class="text-navy mb-2">Features & Amenities</h6>
+                  <div id="roomDetailsFeatures" class="d-flex flex-wrap gap-2">
+                    <!-- Features will be populated here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Occupant Info (if occupied) -->
+          <div id="roomOccupantInfo" class="mt-4 p-3 bg-light rounded" style="display: none;">
+            <h6 class="text-navy mb-2"><i class="bi bi-info-circle me-2"></i>Current Occupancy</h6>
+            <p id="roomOccupantDetails" class="mb-0 text-muted"></p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+          <button id="roomDetailsBookBtn" type="button" class="btn btn-primary" onclick="bookFromRoomDetails()">
+            <i class="bi bi-calendar-check me-2"></i>Book This Room
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Navigation -->
+  <div class="mobile-bottom-nav d-lg-none">
+    <a href="home.html" class="mobile-nav-item">
+      <i class="bi bi-house"></i>
+      <span>Home</span>
+    </a>
+    <a href="listings.html" class="mobile-nav-item">
+      <i class="bi bi-building"></i>
+      <span>Listings</span>
+    </a>
+    <a href="my-bookings.html" class="mobile-nav-item">
+      <i class="bi bi-calendar-check"></i>
+      <span>Bookings</span>
+    </a>
+    <a href="help.html" class="mobile-nav-item ">
+      <i class="bi bi-question-circle"></i>
+      <span>Help</span>
+    </a>
+  </div>
+
+  <!-- Footer -->
+  <footer class="py-5 bg-navy text-white mt-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for finding the perfect student accommodation near your campus.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Quick Links</h6>
+          <ul class="list-unstyled">
+            <li><a href="home.html" class="text-light text-decoration-none">Home</a></li>
+            <li><a href="listings.html" class="text-light text-decoration-none">Listings</a></li>
+            <li><a href="help.html" class="text-light text-decoration-none">Help</a></li>
+            <li><a href="about-us.html" class="text-light text-decoration-none">About Us</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="my-bookings.html" class="text-light text-decoration-none">My Bookings</a></li>
+            <li><a href="my-reports.html" class="text-light text-decoration-none">My Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Get in Touch</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="navbar.js"></script>
+  
+  <!-- Property Details Script -->
+  <script>
+    // API base URL
+    const API_BASE_URL = 'https://linqs-backend.onrender.com/api';
+
+    // Global variables
+    let currentProperty = null;
+    let currentLandlord = null;
+    let propertyRooms = [];
+    let propertyReviews = [];
+    let userBookings = [];
+    let currentUser = null;
+
+    // Status configuration
+    const statusConfig = {
+        available: { class: 'success', text: 'Available', icon: 'bi-check-circle' },
+        occupied: { class: 'warning', text: 'Occupied', icon: 'bi-person-check' },
+        maintenance: { class: 'danger', text: 'Maintenance', icon: 'bi-tools' },
+        pending: { class: 'warning', text: 'Pending Approval', icon: 'bi-clock' },
+        approved: { class: 'success', text: 'Approved', icon: 'bi-check-circle' },
+        rejected: { class: 'danger', text: 'Rejected', icon: 'bi-x-circle' }
+    };
+
+    // Room type configuration
+    const roomTypeConfig = {
+        bachelor: { icon: 'bi-person', text: 'Bachelor Room', class: 'primary' },
+        single: { icon: 'bi-person', text: 'Single Room', class: 'info' },
+        ensuite: { icon: 'bi-droplet', text: 'En-suite Room', class: 'success' },
+        sharing: { icon: 'bi-people', text: 'Sharing Room', class: 'warning' },
+        cottage: { icon: 'bi-house', text: 'Single Cottage', class: 'dark' },
+        'shared-cottage': { icon: 'bi-houses', text: 'Shared Cottage', class: 'secondary' }
+    };
+
+    // Gender preference configuration
+    const genderConfig = {
+        unisex: { icon: 'bi-people', text: 'Unisex', class: 'info' },
+        male: { icon: 'bi-gender-male', text: 'Male Only', class: 'primary' },
+        female: { icon: 'bi-gender-female', text: 'Female Only', class: 'danger' }
+    };
+
+    // Accreditation configuration
+    const accreditationConfig = {
+        accredited: { icon: 'bi-award', text: 'Accredited', class: 'success' },
+        self: { icon: 'bi-house', text: 'Self-paying', class: 'info' }
+    };
+
+    //Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing property details page...');
+    currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    initializeReviewForm();
+    loadPropertyDetails();
+    
+    // === ADD THIS LINE HERE ===
+    setTimeout(() => {
+        updateVisibleReviewsCount();
+    }, 500);
+    // ==========================
+});
+
+    // Initialize review form event listeners
+    function initializeReviewForm() {
+        const starRating = document.getElementById('reviewStarRating');
+        if (starRating) {
+            starRating.addEventListener('click', function(e) {
+                if (e.target.classList.contains('bi-star') || e.target.classList.contains('bi-star-fill')) {
+                    const rating = parseInt(e.target.getAttribute('data-rating'));
+                    document.getElementById('reviewRating').value = rating;
+                    
+                    const stars = this.querySelectorAll('.bi');
+                    stars.forEach((star, index) => {
+                        if (index < rating) {
+                            star.classList.add('active', 'bi-star-fill');
+                            star.classList.remove('bi-star');
+                        } else {
+                            star.classList.remove('active', 'bi-star-fill');
+                            star.classList.add('bi-star');
+                        }
+                    });
+                }
+            });
+        }
+
+        const reviewForm = document.getElementById('reviewForm');
+        if (reviewForm) {
+            reviewForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await submitReview();
+            });
+        }
+    }
+
+    // Get property ID from URL parameters
+    function getPropertyIdFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('id');
+    }
+
+    // ============ PROPERTY DATA LOADING ============
+
+    async function loadPropertyDetails() {
+        const propertyId = getPropertyIdFromURL();
+        
+        if (!propertyId) {
+            alert('No property ID specified in URL');
+            window.location.href = 'listings.html';
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem("token");
+            
+            const propertyResponse = await fetch(`${API_BASE_URL}/properties/${propertyId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!propertyResponse.ok) {
+                throw new Error('Property not found');
+            }
+
+            const propertyData = await propertyResponse.json();
+            currentProperty = propertyData.property || propertyData;
+            
+            console.log('Loaded property:', currentProperty);
+            
+            const adminStatus = getAdminStatus(currentProperty);
+            if (adminStatus !== 'approved') {
+                showToast('This property is not available for viewing.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'listings.html';
+                }, 2000);
+                return;
+            }
+            
+            const landlordId = String(currentProperty.landlord?._id || currentProperty.landlord);
+            if (landlordId && landlordId !== 'undefined') {
+                await loadLandlordDetails(landlordId);
+            } else {
+                currentLandlord = {
+                    firstName: 'Landlord',
+                    lastName: 'User',
+                    avatar: 'https://via.placeholder.com/80',
+                    isVerified: true
+                };
+            }
+            
+            await loadPropertyReviews(propertyId);
+            updatePropertyDisplay();
+            await loadPropertyRooms();
+            checkUserCanReview();
+            await checkFavoriteStatus();
+            
+        } catch (error) {
+            console.error('Error loading property details:', error);
+            showToast('Failed to load property details: ' + error.message, 'error');
+            window.location.href = 'listings.html';
+        }
+    }
+
+    async function loadLandlordDetails(landlordId) {
+        try {
+            if (!landlordId || landlordId === 'undefined' || landlordId === 'null') {
+                throw new Error('Invalid landlord ID');
+            }
+
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/users/${landlordId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                currentLandlord = data.user || data;
+            } else {
+                throw new Error('Failed to load landlord details');
+            }
+        } catch (error) {
+            console.error('Error loading landlord details:', error);
+            currentLandlord = {
+                firstName: 'Landlord',
+                lastName: 'User',
+                avatar: 'https://via.placeholder.com/80',
+                isVerified: true
+            };
+        }
+    }
+
+    async function loadPropertyReviews(propertyId) {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/reviews/property/${propertyId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                propertyReviews = data.reviews || [];
+            } else {
+                propertyReviews = [];
+            }
+        } catch (error) {
+            console.error('Error loading reviews:', error);
+            propertyReviews = [];
+        }
+    }
+
+    async function loadPropertyRooms() {
+        const propertyId = getPropertyIdFromURL();
+        
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                propertyRooms = data.rooms || [];
+                updateRoomsDisplay();
+            } else {
+                createBasicRooms();
+            }
+        } catch (error) {
+            console.error('Error loading rooms:', error);
+            createBasicRooms();
+        }
+    }
+
+    function createBasicRooms() {
+        if (currentProperty && currentProperty.bedrooms > 0) {
+            propertyRooms = [];
+            for (let i = 1; i <= currentProperty.bedrooms; i++) {
+                propertyRooms.push({
+                    _id: `room_${i}`,
+                    roomNumber: `Room ${i}`,
+                    roomType: 'single',
+                    description: `Comfortable bedroom ${i} with essential furniture`,
+                    images: currentProperty.images || ['https://via.placeholder.com/400x300?text=Room+' + i],
+                    features: ['single-bed', 'desk', 'wardrobe', 'window'],
+                    size: '12-15 m²',
+                    price: Math.floor(currentProperty.price / currentProperty.bedrooms),
+                    isAvailable: true
+                });
+            }
+            updateRoomsDisplay();
+        }
+    }
+
+    // ============ UI UPDATES ============
+
+    function updatePropertyDisplay() {
+        if (!currentProperty) return;
+
+        const propertyStatus = getPropertyStatus(currentProperty);
+        const statusInfo = statusConfig[propertyStatus] || statusConfig.available;
+        const genderInfo = genderConfig[currentProperty.genderPreference] || genderConfig.unisex;
+        const accreditationInfo = accreditationConfig[currentProperty.accreditation] || accreditationConfig.self;
+
+        document.getElementById('propertyTitle').textContent = currentProperty.title;
+        document.getElementById('propertyBreadcrumb').textContent = currentProperty.title;
+        document.getElementById('propertyPrice').textContent = `R${currentProperty.price}`;
+        document.getElementById('propertyDescription').textContent = currentProperty.description;
+        
+        document.getElementById('propertyLocation').textContent = `${currentProperty.location.city}, ${currentProperty.location.state}`;
+        document.getElementById('propertyFullAddress').textContent = `${currentProperty.location.address}, ${currentProperty.location.city}, ${currentProperty.location.state} ${currentProperty.location.zipCode}`;
+        
+        document.getElementById('bedroomsCount').textContent = currentProperty.bedrooms;
+        document.getElementById('bathroomsCount').textContent = currentProperty.bathrooms;
+        
+        document.getElementById('propertyTypeBadge').textContent = currentProperty.propertyType;
+        document.getElementById('propertyType').textContent = currentProperty.propertyType;
+        
+        const statusBadge = document.getElementById('propertyStatusBadge');
+        statusBadge.textContent = statusInfo.text;
+        statusBadge.className = `badge bg-${statusInfo.class}`;
+        
+        const genderBadge = document.getElementById('propertyGenderBadge');
+        genderBadge.textContent = genderInfo.text;
+        genderBadge.className = `badge bg-${genderInfo.class}`;
+        document.getElementById('propertyGender').textContent = genderInfo.text === 'Unisex' ? 'Any Gender' : genderInfo.text + ' Only';
+        
+        const accreditationBadge = document.getElementById('propertyAccreditationBadge');
+        accreditationBadge.textContent = accreditationInfo.text;
+        accreditationBadge.className = `badge bg-${accreditationInfo.class}`;
+        document.getElementById('propertyAccreditation').textContent = accreditationInfo.text === 'Accredited' ? 'University Accredited' : 'Private Accommodation';
+        
+        updateImageGallery();
+        updateAmenitiesDisplay();
+        updateLandlordDisplay();
+        updateReviewsDisplay();
+        updateBookingButton(propertyStatus);
+        updateLocationMap();
+
+         // === ADD THIS LINE HERE ===
+    setTimeout(() => {
+        updateVisibleReviewsCount();
+    }, 500);
+    // ==========================
+    }
+
+    function updateLocationMap() {
+        const mapContainer = document.getElementById('propertyMap');
+        
+        if (!currentProperty.location) {
+            mapContainer.innerHTML = `
+                <div class="map-error">
+                    <i class="bi bi-exclamation-triangle display-4 mb-2"></i>
+                    <p class="mb-1">Location not available</p>
+                    <small class="text-muted">Address details missing</small>
+                </div>
+            `;
+            return;
+        }
+
+        const location = currentProperty.location;
+        const address = `${location.address}, ${location.city}, ${location.state}`;
+        
+        // Create a simple static map using Google Maps Static API
+        const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(address)}&zoom=15&size=600x400&markers=color:blue%7C${encodeURIComponent(address)}&key=YOUR_GOOGLE_MAPS_API_KEY`;
+        
+        mapContainer.innerHTML = `
+            <img src="${staticMapUrl}" alt="Property Location" style="width: 100%; height: 100%; object-fit: cover;" 
+                 onclick="openGoogleMaps()" style="cursor: pointer;">
+            <div class="map-controls">
+                <button class="btn btn-sm btn-light" onclick="openGoogleMaps()" title="Open in Google Maps">
+                    <i class="bi bi-arrow-up-right"></i>
+                </button>
+            </div>
+        `;
+    }
+
+    function openGoogleMaps() {
+        if (!currentProperty.location) {
+            showToast('Location data not available', 'error');
+            return;
+        }
+
+        const location = currentProperty.location;
+        const address = encodeURIComponent(`${location.address}, ${location.city}, ${location.state} ${location.zipCode}`);
+        const url = `https://www.google.com/maps/search/?api=1&query=${address}`;
+        window.open(url, '_blank');
+    }
+
+    function updateBookingButton(propertyStatus) {
+        const bookingBtn = document.querySelector('.btn-primary.action-btn');
+        if (!bookingBtn) return;
+
+        if (propertyStatus === 'available') {
+            bookingBtn.disabled = false;
+            bookingBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request to Book';
+            bookingBtn.style.opacity = '1';
+        } else if (propertyStatus === 'occupied') {
+            bookingBtn.disabled = true;
+            bookingBtn.innerHTML = '<i class="bi bi-person-check me-2"></i>Fully Booked';
+            bookingBtn.style.opacity = '0.6';
+        } else if (propertyStatus === 'maintenance') {
+            bookingBtn.disabled = true;
+            bookingBtn.innerHTML = '<i class="bi bi-tools me-2"></i>Under Maintenance';
+            bookingBtn.style.opacity = '0.6';
+        }
+    }
+
+    function updateImageGallery() {
+        const gallery = document.getElementById('propertyImageGallery');
+        const thumbnails = document.getElementById('propertyThumbnails');
+        
+        const images = currentProperty.images && currentProperty.images.length > 0 
+            ? currentProperty.images 
+            : ['https://via.placeholder.com/800x400?text=Property+Image'];
+        
+        gallery.innerHTML = `
+            <img src="${images[0]}" class="main-image" alt="${currentProperty.title}" id="mainPropertyImage">
+        `;
+        
+        thumbnails.innerHTML = images.map((image, index) => `
+            <img src="${image}" class="thumbnail ${index === 0 ? 'active' : ''}" 
+                alt="Thumbnail ${index + 1}" 
+                onclick="changeMainImage('${image}', this)">
+        `).join('');
+    }
+
+    function changeMainImage(imageSrc, element) {
+        document.getElementById('mainPropertyImage').src = imageSrc;
+        
+        document.querySelectorAll('.thumbnail').forEach(thumb => {
+            thumb.classList.remove('active');
+        });
+        element.classList.add('active');
+    }
+
+    function updateAmenitiesDisplay() {
+        const amenitiesContainer = document.getElementById('propertyAmenities');
+        const amenities = currentProperty.amenities || [];
+        
+        if (amenities.length === 0) {
+            amenitiesContainer.innerHTML = '<p class="text-muted">No amenities listed</p>';
+            return;
+        }
+        
+        amenitiesContainer.innerHTML = amenities.map(amenity => `
+            <span class="amenity-badge">
+                <i class="bi bi-${getAmenityIcon(amenity)}"></i>
+                ${amenity.charAt(0).toUpperCase() + amenity.slice(1)}
+            </span>
+        `).join('');
+    }
+
+    function getAmenityIcon(amenity) {
+        const icons = {
+            wifi: 'wifi',
+            parking: 'car-front',
+            laundry: 'droplet',
+            furnished: 'house',
+            gym: 'activity',
+            pool: 'water',
+            ac: 'snow',
+            heating: 'thermometer-sun',
+            shuttle: 'bus-front',
+            cctv: 'camera-video'
+        };
+        return icons[amenity] || 'check';
+    }
+
+    function updateLandlordDisplay() {
+        if (!currentLandlord) return;
+        
+        document.getElementById('landlordName').textContent = 
+            `${currentLandlord.firstName} ${currentLandlord.lastName}`;
+        document.getElementById('landlordAvatar').src = currentLandlord.avatar || 'https://via.placeholder.com/80';
+        
+        if (!currentLandlord.isVerified) {
+            document.getElementById('landlordVerified').className = 'badge bg-warning';
+            document.getElementById('landlordVerified').innerHTML = '<i class="bi bi-clock me-1"></i>Pending Verification';
+        }
+    }
+
+    function updateRoomsDisplay() {
+        const roomsContainer = document.getElementById('propertyRooms');
+        
+        if (propertyRooms.length === 0) {
+            roomsContainer.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="bi bi-door-closed display-4 text-muted mb-3"></i>
+                    <p class="text-muted">No room details available</p>
+                    <small>Contact the landlord for room availability</small>
+                </div>
+            `;
+            return;
+        }
+        
+        roomsContainer.innerHTML = propertyRooms.map(room => `
+            <div class="col-md-6 mb-4">
+                <div class="room-card ${room.isAvailable ? 'border-success' : 'border-warning'}">
+                    <div class="row g-0">
+                        <div class="col-md-5">
+                            <img src="${room.images && room.images.length > 0 ? room.images[0] : 'https://via.placeholder.com/300x200?text=Room+Image'}" 
+                                class="room-image" alt="${room.roomNumber || room.roomType}"
+                                onclick="openRoomGallery('${room._id}')" style="cursor: pointer;">
+                        </div>
+                        <div class="col-md-7">
+                            <div class="p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="text-navy mb-0">${room.roomNumber ? room.roomNumber + ' - ' : ''}${roomTypeConfig[room.roomType]?.text || room.roomType}</h5>
+                                    <span class="badge bg-${room.isAvailable ? 'success' : 'warning'}">
+                                        <i class="bi ${room.isAvailable ? 'bi-check-circle' : 'bi-person-check'} me-1"></i>
+                                        ${room.isAvailable ? 'Available' : 'Occupied'}
+                                    </span>
+                                </div>
+                                
+                                <p class="text-muted small mb-2">${room.description || 'Comfortable room with essential amenities'}</p>
+                                
+                                <div class="mb-2">
+                                    ${room.features && room.features.slice(0, 3).map(feature => `
+                                        <span class="badge bg-light text-dark me-1 small">${feature.replace('-', ' ')}</span>
+                                    `).join('')}
+                                    ${room.features && room.features.length > 3 ? `<span class="badge bg-light text-dark small">+${room.features.length - 3}</span>` : ''}
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <span class="text-muted small me-3"><i class="bi bi-arrows-fullscreen me-1"></i>${room.size || 'Standard size'}</span>
+                                        <span class="text-muted small"><i class="bi bi-${roomTypeConfig[room.roomType]?.icon || 'door-closed'} me-1"></i>${roomTypeConfig[room.roomType]?.text || room.roomType}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong class="text-primary">R${room.price}/month</strong>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-outline-primary btn-sm" onclick="viewRoomDetails('${room._id}')">
+                                            <i class="bi bi-eye me-1"></i>Details
+                                        </button>
+                                        ${room.isAvailable ? `
+                                            <button class="btn btn-primary btn-sm ms-1" onclick="bookSpecificRoom('${room._id}')">
+                                                <i class="bi bi-calendar-check me-1"></i>Book
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                
+                                ${!room.isAvailable && room.occupant ? `
+                                    <div class="mt-2 p-2 bg-light rounded small">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Currently occupied${room.occupant.name ? ` by ${room.occupant.name}` : ''}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function updateReviewsDisplay() {
+        const averageRating = propertyReviews.length > 0 
+            ? (propertyReviews.reduce((sum, review) => sum + (review.rating || 0), 0) / propertyReviews.length).toFixed(1)
+            : '0.0';
+        
+        const reviewCount = propertyReviews.length;
+        
+        document.getElementById('averageRating').textContent = averageRating;
+        document.getElementById('reviewCount').textContent = `${reviewCount} review${reviewCount !== 1 ? 's' : ''}`;
+        
+        document.getElementById('averageRatingStars').innerHTML = generateStarRating(parseFloat(averageRating));
+        
+        updateRatingBreakdown();
+        updateReviewsList();
+    }
+
+    function generateStarRating(rating) {
+        let stars = '';
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+        
+        for (let i = 1; i <= 5; i++) {
+            if (i <= fullStars) {
+                stars += '<i class="bi bi-star-fill"></i>';
+            } else if (i === fullStars + 1 && hasHalfStar) {
+                stars += '<i class="bi bi-star-half"></i>';
+            } else {
+                stars += '<i class="bi bi-star"></i>';
+            }
+        }
+        return stars;
+    }
+
+    function updateRatingBreakdown() {
+        const breakdownContainer = document.getElementById('ratingBreakdown');
+        const ratings = [5, 4, 3, 2, 1];
+        
+        breakdownContainer.innerHTML = ratings.map(stars => {
+            const count = propertyReviews.filter(review => Math.floor(review.rating) === stars).length;
+            const percentage = propertyReviews.length > 0 ? (count / propertyReviews.length) * 100 : 0;
+            
+            return `
+                <div class="row align-items-center mb-1">
+                    <div class="col-2">
+                        <small>${stars} stars</small>
+                    </div>
+                    <div class="col-8">
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-warning" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                    <div class="col-2 text-end">
+                        <small class="text-muted">${count}</small>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function updateReviewsList() {
+    const reviewsContainer = document.getElementById('propertyReviews');
+    const visibleCountElement = document.getElementById('visibleReviewsCount');
+    const totalCountElement = document.getElementById('totalReviewsCount');
+    const scrollIndicator = document.getElementById('scrollIndicator');
+    
+    const totalReviews = propertyReviews.length;
+    totalCountElement.textContent = totalReviews;
+    
+    if (!propertyReviews || propertyReviews.length === 0) {
+        reviewsContainer.innerHTML = `
+            <div class="text-center py-4">
+                <i class="bi bi-chat-square-text display-4 text-muted mb-3"></i>
+                <p class="text-muted">No reviews yet</p>
+                <small>Be the first to review this property</small>
+            </div>
+        `;
+        visibleCountElement.textContent = '0';
+        scrollIndicator.style.display = 'none';
+        return;
+    }
+    
+    // Show all reviews in the scrollable container
+    reviewsContainer.innerHTML = propertyReviews.map((review, index) => {
+        const reviewDate = review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Recently';
+        const studentName = review.student?.username || review.student?.firstName || 'Anonymous';
+        
+        const landlordResponse = review.landlordResponse;
+        const hasLandlordResponse = landlordResponse && landlordResponse.comment;
+        const responseDate = hasLandlordResponse && landlordResponse.respondedAt ? 
+            new Date(landlordResponse.respondedAt).toLocaleDateString() : 'Recently';
+        
+        return `
+        <div class="review-card" data-review-index="${index}">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                    <h6 class="mb-1">${review.title || 'No Title'}</h6>
+                    <div class="rating-stars small">
+                        ${generateStarRating(review.rating || 0)}
+                    </div>
+                </div>
+                <small class="text-muted">${reviewDate}</small>
+            </div>
+            <p class="mb-2">${review.comment || 'No comment provided'}</p>
+            <div class="d-flex flex-wrap gap-2 small mb-3">
+                <span class="text-muted">By: ${studentName}</span>
+                ${review.isRecommended ? '<span class="text-success"><i class="bi bi-check-circle me-1"></i>Recommended</span>' : ''}
+                
+                ${review.cleanliness ? `<span class="text-muted"><i class="bi bi-bucket me-1"></i>Cleanliness: ${review.cleanliness}/5</span>` : ''}
+                ${review.location ? `<span class="text-muted"><i class="bi bi-geo-alt me-1"></i>Location: ${review.location}/5</span>` : ''}
+                ${review.value ? `<span class="text-muted"><i class="bi bi-currency-dollar me-1"></i>Value: ${review.value}/5</span>` : ''}
+            </div>
+            
+            ${hasLandlordResponse ? `
+                <div class="landlord-response bg-light rounded p-3 mt-3 border-start border-3 border-primary">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong class="text-primary">
+                            <i class="bi bi-patch-check-fill me-1"></i>Landlord's Response
+                        </strong>
+                        <small class="text-muted">${responseDate}</small>
+                    </div>
+                    <p class="mb-0 text-dark">${landlordResponse.comment}</p>
+                </div>
+            ` : ''}
+        </div>
+        `}).join('');
+    
+    // Update visible reviews count (initially shows about 2-3 reviews)
+    updateVisibleReviewsCount();
+    
+    // Show scroll indicator if there are more than 3 reviews
+    if (totalReviews > 3) {
+        scrollIndicator.style.display = 'block';
+    } else {
+        scrollIndicator.style.display = 'none';
+    }
+    
+    // Add scroll event listener to update visible count
+    const reviewsContainerElement = document.querySelector('.reviews-container');
+    if (reviewsContainerElement) {
+        reviewsContainerElement.addEventListener('scroll', updateVisibleReviewsCount);
+    }
+}
+
+// Add this new function to calculate visible reviews
+function updateVisibleReviewsCount() {
+    const reviewsContainer = document.querySelector('.reviews-container');
+    const reviewCards = document.querySelectorAll('.review-card');
+    const visibleCountElement = document.getElementById('visibleReviewsCount');
+    
+    if (!reviewsContainer || reviewCards.length === 0) {
+        visibleCountElement.textContent = '0';
+        return;
+    }
+    
+    const containerRect = reviewsContainer.getBoundingClientRect();
+    let visibleCount = 0;
+    
+    reviewCards.forEach(card => {
+        const cardRect = card.getBoundingClientRect();
+        // Check if at least 50% of the card is visible
+        if (cardRect.top <= containerRect.bottom - (cardRect.height * 0.5)) {
+            visibleCount++;
+        }
+    });
+    
+    visibleCountElement.textContent = Math.min(visibleCount, reviewCards.length);
+}
+
+    // ============ HELPER FUNCTIONS ============
+
+    function getPropertyStatus(property) {
+        if (property.availability) {
+            return property.availability;
+        }
+        if (property.status) {
+            return property.status === 'approved' ? 'available' : 'occupied';
+        }
+        if (property.isAvailable !== undefined) {
+            return property.isAvailable ? 'available' : 'occupied';
+        }
+        return 'available';
+    }
+
+    function getAdminStatus(property) {
+        if (property.status) {
+            return property.status;
+        }
+        return 'approved';
+    }
+
+    function showToast(message, type = 'info') {
+        const toastContainer = document.querySelector('.toast-container');
+        const toastId = 'toast-' + Date.now();
+        
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-bg-${type} border-0`;
+        toast.id = toastId;
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
+        });
+    }
+
+    // ============ INTERACTION FUNCTIONS ============
+
+    function filterRooms(status) {
+        const roomCards = document.querySelectorAll('.room-card');
+        roomCards.forEach(room => {
+            const isAvailable = room.classList.contains('border-success');
+            const shouldShow = 
+                status === 'all' ||
+                (status === 'available' && isAvailable) ||
+                (status === 'occupied' && !isAvailable);
+            
+            room.parentElement.style.display = shouldShow ? 'block' : 'none';
+        });
+    }
+
+    function bookSpecificRoom(roomId) {
+        const room = propertyRooms.find(r => r._id === roomId);
+        if (room) {
+            window.location.href = `booking.html?propertyId=${currentProperty._id}&roomId=${roomId}&roomPrice=${room.price}`;
+        }
+    }
+
+    function checkUserCanReview() {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        
+        if (user.role !== 'student') {
+            disableReviewButton('Only students can write reviews');
+            return;
+        }
+
+        const userHasReviewed = propertyReviews.some(review => {
+            const reviewStudentId = review.student?._id || review.student;
+            const currentUserId = user._id || user.id;
+            return reviewStudentId === currentUserId;
+        });
+
+        if (userHasReviewed) {
+            disableReviewButton('You have already reviewed this property');
+        } else {
+            enableReviewButton();
+        }
+    }
+
+    function enableReviewButton() {
+        const reviewBtn = document.getElementById('writeReviewBtn');
+        if (reviewBtn) {
+            reviewBtn.disabled = false;
+            reviewBtn.innerHTML = '<i class="bi bi-pencil-square me-2"></i>Write Review';
+            reviewBtn.style.opacity = '1';
+        }
+    }
+
+    function disableReviewButton(message) {
+        const reviewBtn = document.getElementById('writeReviewBtn');
+        if (reviewBtn) {
+            reviewBtn.disabled = true;
+            reviewBtn.innerHTML = `<i class="bi bi-check-circle me-2"></i>${message}`;
+            reviewBtn.style.opacity = '0.6';
+        }
+    }
+
+    async function loadUserBookings() {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                userBookings = (data.bookings || []).filter(booking => 
+                    booking.property?._id === currentProperty._id
+                );
+                updateBookingSelection();
+            } else {
+                userBookings = [];
+                updateBookingSelection();
+            }
+        } catch (error) {
+            console.error('Error loading user bookings:', error);
+            userBookings = [];
+            updateBookingSelection();
+        }
+    }
+
+    function updateBookingSelection() {
+        const bookingSelect = document.getElementById('reviewBookingId');
+        const bookingSection = document.getElementById('bookingSelectionSection');
+        
+        if (!bookingSelect || !bookingSection) return;
+        
+        if (userBookings.length === 0) {
+            bookingSection.style.display = 'none';
+            bookingSelect.innerHTML = '<option value="">General review</option>';
+        } else {
+            bookingSection.style.display = 'block';
+            bookingSelect.innerHTML = '<option value="">General review (not tied to booking)</option>' +
+                userBookings.map(booking => {
+                    const status = booking.status || 'unknown';
+                    const checkIn = new Date(booking.checkIn).toLocaleDateString();
+                    const checkOut = new Date(booking.checkOut).toLocaleDateString();
+                    return `
+                        <option value="${booking._id}">
+                            ${status === 'completed' ? '✅' : '📅'} 
+                            Booking (${status}) - 
+                            ${checkIn} to ${checkOut}
+                        </option>
+                    `;
+                }).join('');
+        }
+    }
+
+    function showReviewForm() {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        
+        if (user.role !== 'student') {
+            showToast('Only students can write reviews', 'error');
+            return;
+        }
+        
+        const userHasReviewed = propertyReviews.some(review => {
+            const reviewStudentId = review.student?._id || review.student;
+            const currentUserId = user._id || user.id;
+            return reviewStudentId === currentUserId;
+        });
+        
+        if (userHasReviewed) {
+            showToast('You have already reviewed this property', 'error');
+            return;
+        }
+        
+        document.getElementById('reviewPropertyId').value = currentProperty._id;
+        
+        loadUserBookings().then(() => {
+            document.getElementById('reviewFormSection').style.display = 'block';
+            document.getElementById('reviewFormSection').scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+
+    function hideReviewForm() {
+        document.getElementById('reviewFormSection').style.display = 'none';
+    }
+
+    async function submitReview() {
+        const bookingId = document.getElementById('reviewBookingId').value;
+        const propertyId = currentProperty._id;
+        const rating = parseInt(document.getElementById('reviewRating').value);
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        
+        if (!rating) {
+            showToast('Please select a rating by clicking on the stars', 'error');
+            return;
+        }
+        
+        const title = document.getElementById('reviewTitle').value.trim();
+        if (!title) {
+            showToast('Please enter a review title', 'error');
+            return;
+        }
+        
+        const comment = document.getElementById('reviewComment').value.trim();
+        if (!comment || comment.length < 10) {
+            showToast('Please enter a review comment (at least 10 characters)', 'error');
+            return;
+        }
+        
+        const userHasReviewed = propertyReviews.some(review => {
+            const reviewStudentId = review.student?._id || review.student;
+            const currentUserId = user._id || user.id;
+            return reviewStudentId === currentUserId;
+        });
+        
+        if (userHasReviewed) {
+            showToast('You have already reviewed this property. Please refresh the page.', 'error');
+            return;
+        }
+        
+        const reviewData = {
+            propertyId: propertyId,
+            rating: rating,
+            title: title,
+            comment: comment,
+            cleanliness: parseInt(document.getElementById('cleanlinessRating').value),
+            location: parseInt(document.getElementById('locationRating').value),
+            value: parseInt(document.getElementById('valueRating').value),
+            isRecommended: document.getElementById('recommendProperty').checked
+        };
+        
+        if (bookingId && bookingId.trim() !== '') {
+            reviewData.bookingId = bookingId;
+        }
+        
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/reviews`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(reviewData)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                showToast('Review submitted successfully!', 'success');
+                document.getElementById('reviewForm').reset();
+                document.querySelectorAll('#reviewStarRating .bi').forEach(star => {
+                    star.classList.remove('active', 'bi-star-fill');
+                    star.classList.add('bi-star');
+                });
+                hideReviewForm();
+                
+                disableReviewButton('You have already reviewed this property');
+                
+                await loadPropertyReviews(currentProperty._id);
+                updateReviewsDisplay();
+                
+            } else {
+                if (result.error) {
+                    throw new Error(result.error);
+                } else {
+                    throw new Error('Failed to submit review');
+                }
+            }
+        } catch (error) {
+            console.error('Error submitting review:', error);
+            showToast('Failed to submit review: ' + error.message, 'error');
+        }
+    }
+
+    function reportProperty() {
+        if (!currentProperty || !currentLandlord) return;
+        
+        const reportUrl = new URL('my-reports.html', window.location.origin);
+        reportUrl.searchParams.set('property', currentProperty.title);
+        reportUrl.searchParams.set('propertyId', currentProperty._id);
+        reportUrl.searchParams.set('landlord', `${currentLandlord.firstName} ${currentLandlord.lastName}`);
+        reportUrl.searchParams.set('landlordId', currentLandlord._id || currentLandlord.id);
+        
+        window.location.href = reportUrl.toString();
+    }
+
+    function openRoomGallery(roomId) {
+        const room = propertyRooms.find(r => r._id === roomId);
+        if (room) {
+            document.getElementById('roomGalleryTitle').textContent = room.roomNumber || room.roomType;
+            document.getElementById('roomGalleryImage').src = room.images && room.images.length > 0 ? room.images[0] : 'https://via.placeholder.com/400x300?text=Room+Image';
+            
+            const thumbnails = document.getElementById('roomGalleryThumbnails');
+            thumbnails.innerHTML = room.images && room.images.length > 0 ? room.images.map((image, index) => `
+                <img src="${image}" class="thumbnail ${index === 0 ? 'active' : ''}" 
+                    alt="Room thumbnail" 
+                    onclick="changeRoomGalleryImage('${image}', this)">
+            `).join('') : '';
+            
+            new bootstrap.Modal(document.getElementById('roomGalleryModal')).show();
+        }
+    }
+
+    function changeRoomGalleryImage(imageSrc, element) {
+        document.getElementById('roomGalleryImage').src = imageSrc;
+        
+        document.querySelectorAll('#roomGalleryThumbnails .thumbnail').forEach(thumb => {
+            thumb.classList.remove('active');
+        });
+        element.classList.add('active');
+    }
+
+    function viewRoomDetails(roomId) {
+        const room = propertyRooms.find(r => r._id === roomId);
+        if (!room) return;
+
+        document.getElementById('roomDetailsModalLabel').textContent = 
+            room.roomNumber ? `${room.roomNumber} Details` : 'Room Details';
+        
+        document.getElementById('roomDetailsName').textContent = 
+            room.roomNumber ? `${room.roomNumber} - ${roomTypeConfig[room.roomType]?.text || room.roomType}` : 
+            roomTypeConfig[room.roomType]?.text || room.roomType;
+        
+        const statusBadge = document.getElementById('roomDetailsStatus');
+        if (room.isAvailable) {
+            statusBadge.className = 'badge bg-success';
+            statusBadge.innerHTML = '<i class="bi bi-check-circle me-1"></i>Available';
+        } else {
+            statusBadge.className = 'badge bg-warning';
+            statusBadge.innerHTML = '<i class="bi bi-person-check me-1"></i>Occupied';
+        }
+        
+        const typeBadge = document.getElementById('roomDetailsType');
+        typeBadge.textContent = roomTypeConfig[room.roomType]?.text || room.roomType;
+        
+        document.getElementById('roomDetailsPrice').textContent = `R${room.price}`;
+        document.getElementById('roomDetailsSize').textContent = room.size || 'Standard size';
+        document.getElementById('roomDetailsRoomType').textContent = 
+            roomTypeConfig[room.roomType]?.text || room.roomType;
+        document.getElementById('roomDetailsDescription').textContent = 
+            room.description || 'Comfortable room with essential amenities and furniture.';
+        
+        const featuresContainer = document.getElementById('roomDetailsFeatures');
+        const features = room.features || ['single-bed', 'desk', 'wardrobe', 'window'];
+        featuresContainer.innerHTML = features.map(feature => `
+            <span class="feature-badge-sm">
+                <i class="bi bi-check-lg"></i>
+                ${feature.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            </span>
+        `).join('');
+        
+        const carouselInner = document.getElementById('roomDetailsCarouselInner');
+        const images = room.images && room.images.length > 0 
+            ? room.images 
+            : ['https://via.placeholder.com/600x400?text=Room+Image'];
+        
+        carouselInner.innerHTML = images.map((image, index) => `
+            <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                <img src="${image}" class="d-block w-100" alt="Room image ${index + 1}">
+            </div>
+        `).join('');
+        
+        const occupantInfo = document.getElementById('roomOccupantInfo');
+        const occupantDetails = document.getElementById('roomOccupantDetails');
+        
+        if (!room.isAvailable && room.occupant) {
+            occupantInfo.style.display = 'block';
+            occupantDetails.textContent = room.occupant.name 
+                ? `Currently occupied by ${room.occupant.name}`
+                : 'Currently occupied';
+        } else {
+            occupantInfo.style.display = 'none';
+        }
+        
+        const bookBtn = document.getElementById('roomDetailsBookBtn');
+        if (room.isAvailable) {
+            bookBtn.style.display = 'block';
+            bookBtn.onclick = () => bookFromRoomDetails(room._id);
+        } else {
+            bookBtn.style.display = 'none';
+        }
+        
+        const roomDetailsModal = new bootstrap.Modal(document.getElementById('roomDetailsModal'));
+        roomDetailsModal.show();
+    }
+
+    function bookFromRoomDetails(roomId) {
+        const room = propertyRooms.find(r => r._id === roomId);
+        if (room) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('roomDetailsModal'));
+            modal.hide();
+            
+            setTimeout(() => {
+                window.location.href = `booking.html?propertyId=${currentProperty._id}&roomId=${roomId}&roomPrice=${room.price}`;
+            }, 300);
+        }
+    }
+
+    function submitBookingRequest() {
+        if (!currentProperty) return;
+        
+        const propertyStatus = getPropertyStatus(currentProperty);
+        if (propertyStatus !== 'available') {
+            let message = 'This property is not available for booking at the moment.';
+            if (propertyStatus === 'occupied') {
+                message = 'This property is currently occupied and not available for booking.';
+            } else if (propertyStatus === 'maintenance') {
+                message = 'This property is under maintenance and not available for booking.';
+            }
+            showToast(message, 'warning');
+            return;
+        }
+        
+        window.location.href = `booking.html?propertyId=${currentProperty._id}`;
+    }
+
+    async function saveToFavorites() {
+        if (!currentProperty) return;
+        
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showToast('Please log in to save favorites', 'error');
+                window.location.href = 'authorization.html';
+                return;
+            }
+
+            const checkResponse = await fetch(`${API_BASE_URL}/favorites/check/${currentProperty._id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (checkResponse.ok) {
+                const checkData = await checkResponse.json();
+                if (checkData.isFavorited) {
+                    showToast('Property already in favorites!', 'info');
+                    return;
+                }
+            }
+
+            const favoriteData = {
+                propertyId: currentProperty._id,
+                priority: 'medium',
+                notes: '',
+                tags: []
+            };
+
+            const response = await fetch(`${API_BASE_URL}/favorites`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(favoriteData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showToast('Added to favorites!', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'my-favorites.html';
+                }, 1500);
+                
+            } else {
+                throw new Error(result.message || 'Failed to add to favorites');
+            }
+        } catch (error) {
+            console.error('Error saving to favorites:', error);
+            showToast('Failed to add to favorites: ' + error.message, 'error');
+        }
+    }
+
+    function shareProperty() {
+        const propertyUrl = window.location.href;
+        if (navigator.share) {
+            navigator.share({
+                title: currentProperty.title,
+                text: 'Check out this property on ResLinQ',
+                url: propertyUrl
+            });
+        } else {
+            navigator.clipboard.writeText(propertyUrl);
+            showToast('Property link copied to clipboard!', 'success');
+        }
+    }
+
+    function contactLandlord() {
+    if (!currentLandlord) {
+        showToast('Landlord information not available', 'error');
+        return;
+    }
+
+    // Try different possible email fields
+    const landlordEmail = currentLandlord.email || 
+                         (currentLandlord.contactInfo && currentLandlord.contactInfo.email) || 
+                         (currentProperty && currentProperty.contactInfo && currentProperty.contactInfo.email);
+
+    if (landlordEmail) {
+        const subject = `Inquiry about ${currentProperty.title}`;
+        const body = `Hello ${currentLandlord.firstName || currentLandlord.username || 'Landlord'},\n\nI am interested in your property "${currentProperty.title}" and would like to get more information.\n\nBest regards,\n[Your Name]`;
+        
+        window.location.href = `mailto:${landlordEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    } else {
+        showToast('Landlord contact information is not available', 'error');
+    }
+}
+
+    function viewLandlordProfile() {
+        if (currentLandlord) {
+            window.location.href = `profile.html?id=${currentLandlord.id || currentLandlord._id}`;
+        }
+    }
+
+    function viewMyFavorites() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showToast('Please log in to view favorites', 'error');
+            window.location.href = 'authorization.html';
+            return;
+        }
+        window.location.href = 'my-favorites.html';
+    }
+
+    async function checkFavoriteStatus() {
+        if (!currentProperty) return;
+        
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            const response = await fetch(`${API_BASE_URL}/favorites/check/${currentProperty._id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                updateFavoriteButton(data.isFavorited);
+            }
+        } catch (error) {
+            console.error('Error checking favorite status:', error);
+        }
+    }
+
+    function updateFavoriteButton(isFavorited) {
+        const favoriteBtn = document.querySelector('button[onclick="saveToFavorites()"]');
+        if (!favoriteBtn) return;
+
+        if (isFavorited) {
+            favoriteBtn.innerHTML = '<i class="bi bi-heart-fill me-2"></i>In Favorites';
+            favoriteBtn.classList.remove('btn-outline-primary');
+            favoriteBtn.classList.add('btn-success');
+            favoriteBtn.onclick = () => {
+                showToast('Already in favorites! View your favorites page.', 'info');
+                setTimeout(() => {
+                    window.location.href = 'my-favorites.html';
+                }, 1000);
+            };
+        } else {
+            favoriteBtn.innerHTML = '<i class="bi bi-heart me-2"></i>Save to Favorites';
+            favoriteBtn.classList.remove('btn-success');
+            favoriteBtn.classList.add('btn-outline-primary');
+            favoriteBtn.onclick = saveToFavorites;
+        }
+    }
+  </script>
+</body>
+</html>

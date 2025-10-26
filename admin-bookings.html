@@ -1,0 +1,1800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bookings Management - ResLinQ Admin</title>
+  
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --success: #059669;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --info: #60a5fa;
+      --light-bg: #f8fafc;
+      --navy: #0b2447;
+      --admin-sidebar: #0f172a;
+    }
+
+    body {
+      background: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .admin-sidebar {
+      background: var(--admin-sidebar);
+      color: white;
+      min-height: 100vh;
+      position: fixed;
+      width: 280px;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+
+    .admin-sidebar.collapsed {
+      width: 80px;
+    }
+
+    .admin-sidebar.collapsed .sidebar-text {
+      display: none;
+    }
+
+    .sidebar-brand {
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      text-align: center;
+    }
+
+    .sidebar-nav {
+      padding: 1rem 0;
+    }
+
+    .nav-item {
+      margin: 0.25rem 1rem;
+    }
+
+    .nav-link {
+      color: rgba(255,255,255,0.8);
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background: rgba(59, 130, 246, 0.1);
+      color: white;
+      border-left: 3px solid var(--primary-light);
+    }
+
+    .admin-main {
+      margin-left: 280px;
+      transition: all 0.3s ease;
+      min-height: 100vh;
+    }
+
+    .admin-main.expanded {
+      margin-left: 80px;
+    }
+
+    .admin-header {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1rem 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .admin-content {
+      padding: 2rem;
+    }
+
+    /* Booking-specific styles */
+    .booking-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      border-left: 4px solid var(--primary);
+      transition: all 0.3s ease;
+      margin-bottom: 1rem;
+    }
+
+    .booking-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+
+    .booking-card.success { border-left-color: var(--success); }
+    .booking-card.warning { border-left-color: var(--warning); }
+    .booking-card.danger { border-left-color: var(--danger); }
+    .booking-card.info { border-left-color: var(--info); }
+
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #e2e8f0;
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -2rem;
+      top: 0.5rem;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-pending { background: #fef3c7; color: #d97706; }
+    .status-confirmed { background: #d1fae5; color: #059669; }
+    .status-cancelled { background: #fee2e2; color: #dc2626; }
+    .status-completed { background: #dbeafe; color: #1d4ed8; }
+
+    .calendar-view {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .calendar-day {
+      border: 1px solid #e2e8f0;
+      padding: 0.5rem;
+      min-height: 100px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .calendar-day:hover {
+      background: #f8fafc;
+    }
+
+    .calendar-day.has-booking {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: var(--primary-light);
+    }
+
+    .calendar-day.today {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: var(--warning);
+    }
+
+    .booking-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      display: inline-block;
+      margin-right: 0.25rem;
+    }
+
+    .calendar-booking {
+      font-size: 0.7rem;
+      background: var(--primary-light);
+      color: white;
+      padding: 0.1rem 0.3rem;
+      border-radius: 0.25rem;
+      margin-top: 0.2rem;
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .data-table {
+      background: white;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .table th {
+      background: #f8fafc;
+      border-bottom: 2px solid #e2e8f0;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--danger);
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* View Toggle */
+    .view-toggle {
+      display: flex;
+      background: #f1f5f9;
+      border-radius: 0.75rem;
+      padding: 0.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .view-toggle-btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      background: transparent;
+      border-radius: 0.5rem;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .view-toggle-btn.active {
+      background: white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Booking Type Badges */
+    .booking-type-badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.5rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    
+    .booking-type-viewing { background: #dbeafe; color: #1d4ed8; }
+    .booking-type-contract { background: #fef3c7; color: #d97706; }
+    .booking-type-both { background: #d1fae5; color: #059669; }
+
+    /* Time Display */
+    .time-display {
+      font-size: 0.875rem;
+      color: #64748b;
+      background: #f8fafc;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* Card View Styles */
+    .booking-card-item {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      border-left: 4px solid var(--primary);
+      margin-bottom: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .booking-card-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+
+    .booking-card-item.pending { border-left-color: var(--warning); }
+    .booking-card-item.confirmed { border-left-color: var(--success); }
+    .booking-card-item.cancelled { border-left-color: var(--danger); }
+    .booking-card-item.completed { border-left-color: var(--info); }
+  </style>
+</head>
+<body>
+
+  <!-- Admin Redirect Check -->
+  <script>
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    if (!token) {
+      alert("Please log in to access admin panel.");
+      window.location.href = "authorization.html";
+    } else if (user.role !== 'admin') {
+      alert("Access denied. Admin privileges required.");
+      window.location.href = "index.html";
+    }
+  </script>
+
+  <!-- Admin Sidebar -->
+  <div class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-brand">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-shield-check text-primary fs-4 me-2"></i>
+          <span class="sidebar-text fs-5 ">ResLinQ Admin</span>
+        </div>
+        <button class="btn btn-sm btn-outline-light" id="sidebarToggle">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="nav-item">
+        <a class="nav-link" href="admin-dashboard.html">
+          <i class="bi bi-speedometer2"></i>
+          <span class="sidebar-text">Dashboard</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-users.html">
+          <i class="bi bi-people"></i>
+          <span class="sidebar-text">Users</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-properties.html">
+          <i class="bi bi-houses"></i>
+          <span class="sidebar-text">Properties</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link active" href="admin-bookings.html">
+          <i class="bi bi-calendar-check"></i>
+          <span class="sidebar-text">Bookings</span>
+          <span class="notification-badge" id="sidebarNotificationBadge">0</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-reports.html">
+          <i class="bi bi-flag"></i>
+          <span class="sidebar-text">Reports</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-reviews.html">
+          <i class="bi bi-star"></i>
+          <span class="sidebar-text">Reviews</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-verification.html">
+          <i class="bi bi-patch-check"></i>
+          <span class="sidebar-text">Verification</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-messages.html">
+          <i class="bi bi-chat-dots"></i>
+          <span class="sidebar-text">Messages</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link " href="admin-payments.html">
+          <i class="bi bi-credit-card"></i>
+          <span class="sidebar-text">Payments</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-settings.html">
+          <i class="bi bi-gear"></i>
+          <span class="sidebar-text">Settings</span>
+        </a>
+      </div>
+      
+      <div class="nav-item mt-4">
+        <a class="nav-link text-warning" href="admin-login.html">
+          <i class="bi bi-box-arrow-right"></i>
+          <span class="sidebar-text">Logout</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="admin-main" id="adminMain">
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h4 class="fw-bold mb-0">Bookings Management</h4>
+          <small class="text-muted">Monitor and manage accommodation bookings</small>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn btn-primary" onclick="exportBookings()">
+            <i class="bi bi-download me-2"></i>Export Bookings
+          </button>
+          <div class="dropdown">
+            <button class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" id="alertsDropdown">
+              <i class="bi bi-bell"></i>
+              <span class="notification-badge" id="headerNotificationBadge">0</span>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end" id="alertsDropdownMenu">
+              <h6 class="dropdown-header">Booking Alerts</h6>
+              <div id="alertsContent">
+                <!-- Alerts will be populated here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="admin-content">
+      <!-- Stats Overview -->
+      <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="booking-card">
+            <div class="d-flex align-items-center">
+              <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                <i class="bi bi-calendar-week text-primary fs-4"></i>
+              </div>
+              <div>
+                <h3 class="fw-bold mb-0" id="totalBookings">0</h3>
+                <p class="text-muted mb-0">Total Bookings</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="booking-card warning">
+            <div class="d-flex align-items-center">
+              <div class="bg-warning bg-opacity-10 rounded-circle p-3 me-3">
+                <i class="bi bi-clock text-warning fs-4"></i>
+              </div>
+              <div>
+                <h3 class="fw-bold mb-0" id="pendingBookings">0</h3>
+                <p class="text-muted mb-0">Pending</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="booking-card success">
+            <div class="d-flex align-items-center">
+              <div class="bg-success bg-opacity-10 rounded-circle p-3 me-3">
+                <i class="bi bi-check-circle text-success fs-4"></i>
+              </div>
+              <div>
+                <h3 class="fw-bold mb-0" id="confirmedBookings">0</h3>
+                <p class="text-muted mb-0">Confirmed</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="booking-card info">
+            <div class="d-flex align-items-center">
+              <div class="bg-info bg-opacity-10 rounded-circle p-3 me-3">
+                <i class="bi bi-calendar-event text-info fs-4"></i>
+              </div>
+              <div>
+                <h3 class="fw-bold mb-0" id="upcomingBookings">0</h3>
+                <p class="text-muted mb-0">Upcoming Today</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View Toggle and Filters -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="view-toggle">
+              <button class="view-toggle-btn active" onclick="switchView('table')">
+                <i class="bi bi-list-ul me-2"></i>Table View
+              </button>
+              <button class="view-toggle-btn" onclick="switchView('calendar')">
+                <i class="bi bi-calendar3 me-2"></i>Calendar View
+              </button>
+              <button class="view-toggle-btn" onclick="switchView('cards')">
+                <i class="bi bi-grid-3x3 me-2"></i>Card View
+              </button>
+            </div>
+            <div class="d-flex gap-2">
+              <input type="date" class="form-control" id="dateFilter" style="width: auto;">
+              <select class="form-select" id="statusFilter" style="width: auto;">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table View -->
+      <div class="row" id="tableView">
+        <div class="col-12">
+          <div class="data-table">
+            <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+              <h5 class="fw-bold mb-0">Recent Bookings</h5>
+              <div class="d-flex gap-2">
+                <input type="text" class="form-control form-control-sm" placeholder="Search bookings..." id="searchInput" style="width: 200px;">
+                <button class="btn btn-sm btn-primary" onclick="filterBookings()">
+                  <i class="bi bi-search"></i>
+                </button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead>
+                  <tr>
+                    <th>Booking ID</th>
+                    <th>Property</th>
+                    <th>Student</th>
+                    <th>Date & Time</th>
+                    <th>Booking Type</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="bookingsTable">
+                  <tr>
+                    <td colspan="7" class="text-center py-4">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading bookings...</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar View -->
+      <div class="row d-none" id="calendarView">
+        <div class="col-12">
+          <div class="calendar-view">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h5 class="fw-bold mb-0" id="calendarMonth">December 2024</h5>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-primary" onclick="changeMonth(-1)">
+                  <i class="bi bi-chevron-left"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-primary" onclick="changeMonth(1)">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+            <div class="row" id="calendarGrid">
+              <!-- Calendar will be generated here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card View -->
+      <div class="row d-none" id="cardView">
+        <div class="col-12">
+          <div class="row" id="bookingsCards">
+            <!-- Booking cards will be loaded here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="data-table">
+            <div class="p-3 border-bottom">
+              <h5 class="fw-bold mb-0">Recent Activity</h5>
+            </div>
+            <div class="p-4">
+              <div class="timeline" id="bookingTimeline">
+                <!-- Real activity will be loaded here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Booking Details Modal -->
+  <div class="modal fade" id="bookingModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Booking Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="bookingDetails">
+          <!-- Booking details will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Global variables
+    let currentView = 'table';
+    let currentMonth = new Date();
+    let allBookings = [];
+    let filteredBookings = [];
+    let recentActivity = [];
+    const API_BASE_URL = 'https://linqs-backend.onrender.com/api';
+
+    // Sidebar Toggle
+    document.getElementById('sidebarToggle').addEventListener('click', function() {
+      document.getElementById('adminSidebar').classList.toggle('collapsed');
+      document.getElementById('adminMain').classList.toggle('expanded');
+    });
+
+    // View Management
+    function switchView(view) {
+      currentView = view;
+      
+      // Update toggle buttons
+      document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      // Show/hide views
+      document.getElementById('tableView').classList.add('d-none');
+      document.getElementById('calendarView').classList.add('d-none');
+      document.getElementById('cardView').classList.add('d-none');
+      
+      document.getElementById(view + 'View').classList.remove('d-none');
+
+      if (view === 'calendar') {
+        generateCalendar();
+      } else if (view === 'cards') {
+        loadCardView();
+      }
+    }
+
+    // Load bookings from admin endpoint
+    async function loadBookings() {
+      try {
+        console.log('Loading admin bookings...');
+        
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/admin/bookings`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Server response:', errorText);
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Admin bookings data:', data);
+        
+        // Handle the admin response format
+        allBookings = data.data?.bookings || data.bookings || [];
+        filteredBookings = [...allBookings];
+        
+        console.log('Processed bookings:', allBookings);
+        
+        displayBookings(allBookings);
+        updateBookingStats(allBookings);
+        updateAlerts(allBookings);
+        updateRecentActivity(allBookings);
+        
+      } catch (error) {
+        console.error('Error loading bookings:', error);
+        showErrorState('Failed to load bookings: ' + error.message);
+      }
+    }
+
+    // Filter bookings based on search and filters
+    function filterBookings() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+      const dateFilter = document.getElementById('dateFilter').value;
+
+      filteredBookings = allBookings.filter(booking => {
+        // Search filter
+        if (searchTerm) {
+          const searchFields = [
+            booking._id,
+            booking.property?.title,
+            booking.student?.username,
+            booking.student?.email,
+            booking.specialRequests
+          ];
+          const matchesSearch = searchFields.some(field => 
+            field && field.toString().toLowerCase().includes(searchTerm)
+          );
+          if (!matchesSearch) return false;
+        }
+
+        // Status filter
+        if (statusFilter && booking.status !== statusFilter) {
+          return false;
+        }
+
+        // Date filter
+        if (dateFilter) {
+          const bookingDate = new Date(booking.checkIn).toISOString().split('T')[0];
+          if (bookingDate !== dateFilter) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+
+      displayBookings(filteredBookings);
+      
+      // Update current view
+      if (currentView === 'calendar') {
+        generateCalendar();
+      } else if (currentView === 'cards') {
+        loadCardView();
+      }
+    }
+
+    function displayBookings(bookings) {
+    const tbody = document.getElementById('bookingsTable');
+    
+    if (!bookings || bookings.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center py-4">
+              <i class="bi bi-calendar-x fs-1 text-muted mb-3 d-block"></i>
+              <p class="text-muted">No bookings found</p>
+              <button class="btn btn-primary btn-sm" onclick="loadBookings()">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+              </button>
+            </td>
+          </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = bookings.map(booking => {
+        // Safe property access with admin format
+        const property = booking.property || {};
+        const student = booking.student || {};
+        
+        const propertyImage = property.images && property.images[0] 
+          ? property.images[0] 
+          : 'https://via.placeholder.com/40';
+        
+        const studentName = student.username || student.firstName 
+          ? `${student.firstName || ''} ${student.surname || ''}`.trim() 
+          : 'Unknown Student';
+        
+        const studentEmail = student.email || 'No email';
+        const propertyName = property.title || 'Unknown Property';
+        const status = booking.status || 'pending';
+        
+        // Extract booking type from special requests
+        const bookingType = extractBookingType(booking.specialRequests);
+        const bookingTypeBadge = getBookingTypeBadge(bookingType);
+        
+        // Format date and time
+        const dateTime = formatBookingDateTime(booking.checkIn);
+
+        // Get initials for avatar
+        const getInitials = (name) => {
+          return name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : '?';
+        };
+
+        // Generate action buttons based on booking status
+        const actionButtons = generateActionButtons(booking);
+
+        return `
+          <tr>
+            <td>
+              <strong>#${booking._id ? booking._id.slice(-6) : 'N/A'}</strong>
+            </td>
+            <td>
+              <div class="d-flex align-items-center">
+                <img src="${propertyImage}" 
+                    class="rounded me-2" width="30" height="30" style="object-fit: cover;"
+                    onerror="this.src='https://via.placeholder.com/40'">
+                <span>${propertyName}</span>
+              </div>
+            </td>
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="student-avatar me-2" style="width: 35px; height: 35px; border-radius: 50%; background: #1e3a8a; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem;">
+                  ${getInitials(studentName)}
+                </div>
+                <div>
+                  <div class="fw-bold small">${studentName}</div>
+                  <small class="text-muted">${studentEmail}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="fw-bold">${dateTime.date}</div>
+              <div class="time-display">${dateTime.time}</div>
+            </td>
+            <td>
+              ${bookingTypeBadge}
+            </td>
+            <td>
+              <span class="status-badge status-${status}">${status}</span>
+            </td>
+            <td>
+              ${actionButtons}
+            </td>
+          </tr>
+        `;
+    }).join('');
+}
+
+
+    // Update booking alerts
+    function updateAlerts(bookings) {
+      const pendingBookings = bookings.filter(b => b.status === 'pending');
+      const today = new Date().toDateString();
+      const upcomingToday = bookings.filter(b => {
+        if (b.status !== 'confirmed') return false;
+        const bookingDate = new Date(b.checkIn).toDateString();
+        return bookingDate === today;
+      });
+
+      const totalAlerts = pendingBookings.length + upcomingToday.length;
+      
+      // Update notification badges
+      document.getElementById('sidebarNotificationBadge').textContent = totalAlerts;
+      document.getElementById('headerNotificationBadge').textContent = totalAlerts;
+      
+      // Update alerts dropdown content
+      const alertsContent = document.getElementById('alertsContent');
+      let alertsHTML = '';
+
+      if (pendingBookings.length > 0) {
+        alertsHTML += `
+          <div class="dropdown-item-text">
+            <small class="text-warning fw-bold">Pending Bookings (${pendingBookings.length})</small>
+          </div>
+        `;
+        pendingBookings.slice(0, 3).forEach(booking => {
+          const studentName = booking.student?.username || 'Unknown Student';
+          const propertyName = booking.property?.title || 'Unknown Property';
+          alertsHTML += `
+            <a class="dropdown-item small" href="#" onclick="viewBooking('${booking._id}')">
+              <i class="bi bi-clock text-warning me-2"></i>
+              ${studentName} - ${propertyName}
+            </a>
+          `;
+        });
+      }
+
+      if (upcomingToday.length > 0) {
+        alertsHTML += `
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item-text">
+            <small class="text-info fw-bold">Upcoming Today (${upcomingToday.length})</small>
+          </div>
+        `;
+        upcomingToday.slice(0, 3).forEach(booking => {
+          const studentName = booking.student?.username || 'Unknown Student';
+          const propertyName = booking.property?.title || 'Unknown Property';
+          const time = new Date(booking.checkIn).toLocaleTimeString('en-ZA', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          });
+          alertsHTML += `
+            <a class="dropdown-item small" href="#" onclick="viewBooking('${booking._id}')">
+              <i class="bi bi-calendar-event text-info me-2"></i>
+              ${time} - ${studentName} - ${propertyName}
+            </a>
+          `;
+        });
+      }
+
+      if (totalAlerts === 0) {
+        alertsHTML = `
+          <div class="dropdown-item-text text-muted">
+            <small>No new alerts</small>
+          </div>
+        `;
+      }
+
+      alertsContent.innerHTML = alertsHTML;
+    }
+
+    // Update recent activity
+    function updateRecentActivity(bookings) {
+      const timeline = document.getElementById('bookingTimeline');
+      
+      // Sort bookings by creation date (newest first) and take latest 5
+      const recentBookings = [...bookings]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5);
+
+      if (recentBookings.length === 0) {
+        timeline.innerHTML = `
+          <div class="text-center text-muted py-4">
+            <i class="bi bi-calendar-x fs-1 mb-3 d-block"></i>
+            <p>No recent activity</p>
+          </div>
+        `;
+        return;
+      }
+
+      timeline.innerHTML = recentBookings.map(booking => {
+        const studentName = booking.student?.username || 'Unknown Student';
+        const propertyName = booking.property?.title || 'Unknown Property';
+        const timeAgo = getTimeAgo(booking.createdAt);
+        const statusConfig = getStatusConfig(booking.status);
+
+        return `
+          <div class="timeline-item">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h6 class="fw-bold mb-1">${statusConfig.action} - ${propertyName}</h6>
+                <p class="text-muted mb-1">${studentName} - ${statusConfig.description}</p>
+                <small class="text-muted">${timeAgo}</small>
+              </div>
+              <span class="status-badge status-${booking.status}">${booking.status}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getStatusConfig(status) {
+      const configs = {
+        pending: { action: 'New Booking Request', description: 'Waiting for confirmation' },
+        confirmed: { action: 'Booking Confirmed', description: 'Viewing scheduled' },
+        cancelled: { action: 'Booking Cancelled', description: 'Booking was cancelled' },
+        completed: { action: 'Booking Completed', description: 'Viewing completed' }
+      };
+      return configs[status] || { action: 'Booking Updated', description: 'Status changed' };
+    }
+
+    function getTimeAgo(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins} minutes ago`;
+      if (diffHours < 24) return `${diffHours} hours ago`;
+      if (diffDays < 7) return `${diffDays} days ago`;
+      return date.toLocaleDateString('en-ZA');
+    }
+
+    // Extract booking type from special requests
+    function extractBookingType(specialRequests) {
+      if (!specialRequests) return 'viewing';
+      
+      const requests = specialRequests.toLowerCase();
+      if (requests.includes('viewing + contract') || requests.includes('viewing and contract')) {
+        return 'both';
+      } else if (requests.includes('contract only') || requests.includes('contract finalization')) {
+        return 'contract';
+      } else {
+        return 'viewing';
+      }
+    }
+
+    // Get booking type badge HTML
+    function getBookingTypeBadge(type) {
+      const types = {
+        'viewing': { class: 'booking-type-viewing', text: 'Viewing Only', icon: 'bi-eye' },
+        'contract': { class: 'booking-type-contract', text: 'Contract Only', icon: 'bi-pen' },
+        'both': { class: 'booking-type-both', text: 'Viewing + Contract', icon: 'bi-house-check' }
+      };
+      
+      const config = types[type] || types['viewing'];
+      return `<span class="booking-type-badge ${config.class}">
+                <i class="${config.icon} me-1"></i>${config.text}
+              </span>`;
+    }
+
+    // Format booking date and time
+    function formatBookingDateTime(dateTimeString) {
+      if (!dateTimeString) return { date: 'N/A', time: 'N/A' };
+      
+      const date = new Date(dateTimeString);
+      const options = { 
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      };
+      
+      return {
+        date: date.toLocaleDateString('en-ZA', options),
+        time: date.toLocaleTimeString('en-ZA', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: false 
+        })
+      };
+    }
+
+    // Update booking statistics
+    function updateBookingStats(bookings) {
+      const totalBookings = bookings.length;
+      const pendingBookings = bookings.filter(b => b.status === 'pending').length;
+      const confirmedBookings = bookings.filter(b => b.status === 'confirmed').length;
+      
+      // Count upcoming bookings for today
+      const today = new Date().toDateString();
+      const upcomingBookings = bookings.filter(b => {
+        if (b.status !== 'confirmed') return false;
+        const bookingDate = new Date(b.checkIn).toDateString();
+        return bookingDate === today;
+      }).length;
+
+      document.getElementById('totalBookings').textContent = totalBookings;
+      document.getElementById('pendingBookings').textContent = pendingBookings;
+      document.getElementById('confirmedBookings').textContent = confirmedBookings;
+      document.getElementById('upcomingBookings').textContent = upcomingBookings;
+    }
+
+    // Generate calendar view with real data
+        // Generate calendar view with real data - FIXED DATE MATCHING
+    function generateCalendar() {
+      const calendarGrid = document.getElementById('calendarGrid');
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      
+      document.getElementById('calendarMonth').textContent = 
+        `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
+
+      // Get first day of month and number of days
+      const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+      const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+      const daysInMonth = lastDay.getDate();
+      const startingDay = firstDay.getDay();
+
+      let calendarHTML = '';
+      
+      // Add empty cells for days before the first day of the month
+      for (let i = 0; i < startingDay; i++) {
+        calendarHTML += `<div class="col-3 col-md-2 col-lg-1 mb-2"></div>`;
+      }
+
+      // Add days of the month
+      const today = new Date();
+      for (let i = 1; i <= daysInMonth; i++) {
+        const currentDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i);
+        
+        // FIXED: Use local date string without timezone conversion
+        const dateString = formatDateToLocalString(currentDate);
+        
+        // Find bookings for this date - FIXED: Use proper date comparison
+        const dayBookings = filteredBookings.filter(booking => {
+          const bookingDate = new Date(booking.checkIn);
+          return isSameDay(bookingDate, currentDate);
+        });
+
+        const isToday = isSameDay(currentDate, today);
+        const hasBooking = dayBookings.length > 0;
+
+        calendarHTML += `
+          <div class="col-3 col-md-2 col-lg-1 mb-2">
+            <div class="calendar-day ${hasBooking ? 'has-booking' : ''} ${isToday ? 'today' : ''}" 
+                 onclick="viewDayBookings('${dateString}')">
+              <div class="fw-bold">${i}</div>
+              ${dayBookings.slice(0, 2).map(booking => {
+                const studentName = booking.student?.username || 'Student';
+                const status = booking.status;
+                return `<div class="calendar-booking" style="background: ${getStatusColorHex(status)}">${studentName}</div>`;
+              }).join('')}
+              ${dayBookings.length > 2 ? `<small class="text-muted">+${dayBookings.length - 2} more</small>` : ''}
+            </div>
+          </div>
+        `;
+      }
+      
+      calendarGrid.innerHTML = calendarHTML;
+    }
+
+    // FIXED: Helper function to check if two dates are the same day (ignoring time)
+    function isSameDay(date1, date2) {
+      return date1.getFullYear() === date2.getFullYear() &&
+             date1.getMonth() === date2.getMonth() &&
+             date1.getDate() === date2.getDate();
+    }
+
+    // FIXED: Format date to local string without timezone issues
+    function formatDateToLocalString(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function getStatusColorHex(status) {
+      const colors = {
+        pending: '#f59e0b',
+        confirmed: '#059669',
+        cancelled: '#dc2626',
+        completed: '#60a5fa'
+      };
+      return colors[status] || '#1e3a8a';
+    }
+
+    // FIXED: View day bookings with proper date handling
+    function viewDayBookings(dateString) {
+      const [year, month, day] = dateString.split('-').map(Number);
+      const targetDate = new Date(year, month - 1, day);
+      
+      const dayBookings = filteredBookings.filter(booking => {
+        const bookingDate = new Date(booking.checkIn);
+        return isSameDay(bookingDate, targetDate);
+      });
+
+      if (dayBookings.length > 0) {
+        const modalContent = `
+          <h6>Bookings for ${targetDate.toLocaleDateString('en-ZA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h6>
+          <div class="mt-3">
+            ${dayBookings.map(booking => {
+              const studentName = booking.student?.username || 'Unknown Student';
+              const propertyName = booking.property?.title || 'Unknown Property';
+              const time = new Date(booking.checkIn).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' });
+              return `
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                  <div>
+                    <strong>${studentName}</strong><br>
+                    <small>${propertyName} - ${time}</small>
+                  </div>
+                  <span class="status-badge status-${booking.status}">${booking.status}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+        document.getElementById('bookingDetails').innerHTML = modalContent;
+        new bootstrap.Modal(document.getElementById('bookingModal')).show();
+      }
+    }
+
+    // Load card view with real data
+    function loadCardView() {
+    const cardsContainer = document.getElementById('bookingsCards');
+    
+    if (filteredBookings.length === 0) {
+        cardsContainer.innerHTML = `
+          <div class="col-12 text-center py-4">
+            <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
+            <p class="text-muted">No bookings found</p>
+          </div>
+        `;
+        return;
+    }
+
+    // NEW: Generate card action buttons based on booking status
+function generateCardActionButtons(booking) {
+    const status = booking.status || 'pending';
+    
+    switch(status) {
+        case 'completed':
+            // For completed bookings: Only show View Details
+            return `
+                <button class="btn btn-sm btn-outline-primary flex-fill" onclick="viewBooking('${booking._id}')">
+                    <i class="bi bi-eye"></i> Details
+                </button>
+            `;
+            
+        case 'confirmed':
+            // For confirmed bookings: Show View Details, Cancel, and Send Reminder
+            return `
+                <button class="btn btn-sm btn-outline-primary flex-fill" onclick="viewBooking('${booking._id}')">
+                    <i class="bi bi-eye"></i> Details
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="updateBookingStatus('${booking._id}', 'cancelled')" title="Cancel Booking">
+                    <i class="bi bi-x"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-info" onclick="sendReminder('${booking._id}')" title="Send Reminder">
+                    <i class="bi bi-bell"></i>
+                </button>
+            `;
+            
+        case 'cancelled':
+            // For cancelled bookings: Only show View Details
+            return `
+                <button class="btn btn-sm btn-outline-primary flex-fill" onclick="viewBooking('${booking._id}')">
+                    <i class="bi bi-eye"></i> Details
+                </button>
+            `;
+            
+        case 'pending':
+        default:
+            // For pending bookings: Show all actions
+            return `
+                <button class="btn btn-sm btn-outline-primary flex-fill" onclick="viewBooking('${booking._id}')">
+                    <i class="bi bi-eye"></i> Details
+                </button>
+                <button class="btn btn-sm btn-outline-success" onclick="updateBookingStatus('${booking._id}', 'confirmed')" title="Confirm Booking">
+                    <i class="bi bi-check"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="updateBookingStatus('${booking._id}', 'cancelled')" title="Cancel Booking">
+                    <i class="bi bi-x"></i>
+                </button>
+            `;
+    }
+}
+
+    cardsContainer.innerHTML = filteredBookings.map(booking => {
+        const property = booking.property || {};
+        const student = booking.student || {};
+        const landlord = booking.landlord || {};
+        
+        const studentName = student.username || 'Unknown Student';
+        const propertyName = property.title || 'Unknown Property';
+        const landlordName = landlord.username || 'Unknown Landlord';
+        const dateTime = formatBookingDateTime(booking.checkIn);
+        const bookingType = extractBookingType(booking.specialRequests);
+
+        // Generate card action buttons based on status
+        const cardActionButtons = generateCardActionButtons(booking);
+
+        return `
+          <div class="col-lg-4 col-md-6 mb-3">
+            <div class="booking-card-item ${booking.status}">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                  <h6 class="fw-bold mb-1">${propertyName}</h6>
+                  <small class="text-muted">${landlordName}</small>
+                </div>
+                <span class="status-badge status-${booking.status}">${booking.status}</span>
+              </div>
+              
+              <div class="d-flex align-items-center mb-2">
+                <div class="student-avatar me-2" style="width: 35px; height: 35px; border-radius: 50%; background: #1e3a8a; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem;">
+                  ${getInitials(studentName)}
+                </div>
+                <div>
+                  <div class="fw-bold small">${studentName}</div>
+                  <small class="text-muted">${student.email || 'No email'}</small>
+                </div>
+              </div>
+              
+              <div class="mb-2">
+                <i class="bi bi-calendar me-2"></i>
+                <strong>${dateTime.date}</strong>
+              </div>
+              <div class="mb-2">
+                <i class="bi bi-clock me-2"></i>
+                <span class="time-display">${dateTime.time}</span>
+              </div>
+              <div class="mb-3">
+                ${getBookingTypeBadge(bookingType)}
+              </div>
+              
+              <div class="d-flex gap-1">
+                ${cardActionButtons}
+              </div>
+            </div>
+          </div>
+        `;
+    }).join('');
+}
+
+    function getInitials(name) {
+      return name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : '?';
+    }
+
+    function changeMonth(direction) {
+      currentMonth.setMonth(currentMonth.getMonth() + direction);
+      generateCalendar();
+    }
+
+    async function updateBookingStatus(bookingId, status) {
+      if (!confirm(`Are you sure you want to ${status} this booking?`)) {
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        
+        // Use admin endpoint for status updates
+        const response = await fetch(`${API_BASE_URL}/admin/bookings/${bookingId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ 
+            status: status,
+            adminNotes: `Status updated to ${status} by administrator`
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update booking status');
+        }
+
+        const data = await response.json();
+        alert('Booking status updated successfully');
+        loadBookings(); // Reload to reflect changes
+        
+      } catch (error) {
+        console.error('Error updating booking status:', error);
+        alert('Error updating booking status: ' + error.message);
+      }
+    }
+
+    function showErrorState(message) {
+      const tbody = document.getElementById('bookingsTable');
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-4">
+            <i class="bi bi-exclamation-triangle fs-1 text-danger mb-3 d-block"></i>
+            <p class="text-danger mb-2">${message}</p>
+            <button class="btn btn-primary btn-sm" onclick="loadBookings()">
+              <i class="bi bi-arrow-clockwise me-1"></i>Try Again
+            </button>
+          </td>
+        </tr>
+      `;
+    }
+
+    async function viewBooking(bookingId) {
+      try {
+        const token = localStorage.getItem('token');
+        
+        // Use admin endpoint for booking details
+        const response = await fetch(`${API_BASE_URL}/admin/bookings/${bookingId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch booking details');
+        }
+
+        const data = await response.json();
+        const booking = data.data?.booking || data.booking || data;
+
+        // Create modal content
+        const modalContent = createBookingModalContent(booking);
+        document.getElementById('bookingDetails').innerHTML = modalContent;
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
+        modal.show();
+        
+      } catch (error) {
+        console.error('Error loading booking details:', error);
+        alert('Failed to load booking details: ' + error.message);
+      }
+    }
+
+    function createBookingModalContent(booking) {
+      const property = booking.property || {};
+      const student = booking.student || {};
+      const landlord = booking.landlord || {};
+
+      // Format date function
+      const formatDateTime = (dateString) => {
+        const date = new Date(dateString);
+        const options = { 
+          weekday: 'short', 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        };
+        return date.toLocaleDateString('en-ZA', options);
+      };
+
+      // Extract booking type
+      const bookingType = extractBookingType(booking.specialRequests);
+      const bookingTypeConfig = {
+        'viewing': { text: 'Viewing Only', description: 'Student wants to view the property' },
+        'contract': { text: 'Contract Only', description: 'Student wants to finalize contract' },
+        'both': { text: 'Viewing + Contract', description: 'Student wants to view and potentially sign contract' }
+      };
+
+      const bookingTypeInfo = bookingTypeConfig[bookingType] || bookingTypeConfig['viewing'];
+
+      return `
+        <div class="row">
+          <div class="col-md-6">
+            <h6>Student Information</h6>
+            <p><strong>Name:</strong> ${student.username || 'Unknown'}</p>
+            <p><strong>Email:</strong> ${student.email || 'No email'}</p>
+            <p><strong>Phone:</strong> ${student.phone || 'No phone'}</p>
+            ${student.university ? `<p><strong>University:</strong> ${student.university}</p>` : ''}
+            ${student.course ? `<p><strong>Course:</strong> ${student.course}</p>` : ''}
+          </div>
+          <div class="col-md-6">
+            <h6>Property Information</h6>
+            <p><strong>Property:</strong> ${property.title || 'Unknown'}</p>
+            <p><strong>Landlord:</strong> ${landlord.username || 'Unknown'}</p>
+            <p><strong>Location:</strong> ${property.location?.address || 'No address'}</p>
+            <p><strong>Price:</strong> R${property.price || 0}/month</p>
+          </div>
+        </div>
+        <div class="row mt-3">
+          <div class="col-md-6">
+            <h6>Booking Details</h6>
+            <p><strong>Date & Time:</strong> ${booking.checkIn ? formatDateTime(booking.checkIn) : 'N/A'}</p>
+            <p><strong>Duration:</strong> ${booking.duration || '2 hours (estimated)'}</p>
+            <p><strong>Booking Type:</strong> ${bookingTypeInfo.text}</p>
+            <p><strong>Description:</strong> ${bookingTypeInfo.description}</p>
+          </div>
+          <div class="col-md-6">
+            <h6>Status & Information</h6>
+            <p><strong>Status:</strong> <span class="badge bg-${getStatusColor(booking.status)}">${booking.status || 'pending'}</span></p>
+            <p><strong>Created:</strong> ${booking.createdAt ? formatDateTime(booking.createdAt) : 'N/A'}</p>
+            <p><strong>Last Updated:</strong> ${booking.updatedAt ? formatDateTime(booking.updatedAt) : 'N/A'}</p>
+          </div>
+        </div>
+        ${booking.specialRequests ? `
+        <div class="row mt-3">
+          <div class="col-12">
+            <h6>Special Requests & Notes</h6>
+            <div class="alert alert-light">${booking.specialRequests}</div>
+          </div>
+        </div>
+        ` : ''}
+        ${booking.cancellationReason ? `
+        <div class="row mt-3">
+          <div class="col-12">
+            <h6>Cancellation Reason</h6>
+            <div class="alert alert-warning">${booking.cancellationReason}</div>
+          </div>
+        </div>
+        ` : ''}
+        ${booking.adminNotes ? `
+        <div class="row mt-3">
+          <div class="col-12">
+            <h6>Admin Notes</h6>
+            <div class="alert alert-info">${booking.adminNotes}</div>
+          </div>
+        </div>
+        ` : ''}
+      `;
+    }
+
+    function getStatusColor(status) {
+      const colors = {
+        pending: 'warning',
+        confirmed: 'success',
+        cancelled: 'danger',
+        completed: 'info'
+      };
+      return colors[status] || 'secondary';
+    }
+
+    // NEW: Generate action buttons based on booking status
+function generateActionButtons(booking) {
+    const status = booking.status || 'pending';
+    
+    switch(status) {
+        case 'completed':
+            // For completed bookings: Only show View Details
+            return `
+                <button class="btn btn-sm btn-outline-primary" onclick="viewBooking('${booking._id}')">
+                    <i class="bi bi-eye me-1"></i>View Details
+                </button>
+            `;
+            
+        case 'confirmed':
+            // For confirmed bookings: Show View Details, Cancel, and Send Reminder
+            return `
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                        Actions
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="viewBooking('${booking._id}')">
+                            <i class="bi bi-eye me-2"></i>View Details
+                        </a></li>
+                        <li><a class="dropdown-item" href="#" onclick="updateBookingStatus('${booking._id}', 'cancelled')">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-info" href="#" onclick="sendReminder('${booking._id}')">
+                            <i class="bi bi-bell me-2"></i>Send Reminder
+                        </a></li>
+                    </ul>
+                </div>
+            `;
+            
+        case 'cancelled':
+            // For cancelled bookings: Only show View Details
+            return `
+                <button class="btn btn-sm btn-outline-primary" onclick="viewBooking('${booking._id}')">
+                    <i class="bi bi-eye me-1"></i>View Details
+                </button>
+            `;
+            
+        case 'pending':
+        default:
+            // For pending bookings: Show all actions
+            return `
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                        Actions
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="viewBooking('${booking._id}')">
+                            <i class="bi bi-eye me-2"></i>View Details
+                        </a></li>
+                        <li><a class="dropdown-item" href="#" onclick="updateBookingStatus('${booking._id}', 'confirmed')">
+                            <i class="bi bi-check-circle me-2"></i>Confirm
+                        </a></li>
+                        <li><a class="dropdown-item" href="#" onclick="updateBookingStatus('${booking._id}', 'cancelled')">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-info" href="#" onclick="sendReminder('${booking._id}')">
+                            <i class="bi bi-bell me-2"></i>Send Reminder
+                        </a></li>
+                    </ul>
+                </div>
+            `;
+    }
+}
+
+    // Update the sendReminder function to be more useful
+function sendReminder(bookingId) {
+    const booking = allBookings.find(b => b._id === bookingId);
+    if (booking) {
+        const studentName = booking.student?.username || 'Student';
+        const propertyName = booking.property?.title || 'Property';
+        const dateTime = formatBookingDateTime(booking.checkIn);
+        
+        // Show confirmation before sending reminder
+        if (confirm(`Send reminder to ${studentName} about their booking for ${propertyName} on ${dateTime.date} at ${dateTime.time}?`)) {
+            // In a real implementation, this would call your backend API
+            console.log(`Sending reminder for booking ${bookingId}`);
+            showNotification(`Reminder sent to ${studentName}`, 'success');
+        }
+    }
+}
+
+    async function exportBookings() {
+    try {
+        // Show loading state
+        const originalText = event.target.innerHTML;
+        event.target.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Exporting...';
+        event.target.disabled = true;
+
+        console.log('Exporting bookings data...');
+        
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/admin/bookings/export`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            
+            // Create filename with timestamp
+            const timestamp = new Date().toISOString().split('T')[0];
+            a.download = `bookings-export-${timestamp}.csv`;
+            
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showNotification('Bookings exported successfully!', 'success');
+        } else {
+            // Fallback: Generate export from current data
+            await exportBookingsFallback();
+        }
+        
+        // Reset button
+        event.target.innerHTML = originalText;
+        event.target.disabled = false;
+    } catch (error) {
+        console.error('Export error:', error);
+        // Fallback to local generation
+        await exportBookingsFallback();
+        
+        // Reset button
+        event.target.innerHTML = originalText;
+        event.target.disabled = false;
+    }
+}
+
+// Fallback export generation
+async function exportBookingsFallback() {
+    try {
+        // Get all bookings for export
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/admin/bookings?page=1&limit=1000`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const bookings = data.data?.bookings || data.bookings || [];
+            
+            // Convert to CSV format
+            const csvData = convertBookingsToCSV(bookings);
+            const blob = new Blob([csvData], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            
+            const timestamp = new Date().toISOString().split('T')[0];
+            a.download = `bookings-export-${timestamp}.csv`;
+            
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showNotification('Bookings exported successfully!', 'success');
+        } else {
+            throw new Error('Failed to fetch data for export');
+        }
+    } catch (error) {
+        console.error('Export generation error:', error);
+        showNotification('Failed to export bookings: ' + error.message, 'danger');
+    }
+}
+
+// Convert bookings data to CSV
+function convertBookingsToCSV(bookings) {
+    const headers = [
+        'Booking ID',
+        'Property Name',
+        'Property Type',
+        'Location',
+        'Student Name',
+        'Student Email',
+        'Student Phone',
+        'Landlord Name',
+        'Landlord Email',
+        'Booking Date',
+        'Booking Time',
+        'Booking Type',
+        'Status',
+        'Duration',
+        'Special Requests',
+        'Total Price',
+        'Created Date',
+        'Last Updated',
+        'Cancellation Reason',
+        'Admin Notes'
+    ];
+
+    const rows = bookings.map(booking => {
+        const property = booking.property || {};
+        const student = booking.student || {};
+        const landlord = booking.landlord || {};
+        
+        const studentName = student.username || student.firstName 
+            ? `${student.firstName || ''} ${student.surname || ''}`.trim() 
+            : 'Unknown Student';
+        
+        const landlordName = landlord.username || landlord.firstName
+            ? `${landlord.firstName || ''} ${landlord.surname || ''}`.trim()
+            : 'Unknown Landlord';
+        
+        const bookingType = extractBookingType(booking.specialRequests);
+        const dateTime = formatBookingDateTime(booking.checkIn);
+        const bookingDate = dateTime.date;
+        const bookingTime = dateTime.time;
+
+        return [
+            `"${booking._id || ''}"`,
+            `"${property.title || ''}"`,
+            `"${property.propertyType || ''}"`,
+            `"${property.location?.address || ''}"`,
+            `"${studentName}"`,
+            `"${student.email || ''}"`,
+            `"${student.phone || ''}"`,
+            `"${landlordName}"`,
+            `"${landlord.email || ''}"`,
+            `"${bookingDate}"`,
+            `"${bookingTime}"`,
+            `"${bookingType}"`,
+            `"${booking.status || ''}"`,
+            `"${booking.duration || ''}"`,
+            `"${(booking.specialRequests || '').replace(/"/g, '""')}"`,
+            `"${booking.totalPrice || ''}"`,
+            `"${booking.createdAt ? new Date(booking.createdAt).toLocaleDateString() : ''}"`,
+            `"${booking.updatedAt ? new Date(booking.updatedAt).toLocaleDateString() : ''}"`,
+            `"${(booking.cancellationReason || '').replace(/"/g, '""')}"`,
+            `"${(booking.adminNotes || '').replace(/"/g, '""')}"`
+        ];
+    });
+
+    return [headers, ...rows].map(row => row.join(',')).join('\n');
+}
+
+// Notification function
+function showNotification(message, type) {
+    // Create toast notification
+    const toastContainer = document.querySelector('.toast-container') || createToastContainer();
+    const toastId = 'toast-' + Date.now();
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-bg-${type} border-0`;
+    toast.id = toastId;
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+
+    toastContainer.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
+
+function createToastContainer() {
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+    toastContainer.style.zIndex = '9999';
+    document.body.appendChild(toastContainer);
+    return toastContainer;
+}
+
+    // Event listeners for filters
+    document.getElementById('searchInput').addEventListener('input', filterBookings);
+    document.getElementById('statusFilter').addEventListener('change', filterBookings);
+    document.getElementById('dateFilter').addEventListener('change', filterBookings);
+
+    // Load bookings on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      loadBookings();
+      generateCalendar();
+    });
+  </script>
+</body>
+</html>

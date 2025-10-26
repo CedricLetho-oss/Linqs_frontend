@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compare Properties | ResLinQ</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <!-- AOS CSS -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --secondary: #b6b1fb;
+      --accent: #f59e0b;
+      --success: #059669;
+      --warning: #f59e0b;
+      --danger: #dc3545;
+      --info: #60a5fa;
+      --light-bg: #f8fafc;
+      --navy: #1C2B4A;
+    }
+
+    /* Floating Animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Gradient Text */
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Enhanced Hero Section */
+    .compare-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 3rem 0;
+      border-radius: 0 0 2rem 2rem;
+      position: relative;
+      overflow: hidden;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+    }
+
+    .compare-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+
+    /* Floating Elements */
+    .floating-element {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-element:nth-child(1) {
+      width: 60px;
+      height: 60px;
+      top: 20%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      width: 80px;
+      height: 80px;
+      top: 60%;
+      right: 10%;
+      animation-delay: -2s;
+    }
+
+    .floating-element:nth-child(3) {
+      width: 40px;
+      height: 40px;
+      bottom: 20%;
+      left: 20%;
+      animation-delay: -4s;
+    }
+
+    /* Comparison Cards */
+    .comparison-card {
+      background: white;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      margin-bottom: 1.5rem;
+      border: none;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      height: 100%;
+    }
+
+    .comparison-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+    }
+
+    /* FIXED: Consistent image sizing */
+    .property-image {
+      height: 200px;
+      object-fit: cover;
+      border-radius: 1rem;
+      width: 100%;
+      margin-bottom: 1rem;
+      background-color: #f8fafc;
+    }
+
+    .property-image-container {
+      height: 200px;
+      overflow: hidden;
+      border-radius: 1rem;
+      background-color: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .property-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Comparison Table */
+    .comparison-table {
+      background: white;
+      border-radius: 1.5rem;
+      overflow: hidden;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      margin-bottom: 2rem;
+    }
+
+    .comparison-table .table {
+      margin-bottom: 0;
+    }
+
+    .comparison-table th {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      border: none;
+      padding: 1rem 1.5rem;
+      font-weight: 600;
+    }
+
+    .comparison-table td {
+      padding: 1rem 1.5rem;
+      vertical-align: middle;
+      border-color: #f1f5f9;
+    }
+
+    .comparison-table tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+
+    /* Feature Comparison */
+    .feature-comparison {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-name {
+      flex: 1;
+      font-weight: 500;
+      color: #334155;
+    }
+
+    .feature-values {
+      display: flex;
+      flex: 2;
+      justify-content: space-between;
+    }
+
+    .feature-value {
+      flex: 1;
+      text-align: center;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+    }
+
+    .feature-value.better {
+      background-color: rgba(5, 150, 105, 0.1);
+      color: var(--success);
+    }
+
+    .feature-value.worse {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: var(--danger);
+    }
+
+    .feature-value.equal {
+      background-color: rgba(100, 116, 139, 0.1);
+      color: #64748b;
+    }
+
+    /* Custom Button */
+    .btn-gradient {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border: none;
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
+      color: white;
+    }
+
+    /* Selection Cards */
+    .selection-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      margin-bottom: 1.5rem;
+      border: 2px dashed #e2e8f0;
+      transition: all 0.3s ease;
+      text-align: center;
+      cursor: pointer;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 300px;
+    }
+
+    .selection-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+    }
+
+    .selection-card.selected {
+      border-color: var(--primary);
+      border-style: solid;
+      background: rgba(30, 58, 138, 0.05);
+    }
+
+    /* Hero Content Alignment */
+    .hero-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .hero-text {
+      flex: 1;
+    }
+
+    .hero-button {
+      flex-shrink: 0;
+    }
+
+    /* Loading State */
+    .loading-skeleton {
+      animation: pulse 2s infinite;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+      .compare-hero {
+        padding: 2rem 0;
+        border-radius: 0 0 1.5rem 1.5rem;
+        min-height: 160px;
+      }
+
+      .compare-hero h1 {
+        font-size: 2rem !important;
+        margin-bottom: 0.5rem !important;
+      }
+
+      .compare-hero .lead {
+        font-size: 1rem !important;
+        margin-bottom: 1rem !important;
+      }
+
+      .hero-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+
+      .hero-text {
+        text-align: center;
+      }
+
+      .hero-button {
+        width: 100%;
+        text-align: center;
+      }
+
+      .comparison-table {
+        border-radius: 1rem;
+        overflow-x: auto;
+      }
+
+      .feature-values {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .feature-value {
+        text-align: left;
+      }
+
+      /* FIXED: Mobile image sizing */
+      .property-image-container {
+        height: 180px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .compare-hero {
+        padding: 1.5rem 0;
+        min-height: 140px;
+      }
+
+      .compare-hero h1 {
+        font-size: 1.75rem !important;
+      }
+
+      /* FIXED: Smaller mobile image sizing */
+      .property-image-container {
+        height: 160px;
+      }
+    }
+
+    /* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1C2B4A;
+    z-index: 1030;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .mobile-nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-nav-item.active {
+    color: #64748b;
+  }
+  
+  .mobile-nav-item i {
+    display: block;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Add padding to main content to account for bottom nav */
+  main {
+    margin-bottom: 80px;
+  }
+}
+
+#logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+
+.hero-subtitle {
+  color:#e2e8f0;
+  animation: fadeInUp 0.8s ease-out 0.6s both;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+/* NEW: Summary improvements */
+.summary-highlight {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-left: 4px solid var(--primary);
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.amenity-count-badge {
+  background: linear-gradient(135deg, var(--success) 0%, #10b981 100%);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.feature-score {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.comparison-insight {
+  background: #f8fafc;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--info);
+}
+
+.insight-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+  </style>
+</head>
+<body>
+
+  <!-- Dynamic Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i>ResLinQ</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <!-- Navigation will be populated by navbar.js -->
+        </ul>
+      </div>
+      
+      <!-- Dynamic Auth Buttons -->
+      <div class="signup-login-buttons">
+        <!-- Content will be populated by navbar.js -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Enhanced Hero Section -->
+  <section class="compare-hero">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-text" data-aos="fade-right">
+          <h1 class="fw-bold mb-2 animate__animated animate__fadeInDown">
+            Compare <span class="gradient-text">Properties</span>
+          </h1>
+          <p class="lead mb-0 fs-5 animate__animated animate__fadeInUp animate__delay-1s">
+            Side-by-side comparison of your favorite properties to help you make the best decision.
+          </p>
+        </div>
+        <div class="hero-button" data-aos="fade-left" data-aos-delay="300">
+          <a href="my-favorites.html" class="btn btn-light">
+            <i class="bi bi-arrow-left me-2"></i>Back to Favorites
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="container my-5">
+    <!-- Property Selection Section -->
+    <section id="selection-section" class="mb-5" data-aos="fade-up">
+      <div class="row mb-4">
+        <div class="col-12">
+          <h3 class="text-navy mb-3">Select Properties to Compare</h3>
+          <p class="text-muted">Choose 2-4 properties from your favorites to compare side by side.</p>
+        </div>
+      </div>
+      
+      <div class="row" id="properties-selection">
+        <!-- Properties will be loaded here -->
+      </div>
+      
+      <div class="row mt-4">
+        <div class="col-12 text-center">
+          <button class="btn btn-gradient" id="compare-button" disabled>
+            <i class="bi bi-bar-chart me-2"></i>Compare Selected Properties
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comparison Results Section -->
+    <section id="comparison-section" class="d-none" data-aos="fade-up">
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center">
+            <h3 class="text-navy mb-0">Comparison Results</h3>
+            <button class="btn btn-outline-primary" id="reset-comparison">
+              <i class="bi bi-arrow-clockwise me-2"></i>Compare Different Properties
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Property Cards -->
+      <div class="row mb-5" id="property-cards">
+        <!-- Property comparison cards will be loaded here -->
+      </div>
+
+      <!-- Detailed Comparison Table -->
+      <div class="comparison-table">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width: 25%;">Feature</th>
+              <th id="property-1-header" style="width: 25%;" class="text-center">Property 1</th>
+              <th id="property-2-header" style="width: 25%;" class="text-center">Property 2</th>
+              <th id="property-3-header" style="width: 25%;" class="text-center d-none">Property 3</th>
+              <th id="property-4-header" style="width: 25%;" class="text-center d-none">Property 4</th>
+            </tr>
+          </thead>
+          <tbody id="comparison-table-body">
+            <!-- Comparison data will be loaded here -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- IMPROVED: Summary and Recommendation -->
+      <div class="row mt-5">
+        <div class="col-12">
+          <div class="comparison-card">
+            <h4 class="text-navy mb-4">Comparison Summary & Recommendations</h4>
+            
+            <!-- Key Insights -->
+            <div class="row mb-4" id="key-insights">
+              <!-- Key insights will be generated here -->
+            </div>
+            
+            <!-- Detailed Summary -->
+            <div id="comparison-summary">
+              <!-- Summary will be generated here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Empty State -->
+    <section id="empty-state" class="d-none">
+      <div class="row">
+        <div class="col-12">
+          <div class="text-center py-5">
+            <div class="empty-icon mb-4">
+              <i class="bi bi-bar-chart" style="font-size: 4rem; color: #cbd5e1;"></i>
+            </div>
+            <h3 class="text-muted mb-3">No Favorites to Compare</h3>
+            <p class="text-muted mb-4">You need to add properties to your favorites before you can compare them.</p>
+            <a href="listings.html" class="btn btn-gradient me-3">
+              <i class="bi bi-search me-2"></i>Browse Properties
+            </a>
+            <a href="my-favorites.html" class="btn btn-outline-primary">
+              <i class="bi bi-heart me-2"></i>View Favorites
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Loading State -->
+    <section id="loading-state">
+      <div class="row">
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="selection-card loading-skeleton">
+            <div class="bg-light rounded mb-3" style="height: 150px;"></div>
+            <div class="bg-light rounded mb-2" style="height: 20px; width: 80%;"></div>
+            <div class="bg-light rounded mb-3" style="height: 16px; width: 60%;"></div>
+            <div class="bg-light rounded" style="height: 14px; width: 90%;"></div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="selection-card loading-skeleton">
+            <div class="bg-light rounded mb-3" style="height: 150px;"></div>
+            <div class="bg-light rounded mb-2" style="height: 20px; width: 80%;"></div>
+            <div class="bg-light rounded mb-3" style="height: 16px; width: 60%;"></div>
+            <div class="bg-light rounded" style="height: 14px; width: 90%;"></div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="selection-card loading-skeleton">
+            <div class="bg-light rounded mb-3" style="height: 150px;"></div>
+            <div class="bg-light rounded mb-2" style="height: 20px; width: 80%;"></div>
+            <div class="bg-light rounded mb-3" style="height: 16px; width: 60%;"></div>
+            <div class="bg-light rounded" style="height: 14px; width: 90%;"></div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="selection-card loading-skeleton">
+            <div class="bg-light rounded mb-3" style="height: 150px;"></div>
+            <div class="bg-light rounded mb-2" style="height: 20px; width: 80%;"></div>
+            <div class="bg-light rounded mb-3" style="height: 16px; width: 60%;"></div>
+            <div class="bg-light rounded" style="height: 14px; width: 90%;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Mobile Bottom Navigation -->
+<div class="mobile-bottom-nav d-lg-none">
+  <a href="home.html" class="mobile-nav-item">
+    <i class="bi bi-house"></i>
+    <span>Home</span>
+  </a>
+  <a href="listings.html" class="mobile-nav-item">
+    <i class="bi bi-building"></i>
+    <span>Listings</span>
+  </a>
+  <a href="my-bookings.html" class="mobile-nav-item">
+    <i class="bi bi-calendar-check"></i>
+    <span>Bookings</span>
+  </a>
+  <a href="help.html" class="mobile-nav-item ">
+    <i class="bi bi-question-circle"></i>
+    <span>Help</span>
+  </a>
+</div>
+
+  <!-- Footer -->
+  <footer class="py-5 bg-navy text-white">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for finding the perfect student accommodation near your campus.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Quick Links</h6>
+          <ul class="list-unstyled">
+            <li><a href="home.html" class="text-light text-decoration-none">Home</a></li>
+            <li><a href="listings.html" class="text-light text-decoration-none">Listings</a></li>
+            <li><a href="help.html" class="text-light text-decoration-none">Help</a></li>
+            <li><a href="about-us.html" class="text-light text-decoration-none">About Us</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="my-bookings.html" class="text-light text-decoration-none">My Bookings</a></li>
+            <li><a href="my-favorites.html" class="text-light text-decoration-none">My Favorites</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Get in Touch</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="navbar.js"></script>
+  
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 1000,
+      once: true,
+      offset: 100
+    });
+
+    // API base URL
+    const API_BASE_URL = 'https://linqs-backend.onrender.com/api';
+    
+    class PropertyComparator {
+      constructor() {
+        this.favorites = [];
+        this.selectedProperties = [];
+        this.maxSelection = 4;
+        
+        this.init();
+      }
+
+      init() {
+        this.bindEvents();
+        this.loadFavorites();
+      }
+
+      bindEvents() {
+        // Compare button
+        document.getElementById('compare-button').addEventListener('click', () => {
+          this.compareProperties();
+        });
+
+        // Reset comparison
+        document.getElementById('reset-comparison').addEventListener('click', () => {
+          this.resetComparison();
+        });
+      }
+
+      async loadFavorites() {
+    this.showLoading();
+    
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'authorization.html';
+            return;
+        }
+
+        // Get property IDs from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const propertyIds = urlParams.getAll('id');
+        
+        // Fetch all favorites
+        let url = `${API_BASE_URL}/favorites?limit=50`;
+        
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'authorization.html';
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch favorites: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.success) {
+            let favorites = data.data || data.favorites || [];
+            console.log('Favorites data:', favorites);
+            
+            // FIX: Filter out favorites with null properties and ensure property has _id
+            favorites = favorites.filter(favorite => 
+                favorite && 
+                favorite.property && 
+                favorite.property._id && 
+                typeof favorite.property._id === 'string'
+            );
+            
+            console.log('Filtered favorites:', favorites);
+            
+            // Filter to matching IDs if provided in URL
+            if (propertyIds.length > 0) {
+                favorites = favorites.filter(favorite => 
+                    propertyIds.includes(favorite.property._id)
+                );
+            }
+            
+            this.favorites = favorites;
+            this.renderSelection();
+            
+            // Auto-select properties from URL if provided
+            if (propertyIds.length > 0 && favorites.length > 0) {
+                this.autoSelectProperties(propertyIds);
+            }
+        } else {
+            throw new Error(data.message || 'Unknown error occurred');
+        }
+    } catch (error) {
+        console.error('Error loading favorites:', error);
+        this.showError('Failed to load favorites. Please try again.');
+    }
+}
+
+      autoSelectProperties(propertyIds) {
+        const idsToSelect = propertyIds.slice(0, this.maxSelection);
+        
+        idsToSelect.forEach(id => {
+          const favorite = this.favorites.find(f => f.property._id === id);
+          if (favorite && this.selectedProperties.length < this.maxSelection) {
+            this.selectedProperties.push(favorite.property);
+          }
+        });
+        
+        this.renderSelection();
+        
+        if (this.selectedProperties.length >= 2 && this.selectedProperties.length <= 4) {
+          document.getElementById('compare-button').disabled = false;
+          document.getElementById('compare-button').innerHTML = 
+            `<i class="bi bi-bar-chart me-2"></i>Compare ${this.selectedProperties.length} Properties`;
+          
+          setTimeout(() => {
+            this.compareProperties();
+          }, 300);
+        }
+      }
+
+      renderSelection() {
+        const container = document.getElementById('properties-selection');
+        const emptyState = document.getElementById('empty-state');
+        const loadingState = document.getElementById('loading-state');
+
+        container.innerHTML = '';
+        loadingState.classList.add('d-none');
+
+        if (this.favorites.length === 0) {
+          emptyState.classList.remove('d-none');
+          return;
+        }
+
+        emptyState.classList.add('d-none');
+
+        this.favorites.forEach(favorite => {
+          const property = favorite.property;
+          const isSelected = this.selectedProperties.some(p => p._id === property._id);
+          
+          const col = document.createElement('div');
+          col.className = 'col-md-6 col-lg-3 mb-4';
+          
+          col.innerHTML = `
+            <div class="selection-card ${isSelected ? 'selected' : ''}" data-property-id="${property._id}">
+              <!-- FIXED: Consistent image container -->
+              <div class="property-image-container mb-3">
+                <img src="${property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/300x200/1e3a8a/ffffff?text=Property+Image'}" 
+                    alt="${property.title}" class="property-image">
+              </div>
+              <h5 class="property-title">${property.title}</h5>
+              <p class="property-location text-muted small mb-2">
+                <i class="bi bi-geo-alt"></i> ${property.location?.address || 'Location not specified'}
+              </p>
+              <p class="property-price fw-bold text-primary mb-3">R${property.price}/month</p>
+              <div class="property-features mb-3">
+                <small class="text-muted">
+                  <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds • 
+                  <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths •
+                  <i class="bi bi-people me-1"></i>${this.getGenderText(property.genderPreference)} •
+                  <i class="bi bi-award me-1"></i>${this.getAccreditationText(property.accreditation)}
+                </small>
+              </div>
+              <div class="selection-indicator">
+                ${isSelected ? 
+                  '<span class="badge bg-success"><i class="bi bi-check-lg me-1"></i>Selected</span>' : 
+                  '<span class="badge bg-light text-dark"><i class="bi bi-plus me-1"></i>Select to Compare</span>'
+                }
+              </div>
+            </div>
+          `;
+          
+          col.querySelector('.selection-card').addEventListener('click', () => {
+            this.togglePropertySelection(favorite);
+          });
+          
+          container.appendChild(col);
+        });
+      }
+
+      getSafeNumber(value) {
+        return value !== undefined && value !== null ? value : 'N/A';
+      }
+
+      getGenderText(genderPreference) {
+        if (!genderPreference || genderPreference === 'undefined') return 'Unisex';
+        const genderMap = {
+          'unisex': 'Unisex',
+          'male': 'Male Only', 
+          'female': 'Female Only'
+        };
+        return genderMap[genderPreference] || genderPreference;
+      }
+
+      getAccreditationText(accreditation) {
+        if (!accreditation || accreditation === 'undefined') return 'Self-paying';
+        const accreditationMap = {
+          'accredited': 'University Accredited',
+          'self': 'Self-paying'
+        };
+        return accreditationMap[accreditation] || accreditation;
+      }
+
+      togglePropertySelection(favorite) {
+        const property = favorite.property;
+        const index = this.selectedProperties.findIndex(p => p._id === property._id);
+        
+        if (index > -1) {
+          this.selectedProperties.splice(index, 1);
+        } else {
+          if (this.selectedProperties.length < this.maxSelection) {
+            this.selectedProperties.push(property);
+          } else {
+            this.showToast(`You can only compare up to ${this.maxSelection} properties at a time.`, 'warning');
+            return;
+          }
+        }
+        
+        this.renderSelection();
+        
+        const compareButton = document.getElementById('compare-button');
+        compareButton.disabled = this.selectedProperties.length < 2;
+        
+        if (this.selectedProperties.length >= 2) {
+          compareButton.innerHTML = `<i class="bi bi-bar-chart me-2"></i>Compare ${this.selectedProperties.length} Properties`;
+        } else {
+          compareButton.innerHTML = `<i class="bi bi-bar-chart me-2"></i>Compare Selected Properties`;
+        }
+      }
+
+      compareProperties() {
+        if (this.selectedProperties.length < 2) {
+          this.showToast('Please select at least 2 properties to compare.', 'warning');
+          return;
+        }
+
+        document.getElementById('selection-section').classList.add('d-none');
+        document.getElementById('comparison-section').classList.remove('d-none');
+        
+        this.renderPropertyCards();
+        this.renderComparisonTable();
+        this.generateSummary();
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      renderPropertyCards() {
+  const container = document.getElementById('property-cards');
+  container.innerHTML = '';
+  
+  this.selectedProperties.forEach((property, index) => {
+    const col = document.createElement('div');
+    col.className = `col-md-6 ${this.selectedProperties.length > 2 ? 'col-lg-3' : 'col-lg-6'} mb-4`;
+    
+    const genderText = this.getGenderText(property.genderPreference);
+    const accreditationText = this.getAccreditationText(property.accreditation);
+    const amenitiesCount = property.amenities ? property.amenities.length : 0;
+    
+    col.innerHTML = `
+      <div class="comparison-card">
+        <!-- FIXED: Consistent image container -->
+        <div class="property-image-container mb-3">
+          <img src="${property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/300x200/1e3a8a/ffffff?text=Property+Image'}" 
+              alt="${property.title}" class="property-image">
+        </div>
+        <h5 class="property-title">${property.title}</h5>
+        <p class="property-location text-muted small mb-2">
+          <i class="bi bi-geo-alt"></i> ${property.location?.address || 'Location not specified'}
+        </p>
+        <p class="property-price fw-bold text-primary mb-3">R${property.price}/month</p>
+        
+        <div class="property-features mb-3">
+          <div class="d-flex flex-wrap gap-2">
+            <span class="badge bg-light text-dark">
+              <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds
+            </span>
+            <span class="badge bg-light text-dark">
+              <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths
+            </span>
+            <span class="badge bg-light text-dark">
+              <i class="bi bi-people me-1"></i>${genderText}
+            </span>
+            <span class="badge bg-light text-dark">
+              <i class="bi bi-award me-1"></i>${accreditationText}
+            </span>
+            <span class="badge amenity-count-badge">
+              <i class="bi bi-grid-3x3 me-1"></i>${amenitiesCount} amenities
+            </span>
+          </div>
+        </div>
+        
+        <div class="property-amenities mb-3">
+          <h6 class="text-navy mb-2"> Amenities</h6>
+          <div class="d-flex flex-wrap gap-1">
+            ${property.amenities && property.amenities.length > 0 ? 
+              property.amenities.map(amenity => `
+                <span class="badge bg-primary">${amenity}</span>
+              `).join('') : 
+              '<small class="text-muted">No amenities listed</small>'
+            }
+          </div>
+        </div>
+        
+        <div class="text-center mt-3">
+          <a href="property-details.html?id=${property._id}" class="btn btn-outline-primary btn-sm me-2">
+            <i class="bi bi-eye me-1"></i>View Details
+          </a>
+          <button class="btn btn-outline-danger btn-sm remove-from-comparison" data-property-id="${property._id}">
+            <i class="bi bi-x me-1"></i>Remove
+          </button>
+        </div>
+      </div>
+    `;
+    
+    col.querySelector('.remove-from-comparison').addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.removeFromComparison(property._id);
+    });
+    
+    container.appendChild(col);
+  });
+}
+
+      renderComparisonTable() {
+        this.selectedProperties.forEach((property, index) => {
+          const header = document.getElementById(`property-${index+1}-header`);
+          if (header) {
+            header.classList.remove('d-none');
+            header.textContent = property.title.length > 20 ? 
+              property.title.substring(0, 20) + '...' : property.title;
+          }
+        });
+        
+        for (let i = this.selectedProperties.length + 1; i <= 4; i++) {
+          const header = document.getElementById(`property-${i}-header`);
+          if (header) header.classList.add('d-none');
+        }
+        
+        const tableBody = document.getElementById('comparison-table-body');
+        tableBody.innerHTML = '';
+        
+        const features = [
+          {
+            name: 'Price',
+            getValue: (prop) => `R${prop.price}/month`,
+            type: 'numeric',
+            better: 'lower'
+          },
+          {
+            name: 'Bedrooms',
+            getValue: (prop) => this.getSafeNumber(prop.bedrooms),
+            type: 'numeric',
+            better: 'higher'
+          },
+          {
+            name: 'Bathrooms',
+            getValue: (prop) => this.getSafeNumber(prop.bathrooms),
+            type: 'numeric',
+            better: 'higher'
+          },
+          {
+            name: 'Amenities Count',
+            getValue: (prop) => prop.amenities ? prop.amenities.length : 0,
+            type: 'numeric',
+            better: 'higher'
+          },
+          {
+            name: 'Property Type',
+            getValue: (prop) => prop.propertyType ? prop.propertyType.charAt(0).toUpperCase() + prop.propertyType.slice(1) : 'Not specified',
+            type: 'text'
+          },
+          {
+            name: 'Location',
+            getValue: (prop) => prop.location?.address || 'Not specified',
+            type: 'text'
+          },
+          {
+            name: 'Gender Preference',
+            getValue: (prop) => this.getGenderText(prop.genderPreference),
+            type: 'text'
+          },
+          {
+            name: 'Accreditation',
+            getValue: (prop) => this.getAccreditationText(prop.accreditation),
+            type: 'text'
+          },
+          {
+            name: 'All Amenities',
+            getValue: (prop) => prop.amenities ? prop.amenities.join(', ') : 'None',
+            type: 'text'
+          },
+        ];
+        
+        features.forEach(feature => {
+          const row = document.createElement('tr');
+          
+          const nameCell = document.createElement('td');
+          nameCell.className = 'feature-name';
+          nameCell.textContent = feature.name;
+          row.appendChild(nameCell);
+          
+          this.selectedProperties.forEach((property, index) => {
+            const valueCell = document.createElement('td');
+            valueCell.className = 'text-center';
+            
+            const value = feature.getValue(property);
+            valueCell.textContent = value;
+            
+            if (feature.type === 'numeric' && value !== 'N/A' && !isNaN(parseInt(value))) {
+              const numericValue = parseInt(value);
+              const values = this.selectedProperties.map(p => {
+                const val = feature.getValue(p);
+                return val !== 'N/A' && !isNaN(parseInt(val)) ? parseInt(val) : null;
+              }).filter(v => v !== null);
+              
+              if (values.length > 1) {
+                const bestValue = feature.better === 'higher' ? Math.max(...values) : Math.min(...values);
+                const worstValue = feature.better === 'higher' ? Math.min(...values) : Math.max(...values);
+                
+                if (numericValue === bestValue) {
+                  valueCell.innerHTML = `<span class="feature-value better">${value} <i class="bi bi-arrow-up-circle"></i></span>`;
+                } else if (numericValue === worstValue) {
+                  valueCell.innerHTML = `<span class="feature-value worse">${value} <i class="bi bi-arrow-down-circle"></i></span>`;
+                } else {
+                  valueCell.innerHTML = `<span class="feature-value equal">${value}</span>`;
+                }
+              }
+            }
+            
+            row.appendChild(valueCell);
+          });
+          
+          tableBody.appendChild(row);
+        });
+      }
+
+      // IMPROVED: Enhanced summary generation
+      generateSummary() {
+        const insightsContainer = document.getElementById('key-insights');
+        const summaryContainer = document.getElementById('comparison-summary');
+        
+        if (this.selectedProperties.length < 2) return;
+
+        // Calculate key metrics
+        const cheapest = this.selectedProperties.reduce((prev, current) => 
+          prev.price < current.price ? prev : current
+        );
+        
+        const mostBedrooms = this.selectedProperties.reduce((prev, current) => {
+          const prevBedrooms = parseInt(prev.bedrooms) || 0;
+          const currentBedrooms = parseInt(current.bedrooms) || 0;
+          return prevBedrooms > currentBedrooms ? prev : current;
+        });
+        
+        const mostBathrooms = this.selectedProperties.reduce((prev, current) => {
+          const prevBathrooms = parseInt(prev.bathrooms) || 0;
+          const currentBathrooms = parseInt(current.bathrooms) || 0;
+          return prevBathrooms > currentBathrooms ? prev : current;
+        });
+        
+        const mostAmenities = this.selectedProperties.reduce((prev, current) => {
+          const prevAmenities = prev.amenities ? prev.amenities.length : 0;
+          const currentAmenities = current.amenities ? current.amenities.length : 0;
+          return prevAmenities > currentAmenities ? prev : current;
+        });
+
+        const accreditedProperties = this.selectedProperties.filter(p => p.accreditation === 'accredited');
+        const maleOnlyProperties = this.selectedProperties.filter(p => p.genderPreference === 'male');
+        const femaleOnlyProperties = this.selectedProperties.filter(p => p.genderPreference === 'female');
+        const unisexProperties = this.selectedProperties.filter(p => !p.genderPreference || p.genderPreference === 'unisex');
+
+        // Calculate price range
+        const prices = this.selectedProperties.map(p => p.price);
+        const priceRange = Math.max(...prices) - Math.min(...prices);
+        const hasSignificantPriceDifference = priceRange > 1000;
+
+        // Generate key insights
+        insightsContainer.innerHTML = `
+          <div class="col-md-6 mb-3">
+            <div class="comparison-insight d-flex align-items-center">
+              <div class="insight-icon bg-success">
+                <i class="bi bi-currency-dollar text-white"></i>
+              </div>
+              <div>
+                <h6 class="mb-1">Best Value</h6>
+                <p class="mb-0 text-muted">${cheapest.title} at R${cheapest.price}/month</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <div class="comparison-insight d-flex align-items-center">
+              <div class="insight-icon bg-primary">
+                <i class="bi bi-grid-3x3 text-white"></i>
+              </div>
+              <div>
+                <h6 class="mb-1">Most Amenities</h6>
+                <p class="mb-0 text-muted">${mostAmenities.title} with ${mostAmenities.amenities ? mostAmenities.amenities.length : 0} features</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <div class="comparison-insight d-flex align-items-center">
+              <div class="insight-icon bg-info">
+                <i class="bi bi-door-closed text-white"></i>
+              </div>
+              <div>
+                <h6 class="mb-1">Most Spacious</h6>
+                <p class="mb-0 text-muted">${mostBedrooms.title} with ${this.getSafeNumber(mostBedrooms.bedrooms)} bedrooms</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <div class="comparison-insight d-flex align-items-center">
+              <div class="insight-icon bg-warning">
+                <i class="bi bi-award text-white"></i>
+              </div>
+              <div>
+                <h6 class="mb-1">Accredited Options</h6>
+                <p class="mb-0 text-muted">${accreditedProperties.length} university accredited properties</p>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Generate detailed summary
+        let recommendation = '';
+        
+        if (hasSignificantPriceDifference) {
+          recommendation += `There's a significant price difference of R${priceRange} between the properties. `;
+        }
+        
+        if (cheapest === mostAmenities) {
+          recommendation += `<strong>${cheapest.title}</strong> stands out as the best overall choice, offering both the lowest price and the most amenities.`;
+        } else if (cheapest.price < mostAmenities.price - 500) {
+          recommendation += `While <strong>${mostAmenities.title}</strong> has more amenities, <strong>${cheapest.title}</strong> offers better value for money with significant savings.`;
+        } else {
+          recommendation += `<strong>${cheapest.title}</strong> offers the best value at R${cheapest.price}/month, while <strong>${mostAmenities.title}</strong> provides the most comprehensive amenities.`;
+        }
+
+        if (accreditedProperties.length > 0) {
+          recommendation += ` Consider ${accreditedProperties.map(p => p.title).join(', ')} for university-accredited options that may qualify for bursary funding.`;
+        }
+
+        summaryContainer.innerHTML = `
+          <div class="summary-highlight">
+            <h5 class="text-navy mb-3">🏆 Top Recommendation</h5>
+            <p class="mb-0">${recommendation}</p>
+          </div>
+          
+          <div class="row mt-4">
+            <div class="col-md-6">
+              <h6 class="text-navy mb-3">📊 Quick Stats</h6>
+              <ul class="list-unstyled">
+                <li class="mb-2"><i class="bi bi-currency-dollar text-success me-2"></i>Price Range: R${Math.min(...prices)} - R${Math.max(...prices)}</li>
+                <li class="mb-2"><i class="bi bi-grid-3x3 text-primary me-2"></i>Average Amenities: ${Math.round(this.selectedProperties.reduce((sum, p) => sum + (p.amenities ? p.amenities.length : 0), 0) / this.selectedProperties.length)}</li>
+                <li class="mb-2"><i class="bi bi-people text-info me-2"></i>Gender Options: ${unisexProperties.length} Unisex, ${maleOnlyProperties.length} Male-only, ${femaleOnlyProperties.length} Female-only</li>
+                <li><i class="bi bi-award text-warning me-2"></i>Accredited: ${accreditedProperties.length} of ${this.selectedProperties.length}</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h6 class="text-navy mb-3">💡 Decision Tips</h6>
+              <ul class="list-unstyled">
+                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Consider your budget and essential amenities</li>
+                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Check proximity to your campus</li>
+                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Verify accreditation for bursary eligibility</li>
+                <li><i class="bi bi-check-circle text-success me-2"></i>Review amenities that matter most to you</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="mt-4 p-3 bg-light rounded">
+            <h6 class="text-navy mb-2">Next Steps</h6>
+            <p class="mb-0">
+              Ready to make a decision? <a href="property-details.html?id=${cheapest._id}" class="text-primary">View details for ${cheapest.title}</a> or 
+              <a href="my-favorites.html" class="text-primary">review all your favorites</a> before booking a viewing.
+            </p>
+          </div>
+        `;
+      }
+
+      removeFromComparison(propertyId) {
+        this.selectedProperties = this.selectedProperties.filter(p => p._id !== propertyId);
+        
+        if (this.selectedProperties.length < 2) {
+          this.resetComparison();
+        } else {
+          this.renderPropertyCards();
+          this.renderComparisonTable();
+          this.generateSummary();
+        }
+      }
+
+      resetComparison() {
+        this.selectedProperties = [];
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        document.getElementById('selection-section').classList.remove('d-none');
+        document.getElementById('comparison-section').classList.add('d-none');
+        document.getElementById('compare-button').disabled = true;
+        document.getElementById('compare-button').innerHTML = `<i class="bi bi-bar-chart me-2"></i>Compare Selected Properties`;
+        
+        this.renderSelection();
+      }
+
+      showLoading() {
+        document.getElementById('loading-state').classList.remove('d-none');
+        document.getElementById('empty-state').classList.add('d-none');
+        document.getElementById('selection-section').classList.add('d-none');
+        document.getElementById('comparison-section').classList.add('d-none');
+      }
+
+      showError(message) {
+        document.getElementById('loading-state').classList.add('d-none');
+        document.getElementById('empty-state').classList.remove('d-none');
+        document.getElementById('empty-state').querySelector('h3').textContent = 'Error Loading Properties';
+        document.getElementById('empty-state').querySelector('p').textContent = message;
+      }
+
+      showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+        toast.innerHTML = `
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.remove();
+        }, 5000);
+      }
+    }
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      new PropertyComparator();
+    });
+  </script>
+</body>
+</html>

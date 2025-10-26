@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Guide | ResLinQ</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <!-- AOS CSS -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1C2B4A;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --secondary: #b6b1fb;
+      --accent: #f59e0b;
+      --success: #059669;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --info: #60a5fa;
+      --text-dark: #1e293b;
+      --text-light: #64748b;
+      --bg-light: #f8fafc;
+    }
+
+    /* Floating Animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Pulse Animation */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Bounce Animation */
+    @keyframes bounce {
+      0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); }
+      40%, 43% { transform: translate3d(0,-8px,0); }
+      70% { transform: translate3d(0,-4px,0); }
+      90% { transform: translate3d(0,-2px,0); }
+    }
+
+    /* Gradient Text */
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Enhanced Hero Section */
+    .booking-hero {
+      background: linear-gradient(135deg, #1e3a8a 0%, var(--secondary) 50%, #1e3a8a 100%);
+      color: white;
+      padding: 6rem 0;
+      margin-bottom: 3rem;
+      border-radius: 0 0 3rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .booking-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+
+    /* Floating Elements */
+    .floating-element {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-element:nth-child(1) {
+      width: 80px;
+      height: 80px;
+      top: 20%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      width: 120px;
+      height: 120px;
+      top: 60%;
+      right: 10%;
+      animation-delay: -2s;
+    }
+
+    .floating-element:nth-child(3) {
+      width: 60px;
+      height: 60px;
+      bottom: 20%;
+      left: 20%;
+      animation-delay: -4s;
+    }
+
+    /* Enhanced Cards */
+    .booking-card {
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      border: none;
+      border-radius: 1.5rem;
+      overflow: hidden;
+      position: relative;
+      height: fit-content !important;
+    }
+
+    .booking-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      z-index: 1;
+    }
+
+    .booking-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 60px rgba(30, 58, 138, 0.2);
+    }
+
+    /* Card Variants */
+    .feature-card::before { background: linear-gradient(135deg, var(--success) 0%, #10b981 100%); }
+    .process-card::before { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); }
+    .tips-card::before { background: linear-gradient(135deg, var(--warning) 0%, #fbbf24 100%); }
+    .guideline-card::before { background: linear-gradient(135deg, var(--info) 0%, #93c5fd 100%); }
+
+    /* Booking Icons */
+    .booking-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      font-size: 2rem;
+      transition: all 0.3s ease;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .booking-card:hover .booking-icon {
+      transform: scale(1.1) rotate(-5deg);
+      animation: none;
+    }
+
+    .icon-success {
+      background: linear-gradient(135deg, var(--success) 0%, #10b981 100%);
+      color: white;
+    }
+
+    .icon-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+    }
+
+    .icon-warning {
+      background: linear-gradient(135deg, var(--warning) 0%, #fbbf24 100%);
+      color: white;
+    }
+
+    .icon-info {
+      background: linear-gradient(135deg, var(--info) 0%, #93c5fd 100%);
+      color: white;
+    }
+
+    .icon-danger {
+      background: linear-gradient(135deg, var(--danger) 0%, #ef4444 100%);
+      color: white;
+    }
+
+    /* Section Titles */
+    .section-title {
+      color: var(--primary);
+      border-bottom: 3px solid;
+      border-image: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%) 1;
+      padding-bottom: 0.75rem;
+      margin-bottom: 2rem;
+      font-weight: 700;
+    }
+
+    /* Progress Steps */
+    .progress-container {
+      position: relative;
+      margin: 3rem 0;
+    }
+
+    .progress-step {
+      display: flex;
+      align-items: center;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+
+    .step-number {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin-right: 1.5rem;
+      flex-shrink: 0;
+      z-index: 2;
+      box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .step-content {
+      flex: 1;
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      border-left: 4px solid var(--primary);
+      transition: all 0.3s ease;
+    }
+
+    .step-content:hover {
+      transform: translateX(5px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+
+    .progress-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 50px;
+      left: 25px;
+      width: 3px;
+      height: calc(100% - 20px);
+      background: linear-gradient(to bottom, var(--primary) 0%, var(--secondary) 100%);
+      opacity: 0.5;
+      z-index: 1;
+    }
+
+    /* Verification Badges */
+    .verification-badge {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(5, 150, 105, 0.1);
+      color: var(--success);
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-weight: 500;
+      margin: 0.25rem;
+      border: 1px solid rgba(5, 150, 105, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .verification-badge:hover {
+      background: rgba(5, 150, 105, 0.2);
+      transform: translateY(-2px);
+    }
+
+    /* Checklist Items */
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 1.25rem;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+    }
+
+    .checklist-item:hover {
+      background: rgba(5, 150, 105, 0.05);
+      transform: translateX(5px);
+    }
+
+    .checklist-icon {
+      color: var(--success);
+      margin-right: 1rem;
+      margin-top: 0.2rem;
+      flex-shrink: 0;
+      font-size: 1.2rem;
+    }
+
+    /* Tips Section */
+    .tips-section {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      margin: 3rem 0;
+      border-left: 4px solid var(--info);
+      box-shadow: 0 8px 30px rgba(96, 165, 250, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tips-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 150px;
+      height: 150px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2360a5fa' opacity='0.1'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+
+    /* Common Issues Section */
+    .issue-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      padding: 1.25rem;
+      border-radius: 0.75rem;
+      background: rgba(220, 38, 38, 0.05);
+      border-left: 4px solid var(--danger);
+      transition: all 0.3s ease;
+      min-height: auto !important;
+      height: fit-content !important;
+    }
+
+    .issue-item:hover {
+      background: rgba(220, 38, 38, 0.1);
+      transform: translateX(5px);
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(to bottom, var(--primary) 0%, var(--secondary) 100%);
+      opacity: 0.5;
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+
+    .timeline-item:hover {
+      transform: translateX(5px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -2rem;
+      top: 2rem;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.2);
+    }
+
+    /* Custom Button Styles */
+    .btn-gradient {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border: none;
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
+      color: white;
+    }
+
+    /* Navbar Styles */
+    .bg-navy {
+      background-color: var(--primary) !important;
+    }
+
+    .text-navy {
+      color: var(--primary) !important;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .booking-hero {
+        padding: 4rem 0;
+        border-radius: 0 0 2rem 2rem;
+      }
+
+      .step-number {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+      }
+
+      .progress-step:not(:last-child)::after {
+        left: 20px;
+      }
+
+      .timeline {
+        padding-left: 1.5rem;
+      }
+
+      .timeline-item::before {
+        left: -1.5rem;
+      }
+
+      .tips-section {
+        padding: 2rem 1.5rem;
+      }
+    }
+
+    /* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1C2B4A;
+    z-index: 1030;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .mobile-nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-nav-item.active {
+    color: #64748b;
+  }
+  
+  .mobile-nav-item i {
+    display: block;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .mobile-nav-item span {
+    display: none;
+  }
+  
+  /* Add padding to main content to account for bottom nav */
+  main {
+    margin-bottom: 80px;
+  }
+}
+
+.hero-subtitle {
+        color:#e2e8f0;
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+        line-height: 1.5;
+        }
+
+        #logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+  </style>
+</head>
+<body>
+
+  <!-- Dynamic Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i>ResLinQ</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <!-- Navigation will be populated by navbar.js -->
+        </ul>
+      </div>
+      
+      <!-- Dynamic Auth Buttons -->
+      <div class="signup-login-buttons">
+        <!-- Content will be populated by navbar.js -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Enhanced Hero Section -->
+  <section class="booking-hero">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    
+    <div class="container position-relative">
+      <div class="row align-items-center">
+        <div class="col-lg-8" data-aos="fade-right">
+          <h1 class="display-4 fw-bold mb-3 animate__animated animate__fadeInDown">
+            Student <span class="gradient-text">Booking Guide</span>
+          </h1>
+          <p class="lead mb-0 hero-subtitle fs-5 animate__animated animate__fadeInUp animate__delay-1s">
+            Your step-by-step guide to finding and securing the perfect student accommodation with confidence.
+          </p>
+          <div class="d-flex flex-wrap gap-2" data-aos="fade-up" data-aos-delay="200">
+            <span class="badge bg-light text-navy p-2">Easy Booking</span>
+            <span class="badge bg-light text-navy p-2">Secure Process</span>
+            <span class="badge bg-light text-navy p-2">Viewing Tips</span>
+            <span class="badge bg-light text-navy p-2">Document Checklist</span>
+          </div>
+        </div>
+        <div class="col-lg-4 text-center" data-aos="fade-left" data-aos-delay="300">
+          <div class="booking-icon icon-success mx-auto">
+            <i class="bi bi-calendar-check"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="container my-5">
+    <!-- Booking Benefits Overview -->
+    <section class="mb-5">
+      <h2 class="section-title display-5 fw-bold" data-aos="fade-up">Why Book With ResLinQ</h2>
+      <div class="row">
+        <div class="col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="100">
+          <div class="booking-card feature-card text-center p-4">
+            <div class="booking-icon icon-success mx-auto">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <h4 class="fw-bold">Verified Listings</h4>
+            <p class="text-muted">All properties undergo thorough verification to ensure quality and safety standards.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="200">
+          <div class="booking-card process-card text-center p-4">
+            <div class="booking-icon icon-primary mx-auto">
+              <i class="bi bi-clock"></i>
+            </div>
+            <h4 class="fw-bold">Quick Process</h4>
+            <p class="text-muted">Streamlined booking process with instant confirmation for approved applicants.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="300">
+          <div class="booking-card guideline-card text-center p-4">
+            <div class="booking-icon icon-info mx-auto">
+              <i class="bi bi-headset"></i>
+            </div>
+            <h4 class="fw-bold">Dedicated Support</h4>
+            <p class="text-muted">Personalized assistance throughout your booking journey and beyond.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="400">
+          <div class="booking-card tips-card text-center p-4">
+            <div class="booking-icon icon-warning mx-auto">
+              <i class="bi bi-arrow-repeat"></i>
+            </div>
+            <h4 class="fw-bold">Easy Modifications</h4>
+            <p class="text-muted">Flexible booking options with easy modification and cancellation policies.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Booking Process -->
+    <section class="mb-5">
+      <h2 class="section-title display-5 fw-bold" data-aos="fade-up">Booking Process</h2>
+      <p class="lead mb-4" data-aos="fade-up">Follow these simple steps to secure your ideal student accommodation through ResLinQ.</p>
+      
+      <div class="progress-container">
+        <div class="progress-step" data-aos="fade-right">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h4 class="fw-bold">Search & Explore</h4>
+            <p class="mb-3">Browse verified accommodations near your campus with detailed filters and photos.</p>
+            <div class="d-flex flex-wrap">
+              <span class="verification-badge"><i class="bi bi-search me-1"></i>Smart Search</span>
+              <span class="verification-badge"><i class="bi bi-filter me-1"></i>Advanced Filters</span>
+              <span class="verification-badge"><i class="bi bi-image me-1"></i>Virtual Tours</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="progress-step" data-aos="fade-right" data-aos-delay="100">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h4 class="fw-bold">Schedule Viewing</h4>
+            <p class="mb-3">Book property viewings at your convenience with our easy scheduling system.</p>
+            <div class="d-flex flex-wrap">
+              <span class="verification-badge"><i class="bi bi-calendar me-1"></i>Flexible Scheduling</span>
+              <span class="verification-badge"><i class="bi bi-bell me-1"></i>Reminder Alerts</span>
+              <span class="verification-badge"><i class="bi bi-geo-alt me-1"></i>Location Details</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="progress-step" data-aos="fade-right" data-aos-delay="200">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h4 class="fw-bold">Submit Application</h4>
+            <p class="mb-3">Complete your application with required documents for landlord approval.</p>
+            <div class="d-flex flex-wrap">
+              <span class="verification-badge"><i class="bi bi-file-text me-1"></i>Online Forms</span>
+              <span class="verification-badge"><i class="bi bi-cloud-upload me-1"></i>Document Upload</span>
+              <span class="verification-badge"><i class="bi bi-shield-lock me-1"></i>Secure Submission</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="progress-step" data-aos="fade-right" data-aos-delay="300">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h4 class="fw-bold">Confirmation & Move-in</h4>
+            <p class="mb-3">Receive booking confirmation and prepare for your move-in day.</p>
+            <div class="d-flex flex-wrap">
+              <span class="verification-badge"><i class="bi bi-check-circle me-1"></i>Instant Confirmation</span>
+              <span class="verification-badge"><i class="bi bi-receipt me-1"></i>Digital Contract</span>
+              <span class="verification-badge"><i class="bi bi-box-seam me-1"></i>Move-in Checklist</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Booking Checklist -->
+    <section class="mb-5">
+      <div class="row">
+        <div class="col-lg-8" data-aos="fade-right">
+          <h2 class="section-title display-5 fw-bold">Booking Preparation Checklist</h2>
+          <p class="lead mb-4">Ensure you have everything ready for a smooth booking experience.</p>
+          
+          <div class="booking-card p-4 mb-4">
+            <h4 class="mb-3 fw-bold"><i class="bi bi-file-text text-primary me-2"></i>Required Documents</h4>
+            <div class="checklist-item">
+              <i class="bi bi-check-circle-fill checklist-icon"></i>
+              <div>
+                <strong>Student ID or proof of enrollment</strong>
+                <p class="text-muted small mb-0">Current valid student identification</p>
+              </div>
+            </div>
+            <div class="checklist-item">
+              <i class="bi bi-check-circle-fill checklist-icon"></i>
+              <div>
+                <strong>ID document or passport</strong>
+                <p class="text-muted small mb-0">Government-issued identification</p>
+              </div>
+            </div>
+            <div class="checklist-item">
+              <i class="bi bi-check-circle-fill checklist-icon"></i>
+              <div>
+                <strong>Proof of income or bursary letter</strong>
+                <p class="text-muted small mb-0">If applicable for your application</p>
+              </div>
+            </div>
+            <div class="checklist-item">
+              <i class="bi bi-check-circle-fill checklist-icon"></i>
+              <div>
+                <strong>Previous rental references</strong>
+                <p class="text-muted small mb-0">Contact information for references</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="booking-card p-4">
+            <h4 class="mb-3 fw-bold"><i class="bi bi-cash-coin text-primary me-2"></i>Financial Preparation</h4>
+            <div class="checklist-item">
+              <i class="bi bi-check-circle-fill checklist-icon"></i>
+              <div>
+                <strong>Booking deposit</strong>
+                <p class="text-muted small mb-0">Typically 1 month's rent to secure the property</p>
+              </div>
+            </div>
+            <div class="checklist-item">
+              <i class="bi bi-check-circle-fill checklist-icon"></i>
+              <div>
+                <strong>First month's rent</strong>
+                <p class="text-muted small mb-0">Payable before move-in date</p>
+              </div>
+            </div>
+            <div class="checklist-item">
+              <i class="bi bi-check-circle-fill checklist-icon"></i>
+              <div>
+                <strong>Utility connection fees</strong>
+                <p class="text-muted small mb-0">For electricity, water, and internet setup</p>
+              </div>
+            </div>
+            <div class="checklist-item">
+              <i class="bi bi-check-circle-fill checklist-icon"></i>
+              <div>
+                <strong>Moving costs budget</strong>
+                <p class="text-muted small mb-0">Transportation and initial grocery expenses</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-4" data-aos="fade-left" data-aos-delay="200">
+          <div class="booking-card p-4 text-center h-100">
+            <div class="booking-icon icon-danger mx-auto mb-3">
+              <i class="bi bi-exclamation-circle"></i>
+            </div>
+            <h4 class="fw-bold">Common Booking Issues</h4>
+            <div class="text-start mt-4">
+              <div class="issue-item">
+                <i class="bi bi-x-circle text-danger me-2 mt-1"></i>
+                <div>
+                  <strong>Incomplete documentation</strong>
+                  <p class="text-muted small mb-0">Ensure all required documents are uploaded clearly</p>
+                </div>
+              </div>
+              <div class="issue-item">
+                <i class="bi bi-x-circle text-danger me-2 mt-1"></i>
+                <div>
+                  <strong>Last-minute cancellations</strong>
+                  <p class="text-muted small mb-0">Notify us 24 hours before scheduled viewings</p>
+                </div>
+              </div>
+              <div class="issue-item">
+                <i class="bi bi-x-circle text-danger me-2 mt-1"></i>
+                <div>
+                  <strong>Payment delays</strong>
+                  <p class="text-muted small mb-0">Complete payments within the specified timeframe</p>
+                </div>
+              </div>
+              <div class="issue-item">
+                <i class="bi bi-x-circle text-danger me-2 mt-1"></i>
+                <div>
+                  <strong>Communication gaps</strong>
+                  <p class="text-muted small mb-0">Respond promptly to landlord inquiries</p>
+                </div>
+              </div>
+              <div class="issue-item">
+                <i class="bi bi-x-circle text-danger me-2 mt-1"></i>
+                <div>
+                  <strong>Unrealistic expectations</strong>
+                  <p class="text-muted small mb-0">Research market rates for your budget range</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Viewing Tips -->
+    <section class="mb-5">
+      <div class="tips-section" data-aos="zoom-in">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <h3 class="fw-bold text-dark mb-3"><i class="bi bi-eye me-2"></i>Property Viewing Tips</h3>
+            <p class="mb-4">Make the most of your property viewings with these expert tips.</p>
+            
+            <div class="row">
+              <div class="col-sm-6 mb-3">
+                <div class="d-flex align-items-start">
+                  <div class="booking-icon icon-primary me-3">
+                    <i class="bi bi-list-check"></i>
+                  </div>
+                  <div>
+                    <h5 class="mb-1 fw-bold">Prepare Questions</h5>
+                    <p class="mb-0 text-muted">Create a list of important questions about utilities, rules, and maintenance</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 mb-3">
+                <div class="d-flex align-items-start">
+                  <div class="booking-icon icon-success me-3">
+                    <i class="bi bi-camera"></i>
+                  </div>
+                  <div>
+                    <h5 class="mb-1 fw-bold">Take Photos</h5>
+                    <p class="mb-0 text-muted">Document the property condition during your viewing</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 mb-3">
+                <div class="d-flex align-items-start">
+                  <div class="booking-icon icon-warning me-3">
+                    <i class="bi bi-clock"></i>
+                  </div>
+                  <div>
+                    <h5 class="mb-1 fw-bold">Visit at Different Times</h5>
+                    <p class="mb-0 text-muted">See the neighborhood during day and evening hours</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 mb-3">
+                <div class="d-flex align-items-start">
+                  <div class="booking-icon icon-info me-3">
+                    <i class="bi bi-people"></i>
+                  </div>
+                  <div>
+                    <h5 class="mb-1 fw-bold">Meet Potential Neighbors</h5>
+                    <p class="mb-0 text-muted">Get a sense of the community and building dynamics</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 text-center">
+            <div class="booking-icon icon-info mx-auto" style="width: 100px; height: 100px; font-size: 2.5rem;">
+              <i class="bi bi-lightbulb"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-4 pt-3 border-top border-info">
+          <h5 class="fw-bold mb-3">During the Viewing Checklist</h5>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <div class="d-flex">
+                <i class="bi bi-1-circle text-primary me-2 mt-1 fs-5"></i>
+                <div>
+                  <strong>Test Everything</strong>
+                  <p class="small mb-0 text-muted">Check taps, lights, switches, and appliances</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="d-flex">
+                <i class="bi bi-2-circle text-primary me-2 mt-1 fs-5"></i>
+                <div>
+                  <strong>Look for Damage</strong>
+                  <p class="small mb-0 text-muted">Inspect walls, floors, and fixtures carefully</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="d-flex">
+                <i class="bi bi-3-circle text-primary me-2 mt-1 fs-5"></i>
+                <div>
+                  <strong>Assess Storage</strong>
+                  <p class="small mb-0 text-muted">Check cupboard space and storage options</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Timeline Section -->
+    <section class="mb-5">
+      <h2 class="section-title display-5 fw-bold" data-aos="fade-up">Booking Timeline</h2>
+      <p class="lead mb-4" data-aos="fade-up">Understand the typical timeline from search to move-in.</p>
+      
+      <div class="booking-card p-4">
+        <div class="timeline">
+          <div class="timeline-item" data-aos="fade-right">
+            <h5 class="fw-bold">Week 1: Research & Shortlisting</h5>
+            <p class="text-muted">Browse properties, compare options, and create your shortlist of preferred accommodations.</p>
+          </div>
+          <div class="timeline-item" data-aos="fade-right" data-aos-delay="100">
+            <h5 class="fw-bold">Week 2: Viewings & Applications</h5>
+            <p class="text-muted">Schedule and attend viewings, then submit applications for your top choices.</p>
+          </div>
+          <div class="timeline-item" data-aos="fade-right" data-aos-delay="200">
+            <h5 class="fw-bold">Week 3: Approval & Documentation</h5>
+            <p class="text-muted">Receive approval, complete paperwork, and submit required deposits.</p>
+          </div>
+          <div class="timeline-item" data-aos="fade-right" data-aos-delay="300">
+            <h5 class="fw-bold">Week 4: Preparation & Move-in</h5>
+            <p class="text-muted">Finalize arrangements, set up utilities, and prepare for move-in day.</p>
+          </div>
+        </div>
+        <div class="mt-4 p-4 bg-light rounded" data-aos="fade-up">
+          <p class="mb-0 fw-bold"><i class="bi bi-lightbulb text-warning me-2"></i>Pro Tip: Start your search 4-6 weeks before your intended move-in date to allow ample time for viewings and processing.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Support Section -->
+    <section class="mb-5">
+      <h2 class="section-title display-5 fw-bold" data-aos="fade-up">Booking Support</h2>
+      <p class="lead mb-4" data-aos="fade-up">We're here to help at every step of your booking journey.</p>
+      
+      <div class="row">
+        <div class="col-md-6 mb-4" data-aos="fade-right" data-aos-delay="100">
+          <div class="booking-card p-4 h-100">
+            <div class="d-flex align-items-start">
+              <div class="booking-icon icon-success me-3">
+                <i class="bi bi-headset"></i>
+              </div>
+              <div>
+                <h4 class="fw-bold">Booking Assistance</h4>
+                <p class="text-muted">Get personalized help with your booking process and documentation.</p>
+                <ul class="list-unstyled">
+                  <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Application guidance</li>
+                  <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Document review</li>
+                  <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Landlord communication</li>
+                  <li><i class="bi bi-check text-success me-2"></i>Booking modifications</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6 mb-4" data-aos="fade-left" data-aos-delay="100">
+          <div class="booking-card p-4 h-100">
+            <div class="d-flex align-items-start">
+              <div class="booking-icon icon-primary me-3">
+                <i class="bi bi-shield-check"></i>
+              </div>
+              <div>
+                <h4 class="fw-bold">Verification Support</h4>
+                <p class="text-muted">Ensure your application meets all verification requirements.</p>
+                <ul class="list-unstyled">
+                  <li class="mb-2"><i class="bi bi-check text-primary me-2"></i>Document verification</li>
+                  <li class="mb-2"><i class="bi bi-check text-primary me-2"></i>Student status confirmation</li>
+                  <li class="mb-2"><i class="bi bi-check text-primary me-2"></i>Reference checks</li>
+                  <li><i class="bi bi-check text-primary me-2"></i>Background screening support</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Additional Resources -->
+    <section class="mb-5">
+      <div class="row">
+        <div class="col-lg-8 mx-auto" data-aos="zoom-in">
+          <div class="booking-card text-center p-5">
+            <h3 class="mb-3 fw-bold">Ready to Start Your Booking?</h3>
+            <p class="text-muted mb-4">Begin your journey to finding the perfect student accommodation today.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+              <a href="listings.html" class="btn btn-gradient btn-lg">
+                <i class="bi bi-search me-2"></i>Browse Listings
+              </a>
+              <a href="contact.html" class="btn btn-outline-primary btn-lg">
+                <i class="bi bi-headset me-2"></i>Get Help
+              </a>
+              <a href="my-bookings.html" class="btn btn-outline-warning btn-lg">
+                <i class="bi bi-calendar-check me-2"></i>My Bookings
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Mobile Bottom Navigation -->
+<div class="mobile-bottom-nav d-lg-none">
+  <a href="home.html" class="mobile-nav-item">
+    <i class="bi bi-house"></i>
+    <span>Home</span>
+  </a>
+  <a href="listings.html" class="mobile-nav-item">
+    <i class="bi bi-building"></i>
+    <span>Listings</span>
+  </a>
+  <a href="my-bookings.html" class="mobile-nav-item">
+    <i class="bi bi-calendar-check"></i>
+    <span>Bookings</span>
+  </a>
+  <a href="help.html" class="mobile-nav-item ">
+    <i class="bi bi-question-circle"></i>
+    <span>Help</span>
+  </a>
+</div>
+
+  <!-- Footer -->
+  <footer class="py-5 bg-navy text-white">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for finding the perfect student accommodation near your campus.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Quick Links</h6>
+          <ul class="list-unstyled">
+            <li><a href="home.html" class="text-light text-decoration-none">Home</a></li>
+            <li><a href="listings.html" class="text-light text-decoration-none">Listings</a></li>
+            <li><a href="help.html" class="text-light text-decoration-none">Help</a></li>
+            <li><a href="about-us.html" class="text-light text-decoration-none">About Us</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="my-bookings.html" class="text-light text-decoration-none">My Bookings</a></li>
+            <li><a href="my-reports.html" class="text-light text-decoration-none">My Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Get in Touch</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="navbar.js"></script>
+  
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 1000,
+      once: true,
+      offset: 100
+    });
+
+    // Add interactive animations
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add hover effects to booking cards
+      const bookingCards = document.querySelectorAll('.booking-card');
+      bookingCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-10px)';
+        });
+        card.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateY(0)';
+        });
+      });
+
+      // Animate verification badges on scroll
+      const badges = document.querySelectorAll('.verification-badge');
+      const badgeObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+          if (entry.isIntersecting) {
+            setTimeout(() => {
+              entry.target.style.opacity = '1';
+              entry.target.style.transform = 'translateY(0)';
+            }, index * 100);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      badges.forEach(badge => {
+        badge.style.opacity = '0';
+        badge.style.transform = 'translateY(20px)';
+        badge.style.transition = 'all 0.5s ease';
+        badgeObserver.observe(badge);
+      });
+
+      // Add bounce animation to timeline items on hover
+      const timelineItems = document.querySelectorAll('.timeline-item');
+      timelineItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+          this.style.animation = 'bounce 0.6s ease';
+        });
+        item.addEventListener('mouseleave', function() {
+          this.style.animation = 'none';
+        });
+      });
+    });
+  </script>
+</body>
+</html>

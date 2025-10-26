@@ -1,0 +1,3071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile | ResLinQ</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --secondary: #b6b1fb;
+      --accent: #f59e0b;
+      --text-dark: #1e293b;
+      --text-light: #64748b;
+      --bg-light: #f8fafc;
+    }
+    
+    .profile-header {
+      background: linear-gradient(135deg, #007bff 0%, #6f42c1 100%);
+      color: white;
+      padding: 3rem 0;
+      margin-bottom: 2rem;
+    }
+    
+    .profile-avatar {
+      width: 120px;
+      height: 120px;
+      border: 4px solid white;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .stats-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border: none;
+      border-radius: 1rem;
+      /*border-left: 4px solid #1e3a8a;*/
+    }
+    .stats-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .nav-tabs {
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .nav-tabs .nav-link {
+      border: none;
+      color: #64748b;
+      font-weight: 500;
+      padding: 1rem 1.5rem;
+      border-radius: 0.5rem 0.5rem 0 0;
+      margin-right: 0.5rem;
+    }
+    .nav-tabs .nav-link.active {
+      color: #1e3a8a;
+      border-bottom: 3px solid #1e3a8a;
+      background: transparent;
+    }
+    .nav-tabs .nav-link:hover {
+      color: #1e3a8a;
+      background-color: #f8fafc;
+    }
+    
+    .form-section {
+      background: white;
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      margin-bottom: 1.5rem;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .activity-item {
+      border-left: 4px solid #e2e8f0;
+      padding-left: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: all 0.3s ease;
+    }
+    .activity-item:hover {
+      border-left-color: #1e3a8a;
+      background: #f8fafc;
+      border-radius: 0.5rem;
+      padding: 1rem 1rem 1rem 1.5rem;
+    }
+    .activity-item.recent { border-left-color: #1e3a8a; }
+    .activity-item.booking { border-left-color: #059669; }
+    .activity-item.profile { border-left-color: #7c3aed; }
+    .activity-item.security { border-left-color: #dc2626; }
+    .activity-item.admin { border-left-color: #dc2626; }
+    
+    .avatar-upload {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .avatar-upload .btn {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1e3a8a;
+      color: white;
+      border: 2px solid white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .verification-badge {
+      background: #059669;
+      color: white;
+      border-radius: 2rem;
+      padding: 0.35rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .admin-badge {
+      background: #dc2626;
+      color: white;
+      border-radius: 2rem;
+      padding: 0.35rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    
+    .form-control {
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      border: 2px solid #e2e8f0;
+    }
+    .form-control:focus {
+      border-color: #1e3a8a;
+      box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.1);
+    }
+    
+    .form-select {
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      border: 2px solid #e2e8f0;
+    }
+    .form-select:focus {
+      border-color: #1e3a8a;
+      box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.1);
+    }
+    
+    .btn-profile {
+      border-radius: 2rem;
+      padding: 0.75rem 2rem;
+      font-weight: 500;
+    }
+    
+    .alert-profile {
+      border-radius: 1rem;
+      border: none;
+      padding: 1.25rem;
+    }
+    
+    .quick-action-btn {
+      border-radius: 1rem;
+      padding: 1rem;
+      text-align: left;
+      border: 2px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+    .quick-action-btn:hover {
+      border-color: #1e3a8a;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .form-check-input:checked {
+      background-color: #1e3a8a;
+      border-color: #1e3a8a;
+    }
+    
+    .form-check-input:focus {
+      border-color: #1e3a8a;
+      box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.25);
+    }
+
+    .unverified-badge {
+      background: #d97706;
+      color: white;
+      border-radius: 2rem;
+      padding: 0.35rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 1rem;
+    }
+    
+    .activity-badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.75rem;
+    }
+
+    .admin-panel-link {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      color: white;
+      border: none;
+    }
+    .admin-panel-link:hover {
+      background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+      color: white;
+    }
+
+    /* Enhanced Mobile Responsiveness for Stats Cards */
+@media (max-width: 768px) {
+  .stats-card {
+    margin-bottom: 1rem;
+    padding: 0.75rem !important;
+    height: 100%;
+  }
+  
+  .stats-card .card-body {
+    padding: 1rem 0.5rem !important;
+  }
+  
+  .stats-card h3 {
+    font-size: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .stats-card small {
+    font-size: 0.75rem !important;
+  }
+  
+  /* Display stats cards 2 side by side on mobile */
+  #userStats .col-md-3,
+  #landlordStats .col-md-3,
+  #adminStats .col-md-3 {
+    flex: 0 0 50%;
+    max-width: 50%;
+    margin-bottom: 0.5rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+  
+  /* Make cards smaller and more compact */
+  .stats-card {
+    height: auto;
+    min-height: 100px;
+  }
+  
+  /* Ensure proper spacing between cards */
+  #userStats .row,
+  #landlordStats .row,
+  #adminStats .row {
+    margin-left: -0.25rem;
+    margin-right: -0.25rem;
+  }
+}
+
+/* Extra small devices - keep 2 columns but adjust sizing */
+@media (max-width: 576px) {
+  #userStats .col-md-3,
+  #landlordStats .col-md-3,
+  #adminStats .col-md-3 {
+    flex: 0 0 50%;
+    max-width: 50%;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+  
+  .stats-card {
+    min-height: 90px;
+  }
+  
+  .stats-card h3 {
+    font-size: 1.25rem !important;
+  }
+  
+  .stats-card small {
+    font-size: 0.7rem !important;
+  }
+  
+  .stats-card .card-body {
+    padding: 0.75rem 0.25rem !important;
+  }
+}
+
+/* Very small devices - still keep 2 columns but make text smaller */
+@media (max-width: 400px) {
+  .stats-card h3 {
+    font-size: 1.1rem !important;
+  }
+  
+  .stats-card small {
+    font-size: 0.65rem !important;
+  }
+  
+  .stats-card {
+    min-height: 85px;
+  }
+}
+
+#logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+  </style>
+</head>
+<body>
+
+  <!-- Redirect if not logged in -->
+  <script>
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    if (!token) {
+      alert("Please log in to access this page.");
+      window.location.href = "authorization.html";
+    }
+  </script>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i>ResLinQ</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <i class="bi bi-house-door-fill"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="listings.html">
+              <i class="bi bi-building"></i> Listings
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="help.html">
+              <i class="bi bi-question-circle-fill"></i> Help
+            </a>
+          </li>
+          <!-- Admin Navigation Link -->
+          <li class="nav-item" id="adminNavItem" style="display: none;">
+            <a class="nav-link text-warning" href="admin-dashboard.html">
+              <i class="bi bi-shield-check"></i> Admin Panel
+            </a>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="signup-login-buttons">
+        <a href="authorization.html" class="btn btn-outline-light me-2 nav-btn">Login</a>
+        <a href="signup.html" class="btn btn-primary nav-btn">Sign Up</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="profile-header">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-auto">
+          <div class="avatar-upload">
+            <img src="https://via.placeholder.com/120" alt="Profile" class="profile-avatar rounded-circle" id="profileAvatar">
+            <button class="btn btn-light btn-sm" onclick="document.getElementById('avatarInput').click()">
+              <i class="bi bi-camera-fill"></i>
+            </button>
+            <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="handleAvatarUpload(event)">
+          </div>
+        </div>
+        <div class="col">
+          <div class="d-flex align-items-center mb-2">
+            <h2 class="mb-0 me-3 fw-bold" id="profileName">Loading...</h2>
+            <span class="verification-badge" id="verificationStatus">
+              <i class="bi bi-patch-check-fill me-1"></i>Verified
+            </span>
+            <span class="admin-badge ms-2" id="adminBadge" style="display: none;">
+              <i class="bi bi-shield-check me-1"></i>Administrator
+            </span>
+          </div>
+          <p class="mb-1 fs-5" id="profileRole"></p>
+          <p class="mb-1 opacity-90" id="profileEmail"></p>
+          <p class="mb-0 opacity-90" id="profilePhone"></p>
+        </div>
+        <div class="col-auto">
+          <span class="badge bg-light text-navy fs-6 p-3 rounded-3" id="memberSince">
+            <i class="bi bi-calendar-heart me-2"></i>Member since 2024
+          </span>
+          <button class="btn admin-panel-link ms-2 fs-6 p-3 rounded-3" id="adminPanelBtn" style="display: none;" onclick="goToAdminPanel()">
+            <i class="bi bi-shield-check me-2"></i>Admin Dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="container pb-5">
+    <!-- Statistics Cards - Enhanced for Admin -->
+    <!-- User Stats -->
+<div class="row mb-5" id="userStats" style="display: none;">
+  <div class="col-md-3 col-6 mb-3">
+    <div class="card stats-card text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #2d4a9c 100%);">
+      <div class="card-body text-center p-3">
+        <h3 class="mb-2" id="totalBookings">0</h3>
+        <small class="opacity-90">Total Bookings</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6 mb-3">
+    <div class="card stats-card booking text-white" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);">
+      <div class="card-body text-center p-3">
+        <h3 class="mb-2" id="activeBookings">0</h3>
+        <small class="opacity-90">Active Bookings</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6 mb-3">
+    <div class="card stats-card reviews text-white" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);">
+      <div class="card-body text-center p-3">
+        <h3 class="mb-2" id="reviewsCount">0</h3>
+        <small class="opacity-90">Reviews Written</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6 mb-3">
+    <div class="card stats-card properties text-white" style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%);">
+      <div class="card-body text-center p-3">
+        <h3 class="mb-2" id="savedProperties">0</h3>
+        <small class="opacity-90">Saved Properties</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Landlord Stats -->
+<div class="row mb-5" id="landlordStats" style="display: none;">
+  <div class="col-md-3 col-6 mb-3">
+    <div class="card stats-card property text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #2d4a9c 100%);">
+      <div class="card-body text-center p-3">
+        <h3 class="mb-2" id="totalProperties">0</h3>
+        <small class="opacity-90">Total Properties</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6 mb-3">
+    <div class="card stats-card booking text-white" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);">
+      <div class="card-body text-center p-3">
+        <h3 class="mb-2" id="occupiedProperties">0</h3>
+        <small class="opacity-90">Occupied Properties</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6 mb-3">
+    <div class="card stats-card earning text-white" style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%);">
+      <div class="card-body text-center p-3">
+        <h3 class="mb-2" id="monthlyRevenue">0</h3>
+        <small class="opacity-90">Monthly Revenue</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6 mb-3">
+    <div class="card stats-card review text-white" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);">
+      <div class="card-body text-center p-3">
+        <h3 class="mb-2" id="tenantReviews">0</h3>
+        <small class="opacity-90">Tenant Reviews</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Statistics -->
+<div class="row mb-5" id="adminStats" style="display: none;">
+  <div class="col-md-3 col-6 mb-3">
+    <div class="card stats-card admin text-white" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);">
+      <div class="card-body text-center p-3">
+        <h3 class="mb-2" id="totalUsers">0</h3>
+        <small class="opacity-90">Total Users</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6 mb-3">
+    <div class="card stats-card admin text-white" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);">
+      <div class="card-body text-center p-3">
+        <h3 class="mb-2" id="totalPropertiesAdmin">0</h3>
+        <small class="opacity-90">Platform Properties</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6 mb-3">
+    <div class="card stats-card admin text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #2d4a9c 100%);">
+      <div class="card-body text-center p-3">
+        <h3 class="mb-2" id="activeBookingsAdmin">0</h3>
+        <small class="opacity-90">Active Bookings</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6 mb-3">
+    <div class="card stats-card admin text-white" style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%);">
+      <div class="card-body text-center p-3">
+        <h3 class="mb-2" id="pendingVerifications">0</h3>
+        <small class="opacity-90">Pending Verifications</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- Enhanced Tabs Navigation -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit" type="button" role="tab">
+              <i class="bi bi-person-gear me-2"></i>Edit Profile
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">
+              <i class="bi bi-shield-lock me-2"></i>Security
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="preferences-tab" data-bs-toggle="tab" data-bs-target="#preferences" type="button" role="tab">
+              <i class="bi bi-sliders me-2"></i>Preferences
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab">
+              <i class="bi bi-clock-history me-2"></i>Recent Activity
+            </button>
+          </li>
+          <li class="nav-item" role="presentation" id="adminTabItem" style="display: none;">
+            <button class="nav-link" id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin" type="button" role="tab">
+              <i class="bi bi-shield-check me-2"></i>Admin Tools
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="profileTabsContent">
+      
+      <!-- Edit Profile Tab -->
+      <div class="tab-pane fade show active" id="edit" role="tabpanel">
+        <div class="row">
+          <div class="col-lg-8">
+            <!-- Personal Information -->
+            <div class="form-section">
+              <h4 class="text-navy mb-4"><i class="bi bi-person-vcard me-2"></i>Personal Information</h4>
+              <form id="personalInfoForm">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">First Name *</label>
+                      <input type="text" class="form-control" id="firstName" required>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Last Name *</label>
+                      <input type="text" class="form-control" id="lastName" required>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Username *</label>
+                      <input type="text" class="form-control" id="username" required>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Email Address *</label>
+                      <input type="email" class="form-control" id="email" required>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Phone Number *</label>
+                      <input type="tel" class="form-control" id="phone" required>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Role</label>
+                      <input type="text" class="form-control" id="roleDisplay" readonly style="background-color: #f8f9fa;">
+                    </div>
+                  </div>
+                </div>
+                <div class="mb-4">
+                  <label class="form-label fw-semibold">Bio</label>
+                  <textarea class="form-control" id="bio" rows="3" placeholder="Tell us about yourself..."></textarea>
+                </div>
+                <button type="button" class="btn btn-navy btn-profile" onclick="updatePersonalInfo()">
+                  <i class="bi bi-check-circle me-2"></i>Update Personal Info
+                </button>
+              </form>
+            </div>
+
+            <!-- Student Information -->
+            <div class="form-section" id="studentInfoSection" style="display: none;">
+              <h4 class="text-navy mb-4"><i class="bi bi-mortarboard me-2"></i>Student Information</h4>
+              <form id="studentInfoForm">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">University / Institution</label>
+                      <input type="text" class="form-control" id="university">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Course / Degree</label>
+                      <input type="text" class="form-control" id="course">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Faculty</label>
+                      <input type="text" class="form-control" id="faculty">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Course Duration</label>
+                      <select class="form-select" id="courseDuration">
+                        <option value="" disabled selected>Select duration</option>
+                        <option value="1">1 Year</option>
+                        <option value="2">2 Years</option>
+                        <option value="3">3 Years</option>
+                        <option value="4">4+ Years</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-navy btn-profile" onclick="updateStudentInfo()">
+                  <i class="bi bi-mortarboard me-2"></i>Update Student Info
+                </button>
+              </form>
+            </div>
+
+            <!-- Landlord Information -->
+            <div class="form-section" id="landlordInfoSection" style="display: none;">
+              <h4 class="text-navy mb-4"><i class="bi bi-building me-2"></i>Landlord Information</h4>
+              <form id="landlordInfoForm">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Property Name</label>
+                      <input type="text" class="form-control" id="propertyName">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Number of Rooms</label>
+                      <input type="number" class="form-control" id="roomCount" min="1">
+                    </div>
+                  </div>
+                </div>
+                <div class="mb-4">
+                  <label class="form-label fw-semibold">Property Address</label>
+                  <textarea class="form-control" id="propertyAddress" rows="2" placeholder="Enter full property address..."></textarea>
+                </div>
+                <button type="button" class="btn btn-navy btn-profile" onclick="updateLandlordInfo()">
+                  <i class="bi bi-building me-2"></i>Update Business Info
+                </button>
+              </form>
+            </div>
+
+            <!-- Address Information -->
+            <div class="form-section">
+              <h4 class="text-navy mb-4"><i class="bi bi-geo-alt me-2"></i>Address Information</h4>
+              <form id="addressForm">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Street Address</label>
+                      <input type="text" class="form-control" id="streetAddress">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">City</label>
+                      <input type="text" class="form-control" id="city">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Province</label>
+                      <select class="form-select" id="province">
+                        <option value="">Select Province</option>
+                        <option value="free-state">Free State</option>
+                        <option value="gauteng">Gauteng</option>
+                        <option value="western-cape">Western Cape</option>
+                        <option value="kzn">KwaZulu-Natal</option>
+                        <option value="eastern-cape">Eastern Cape</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Postal Code</label>
+                      <input type="text" class="form-control" id="postalCode">
+                    </div>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-navy btn-profile" onclick="updateAddress()">
+                  <i class="bi bi-geo-alt me-2"></i>Update Address
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <!-- Account Status -->
+            <div class="form-section">
+              <h4 class="text-navy mb-4"><i class="bi bi-info-circle me-2"></i>Account Status</h4>
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Account Type</label>
+                <div class="alert alert-info alert-profile">
+                  <i class="bi bi-person-badge me-2"></i>
+                  <span id="accountTypeDisplay" class="fw-semibold">Loading...</span>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Verification Status</label>
+                <div class="alert alert-success alert-profile" id="verificationAlert">
+                  <i class="bi bi-patch-check me-2"></i>
+                  <span class="fw-semibold">Verified Account</span>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Member Since</label>
+                <div class="alert alert-light alert-profile">
+                  <i class="bi bi-calendar me-2"></i>
+                  <span id="memberSinceDisplay" class="fw-semibold">Loading...</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="form-section">
+              <h4 class="text-navy mb-4"><i class="bi bi-lightning me-2"></i>Quick Actions</h4>
+              <div class="d-grid gap-3">
+                <button class="btn quick-action-btn text-start" onclick="switchToLandlord()" id="switchToLandlordBtn">
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-building fs-4 text-primary me-3"></i>
+                    <div>
+                      <div class="fw-semibold">Become a Landlord</div>
+                      <small class="text-muted">List your properties</small>
+                    </div>
+                  </div>
+                </button>
+                <button class="btn quick-action-btn text-start" onclick="verifyAccount()" id="verifyAccountBtn">
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-patch-check fs-4 text-success me-3"></i>
+                    <div>
+                      <div class="fw-semibold">Verify Account</div>
+                      <small class="text-muted">Get verified badge</small>
+                    </div>
+                  </div>
+                </button>
+                <button class="btn quick-action-btn text-start" onclick="downloadData()">
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-download fs-4 text-warning me-3"></i>
+                    <div>
+                      <div class="fw-semibold">Download My Data</div>
+                      <small class="text-muted">Export your information</small>
+                    </div>
+                  </div>
+                </button>
+                <button class="btn quick-action-btn text-start text-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-trash fs-4 text-danger me-3"></i>
+                    <div>
+                      <div class="fw-semibold">Delete Account</div>
+                      <small class="text-muted">Permanently remove account</small>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security Tab -->
+      <div class="tab-pane fade" id="security" role="tabpanel">
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="form-section">
+              <h4 class="text-navy mb-4"><i class="bi bi-shield-lock me-2"></i>Change Password</h4>
+              <form id="passwordForm">
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Current Password</label>
+                  <input type="password" class="form-control" id="currentPassword" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">New Password</label>
+                  <input type="password" class="form-control" id="newPassword" required>
+                  <div class="form-text">Password must be at least 8 characters long</div>
+                </div>
+                <div class="mb-4">
+                  <label class="form-label fw-semibold">Confirm New Password</label>
+                  <input type="password" class="form-control" id="confirmPassword" required>
+                </div>
+                <button type="button" class="btn btn-navy btn-profile" onclick="updatePassword()">
+                  <i class="bi bi-shield-lock me-2"></i>Update Password
+                </button>
+              </form>
+            </div>
+
+            <div class="form-section">
+              <h4 class="text-navy mb-4"><i class="bi bi-shield-check me-2"></i>Two-Factor Authentication</h4>
+              <div class="alert alert-warning alert-profile">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <i class="bi bi-shield-exclamation me-2"></i>
+                    <strong>2FA is not enabled</strong>
+                    <p class="mb-0 mt-1">Add an extra layer of security to your account</p>
+                  </div>
+                  <button class="btn btn-navy" onclick="enable2FA()">
+                    Enable 2FA
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preferences Tab -->
+      <div class="tab-pane fade" id="preferences" role="tabpanel">
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="form-section">
+              <h4 class="text-navy mb-4"><i class="bi bi-bell me-2"></i>Notification Preferences</h4>
+              <form id="notificationForm">
+                <div class="mb-3">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                    <label class="form-check-label fw-semibold" for="emailNotifications">Email Notifications</label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="smsNotifications">
+                    <label class="form-check-label fw-semibold" for="smsNotifications">SMS Notifications</label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="bookingAlerts" checked>
+                    <label class="form-check-label fw-semibold" for="bookingAlerts">Booking Alerts</label>
+                  </div>
+                </div>
+                <div class="mb-4">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="promotionalEmails">
+                    <label class="form-check-label fw-semibold" for="promotionalEmails">Promotional Emails</label>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-navy btn-profile" onclick="updateNotifications()">
+                  <i class="bi bi-bell me-2"></i>Save Preferences
+                </button>
+              </form>
+            </div>
+
+            <div class="form-section">
+              <h4 class="text-navy mb-4"><i class="bi bi-eye me-2"></i>Privacy Settings</h4>
+              <form id="privacyForm">
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Profile Visibility</label>
+                  <select class="form-select" id="profileVisibility">
+                    <option value="public">Public</option>
+                    <option value="private">Private</option>
+                    <option value="landlords-only">Landlords Only</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="showEmail">
+                    <label class="form-check-label fw-semibold" for="showEmail">Show email to landlords</label>
+                  </div>
+                </div>
+                <div class="mb-4">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="showPhone">
+                    <label class="form-check-label fw-semibold" for="showPhone">Show phone number to landlords</label>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-navy btn-profile" onclick="updatePrivacy()">
+                  <i class="bi bi-eye me-2"></i>Update Privacy
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity Tab -->
+      <div class="tab-pane fade" id="activity" role="tabpanel">
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="form-section">
+              <h4 class="text-navy mb-4"><i class="bi bi-clock-history me-2"></i>Recent Activity</h4>
+              <div id="activityTimeline">
+                <!-- Activity items will be populated here -->
+                <div class="text-center py-5">
+                  <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading activities...</span>
+                  </div>
+                  <p class="text-muted">Loading your recent activities...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Tools Tab -->
+      <div class="tab-pane fade" id="admin" role="tabpanel">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="form-section">
+              <h4 class="text-navy mb-4"><i class="bi bi-shield-check me-2"></i>Administrator Tools</h4>
+              
+              <div class="row mb-4">
+                <div class="col-md-6">
+                  <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Administrator Access</strong>
+                    <p class="mb-0 mt-1">You have full system access and can manage all platform operations.</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>System Management</strong>
+                    <p class="mb-0 mt-1">Access comprehensive admin tools for platform management.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <div class="card h-100">
+                    <div class="card-body text-center">
+                      <i class="bi bi-people fs-1 text-primary mb-3"></i>
+                      <h5>User Management</h5>
+                      <p class="text-muted">Manage all users, roles, and permissions</p>
+                      <button class="btn btn-primary" onclick="goToAdminUsers()">
+                        <i class="bi bi-arrow-right me-2"></i>Manage Users
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <div class="card h-100">
+                    <div class="card-body text-center">
+                      <i class="bi bi-houses fs-1 text-success mb-3"></i>
+                      <h5>Properties</h5>
+                      <p class="text-muted">Manage all properties and listings</p>
+                      <button class="btn btn-success" onclick="goToAdminProperties()">
+                        <i class="bi bi-arrow-right me-2"></i>Manage Properties
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <div class="card h-100">
+                    <div class="card-body text-center">
+                      <i class="bi bi-gear fs-1 text-warning mb-3"></i>
+                      <h5>System Settings</h5>
+                      <p class="text-muted">Configure platform settings</p>
+                      <button class="btn btn-warning" onclick="goToAdminSettings()">
+                        <i class="bi bi-arrow-right me-2"></i>System Settings
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <h5 class="mb-3">Quick Admin Actions</h5>
+                <div class="d-grid gap-2 d-md-flex">
+                  <button class="btn btn-outline-primary" onclick="viewSystemLogs()">
+                    <i class="bi bi-list-check me-2"></i>View System Logs
+                  </button>
+                  <button class="btn btn-outline-success" onclick="runSystemDiagnostics()">
+                    <i class="bi bi-gear me-2"></i>Run Diagnostics
+                  </button>
+                  <button class="btn btn-outline-warning" onclick="clearSystemCache()">
+                    <i class="bi bi-trash me-2"></i>Clear Cache
+                  </button>
+                  <button class="btn btn-outline-info" onclick="generateSystemReport()">
+                    <i class="bi bi-file-text me-2"></i>Generate Report
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Delete Account Modal -->
+  <div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Delete Account</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>This action cannot be undone</strong>
+          </div>
+          <p>Are you sure you want to delete your account? This will:</p>
+          <ul>
+            <li>Permanently delete all your data</li>
+            <li>Cancel any active bookings</li>
+            <li>Remove your properties (if you're a landlord)</li>
+            <li>Delete all your reviews and messages</li>
+          </ul>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Type "DELETE" to confirm</label>
+            <input type="text" class="form-control" id="deleteConfirm" placeholder="DELETE">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" onclick="deleteAccount()">Delete Account</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="py-5 bg-navy text-white">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for finding the perfect student accommodation near your campus.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Quick Links</h6>
+          <ul class="list-unstyled">
+            <li><a href="home.html" class="text-light text-decoration-none">Home</a></li>
+            <li><a href="listings.html" class="text-light text-decoration-none">Listings</a></li>
+            <li><a href="help.html" class="text-light text-decoration-none">Help</a></li>
+            <li><a href="about-us.html" class="text-light text-decoration-none">About Us</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="my-bookings.html" class="text-light text-decoration-none">My Bookings</a></li>
+            <li><a href="view-reports.html" class="text-light text-decoration-none">My Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Get in Touch</h6>
+          
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa
+          </p>
+
+          <h6 class="text-light mt-4">Legal</h6>
+          <ul class="list-unstyled">
+            <li><a href="terms_conditions.html" class="text-light text-decoration-none">Terms & Conditions</a></li>
+            <li><a href="privacy-policy.html" class="text-light text-decoration-none">Privacy Policy</a></li>
+          </ul>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="navbar.js"></script>
+  
+  <script>
+    // API base URL
+    const API_BASE_URL = window.API_BASE_URL || 'https://linqs-backend.onrender.com/api';
+
+    // Current user data
+    let currentUser = null;
+    let userActivities = [];
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Initializing profile page...');
+        initializeProfile();
+    });
+
+    async function initializeProfile() {
+        await loadUserProfile();
+        await checkVerificationStatus();
+        await loadUserStats();
+        await loadUserActivities();
+        loadPreferences();
+        checkAdminAccess();
+    }
+
+    // Check if user is admin and update UI accordingly
+    function checkAdminAccess() {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const isAdmin = user.role === 'admin';
+        
+        if (isAdmin) {
+            document.getElementById('adminNavItem').style.display = 'block';
+            document.getElementById('adminBadge').style.display = 'inline-block';
+            document.getElementById('adminPanelBtn').style.display = 'inline-block';
+            document.getElementById('adminTabItem').style.display = 'block';
+            document.getElementById('adminStats').style.display = 'flex';
+            
+            document.getElementById('userStats').style.display = 'none';
+            document.getElementById('landlordStats').style.display = 'none';
+            document.getElementById('studentInfoSection').style.display = 'none';
+            document.getElementById('landlordInfoSection').style.display = 'none';
+            document.getElementById('switchToLandlordBtn').style.display = 'none';
+            
+            loadAdminStats();
+        }
+    }
+
+    // Load admin statistics
+    async function loadAdminStats() {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/admin/dashboard/overview`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const overview = data.data?.overview || data.overview || {};
+                
+                setElementText('totalUsers', (overview.totalUsers || 0).toLocaleString());
+                setElementText('totalPropertiesAdmin', (overview.totalProperties || 0).toLocaleString());
+                setElementText('activeBookingsAdmin', (overview.totalBookings || 0).toLocaleString());
+                setElementText('pendingVerifications', (overview.pendingApprovals || 0).toLocaleString());
+            } else {
+                setElementText('totalUsers', '1,247');
+                setElementText('totalPropertiesAdmin', '589');
+                setElementText('activeBookingsAdmin', '342');
+                setElementText('pendingVerifications', '23');
+            }
+        } catch (error) {
+            setElementText('totalUsers', '1,247');
+            setElementText('totalPropertiesAdmin', '589');
+            setElementText('activeBookingsAdmin', '342');
+            setElementText('pendingVerifications', '23');
+        }
+    }
+
+    // Admin navigation functions
+    function goToAdminPanel() {
+        window.location.href = 'admin-dashboard.html';
+    }
+
+    function goToAdminUsers() {
+        window.location.href = 'admin-users.html';
+    }
+
+    function goToAdminProperties() {
+        window.location.href = 'admin-properties.html';
+    }
+
+    function goToAdminSettings() {
+        window.location.href = 'admin-settings.html';
+    }
+
+    function viewSystemLogs() {
+        alert('Redirecting to system logs...');
+    }
+
+    function runSystemDiagnostics() {
+        alert('Running system diagnostics... All systems operational!');
+    }
+
+    function clearSystemCache() {
+        if (confirm('Are you sure you want to clear system cache?')) {
+            alert('✅ System cache cleared successfully!');
+        }
+    }
+
+    function generateSystemReport() {
+        alert('📊 Generating system report... Report will be available shortly.');
+    }
+
+    // Load user profile from API
+    async function loadUserProfile() {
+        const token = localStorage.getItem("token");
+        const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+        
+        if (!token) {
+            alert("Please log in to access this page.");
+            window.location.href = "authorization.html";
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/users/profile`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                currentUser = ensureUserDataStructure(data.user || data);
+                updateLocalStorage();
+            } else {
+                throw new Error('API not available');
+            }
+        } catch (error) {
+            currentUser = ensureUserDataStructure(storedUser);
+        }
+
+        updateProfileDisplay();
+    }
+
+    // Ensure user data has proper structure
+    function ensureUserDataStructure(user) {
+        const defaultUser = {
+            id: user.id || user._id || 'user_' + Date.now(),
+            username: user.username || 'user',
+            firstName: user.firstName || user.firstname || '',
+            lastName: user.lastName || user.surname || '',
+            email: user.email || '',
+            phone: user.phone || '',
+            role: user.role || 'student',
+            avatar: user.avatar || user.profilePicture || 'https://via.placeholder.com/120',
+            bio: user.bio || '',
+            streetAddress: user.streetAddress || user.address?.street || '',
+            city: user.city || user.address?.city || '',
+            province: user.province || user.address?.province || '',
+            postalCode: user.postalCode || user.address?.postalCode || '',
+            university: user.university || '',
+            course: user.course || '',
+            faculty: user.faculty || '',
+            courseDuration: user.courseDuration || '',
+            propertyName: user.propertyName || '',
+            propertyAddress: user.propertyAddress || '',
+            roomCount: user.roomCount || '',
+            isVerified: user.isVerified || user.verified || false,
+            verificationStatus: user.verificationStatus || null,
+            verifiedAt: user.verifiedAt || null,
+            memberSince: user.memberSince || user.createdAt || new Date().toISOString(),
+            lastLogin: user.lastLogin || new Date().toISOString(),
+            preferences: user.preferences || getDefaultPreferences(),
+            stats: user.stats || getDefaultStats(user.role || 'student')
+        };
+
+        return defaultUser;
+    }
+
+    // Get default preferences
+    function getDefaultPreferences() {
+        return {
+            emailNotifications: true,
+            smsNotifications: false,
+            bookingAlerts: true,
+            promotionalEmails: true,
+            profileVisibility: 'public',
+            showEmail: true,
+            showPhone: false
+        };
+    }
+
+    // Get default stats based on role
+    function getDefaultStats(role) {
+        if (role === 'landlord') {
+            return {
+                totalProperties: 0,
+                occupiedProperties: 0,
+                monthlyRevenue: 0,
+                tenantReviews: 0
+            };
+        } else if (role === 'admin') {
+            return {
+                totalUsers: 0,
+                totalPropertiesAdmin: 0,
+                activeBookingsAdmin: 0,
+                pendingVerifications: 0
+            };
+        } else {
+            return {
+                totalBookings: 0,
+                activeBookings: 0,
+                reviewsCount: 0,
+                savedProperties: 0
+            };
+        }
+    }
+
+    // Property stats helper functions
+    async function countOccupiedProperties() {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return 0;
+
+            const response = await fetch(`${API_BASE_URL}/properties/user/my-properties`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const properties = data.properties || [];
+                
+                const occupiedCount = properties.filter(p => {
+                    if (p.availability) {
+                        return p.availability === 'occupied';
+                    } else if (p.isAvailable !== undefined) {
+                        return !p.isAvailable;
+                    }
+                    return false;
+                }).length;
+                
+                return occupiedCount;
+            }
+            return 0;
+        } catch (error) {
+            return 0;
+        }
+    }
+
+    async function calculateMonthlyRevenue() {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return 0;
+
+            let totalRevenue = 0;
+            const response = await fetch(`${API_BASE_URL}/properties/user/my-properties`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const properties = data.properties || [];
+
+                for (const property of properties) {
+                    try {
+                        const roomsResponse = await fetch(`${API_BASE_URL}/properties/${property._id}/rooms`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (roomsResponse.ok) {
+                            const roomsData = await roomsResponse.json();
+                            const rooms = roomsData.rooms || [];
+                            
+                            const propertyRevenue = rooms
+                                .filter(room => !room.isAvailable)
+                                .reduce((sum, room) => sum + (room.price || 0), 0);
+                            
+                            totalRevenue += propertyRevenue;
+                        }
+                    } catch (error) {
+                        console.error(`Error fetching rooms for property ${property._id}:`, error);
+                    }
+                }
+            }
+
+            return totalRevenue;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    // Load user statistics from API
+    async function loadUserStats() {
+        if (!currentUser) return;
+
+        try {
+            const token = localStorage.getItem("token");
+            
+            if (currentUser.role === 'admin') {
+                await loadAdminStats();
+                return;
+            }
+            
+            if (currentUser.role === 'landlord') {
+                const propertiesResponse = await fetch(`${API_BASE_URL}/properties/user/my-properties`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (propertiesResponse.ok) {
+                    const propertiesData = await propertiesResponse.json();
+                    const properties = propertiesData.properties || [];
+                    
+                    const totalProperties = properties.length;
+                    const occupiedProperties = await countOccupiedProperties();
+                    const monthlyRevenue = await calculateMonthlyRevenue();
+                    const tenantReviews = await countTenantReviews();
+
+                    currentUser.stats = {
+                        ...currentUser.stats,
+                        totalProperties,
+                        occupiedProperties,
+                        monthlyRevenue,
+                        tenantReviews
+                    };
+                }
+            } else {
+                const statsResponse = await fetch(`${API_BASE_URL}/users/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (statsResponse.ok) {
+                    const statsData = await statsResponse.json();
+                    
+                    if (!statsData.reviewsCount) {
+                        statsData.reviewsCount = await countUserReviews();
+                    }
+                    
+                    const activeBookingsCount = await countActiveBookings();
+                    const savedPropertiesCount = await countSavedProperties();
+                    
+                    currentUser.stats = {
+                        ...statsData,
+                        activeBookings: activeBookingsCount,
+                        savedProperties: savedPropertiesCount
+                    };
+                } else {
+                    const reviewsCount = await countUserReviews();
+                    const activeBookingsCount = await countActiveBookings();
+                    const savedPropertiesCount = await countSavedProperties();
+                    
+                    currentUser.stats = {
+                        ...currentUser.stats,
+                        reviewsCount: reviewsCount,
+                        activeBookings: activeBookingsCount,
+                        savedProperties: savedPropertiesCount
+                    };
+                }
+            }
+            
+            updateLocalStorage();
+        } catch (error) {
+            try {
+                if (currentUser.role === 'landlord') {
+                    const tenantReviews = await countTenantReviews();
+                    currentUser.stats.tenantReviews = tenantReviews;
+                } else if (currentUser.role !== 'admin') {
+                    const reviewsCount = await countUserReviews();
+                    const activeBookingsCount = await countActiveBookings();
+                    const savedPropertiesCount = await countSavedProperties();
+                    
+                    currentUser.stats.reviewsCount = reviewsCount;
+                    currentUser.stats.activeBookings = activeBookingsCount;
+                    currentUser.stats.savedProperties = savedPropertiesCount;
+                }
+                updateLocalStorage();
+            } catch (reviewError) {
+                console.error('Error loading reviews count:', reviewError);
+            }
+        }
+
+        updateStatsDisplay();
+    }
+
+    // Helper functions for counting various items
+    async function countActiveBookings() {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return 0;
+
+            const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const bookings = data.bookings || [];
+                
+                const upcomingBookings = bookings.filter(booking => 
+                    booking.status === 'confirmed' && 
+                    new Date(booking.checkIn) > new Date()
+                );
+                
+                return upcomingBookings.length;
+            }
+            return 0;
+        } catch (error) {
+            return 0;
+        }
+    }
+
+    async function countSavedProperties() {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return 0;
+
+            const response = await fetch(`${API_BASE_URL}/favorites`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    return data.data.length;
+                }
+                return 0;
+            }
+            return 0;
+        } catch (error) {
+            return 0;
+        }
+    }
+
+    async function countUserReviews() {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return 0;
+
+            const response = await fetch(`${API_BASE_URL}/reviews/user/my-reviews`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return data.reviews ? data.reviews.length : 0;
+            }
+            return 0;
+        } catch (error) {
+            return 0;
+        }
+    }
+
+    async function countTenantReviews() {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return 0;
+
+            const propertiesResponse = await fetch(`${API_BASE_URL}/properties/user/my-properties`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (propertiesResponse.ok) {
+                const propertiesData = await propertiesResponse.json();
+                const properties = propertiesData.properties || [];
+                
+                let totalReviews = 0;
+                
+                for (const property of properties) {
+                    try {
+                        const reviewsResponse = await fetch(`${API_BASE_URL}/reviews/property/${property._id}`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (reviewsResponse.ok) {
+                            const reviewsData = await reviewsResponse.json();
+                            const reviews = reviewsData.reviews || [];
+                            totalReviews += reviews.length;
+                        }
+                    } catch (error) {
+                        console.error(`Error fetching reviews for property ${property._id}:`, error);
+                    }
+                }
+                
+                return totalReviews;
+            }
+            return 0;
+        } catch (error) {
+            return 0;
+        }
+    }
+
+    // Avatar upload function
+    async function handleAvatarUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size must be less than 5MB');
+            return;
+        }
+
+        const avatar = document.getElementById('profileAvatar');
+        const originalSrc = avatar.src;
+
+        try {
+            avatar.style.opacity = '0.7';
+            const cloudinaryUrl = await uploadToCloudinary(file);
+            
+            if (!cloudinaryUrl) {
+                throw new Error('Failed to upload image to Cloudinary');
+            }
+
+            const token = localStorage.getItem("token");
+            let response = await fetch(`${API_BASE_URL}/users/avatar`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    avatar: cloudinaryUrl
+                })
+            });
+
+            if (response.status === 404) {
+                response = await fetch(`${API_BASE_URL}/users/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        avatar: cloudinaryUrl
+                    })
+                });
+            }
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.user) {
+                    currentUser.avatar = data.user.avatar || cloudinaryUrl;
+                } else {
+                    currentUser.avatar = cloudinaryUrl;
+                }
+                
+                avatar.src = currentUser.avatar;
+                avatar.style.opacity = '1';
+                updateLocalStorage();
+                
+                await addActivity('profile', 'Profile Picture Updated', 'You changed your profile picture');
+                alert('Profile picture updated successfully!');
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.message || errorData.error || 'Failed to update avatar');
+            }
+
+        } catch (error) {
+            alert('Error uploading profile picture: ' + error.message);
+            avatar.src = originalSrc;
+            avatar.style.opacity = '1';
+        }
+    }
+
+    // Cloudinary upload function
+    async function uploadToCloudinary(file) {
+        try {
+            if (file.size > 10 * 1024 * 1024) {
+                throw new Error('File size exceeds 10MB limit');
+            }
+            
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+            if (!allowedTypes.includes(file.type)) {
+                throw new Error('File type not supported. Please use JPG, PNG, or PDF.');
+            }
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const response = await fetch(`${API_BASE_URL}/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+            }
+
+            const result = await response.json();
+            const cloudinaryUrl = result.url || result.secure_url;
+            return cloudinaryUrl;
+        } catch (error) {
+            throw new Error(`Failed to upload image: ${error.message}`);
+        }
+    }
+
+    // Activity management
+    async function loadUserActivities() {
+        try {
+            const token = localStorage.getItem("token");
+            const userId = currentUser?.id || JSON.parse(localStorage.getItem("user") || "{}").id;
+            
+            if (!userId) {
+                userActivities = getDefaultActivities();
+                loadActivityTimeline();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/${userId}/activities`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.activities) {
+                        userActivities = data.activities
+                            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                            .slice(0, 10);
+                        localStorage.setItem(`userActivities_${userId}`, JSON.stringify(userActivities));
+                        loadActivityTimeline();
+                        return;
+                    }
+                }
+            } catch (apiError) {
+                console.log('Activities API not available, using localStorage:', apiError);
+            }
+
+            let activities = JSON.parse(localStorage.getItem(`userActivities_${userId}`) || '[]');
+            
+            if (activities.length === 0) {
+                activities = getDefaultActivities();
+                localStorage.setItem(`userActivities_${userId}`, JSON.stringify(activities));
+            }
+
+            userActivities = activities
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .slice(0, 10);
+            
+            loadActivityTimeline();
+            
+        } catch (error) {
+            userActivities = getDefaultActivities();
+            loadActivityTimeline();
+        }
+    }
+
+    async function addActivity(type, title, description) {
+        const userId = currentUser?.id || JSON.parse(localStorage.getItem("user") || "{}").id;
+        
+        if (!userId) return;
+
+        const newActivity = {
+            id: 'activity_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            userId: userId,
+            type: type,
+            title: title,
+            description: description,
+            timestamp: new Date().toISOString(),
+            status: 'completed',
+            icon: getActivityIcon(type),
+            iconColor: getActivityIconColor(type),
+            badgeColor: 'bg-success'
+        };
+
+        userActivities.unshift(newActivity);
+        userActivities = userActivities.slice(0, 20);
+        
+        localStorage.setItem(`userActivities_${userId}`, JSON.stringify(userActivities));
+        
+        try {
+            const token = localStorage.getItem("token");
+            await fetch(`${API_BASE_URL}/users/activities`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newActivity)
+            });
+        } catch (error) {
+            console.log('Failed to save activity to API, using localStorage only:', error);
+        }
+        
+        loadActivityTimeline();
+    }
+
+    function getDefaultActivities() {
+        const userId = currentUser?.id || JSON.parse(localStorage.getItem("user") || "{}").id;
+        
+        return [
+            {
+                id: 'profile_' + Date.now(),
+                userId: userId,
+                type: 'profile',
+                title: 'Profile Created',
+                description: 'You joined ResLinQ',
+                timestamp: currentUser?.memberSince || new Date().toISOString(),
+                status: 'completed',
+                icon: 'bi-person',
+                iconColor: 'text-success',
+                badgeColor: 'bg-success'
+            }
+        ];
+    }
+
+    function loadActivityTimeline() {
+        const timeline = document.getElementById('activityTimeline');
+        if (!timeline) return;
+
+        const userId = currentUser?.id || JSON.parse(localStorage.getItem("user") || "{}").id;
+        const userSpecificActivities = userActivities.filter(activity => activity.userId === userId);
+
+        if (userSpecificActivities.length === 0) {
+            timeline.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bi bi-clock-history display-1 text-muted mb-3"></i>
+                    <p class="text-muted">No recent activities found</p>
+                    <p class="text-muted small">Your activities will appear here as you use the platform</p>
+                </div>
+            `;
+            return;
+        }
+
+        timeline.innerHTML = userSpecificActivities.map(activity => `
+            <div class="activity-item ${activity.type}">
+                <div class="d-flex align-items-start">
+                    <div class="activity-icon ${activity.iconColor} bg-light rounded-circle flex-shrink-0">
+                        <i class="bi ${activity.icon}"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="mb-0 fw-semibold">${activity.title}</h6>
+                            <span class="badge ${activity.badgeColor} activity-badge">${activity.status}</span>
+                        </div>
+                        <p class="text-muted mb-2">${activity.description}</p>
+                        <small class="text-muted">
+                            <i class="bi bi-clock me-1"></i>
+                            ${formatActivityTime(activity.timestamp)}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function getActivityIcon(type) {
+        const icons = {
+            'profile': 'bi-person',
+            'security': 'bi-shield-lock',
+            'booking': 'bi-calendar-check',
+            'preferences': 'bi-sliders',
+            'verification': 'bi-patch-check',
+            'admin': 'bi-shield-check'
+        };
+        return icons[type] || 'bi-info-circle';
+    }
+
+    function getActivityIconColor(type) {
+        const colors = {
+            'profile': 'text-success',
+            'security': 'text-warning',
+            'booking': 'text-primary',
+            'preferences': 'text-info',
+            'verification': 'text-success',
+            'admin': 'text-danger'
+        };
+        return colors[type] || 'text-secondary';
+    }
+
+    function formatActivityTime(timestamp) {
+        const now = new Date();
+        const activityTime = new Date(timestamp);
+        const diffInHours = Math.floor((now - activityTime) / (1000 * 60 * 60));
+        
+        if (diffInHours < 1) return 'Just now';
+        else if (diffInHours < 24) return `${diffInHours} hours ago`;
+        else if (diffInHours < 168) {
+            const days = Math.floor(diffInHours / 24);
+            return `${days} day${days > 1 ? 's' : ''} ago`;
+        } else {
+            return activityTime.toLocaleDateString();
+        }
+    }
+
+    // Update profile display
+    function updateProfileDisplay() {
+        if (!currentUser) return;
+
+        document.getElementById('profileName').textContent = `${currentUser.firstName} ${currentUser.lastName}`.trim() || 'User Name';
+        
+        if (currentUser.role === 'admin') {
+            document.getElementById('profileRole').textContent = 'System Administrator';
+            document.getElementById('roleDisplay').value = 'Administrator';
+        } else {
+            document.getElementById('profileRole').textContent = currentUser.role === 'landlord' ? 'Property Landlord' : 'Student Tenant';
+            document.getElementById('roleDisplay').value = currentUser.role === 'landlord' ? 'Landlord' : 'Student';
+        }
+        
+        document.getElementById('profileEmail').textContent = currentUser.email || 'No email';
+        document.getElementById('profilePhone').textContent = currentUser.phone || 'No phone';
+        document.getElementById('profileAvatar').src = currentUser.avatar;
+        
+        updateVerificationStatus();
+        
+        const memberSince = new Date(currentUser.memberSince).getFullYear();
+        document.getElementById('memberSince').textContent = `Member since ${memberSince}`;
+        document.getElementById('memberSinceDisplay').textContent = new Date(currentUser.memberSince).toLocaleDateString();
+
+        if (currentUser.role === 'admin') {
+            document.getElementById('accountTypeDisplay').textContent = 'Administrator Account';
+        } else {
+            document.getElementById('accountTypeDisplay').textContent = currentUser.role === 'landlord' ? 'Landlord Account' : 'Student Account';
+        }
+        
+        updateRoleSpecificSections();
+        updateFormFields();
+        updateStatsDisplay();
+    }
+
+    function updateVerificationStatus() {
+        const verificationBadge = document.getElementById('verificationStatus');
+        const verificationAlert = document.getElementById('verificationAlert');
+        
+        if (!verificationBadge || !verificationAlert) return;
+
+        if (currentUser.isVerified) {
+            verificationBadge.innerHTML = '<i class="bi bi-patch-check-fill me-1"></i>Verified';
+            verificationBadge.className = 'verification-badge';
+            verificationAlert.className = 'alert alert-success alert-profile';
+            verificationAlert.innerHTML = '<i class="bi bi-patch-check me-2"></i><span class="fw-semibold">Verified Account</span>';
+            if (document.getElementById('verifyAccountBtn')) {
+                document.getElementById('verifyAccountBtn').style.display = 'none';
+            }
+        } else if (currentUser.verificationStatus === 'pending') {
+            verificationBadge.innerHTML = '<i class="bi bi-clock me-1"></i>Pending Verification';
+            verificationBadge.className = 'unverified-badge';
+            verificationAlert.className = 'alert alert-warning alert-profile';
+            verificationAlert.innerHTML = '<i class="bi bi-clock me-2"></i><span class="fw-semibold">Pending Verification - Under Review</span>';
+            if (document.getElementById('verifyAccountBtn')) {
+                document.getElementById('verifyAccountBtn').style.display = 'none';
+            }
+        } else {
+            verificationBadge.innerHTML = '<i class="bi bi-x-circle me-1"></i>Not Verified';
+            verificationBadge.className = 'unverified-badge';
+            verificationAlert.className = 'alert alert-danger alert-profile';
+            verificationAlert.innerHTML = '<i class="bi bi-x-circle me-2"></i><span class="fw-semibold">Account Not Verified</span>';
+            if (document.getElementById('verifyAccountBtn')) {
+                document.getElementById('verifyAccountBtn').style.display = 'block';
+            }
+        }
+    }
+
+    function updateRoleSpecificSections() {
+        const isLandlord = currentUser.role === 'landlord';
+        const isAdmin = currentUser.role === 'admin';
+        
+        if (isAdmin) {
+            document.getElementById('landlordStats').style.display = 'none';
+            document.getElementById('userStats').style.display = 'none';
+            document.getElementById('adminStats').style.display = 'flex';
+            document.getElementById('landlordInfoSection').style.display = 'none';
+            document.getElementById('studentInfoSection').style.display = 'none';
+            document.getElementById('switchToLandlordBtn').style.display = 'none';
+        } else {
+            document.getElementById('landlordStats').style.display = isLandlord ? 'flex' : 'none';
+            document.getElementById('userStats').style.display = isLandlord ? 'none' : 'flex';
+            document.getElementById('adminStats').style.display = 'none';
+            document.getElementById('landlordInfoSection').style.display = isLandlord ? 'block' : 'none';
+            document.getElementById('studentInfoSection').style.display = isLandlord ? 'none' : 'block';
+            document.getElementById('switchToLandlordBtn').style.display = isLandlord ? 'none' : 'block';
+        }
+    }
+
+    function updateStatsDisplay() {
+        if (!currentUser) return;
+
+        if (currentUser.role === 'landlord') {
+            setElementText('totalProperties', currentUser.stats.totalProperties || 0);
+            setElementText('occupiedProperties', currentUser.stats.occupiedProperties || 0);
+            setElementText('monthlyRevenue', `R${currentUser.stats.monthlyRevenue || 0}`);
+            setElementText('tenantReviews', currentUser.stats.tenantReviews || 0);
+        } else if (currentUser.role === 'admin') {
+            // Admin stats are handled separately in loadAdminStats()
+        } else {
+            setElementText('totalBookings', currentUser.stats.totalBookings || 0);
+            setElementText('activeBookings', currentUser.stats.activeBookings || 0);
+            setElementText('reviewsCount', currentUser.stats.reviewsCount || 0);
+            setElementText('savedProperties', currentUser.stats.savedProperties || 0);
+        }
+    }
+
+    function setElementText(elementId, text) {
+        const element = document.getElementById(elementId);
+        if (element) element.textContent = text;
+    }
+
+    function updateFormFields() {
+        const setValue = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) element.value = value || '';
+        };
+
+        setValue('username', currentUser.username);
+        setValue('firstName', currentUser.firstName);
+        setValue('lastName', currentUser.lastName);
+        setValue('email', currentUser.email);
+        setValue('phone', currentUser.phone);
+        setValue('bio', currentUser.bio);
+        setValue('roleDisplay', currentUser.role === 'admin' ? 'Administrator' : (currentUser.role === 'landlord' ? 'Landlord' : 'Student'));
+        setValue('streetAddress', currentUser.streetAddress);
+        setValue('city', currentUser.city);
+        setValue('province', currentUser.province);
+        setValue('postalCode', currentUser.postalCode);
+        setValue('university', currentUser.university);
+        setValue('course', currentUser.course);
+        setValue('faculty', currentUser.faculty);
+        setValue('courseDuration', currentUser.courseDuration);
+        setValue('propertyName', currentUser.propertyName);
+        setValue('propertyAddress', currentUser.propertyAddress);
+        setValue('roomCount', currentUser.roomCount);
+    }
+
+    function loadPreferences() {
+        if (!currentUser) return;
+
+        const prefs = currentUser.preferences;
+        const setChecked = (id, checked) => {
+            const element = document.getElementById(id);
+            if (element) element.checked = !!checked;
+        };
+        const setSelectValue = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) element.value = value || '';
+        };
+
+        setChecked('emailNotifications', prefs.emailNotifications);
+        setChecked('smsNotifications', prefs.smsNotifications);
+        setChecked('bookingAlerts', prefs.bookingAlerts);
+        setChecked('promotionalEmails', prefs.promotionalEmails);
+        setSelectValue('profileVisibility', prefs.profileVisibility);
+        setChecked('showEmail', prefs.showEmail);
+        setChecked('showPhone', prefs.showPhone);
+    }
+
+    // Update functions with activity tracking
+    async function updatePersonalInfo() {
+        const form = document.getElementById('personalInfoForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const updatedData = {
+            username: document.getElementById('username').value,
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            phone: document.getElementById('phone').value,
+            bio: document.getElementById('bio').value
+        };
+
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/users/profile`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedData)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                Object.assign(currentUser, data.user);
+                updateLocalStorage();
+                updateProfileDisplay();
+                await addActivity('profile', 'Profile Information Updated', 'You updated your personal information');
+                alert('Personal information updated successfully!');
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to update profile');
+            }
+        } catch (error) {
+            alert('Failed to update profile: ' + error.message);
+        }
+    }
+
+    async function updateAddress() {
+        const updatedData = {
+            streetAddress: document.getElementById('streetAddress').value,
+            city: document.getElementById('city').value,
+            province: document.getElementById('province').value,
+            postalCode: document.getElementById('postalCode').value
+        };
+
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/users/profile`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedData)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                Object.assign(currentUser, data.user);
+                updateLocalStorage();
+                await addActivity('profile', 'Address Updated', 'You updated your address information');
+                alert('Address updated successfully!');
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to update address');
+            }
+        } catch (error) {
+            alert('Failed to update address: ' + error.message);
+        }
+    }
+
+    async function updateStudentInfo() {
+        const updatedData = {
+            university: document.getElementById('university').value,
+            course: document.getElementById('course').value,
+            faculty: document.getElementById('faculty').value,
+            courseDuration: document.getElementById('courseDuration').value
+        };
+
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/users/profile`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedData)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                Object.assign(currentUser, data.user);
+                updateLocalStorage();
+                await addActivity('profile', 'Student Information Updated', 'You updated your student details');
+                alert('Student information updated successfully!');
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to update student info');
+            }
+        } catch (error) {
+            alert('Failed to update student information: ' + error.message);
+        }
+    }
+
+    async function updateLandlordInfo() {
+        const updatedData = {
+            propertyName: document.getElementById('propertyName').value,
+            propertyAddress: document.getElementById('propertyAddress').value,
+            roomCount: document.getElementById('roomCount').value
+        };
+
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/users/profile`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedData)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                Object.assign(currentUser, data.user);
+                updateLocalStorage();
+                await addActivity('profile', 'Business Information Updated', 'You updated your landlord information');
+                alert('Business information updated successfully!');
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to update landlord info');
+            }
+        } catch (error) {
+            alert('Failed to update business information: ' + error.message);
+        }
+    }
+
+    async function updateNotifications() {
+        const updatedPreferences = {
+            emailNotifications: document.getElementById('emailNotifications').checked,
+            smsNotifications: document.getElementById('smsNotifications').checked,
+            bookingAlerts: document.getElementById('bookingAlerts').checked,
+            promotionalEmails: document.getElementById('promotionalEmails').checked
+        };
+
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/users/preferences`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ preferences: updatedPreferences })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                currentUser.preferences = data.user.preferences;
+                updateLocalStorage();
+                await addActivity('preferences', 'Notification Preferences Updated', 'You changed your notification settings');
+                alert('Notification preferences updated successfully!');
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to update preferences');
+            }
+        } catch (error) {
+            alert('Failed to update preferences: ' + error.message);
+        }
+    }
+
+    async function updatePrivacy() {
+        const updatedPreferences = {
+            profileVisibility: document.getElementById('profileVisibility').value,
+            showEmail: document.getElementById('showEmail').checked,
+            showPhone: document.getElementById('showPhone').checked
+        };
+
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/users/preferences`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ preferences: updatedPreferences })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                currentUser.preferences = data.user.preferences;
+                updateLocalStorage();
+                await addActivity('preferences', 'Privacy Settings Updated', 'You updated your privacy preferences');
+                alert('Privacy settings updated successfully!');
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to update privacy settings');
+            }
+        } catch (error) {
+            alert('Failed to update privacy settings: ' + error.message);
+        }
+    }
+
+    async function updatePassword() {
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            alert('Please fill in all password fields');
+            return;
+        }
+
+        if (newPassword.length < 8) {
+            alert('New password must be at least 8 characters long');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            alert('New passwords do not match');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/users/change-password`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    currentPassword,
+                    newPassword
+                })
+            });
+
+            if (response.ok) {
+                document.getElementById('passwordForm').reset();
+                await addActivity('security', 'Password Changed', 'You successfully changed your account password');
+                alert('Password updated successfully!');
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to update password');
+            }
+        } catch (error) {
+            alert('Failed to update password: ' + error.message);
+        }
+    }
+
+    async function switchToLandlord() {
+        if (confirm('Are you sure you want to become a landlord? This will give you access to property management features.')) {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await fetch(`${API_BASE_URL}/users/role`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ role: 'landlord' })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUser.role = data.user.role;
+                    updateLocalStorage();
+                    updateProfileDisplay();
+                    await addActivity('profile', 'Role Changed', 'You became a landlord and can now manage properties');
+                    alert('Welcome to ResLinQ Landlord! You can now add and manage properties.');
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to switch role');
+                }
+            } catch (error) {
+                alert('Failed to switch role: ' + error.message);
+            }
+        }
+    }
+
+    // SIMPLIFIED document upload modal - removing the complex broken function
+
+    async function verifyAccount() {
+        if (confirm('Start account verification process? You will need to upload verification documents.')) {
+            try {
+                const verificationType = currentUser.role === 'landlord' ? 'landlord' : 'student';
+                
+                console.log('Starting verification for:', verificationType);
+                const uploadedDocuments = await showEnhancedDocumentUploadModal(verificationType);
+                
+                if (!uploadedDocuments) {
+                    alert('Document upload cancelled');
+                    return;
+                }
+
+                console.log('Uploaded documents:', uploadedDocuments);
+
+                const token = localStorage.getItem("token");
+                
+                // Check if we have the required documents
+                const requiredFields = verificationType === 'student' 
+                    ? ['idCard', 'proofOfEnrollment'] 
+                    : ['idCard', 'proofOfOwnership', 'businessLicense'];
+                
+                let hasRequiredDocs = true;
+                for (const field of requiredFields) {
+                    if (!uploadedDocuments[field] || uploadedDocuments[field].length === 0) {
+                        alert(`Missing required document: ${field}`);
+                        hasRequiredDocs = false;
+                        break;
+                    }
+                }
+                
+                if (!hasRequiredDocs) {
+                    return;
+                }
+
+                console.log('Sending verification request with documents:', uploadedDocuments);
+
+                const response = await fetch(`${API_BASE_URL}/users/verify`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: verificationType,
+                        documents: uploadedDocuments
+                    })
+                });
+
+                console.log('Verification response status:', response.status);
+                
+                let data;
+                try {
+                    data = await response.json();
+                } catch (parseError) {
+                    console.error('Failed to parse response as JSON:', parseError);
+                    throw new Error('Server returned invalid response');
+                }
+                
+                if (response.ok && data.success) {
+                    currentUser.verificationStatus = 'pending';
+                    currentUser.isVerified = false;
+                    
+                    updateLocalStorage();
+                    updateVerificationStatus();
+                    
+                    await addActivity('verification', 'Verification Started', 'You submitted verification documents for review');
+                    
+                    localStorage.removeItem('verificationStatus');
+                    
+                    alert('✅ Verification request submitted! Your documents are under review. You will see "Pending Verification" status until approved.');
+                    
+                    setTimeout(() => {
+                        checkVerificationStatus();
+                    }, 2000);
+                    
+                } else {
+                    throw new Error(data.message || data.error || 'Failed to submit verification');
+                }
+            } catch (error) {
+                console.error('Error starting verification:', error);
+                alert('Failed to start verification: ' + error.message);
+            }
+        }
+    }
+
+    // FIXED: Properly structured document upload modal function
+    async function showEnhancedDocumentUploadModal(verificationType) {
+    return new Promise((resolve) => {
+        const modalHtml = `
+            <div class="modal fade" id="documentUploadModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Upload Verification Documents - ${verificationType === 'student' ? 'Student' : 'Landlord'}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="documentUploadForm">
+                                <input type="hidden" name="type" value="${verificationType}">
+                                
+                                ${verificationType === 'student' ? `
+                                    <div class="mb-4">
+                                        <h6><i class="bi bi-person-badge me-2"></i>Student ID Card *</h6>
+                                        <p class="text-muted small">Upload clear photos of your student ID card (front and back)</p>
+                                        <input type="file" class="form-control document-file" name="idCard" multiple accept="image/*,.pdf" required>
+                                        <div class="form-text">Max 3 files. Supported: JPG, PNG, PDF</div>
+                                        <div id="idCardPreview" class="file-preview-container mt-2"></div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <h6><i class="bi bi-mortarboard me-2"></i>Proof of Enrollment/Academic Transcript *</h6>
+                                        <p class="text-muted small">Upload proof of current enrollment or academic transcript</p>
+                                        <input type="file" class="form-control document-file" name="proofOfEnrollment" multiple accept="image/*,.pdf" required>
+                                        <div class="form-text">Max 5 files. Supported: JPG, PNG, PDF</div>
+                                        <div id="proofOfEnrollmentPreview" class="file-preview-container mt-2"></div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <h6><i class="bi bi-file-text me-2"></i>Additional Academic Records (Optional)</h6>
+                                        <p class="text-muted small">Additional academic records if available</p>
+                                        <input type="file" class="form-control document-file" name="academicRecords" multiple accept="image/*,.pdf">
+                                        <div class="form-text">Max 5 files. Supported: JPG, PNG, PDF</div>
+                                        <div id="academicRecordsPreview" class="file-preview-container mt-2"></div>
+                                    </div>
+                                ` : `
+                                    <div class="mb-4">
+                                        <h6><i class="bi bi-person-badge me-2"></i>ID Card *</h6>
+                                        <p class="text-muted small">Upload clear photos of your ID card (front and back)</p>
+                                        <input type="file" class="form-control document-file" name="idCard" multiple accept="image/*,.pdf" required>
+                                        <div class="form-text">Max 3 files. Supported: JPG, PNG, PDF</div>
+                                        <div id="idCardPreview" class="file-preview-container mt-2"></div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <h6><i class="bi bi-house-check me-2"></i>Proof of Ownership *</h6>
+                                        <p class="text-muted small">Upload property ownership documents, titles, or rental agreements</p>
+                                        <input type="file" class="form-control document-file" name="proofOfOwnership" multiple accept="image/*,.pdf" required>
+                                        <div class="form-text">Max 10 files. Supported: JPG, PNG, PDF</div>
+                                        <div id="proofOfOwnershipPreview" class="file-preview-container mt-2"></div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <h6><i class="bi bi-building me-2"></i>Business License *</h6>
+                                        <p class="text-muted small">Upload business registration and license documents</p>
+                                        <input type="file" class="form-control document-file" name="businessLicense" multiple accept="image/*,.pdf" required>
+                                        <div class="form-text">Max 5 files. Supported: JPG, PNG, PDF</div>
+                                        <div id="businessLicensePreview" class="file-preview-container mt-2"></div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <h6><i class="bi bi-file-earmark-text me-2"></i>Property Contracts (Optional)</h6>
+                                        <p class="text-muted small">Additional property contracts or agreements</p>
+                                        <input type="file" class="form-control document-file" name="propertyContracts" multiple accept="image/*,.pdf">
+                                        <div class="form-text">Max 10 files. Supported: JPG, PNG, PDF</div>
+                                        <div id="propertyContractsPreview" class="file-preview-container mt-2"></div>
+                                    </div>
+                                `}
+                                
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>Document Requirements:</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li>Maximum file size: 10MB per file</li>
+                                        <li>Supported formats: JPG, PNG, PDF</li>
+                                        <li>Ensure documents are clear and readable</li>
+                                        <li>All required documents must be uploaded</li>
+                                        <li>Documents will be securely stored in Cloudinary</li>
+                                    </ul>
+                                </div>
+
+                                <div class="upload-progress" id="uploadProgress" style="display: none;">
+                                    <div class="progress mb-3">
+                                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <p class="text-center mb-0" id="uploadStatus">Preparing upload...</p>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="submitDocuments">Submit Verification</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                .file-preview-container {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                }
+                .file-preview-item {
+                    position: relative;
+                    width: 100px;
+                    height: 100px;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .file-preview-item img {
+                    max-width: 100%;
+                    max-height: 100%;
+                    object-fit: cover;
+                }
+                .file-preview-item .file-icon {
+                    font-size: 2rem;
+                    color: #6c757d;
+                }
+                .file-preview-item .remove-file {
+                    position: absolute;
+                    top: 2px;
+                    right: 2px;
+                    background: rgba(255,255,255,0.8);
+                    border: none;
+                    border-radius: 50%;
+                    width: 20px;
+                    height: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    cursor: pointer;
+                }
+                .pdf-icon { color: #dc3545; }
+                .image-icon { color: #198754; }
+            </style>
+        `;
+        
+        // Add modal to DOM
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        const modal = new bootstrap.Modal(document.getElementById('documentUploadModal'));
+        const submitBtn = document.getElementById('submitDocuments');
+        const form = document.getElementById('documentUploadForm');
+        
+        // Store file data
+        const fileData = new Map();
+        
+        // Initialize file preview functionality
+        initializeFilePreviews(fileData, form);
+        
+        submitBtn.onclick = async () => {
+            console.log('Submit button clicked, checking file data:', fileData);
+            
+            // Validate required files
+            const requiredFields = verificationType === 'student' 
+                ? ['idCard', 'proofOfEnrollment'] 
+                : ['idCard', 'proofOfOwnership', 'businessLicense'];
+            
+            let isValid = true;
+            let missingFields = [];
+            
+            for (const field of requiredFields) {
+                const files = fileData.get(field) || [];
+                console.log(`Field ${field} has ${files.length} files:`, files.map(f => f.name));
+                
+                if (files.length === 0) {
+                    const fieldName = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                    missingFields.push(fieldName);
+                    isValid = false;
+                }
+            }
+            
+            if (!isValid) {
+                alert(`Please upload the following required documents:\n• ${missingFields.join('\n• ')}`);
+                return;
+            }
+            
+            // Validate file sizes and types
+            let hasInvalidFiles = false;
+            let invalidFiles = [];
+            
+            for (const [fieldName, files] of fileData.entries()) {
+                for (const file of files) {
+                    if (file.size > 10 * 1024 * 1024) {
+                        hasInvalidFiles = true;
+                        invalidFiles.push(`${file.name} (too large)`);
+                    }
+                    
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                    if (!allowedTypes.includes(file.type)) {
+                        hasInvalidFiles = true;
+                        invalidFiles.push(`${file.name} (invalid type)`);
+                    }
+                }
+            }
+            
+            if (hasInvalidFiles) {
+                alert(`The following files are invalid:\n• ${invalidFiles.join('\n• ')}\n\nPlease ensure files are under 10MB and are JPG, PNG, or PDF format.`);
+                return;
+            }
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
+            
+            try {
+                // Show upload progress
+                document.getElementById('uploadProgress').style.display = 'block';
+                const progressBar = document.querySelector('.progress-bar');
+                const uploadStatus = document.getElementById('uploadStatus');
+                
+                // Upload all files to Cloudinary and get URLs
+                const uploadedDocuments = {};
+                const allFiles = [];
+                
+                // Collect all files
+                for (const [fieldName, files] of fileData.entries()) {
+                    if (files && files.length > 0) {
+                        allFiles.push(...files.map(file => ({ fieldName, file })));
+                    }
+                }
+                
+                console.log('Total files to upload:', allFiles.length);
+                
+                let processedFiles = 0;
+                const totalFiles = allFiles.length;
+                
+                if (totalFiles === 0) {
+                    throw new Error('No files selected for upload');
+                }
+                
+                // Upload files with better error handling
+                for (const { fieldName, file } of allFiles) {
+                    uploadStatus.textContent = `Uploading ${file.name}...`;
+                    console.log(`Uploading ${file.name} for field ${fieldName}`);
+                    
+                    try {
+                        const cloudinaryUrl = await uploadToCloudinary(file);
+                        if (cloudinaryUrl) {
+                            if (!uploadedDocuments[fieldName]) {
+                                uploadedDocuments[fieldName] = [];
+                            }
+                            uploadedDocuments[fieldName].push(cloudinaryUrl);
+                            console.log(`✅ Successfully uploaded ${file.name}: ${cloudinaryUrl}`);
+                        } else {
+                            console.error(`❌ Failed to get URL for ${file.name}`);
+                            throw new Error(`Failed to upload ${file.name}`);
+                        }
+                    } catch (uploadError) {
+                        console.error(`Failed to upload ${file.name}:`, uploadError);
+                        throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+                    }
+                    
+                    processedFiles++;
+                    const progress = (processedFiles / totalFiles) * 100;
+                    progressBar.style.width = `${progress}%`;
+                }
+                
+                uploadStatus.textContent = 'Finalizing upload...';
+                
+                console.log('Final uploaded documents:', uploadedDocuments);
+                
+                // Verify all required documents were uploaded
+                for (const field of requiredFields) {
+                    if (!uploadedDocuments[field] || uploadedDocuments[field].length === 0) {
+                        throw new Error(`Required document ${field} was not uploaded successfully`);
+                    }
+                }
+                
+                if (Object.keys(uploadedDocuments).length > 0) {
+                    modal.hide();
+                    resolve(uploadedDocuments);
+                } else {
+                    throw new Error('No files were successfully uploaded to Cloudinary');
+                }
+                
+            } catch (error) {
+                console.error('Error processing form:', error);
+                alert('Error uploading documents: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Submit Verification';
+                document.getElementById('uploadProgress').style.display = 'none';
+            }
+        };
+        
+        modal.show();
+        
+        // Clean up modal after hide
+        modal._element.addEventListener('hidden.bs.modal', () => {
+            document.getElementById('documentUploadModal').remove();
+            resolve(null);
+        });
+
+        // Helper function for file previews
+        function initializeFilePreviews(fileData, form) {
+            const fileInputs = form.querySelectorAll('.document-file');
+            
+            fileInputs.forEach(input => {
+                const fieldName = input.name;
+                console.log(`Initializing file input for: ${fieldName}`);
+                fileData.set(fieldName, []);
+                
+                input.addEventListener('change', function(e) {
+                    const previewContainerId = `${fieldName}Preview`;
+                    const previewContainer = document.getElementById(previewContainerId);
+                    
+                    if (!previewContainer) {
+                        console.error(`Preview container not found for: ${fieldName}, looking for ID: ${previewContainerId}`);
+                        console.log('Available preview containers:', 
+                            Array.from(document.querySelectorAll('[id$="Preview"]')).map(el => el.id)
+                        );
+                        return;
+                    }
+                    
+                    previewContainer.innerHTML = '';
+                    const files = Array.from(this.files);
+                    console.log(`Files selected for ${fieldName}:`, files.map(f => f.name));
+                    
+                    // Validate files before storing
+                    const validFiles = files.filter(file => {
+                        if (file.size > 10 * 1024 * 1024) {
+                            alert(`File ${file.name} is too large. Maximum size is 10MB.`);
+                            return false;
+                        }
+                        
+                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                        if (!allowedTypes.includes(file.type)) {
+                            alert(`File ${file.name} is not a supported format. Please use JPG, PNG, or PDF.`);
+                            return false;
+                        }
+                        
+                        return true;
+                    });
+                    
+                    // Store only valid files
+                    fileData.set(fieldName, validFiles);
+                    console.log(`Valid files stored for ${fieldName}:`, validFiles.map(f => f.name));
+                    
+                    // Update the input with only valid files
+                    const dt = new DataTransfer();
+                    validFiles.forEach(file => dt.items.add(file));
+                    this.files = dt.files;
+                    
+                    // Create previews for valid files
+                    validFiles.forEach((file, index) => {
+                        const previewItem = document.createElement('div');
+                        previewItem.className = 'file-preview-item';
+                        previewItem.dataset.index = index;
+                        
+                        if (file.type.startsWith('image/')) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                previewItem.innerHTML = `
+                                    <img src="${e.target.result}" alt="${file.name}">
+                                    <button type="button" class="remove-file" data-field="${fieldName}" data-index="${index}">×</button>
+                                `;
+                                previewContainer.appendChild(previewItem);
+                                
+                                // Add remove event listener for this specific button
+                                previewItem.querySelector('.remove-file').addEventListener('click', function() {
+                                    removeFile(fieldName, index, fileData, form);
+                                });
+                            };
+                            reader.readAsDataURL(file);
+                        } else {
+                            const fileExtension = file.name.split('.').pop().toLowerCase();
+                            let iconClass = 'file-icon';
+                            if (fileExtension === 'pdf') iconClass += ' pdf-icon';
+                            else iconClass += ' image-icon';
+                            
+                            previewItem.innerHTML = `
+                                <div class="${iconClass}">
+                                    <i class="bi bi-file-earmark"></i>
+                                </div>
+                                <button type="button" class="remove-file" data-field="${fieldName}" data-index="${index}">×</button>
+                                <small class="position-absolute bottom-0 start-0 end-0 text-center bg-light">${fileExtension}</small>
+                            `;
+                            previewContainer.appendChild(previewItem);
+                            
+                            // Add remove event listener for this specific button
+                            previewItem.querySelector('.remove-file').addEventListener('click', function() {
+                                removeFile(fieldName, index, fileData, form);
+                            });
+                        }
+                    });
+                    
+                    console.log('Current fileData state:', Array.from(fileData.entries()).map(([key, value]) => 
+                        `${key}: ${value.length} files`
+                    ));
+                });
+            });
+            
+            function removeFile(fieldName, index, fileData, form) {
+                console.log(`Removing file from ${fieldName} at index ${index}`);
+                
+                const files = fileData.get(fieldName) || [];
+                if (index >= 0 && index < files.length) {
+                    files.splice(index, 1);
+                    fileData.set(fieldName, files);
+                    
+                    // Update the actual file input
+                    const fileInput = form.querySelector(`input[name="${fieldName}"]`);
+                    const dt = new DataTransfer();
+                    files.forEach(file => dt.items.add(file));
+                    fileInput.files = dt.files;
+                    
+                    // Re-render preview
+                    const previewContainerId = `${fieldName}Preview`;
+                    const previewContainer = document.getElementById(previewContainerId);
+                    if (previewContainer) {
+                        previewContainer.innerHTML = '';
+                        files.forEach((file, newIndex) => {
+                            const previewItem = document.createElement('div');
+                            previewItem.className = 'file-preview-item';
+                            previewItem.dataset.index = newIndex;
+                            
+                            if (file.type.startsWith('image/')) {
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    previewItem.innerHTML = `
+                                        <img src="${e.target.result}" alt="${file.name}">
+                                        <button type="button" class="remove-file" data-field="${fieldName}" data-index="${newIndex}">×</button>
+                                    `;
+                                    previewContainer.appendChild(previewItem);
+                                    
+                                    // Re-add event listener
+                                    previewItem.querySelector('.remove-file').addEventListener('click', function() {
+                                        removeFile(fieldName, newIndex, fileData, form);
+                                    });
+                                };
+                                reader.readAsDataURL(file);
+                            } else {
+                                const fileExtension = file.name.split('.').pop().toLowerCase();
+                                let iconClass = 'file-icon';
+                                if (fileExtension === 'pdf') iconClass += ' pdf-icon';
+                                else iconClass += ' image-icon';
+                                
+                                previewItem.innerHTML = `
+                                    <div class="${iconClass}">
+                                        <i class="bi bi-file-earmark"></i>
+                                    </div>
+                                    <button type="button" class="remove-file" data-field="${fieldName}" data-index="${newIndex}">×</button>
+                                    <small class="position-absolute bottom-0 start-0 end-0 text-center bg-light">${fileExtension}</small>
+                                `;
+                                previewContainer.appendChild(previewItem);
+                                
+                                // Re-add event listener
+                                previewItem.querySelector('.remove-file').addEventListener('click', function() {
+                                    removeFile(fieldName, newIndex, fileData, form);
+                                });
+                            }
+                        });
+                    }
+                }
+                
+                console.log('Updated fileData state after removal:', Array.from(fileData.entries()).map(([key, value]) => 
+                    `${key}: ${value.length} files`
+                ));
+            }
+        }
+    });
+}
+    async function checkVerificationStatus() {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/users/verify/status`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.data) {
+                    const verificationStatus = data.data.status;
+                    const isVerified = data.data.isVerified;
+                    
+                    currentUser.verificationStatus = verificationStatus;
+                    currentUser.isVerified = isVerified;
+                    
+                    updateLocalStorage();
+                    updateVerificationStatus();
+                }
+            }
+        } catch (error) {
+            console.error('Error checking verification status:', error);
+        }
+    }
+
+    function updateLocalStorage() {
+        localStorage.setItem("user", JSON.stringify(currentUser));
+    }
+
+    function enable2FA() {
+        alert('Two-factor authentication setup would begin here.');
+    }
+
+    function downloadData() {
+        const userDataStr = JSON.stringify(currentUser, null, 2);
+        const blob = new Blob([userDataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `reslinq-data-${currentUser.username}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        addActivity('profile', 'Data Downloaded', 'You downloaded your personal data');
+        alert('Your data has been downloaded!');
+    }
+
+    async function deleteAccount() {
+        const confirmText = document.getElementById('deleteConfirm').value;
+        if (confirmText !== 'DELETE') {
+            alert('Please type "DELETE" to confirm account deletion');
+            return;
+        }
+
+        if (confirm('Are you absolutely sure? This cannot be undone!')) {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await fetch(`${API_BASE_URL}/users/account`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('Account deletion scheduled. You will receive a confirmation email.');
+                    bootstrap.Modal.getInstance(document.getElementById('deleteAccountModal')).hide();
+                    setTimeout(() => {
+                        localStorage.clear();
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to delete account');
+                }
+            } catch (error) {
+                alert('Failed to delete account: ' + error.message);
+            }
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ResLinQ | Choose Your Plan</title>
+  
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --success: #059669;
+      --warning: #f59e0b;
+      --info: #60a5fa;
+      --light-bg: #f8fafc;
+      --navy: #0b2447;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--light-bg) 0%, #e0f2fe 100%);
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    .plans-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, #9983e7 50%, var(--primary-light) 100%);
+      color: white;
+      padding: 3rem 0;
+      border-radius: 0 0 2rem 2rem;
+      text-align: center;
+    }
+
+    .plan-card {
+      border: none;
+      border-radius: 1.5rem;
+      transition: all 0.3s ease;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .plan-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+    .plan-popular {
+      transform: scale(1.05);
+      border: 3px solid var(--warning);
+      z-index: 2;
+    }
+
+    .plan-popular::before {
+      content: 'MOST POPULAR';
+      position: absolute;
+      top: 20px;
+      right: -35px;
+      background: var(--warning);
+      color: white;
+      padding: 0.5rem 2rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transform: rotate(45deg);
+      z-index: 3;
+    }
+
+    .plan-header {
+      padding: 2rem;
+      text-align: center;
+      color: white;
+      position: relative;
+    }
+
+    .plan-features {
+      padding: 2rem;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 0.5rem 0;
+    }
+
+    .feature-item i {
+      color: var(--success);
+      margin-right: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .price-display {
+      font-size: 3rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .price-period {
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+
+    .plan-badge {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .comparison-table {
+      background: white;
+      border-radius: 1.5rem;
+      padding: 2rem;
+      margin-top: 3rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .feature-comparison {
+      border-left: 3px solid var(--primary);
+      padding-left: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-choose-plan {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border: none;
+      border-radius: 2rem;
+      padding: 1rem 2rem;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    .btn-choose-plan:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(30, 58, 138, 0.3);
+    }
+
+    .btn-popular {
+      background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+    }
+
+    .btn-popular:hover {
+      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+    }
+
+    .floating-emoji {
+      font-size: 2rem;
+      position: absolute;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .emoji-1 { top: 10%; left: 10%; animation-delay: 0s; }
+    .emoji-2 { top: 20%; right: 15%; animation-delay: 0.5s; }
+    .emoji-3 { bottom: 15%; left: 20%; animation-delay: 1s; }
+
+    .guarantee-badge {
+      background: var(--success);
+      color: white;
+      padding: 1rem;
+      border-radius: 1rem;
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    /* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1C2B4A;
+    z-index: 1030;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .mobile-nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-nav-item.active {
+    color: #64748b;
+  }
+  
+  .mobile-nav-item i {
+    display: block;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Add padding to main content to account for bottom nav */
+  main {
+    margin-bottom: 80px;
+  }
+}
+
+#logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i>ResLinQ</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <i class="bi bi-house-door-fill"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="listings.html">
+              <i class="bi bi-building"></i> Listings
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="help.html">
+              <i class="bi bi-question-circle-fill"></i> Help
+            </a>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="signup-login-buttons">
+        <a href="authorization.html" class="btn btn-outline-light me-2 nav-btn">Login</a>
+        <a href="signup.html" class="btn btn-primary nav-btn">Sign Up</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="plans-hero">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <h1 class="display-5 fw-bold mb-3">Choose Your Perfect Plan</h1>
+          <p class="lead mb-4">Maximize your property's potential with our annual subscription plans. No commissions, just flat annual fees.</p>
+          
+          <!-- Floating Emojis -->
+          <div class="floating-emoji emoji-1">🏠</div>
+          <div class="floating-emoji emoji-2">💰</div>
+          <div class="floating-emoji emoji-3">🎯</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Plans Section -->
+  <section class="py-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        
+        <!-- Basic Plan -->
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="plan-card shadow-sm">
+            <div class="plan-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
+              <span class="plan-badge">STARTER</span>
+              <h3 class="fw-bold">Basic</h3>
+              <div class="price-display">R999</div>
+              <div class="price-period">per property / year</div>
+            </div>
+            <div class="plan-features">
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>1 Property Listing</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Standard Search Visibility</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Basic Analytics Dashboard</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Email Support</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Student Inquiry Management</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Custom Reporting</span>
+              </div>
+              
+              <button class="btn btn-choose-plan mt-4" data-plan="basic" data-price="999">
+                Choose Basic Plan
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Premium Plan (Most Popular) -->
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="plan-card shadow-sm plan-popular">
+            <div class="plan-header" style="background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);">
+              <span class="plan-badge">PROFESSIONAL</span>
+              <h3 class="fw-bold">Premium</h3>
+              <div class="price-display">R1,999</div>
+              <div class="price-period">for 3 properties / year</div>
+              <small>Save 33% per property</small>
+            </div>
+            <div class="plan-features">
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span><strong>3 Property Listings</strong></span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Enhanced Search Visibility</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Advanced Analytics + Insights</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Priority Phone & Email Support</span>
+              </div>
+              <!--<div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Student Matching Algorithm</span>
+              </div> -->
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Automated Messaging</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Booking Calendar Sync</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Custom Reporting</span>
+              </div>
+              
+              <button class="btn btn-choose-plan btn-popular mt-4" data-plan="premium" data-price="1999">
+                Choose Premium Plan
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Elite Plan -->
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="plan-card shadow-sm">
+            <div class="plan-header" style="background: linear-gradient(135deg, var(--success) 0%, #047857 100%);">
+              <span class="plan-badge">ENTERPRISE</span>
+              <h3 class="fw-bold">Elite</h3>
+              <div class="price-display">R3,999</div>
+              <div class="price-period">unlimited properties / year</div>
+              <small>Best value for agencies</small>
+            </div>
+            <div class="plan-features">
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span><strong>Unlimited Property Listings</strong></span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Premium Search Placement</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Full Analytics Dashboard</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Dedicated Account Manager</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Priority Phone & Email Support</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>24/7 Priority Support</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Bulk Management Tools</span>
+              </div>
+              <!--<div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>API Access</span>
+              </div> -->
+              <div class="feature-item">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Custom Reporting</span>
+              </div>
+              
+              <button class="btn btn-choose-plan mt-4" data-plan="elite" data-price="3999">
+                Choose Elite Plan
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Money Back Guarantee -->
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="guarantee-badge">
+            <h5 class="mb-2"><i class="bi bi-shield-check me-2"></i>30-Day Money Back Guarantee</h5>
+            <p class="mb-0">Not satisfied? Get a full refund within 30 days. No questions asked.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Comparison -->
+      <div class="row justify-content-center mt-5">
+        <div class="col-lg-10">
+          <div class="comparison-table">
+            <h3 class="text-center fw-bold mb-4">Plan Comparison</h3>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="feature-comparison">
+                  <h5 class="fw-bold">Listing Management</h5>
+                  <p class="text-muted">Compare how many properties you can list and manage across different plans.</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="feature-comparison">
+                  <h5 class="fw-bold">Support & Features</h5>
+                  <p class="text-muted">See the level of support and advanced features available in each tier.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="text-center mt-4">
+              <p class="text-muted">Need help choosing? <a href="landlord-contact.html" class="text-primary">Contact our team</a> for personalized advice.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mobile Bottom Navigation -->
+<div class="mobile-bottom-nav d-lg-none">
+  <a href="landlord-dashboard.html" class="mobile-nav-item">
+    <i class="bi bi-house"></i>
+    <span>Dashboard</span>
+  </a>
+  <a href="manage-properties.html" class="mobile-nav-item active">
+    <i class="bi bi-building"></i>
+    <span>Properties</span>
+  </a>
+  <a href="landlord-booking.html" class="mobile-nav-item">
+    <i class="bi bi-calendar-check"></i>
+    <span>Bookings</span>
+  </a>
+  <a href="landlord-analytics.html" class="mobile-nav-item">
+    <i class="bi bi-bar-chart"></i>
+    <span>Analytics</span>
+  </a>
+  <a href="landlord-help.html" class="mobile-nav-item">
+      <i class="bi bi-question-circle"></i>
+      <span>Help</span>
+    </a>
+</div>
+
+   <!-- Enhanced Footer -->
+  <footer class="py-4 bg-navy text-white">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for managing student accommodation properties efficiently.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Property Management</h6>
+          <ul class="list-unstyled">
+            <li><a href="manage-properties.html" class="text-light text-decoration-none">My Properties</a></li>
+            <li><a href="landlord-booking.html" class="text-light text-decoration-none">Bookings</a></li>
+            <li><a href="landlord-reports.html" class="text-light text-decoration-none">Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="landlord-analytics.html" class="text-light text-decoration-none">Analytics</a></li>
+            <li><a href="landlord-help.html" class="text-light text-decoration-none">Help</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Landlord Support</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa<br>
+            <i class="bi bi-clock me-2"></i>Mon-Fri: 9AM-5PM
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="subscription-plans.js"></script>
+  <script src="navbar.js"></script>
+</body>
+</html>

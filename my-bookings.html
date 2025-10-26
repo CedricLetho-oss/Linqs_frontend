@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Bookings | ResLinQ</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <!-- AOS CSS -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --secondary: #b6b1fb;
+      --accent: #f59e0b;
+      --text-dark: #1e293b;
+      --text-light: #64748b;
+      --bg-light: #f8fafc;
+    }
+
+    /* Floating Animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Pulse Animation */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Gradient Text */
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Enhanced Hero Section */
+    .bookings-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 3rem 0;
+      border-radius: 0 0 2rem 2rem;
+      position: relative;
+      overflow: hidden;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+    }
+
+    .bookings-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+
+    /* Floating Elements */
+    .floating-element {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-element:nth-child(1) {
+      width: 60px;
+      height: 60px;
+      top: 20%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      width: 80px;
+      height: 80px;
+      top: 60%;
+      right: 10%;
+      animation-delay: -2s;
+    }
+
+    .floating-element:nth-child(3) {
+      width: 40px;
+      height: 40px;
+      bottom: 20%;
+      left: 20%;
+      animation-delay: -4s;
+    }
+
+    /* Enhanced Cards */
+    .booking-card {
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      border: none;
+      border-radius: 1.5rem;
+      overflow: hidden;
+      position: relative;
+      height: 100%;
+    }
+
+    .booking-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      z-index: 1;
+    }
+
+    .booking-card.pending::before { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .booking-card.approved::before { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+    .booking-card.rejected::before { background: linear-gradient(135deg, #dc3545 0%, #b91c1c 100%); }
+    .booking-card.completed::before { background: linear-gradient(135deg, #6c757d 0%, #4b5563 100%); }
+
+    .booking-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(30, 58, 138, 0.15);
+    }
+
+    .status-badge {
+      font-size: 0.75rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .booking-timeline {
+      position: relative;
+      padding-left: 2rem;
+    }
+
+    .booking-timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #e9ecef;
+    }
+
+    .timeline-step {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .timeline-step::before {
+      content: '';
+      position: absolute;
+      left: -2rem;
+      top: 0.3rem;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #6c757d;
+      transition: all 0.3s ease;
+    }
+
+    .timeline-step.active::before { 
+      background: var(--primary);
+      transform: scale(1.2);
+    }
+
+    .timeline-step.completed::before { 
+      background: #059669;
+      transform: scale(1.1);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: #6c757d;
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .stats-card {
+      border: none;
+      border-radius: 1.5rem;
+      color: white;
+      text-align: center;
+      padding: 2rem 1rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stats-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M0 0h40v40H0V0zm1 1h38v38H1V1z'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .stats-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .stats-card .card-body {
+      position: relative;
+      z-index: 2;
+    }
+
+    .nav-pills .nav-link {
+      border-radius: 2rem;
+      padding: 0.75rem 1.5rem;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+      color: #64748b;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .nav-pills .nav-link.active {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .nav-pills .nav-link:not(.active):hover {
+      border-color: #e2e8f0;
+      transform: translateY(-2px);
+    }
+
+    .card-img-top {
+      height: 200px;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .booking-card:hover .card-img-top {
+      transform: scale(1.05);
+    }
+
+    .btn-booking {
+      border-radius: 2rem;
+      padding: 0.75rem 1.5rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .btn-booking:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Custom Button */
+    .btn-gradient {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border: none;
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
+      color: white;
+    }
+
+    /* Hero Content Alignment */
+    .hero-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .hero-text {
+      flex: 1;
+    }
+
+    .hero-button {
+      flex-shrink: 0;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+      .bookings-hero {
+        padding: 2rem 0;
+        border-radius: 0 0 1.5rem 1.5rem;
+        min-height: 160px;
+      }
+
+      .bookings-hero h1 {
+        font-size: 2rem !important;
+        margin-bottom: 0.5rem !important;
+      }
+
+      .bookings-hero .lead {
+        font-size: 1rem !important;
+        margin-bottom: 1rem !important;
+      }
+
+      .bookings-hero .btn {
+        padding: 0.5rem 1rem !important;
+        font-size: 0.9rem !important;
+      }
+
+      .hero-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+
+      .hero-text {
+        text-align: center;
+      }
+
+      .hero-button {
+        width: 100%;
+        text-align: center;
+      }
+
+      .stats-card {
+        padding: 1.5rem 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .stats-card h3 {
+        font-size: 1.75rem;
+      }
+
+      .nav-pills .nav-link {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+        margin-right: 0.25rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .booking-timeline {
+        padding-left: 1.5rem;
+      }
+
+      .timeline-step::before {
+        left: -1.5rem;
+      }
+
+      .booking-card {
+        margin-bottom: 1.5rem;
+      }
+
+      .empty-state {
+        padding: 3rem 1rem;
+      }
+
+      .empty-state i {
+        font-size: 3rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .bookings-hero {
+        padding: 1.5rem 0;
+        min-height: 140px;
+      }
+
+      .bookings-hero h1 {
+        font-size: 1.75rem !important;
+      }
+
+      .nav-pills {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+      }
+
+      .nav-pills .nav-link {
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .stats-card h3 {
+        font-size: 1.5rem;
+      }
+
+      .btn-booking {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Ensure footer stays at bottom */
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    main {
+      flex: 1 0 auto;
+    }
+
+    footer {
+      flex-shrink: 0;
+      margin-top: auto;
+    }
+
+    /* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1C2B4A;
+    z-index: 1030;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .mobile-nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-nav-item.active {
+    color: #64748b;
+  }
+  
+  .mobile-nav-item i {
+    display: block;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Add padding to main content to account for bottom nav */
+  main {
+    margin-bottom: 80px;
+  }
+}
+
+.hero-subtitle {
+        color:#e2e8f0;
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+        line-height: 1.5;
+        }
+
+        #logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+
+/* Add this CSS for consistent image sizing in bookings */
+.property-image-container {
+    height: 200px;
+    overflow: hidden;
+    border-radius: 0.375rem 0.375rem 0 0;
+    background-color: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.property-image-container .property-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Ensure consistent card heights */
+.booking-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.booking-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.booking-card .card-body .d-grid {
+    margin-top: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .property-image-container {
+        height: 180px;
+    }
+}
+
+@media (max-width: 576px) {
+    .property-image-container {
+        height: 160px;
+    }
+}
+  </style>
+</head>
+<body>
+
+  <!-- Redirect if not logged in or not student -->
+  <script>
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    if (!token) {
+      alert("Please log in to access this page.");
+      window.location.href = "authorization.html";
+    } else if (user.role !== 'student') {
+      alert("This page is for students only.");
+      window.location.href = user.role === 'landlord' ? "landlord-dashboard.html" : "index.html";
+    }
+  </script>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
+    <div class="container">
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i>ResLinQ</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <i class="bi bi-house-door-fill"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="listings.html">
+              <i class="bi bi-building"></i> Listings
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="help.html">
+              <i class="bi bi-question-circle-fill"></i> Help
+            </a>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="signup-login-buttons">
+        <!-- Dynamic content will be inserted by navbar.js -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Enhanced Hero Section -->
+  <section class="bookings-hero">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-text" data-aos="fade-right">
+          <h1 class="fw-bold mb-2 animate__animated animate__fadeInDown">
+              My <span class="gradient-text">Bookings</span>
+          </h1>
+          <p class="lead mb-0 hero-subtitle fs-5  animate__animated animate__fadeInUp animate__delay-1s">
+            Manage your accommodation viewing appointments and track their status
+          </p>
+        </div>
+        <div class="hero-button" data-aos="fade-left" data-aos-delay="300">
+          <a href="listings.html" class="btn btn-light">
+            <i class="bi bi-plus-circle me-2"></i>Book New Viewing
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="container py-5">
+    
+    <!-- Stats Overview -->
+    <div class="row mb-5">
+      <div class="col-md-3 col-6 mb-3" data-aos="fade-up" data-aos-delay="100">
+        <div class="stats-card" style="background: linear-gradient(135deg, #1e3a8a 0%, #2d4a9c 100%);">
+          <h3 class="mb-2" id="totalBookings">0</h3>
+          <p class="mb-0">Total Bookings</p>
+        </div>
+      </div>
+      <div class="col-md-3 col-6 mb-3" data-aos="fade-up" data-aos-delay="200">
+        <div class="stats-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+          <h3 class="mb-2" id="pendingBookings">0</h3>
+          <p class="mb-0">Pending</p>
+        </div>
+      </div>
+      <div class="col-md-3 col-6 mb-3" data-aos="fade-up" data-aos-delay="300">
+        <div class="stats-card" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);">
+          <h3 class="mb-2" id="approvedBookings">0</h3>
+          <p class="mb-0">Approved</p>
+        </div>
+      </div>
+      <div class="col-md-3 col-6 mb-3" data-aos="fade-up" data-aos-delay="400">
+        <div class="stats-card" style="background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);">
+          <h3 class="mb-2" id="upcomingBookings">0</h3>
+          <p class="mb-0">Upcoming</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <ul class="nav nav-pills justify-content-center" id="bookingTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all" type="button">
+              <i class="bi bi-grid me-1"></i>All Bookings
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pending-tab" data-bs-toggle="pill" data-bs-target="#pending" type="button">
+              <i class="bi bi-clock me-1"></i>Pending
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="approved-tab" data-bs-toggle="pill" data-bs-target="#approved" type="button">
+              <i class="bi bi-check-circle me-1"></i>Approved
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="upcoming-tab" data-bs-toggle="pill" data-bs-target="#upcoming" type="button">
+              <i class="bi bi-calendar-event me-1"></i>Upcoming
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="completed-tab" data-bs-toggle="pill" data-bs-target="#completed" type="button">
+              <i class="bi bi-check-lg me-1"></i>Completed
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bookings Content -->
+    <div class="tab-content" id="bookingTabsContent">
+      
+      <!-- All Bookings Tab -->
+      <div class="tab-pane fade show active" id="all" role="tabpanel">
+        <div class="row g-3" id="allBookingsContainer">
+          <!-- Bookings will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Pending Tab -->
+      <div class="tab-pane fade" id="pending" role="tabpanel">
+        <div class="row g-3" id="pendingBookingsContainer">
+          <!-- Pending bookings will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Approved Tab -->
+      <div class="tab-pane fade" id="approved" role="tabpanel">
+        <div class="row g-3" id="approvedBookingsContainer">
+          <!-- Approved bookings will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Upcoming Tab -->
+      <div class="tab-pane fade" id="upcoming" role="tabpanel">
+        <div class="row g-3" id="upcomingBookingsContainer">
+          <!-- Upcoming bookings will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Completed Tab -->
+      <div class="tab-pane fade" id="completed" role="tabpanel">
+        <div class="row g-3" id="completedBookingsContainer">
+          <!-- Completed bookings will be loaded here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="row" id="emptyState" style="display: none;">
+      <div class="col-12">
+        <div class="empty-state" data-aos="fade-up">
+          <i class="bi bi-calendar-x"></i>
+          <h3 class="text-navy mb-3">No Bookings Yet</h3>
+          <p class="text-muted mb-4">Start exploring accommodations and book your first viewing appointment!</p>
+          <a href="listings.html" class="btn btn-gradient">
+            <i class="bi bi-building me-2"></i>Browse Listings
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+<div class="mobile-bottom-nav d-lg-none">
+  <a href="home.html" class="mobile-nav-item">
+    <i class="bi bi-house"></i>
+    <span>Home</span>
+  </a>
+  <a href="listings.html" class="mobile-nav-item">
+    <i class="bi bi-building"></i>
+    <span>Listings</span>
+  </a>
+  <a href="my-bookings.html" class="mobile-nav-item active">
+    <i class="bi bi-calendar-check"></i>
+    <span>Bookings</span>
+  </a>
+  <a href="help.html" class="mobile-nav-item">
+    <i class="bi bi-question-circle"></i>
+    <span>Help</span>
+  </a>
+</div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="py-5 bg-navy text-white">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="fw-bold-footer">
+            <i class="bi bi-house-heart-fill me-2"></i>ResLinQ
+          </h5>
+          <p class="text-light">Your trusted platform for finding the perfect student accommodation near your campus.</p>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Quick Links</h6>
+          <ul class="list-unstyled">
+            <li><a href="home.html" class="text-light text-decoration-none">Home</a></li>
+            <li><a href="listings.html" class="text-light text-decoration-none">Listings</a></li>
+            <li><a href="help.html" class="text-light text-decoration-none">Help</a></li>
+            <li><a href="about-us.html" class="text-light text-decoration-none">About Us</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-6 mb-4">
+          <h6 class="text-light">Account</h6>
+          <ul class="list-unstyled">
+            <li><a href="profile.html" class="text-light text-decoration-none">Profile</a></li>
+            <li><a href="my-bookings.html" class="text-light text-decoration-none">My Bookings</a></li>
+            <li><a href="view-reports.html" class="text-light text-decoration-none">My Reports</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h6 class="text-light">Get in Touch</h6>
+          <p class="text-light small">
+            <i class="bi bi-envelope me-2"></i>reslinqco@gmail.com<br>
+            <i class="bi bi-telephone me-2"></i>+27 82 305 6754<br>
+            <i class="bi bi-geo-alt me-2"></i>South Africa
+          </p>
+        </div>
+      </div>
+      <hr class="text-light">
+      <div class="text-center">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="my-bookings.js"></script>
+  <script src="navbar.js"></script>
+
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 1000,
+      once: true,
+      offset: 100
+    });
+  </script>
+  
+</body>
+</html>

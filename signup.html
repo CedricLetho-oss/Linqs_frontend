@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResLinQ | Sign Up</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --secondary: #f59e0b;
+      --success: #059669;
+      --light-bg: #f8fafc;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Enhanced Background with Geometric Patterns */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 45%;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+      z-index: -1;
+    }
+
+    /* Floating Background Elements */
+    .floating-elements {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .floating-element {
+      position: absolute;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 50%;
+      animation: floatElement 20s infinite linear;
+    }
+
+    .floating-element:nth-child(1) {
+      width: 100px;
+      height: 100px;
+      top: 20%;
+      right: 10%;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      width: 150px;
+      height: 150px;
+      top: 60%;
+      left: 5%;
+      animation-delay: -7s;
+    }
+
+    .floating-element:nth-child(3) {
+      width: 80px;
+      height: 80px;
+      bottom: 15%;
+      right: 20%;
+      animation-delay: -14s;
+    }
+
+    @keyframes floatElement {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+      }
+      33% {
+        transform: translateY(-25px) rotate(120deg);
+      }
+      66% {
+        transform: translateY(15px) rotate(240deg);
+      }
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      width: 100%;
+    }
+
+    /* Glass Morphism Auth Container */
+    .auth-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      width: 100%;
+      max-width: 500px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      position: relative;
+      transform: translateY(0);
+      transition: all 0.3s ease;
+    }
+
+    .auth-container:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+    }
+
+    .auth-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .auth-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+      background-size: 20px 20px;
+      animation: float 15s linear infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(-20px, -20px) rotate(360deg); }
+    }
+
+    .logo {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .auth-content {
+      padding: 2rem;
+    }
+
+    /* Enhanced Form Styles */
+    .form-group {
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #374151;
+      font-size: 0.9rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-control:hover {
+      border-color: #cbd5e1;
+    }
+
+    .input-with-icon {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748b;
+    }
+
+    /* Enhanced Button Styles */
+    .btn-auth {
+      width: 100%;
+      padding: 0.75rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-auth::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-auth:hover::before {
+      left: 100%;
+    }
+
+    .btn-auth:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-auth:active {
+      transform: translateY(0);
+    }
+
+    /* Loading Animation */
+    .loading-spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Role-specific fields animation */
+    .role-fields {
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+
+    .role-fields.show {
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        max-height: 0;
+      }
+      to {
+        opacity: 1;
+        max-height: 500px;
+      }
+    }
+
+    /* Two-column layout for name fields on larger screens */
+    @media (min-width: 768px) {
+      .name-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+    }
+
+    /* Enhanced Footer */
+    footer {
+      flex-shrink: 0;
+      background: #1C2B4A;
+      color: white;
+      padding: 2rem 0 1rem;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    /* ADDED MISSING FOOTER GRID STYLES */
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .footer-section {
+      text-align: left;
+    }
+
+    .footer-section h5 {
+      margin-bottom: 1rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .footer-section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .footer-section ul li {
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-section a {
+      color: #e2e8f0;
+      text-decoration: none;
+      transition: color 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .footer-section a:hover {
+      color: white;
+      text-decoration: underline;
+    }
+
+    .footer-section p {
+      color: #e2e8f0;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      font-size: 0.9rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .auth-container {
+        margin: 1rem;
+        max-width: none;
+      }
+
+      .auth-header {
+        padding: 1.5rem;
+      }
+
+      .auth-content {
+        padding: 1.5rem;
+      }
+
+      body::before {
+        height: 35%;
+        clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 1.5rem;
+      }
+
+      .footer-section {
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .auth-header {
+        padding: 1.25rem;
+      }
+      
+      .auth-content {
+        padding: 1.25rem;
+      }
+      
+      .logo {
+        font-size: 2rem;
+      }
+      
+      .form-control {
+        padding: 0.65rem 0.75rem;
+      }
+
+      footer {
+        padding: 1.5rem 0 1rem;
+      }
+    }
+
+    /* Back to Login Link */
+    .back-to-login {
+      text-align: center;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .back-to-login a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .back-to-login a:hover {
+      color: var(--primary-dark);
+      text-decoration: underline;
+    }
+
+    #logoutModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#logoutModal .logout-icon-container {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
+
+#logoutModal .logout-icon-container i {
+  color: white !important;
+}
+
+#logoutModal .modal-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 15px 15px 0 0 !important;
+}
+
+#logoutModal .btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .btn-outline-secondary {
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 500;
+}
+
+#logoutModal .modal-body i.bi-person-check {
+  color: var(--primary) !important;
+}
+  </style>
+</head>
+<body>
+  <!-- Floating Background Elements -->
+  <div class="floating-elements">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+  </div>
+
+  <!-- Enhanced Signup Section -->
+  <div class="main-content">
+    <div class="auth-container animate__animated animate__fadeInUp">
+      <div class="auth-header">
+        <i class="bi bi-house-heart-fill logo"></i>
+        <h3>Join ResLinQ Today</h3>
+        <p class="mb-0">Create your account in seconds</p>
+      </div>
+
+      <div class="auth-content">
+        <form id="signupForm">
+          <!-- Username -->
+          <div class="form-group">
+            <label class="form-label" for="username">Username *</label>
+            <div class="input-with-icon">
+              <input type="text" class="form-control" id="username" name="username" placeholder="Choose a username" required>
+              <i class="bi bi-person input-icon"></i>
+            </div>
+            <small class="text-muted">This will be your display name</small>
+          </div>
+
+          <!-- Name Fields - Two columns on desktop -->
+          <div class="name-row">
+            <div class="form-group">
+              <label class="form-label" for="firstName">First Name *</label>
+              <input type="text" class="form-control" id="firstName" name="firstName" placeholder="Your first name" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="surname">Surname *</label>
+              <input type="text" class="form-control" id="surname" name="surname" placeholder="Your surname" required>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address *</label>
+            <div class="input-with-icon">
+              <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+              <i class="bi bi-envelope input-icon"></i>
+            </div>
+          </div>
+
+          <!-- Phone -->
+          <div class="form-group">
+            <label class="form-label" for="phone">Phone Number *</label>
+            <div class="input-with-icon">
+              <input type="tel" class="form-control" id="phone" name="phone" placeholder="e.g. 071 234 5678" required>
+              <i class="bi bi-phone input-icon"></i>
+            </div>
+          </div>
+
+          <!-- Role Selection -->
+          <div class="form-group">
+            <label class="form-label" for="roleSelect">I am a *</label>
+            <select id="roleSelect" class="form-control" name="role" required>
+              <option value="" disabled selected>Choose your role</option>
+              <option value="student">Student</option>
+              <option value="landlord">Landlord</option>
+            </select>
+          </div>
+
+          <!-- Student Fields -->
+          <div id="studentFields" class="role-fields d-none">
+            <div class="form-group">
+              <label class="form-label" for="university">University / Institution</label>
+              <input type="text" class="form-control" id="university" name="university" placeholder="Enter your university or college">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="course">Course / Degree</label>
+              <input type="text" class="form-control" id="course" name="course" placeholder="e.g. BCom in Business Management">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="faculty">Faculty</label>
+              <input type="text" class="form-control" id="faculty" name="faculty" placeholder="e.g. Faculty of Commerce">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="courseDuration">Course Duration</label>
+              <select class="form-control" id="courseDuration" name="courseDuration">
+                <option value="" disabled selected>Select duration</option>
+                <option value="1">1 Year</option>
+                <option value="2">2 Years</option>
+                <option value="3">3 Years</option>
+                <option value="4">4+ Years</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Landlord Fields -->
+          <div id="landlordFields" class="role-fields d-none">
+            <div class="form-group">
+              <label class="form-label" for="propertyName">Property Name</label>
+              <input type="text" class="form-control" id="propertyName" name="propertyName" placeholder="e.g. Central View Lodge">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="propertyAddress">Property Address</label>
+              <input type="text" class="form-control" id="propertyAddress" name="propertyAddress" placeholder="Enter full property address">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="roomCount">Number of Rooms</label>
+              <input type="number" class="form-control" id="roomCount" name="roomCount" placeholder="e.g. 12" min="1">
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label class="form-label" for="password">Password *</label>
+            <div class="input-with-icon">
+              <input type="password" class="form-control" id="password" name="password" placeholder="Create a strong password" required>
+              <i class="bi bi-lock input-icon"></i>
+            </div>
+            <small class="text-muted">Minimum 8 characters with at least 1 capital letter and 1 number</small>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="form-group">
+            <label class="form-label" for="confirmPassword">Confirm Password *</label>
+            <div class="input-with-icon">
+              <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Re-enter your password" required>
+              <i class="bi bi-lock-fill input-icon"></i>
+            </div>
+          </div>
+
+          <!-- Terms Agreement -->
+          <div class="form-group">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="termsCheck" name="terms" required>
+              <label class="form-check-label" for="termsCheck">
+                I agree to the <a href="terms_conditions.html" target="_blank">Terms & Conditions</a> and <a href="privacy.html" target="_blank">Privacy Policy</a> *
+              </label>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn-auth mb-3">
+            <span class="btn-text">Create Account</span>
+            <div class="loading-spinner"></div>
+          </button>
+        </form>
+
+        <!-- Back to Login -->
+        <div class="back-to-login">
+          <p>Already have an account? <a href="authorization.html">Sign in here</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-grid">
+        <div class="footer-section">
+          <h5><i class="bi bi-house-heart-fill me-2"></i>ResLinQ</h5>
+          <p>Your trusted platform for student accommodation. Connecting students with quality housing solutions.</p>
+        </div>
+        
+        <div class="footer-section">
+          <h5>Quick Links</h5>
+          <ul>
+            <li><a href="home.html">Home</a></li>
+            <li><a href="listings.html">Listings</a></li>
+            <li><a href="help.html">Help Center</a></li>
+            <li><a href="about-us.html">About Us</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h5>Support</h5>
+          <ul>
+            <li><a href="privacy-policy.html">Privacy Policy</a></li>
+            <li><a href="terms_conditions.html">Terms of Service</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="safety.html">Safety Guidelines</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h5>Contact Info</h5>
+          <ul>
+            <li><i class="bi bi-envelope me-2"></i>reslinqco@gmail.com</li>
+            <li><i class="bi bi-telephone me-2"></i>+27 82 305 6754</li>
+            <li><i class="bi bi-geo-alt me-2"></i>South Africa</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <!-- Bootstrap + JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+  <script src="signup.js"></script>
+
+  <script>
+  // Enhanced form data persistence
+document.addEventListener('DOMContentLoaded', function() {
+  const roleSelect = document.getElementById('roleSelect');
+  const studentFields = document.getElementById('studentFields');
+  const landlordFields = document.getElementById('landlordFields');
+  const termsCheck = document.getElementById('termsCheck');
+  
+  // Save form data to localStorage whenever it changes
+  function saveFormData() {
+    const formData = {
+      username: document.getElementById('username').value,
+      firstName: document.getElementById('firstName').value,
+      surname: document.getElementById('surname').value,
+      email: document.getElementById('email').value,
+      phone: document.getElementById('phone').value,
+      role: document.getElementById('roleSelect').value,
+      password: document.getElementById('password').value,
+      confirmPassword: document.getElementById('confirmPassword').value,
+      // Student fields
+      university: document.getElementById('university')?.value || '',
+      course: document.getElementById('course')?.value || '',
+      faculty: document.getElementById('faculty')?.value || '',
+      courseDuration: document.getElementById('courseDuration')?.value || '',
+      // Landlord fields
+      propertyName: document.getElementById('propertyName')?.value || '',
+      propertyAddress: document.getElementById('propertyAddress')?.value || '',
+      roomCount: document.getElementById('roomCount')?.value || ''
+    };
+    
+    localStorage.setItem('signupFormData', JSON.stringify(formData));
+  }
+  
+  // Load form data from localStorage
+  function loadFormData() {
+    const savedData = localStorage.getItem('signupFormData');
+    if (savedData) {
+      const formData = JSON.parse(savedData);
+      
+      // Populate all form fields
+      document.getElementById('username').value = formData.username || '';
+      document.getElementById('firstName').value = formData.firstName || '';
+      document.getElementById('surname').value = formData.surname || '';
+      document.getElementById('email').value = formData.email || '';
+      document.getElementById('phone').value = formData.phone || '';
+      document.getElementById('password').value = formData.password || '';
+      document.getElementById('confirmPassword').value = formData.confirmPassword || '';
+      
+      // Set role and show appropriate fields
+      if (formData.role) {
+        document.getElementById('roleSelect').value = formData.role;
+        triggerRoleChange(formData.role);
+        
+        // Populate role-specific fields after a short delay to ensure fields are visible
+        setTimeout(() => {
+          if (formData.role === 'student') {
+            document.getElementById('university').value = formData.university || '';
+            document.getElementById('course').value = formData.course || '';
+            document.getElementById('faculty').value = formData.faculty || '';
+            document.getElementById('courseDuration').value = formData.courseDuration || '';
+          } else if (formData.role === 'landlord') {
+            document.getElementById('propertyName').value = formData.propertyName || '';
+            document.getElementById('propertyAddress').value = formData.propertyAddress || '';
+            document.getElementById('roomCount').value = formData.roomCount || '';
+          }
+        }, 100);
+      }
+    }
+  }
+  
+  // Trigger role change programmatically
+  function triggerRoleChange(role) {
+    const selectedRole = role;
+    
+    // Hide both fields first with animation
+    if (!studentFields.classList.contains('d-none')) {
+      studentFields.classList.remove('show');
+      setTimeout(() => studentFields.classList.add('d-none'), 300);
+    }
+    if (!landlordFields.classList.contains('d-none')) {
+      landlordFields.classList.remove('show');
+      setTimeout(() => landlordFields.classList.add('d-none'), 300);
+    }
+    
+    // Show the appropriate fields with animation
+    setTimeout(() => {
+      if (selectedRole === 'student') {
+        studentFields.classList.remove('d-none');
+        setTimeout(() => studentFields.classList.add('show'), 10);
+      } else if (selectedRole === 'landlord') {
+        landlordFields.classList.remove('d-none');
+        setTimeout(() => landlordFields.classList.add('show'), 10);
+      }
+    }, 300);
+  }
+  
+  // Role selection handler
+  roleSelect.addEventListener('change', function() {
+    const selectedRole = this.value;
+    triggerRoleChange(selectedRole);
+    saveFormData(); // Save when role changes
+  });
+  
+  // Add event listeners to all form inputs to save data on change
+  const formInputs = document.querySelectorAll('#signupForm input, #signupForm select');
+  formInputs.forEach(input => {
+    input.addEventListener('input', saveFormData);
+    input.addEventListener('change', saveFormData);
+  });
+  
+  // Real-time password validation
+  const passwordInput = document.getElementById('password');
+  const confirmPasswordInput = document.getElementById('confirmPassword');
+  
+  function validatePasswords() {
+    const password = passwordInput.value;
+    const confirmPassword = confirmPasswordInput.value;
+    
+    if (confirmPassword && password !== confirmPassword) {
+      confirmPasswordInput.style.borderColor = '#dc2626';
+    } else if (confirmPassword) {
+      confirmPasswordInput.style.borderColor = '#16a34a';
+    } else {
+      confirmPasswordInput.style.borderColor = '#e2e8f0';
+    }
+  }
+  
+  passwordInput.addEventListener('input', function() {
+    validatePasswords();
+    saveFormData();
+  });
+  
+  confirmPasswordInput.addEventListener('input', function() {
+    validatePasswords();
+    saveFormData();
+  });
+  
+  // Check for terms acceptance and auto-check the checkbox
+  const urlParams = new URLSearchParams(window.location.search);
+  const termsAccepted = urlParams.get('termsAccepted') === 'true' || 
+                        localStorage.getItem('termsAccepted') === 'true';
+  
+  if (termsAccepted && termsCheck) {
+    termsCheck.checked = true;
+    
+    // Show visual feedback
+    const termsLabel = termsCheck.closest('.form-check-label');
+    if (termsLabel) {
+      termsLabel.innerHTML += ' <span class="badge bg-success"><i class="bi bi-check-lg me-1"></i>Accepted</span>';
+    }
+  }
+  
+  // Enhanced form submission with terms validation and data cleanup
+  document.getElementById('signupForm').addEventListener('submit', function(e) {
+    if (!termsCheck.checked) {
+      e.preventDefault();
+      alert('Please accept the Terms & Conditions to continue.');
+      termsCheck.focus();
+      return false;
+    }
+    
+    // Clear saved form data on successful submission
+    localStorage.removeItem('signupFormData');
+  });
+  
+  // Load saved form data when page loads
+  loadFormData();
+  
+  // Clear saved data if user explicitly navigates away without submitting
+  window.addEventListener('beforeunload', function() {
+    // Only clear if not submitting and not going to terms page
+    if (!document.querySelector('.btn-auth:disabled')) {
+      const currentUrl = window.location.href;
+      if (!currentUrl.includes('terms_conditions.html')) {
+        // Keep data for now, we'll clear on successful submission
+      }
+    }
+  });
+});
+</script> 
+</body>
+</html>

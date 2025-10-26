@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Management - ResLinQ Admin</title>
+  
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --success: #059669;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --info: #60a5fa;
+      --light-bg: #f8fafc;
+      --navy: #0b2447;
+      --admin-sidebar: #0f172a;
+    }
+
+    body {
+      background: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .admin-sidebar {
+      background: var(--admin-sidebar);
+      color: white;
+      min-height: 100vh;
+      position: fixed;
+      width: 280px;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+
+    .admin-sidebar.collapsed {
+      width: 80px;
+    }
+
+    .admin-sidebar.collapsed .sidebar-text {
+      display: none;
+    }
+
+    .sidebar-brand {
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      text-align: center;
+    }
+
+    .sidebar-nav {
+      padding: 1rem 0;
+    }
+
+    .nav-item {
+      margin: 0.25rem 1rem;
+    }
+
+    .nav-link {
+      color: rgba(255,255,255,0.8);
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background: rgba(59, 130, 246, 0.1);
+      color: white;
+      border-left: 3px solid var(--primary-light);
+    }
+
+    .admin-main {
+      margin-left: 280px;
+      transition: all 0.3s ease;
+      min-height: 100vh;
+    }
+
+    .admin-main.expanded {
+      margin-left: 80px;
+    }
+
+    .admin-header {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1rem 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .admin-content {
+      padding: 2rem;
+    }
+
+    /* Users-specific styles */
+    .user-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      border-left: 4px solid var(--primary);
+      transition: all 0.3s ease;
+      margin-bottom: 1rem;
+    }
+
+    .user-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+
+    .user-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 1.2rem;
+    }
+
+    .role-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .role-admin { background: #fee2e2; color: #dc2626; }
+    .role-landlord { background: #d1fae5; color: #059669; }
+    .role-student { background: #dbeafe; color: #1d4ed8; }
+
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-active { background: #d1fae5; color: #059669; }
+    .status-pending { background: #fef3c7; color: #d97706; }
+    .status-suspended { background: #fee2e2; color: #dc2626; }
+    .status-inactive { background: #f1f5f9; color: #64748b; }
+
+    .data-table {
+      background: white;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .table th {
+      background: #f8fafc;
+      border-bottom: 2px solid #e2e8f0;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--danger);
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Analytics Cards */
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .analytics-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      transition: transform 0.3s ease;
+    }
+
+    .analytics-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .analytics-card.total { border-top: 4px solid var(--primary); }
+    .analytics-card.landlords { border-top: 4px solid var(--success); }
+    .analytics-card.students { border-top: 4px solid var(--info); }
+    .analytics-card.pending { border-top: 4px solid var(--warning); }
+
+    /* Quick Actions */
+    .quick-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .action-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .filter-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      margin-bottom: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Admin Redirect Check -->
+  <script>
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    if (!token) {
+      alert("Please log in to access admin panel.");
+      window.location.href = "authorization.html";
+    } else if (user.role !== 'admin') {
+      alert("Access denied. Admin privileges required.");
+      window.location.href = "index.html";
+    }
+  </script>
+
+  <!-- Admin Sidebar -->
+  <div class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-brand">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-shield-check text-primary fs-4 me-2"></i>
+          <span class="sidebar-text fs-5 fw-bold">ResLinQ Admin</span>
+        </div>
+        <button class="btn btn-sm btn-outline-light" id="sidebarToggle">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="nav-item">
+        <a class="nav-link" href="admin-dashboard.html">
+          <i class="bi bi-speedometer2"></i>
+          <span class="sidebar-text">Dashboard</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link active" href="admin-users.html">
+          <i class="bi bi-people"></i>
+          <span class="sidebar-text">Users</span>
+          <span class="notification-badge" id="usersNotification">0</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-properties.html">
+          <i class="bi bi-houses"></i>
+          <span class="sidebar-text">Properties</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-bookings.html">
+          <i class="bi bi-calendar-check"></i>
+          <span class="sidebar-text">Bookings</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-reports.html">
+          <i class="bi bi-flag"></i>
+          <span class="sidebar-text">Reports</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-reviews.html">
+          <i class="bi bi-star"></i>
+          <span class="sidebar-text">Reviews</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-verification.html">
+          <i class="bi bi-patch-check"></i>
+          <span class="sidebar-text">Verification</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-messages.html">
+          <i class="bi bi-chat-dots"></i>
+          <span class="sidebar-text">Messages</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-payments.html">
+          <i class="bi bi-credit-card"></i>
+          <span class="sidebar-text">Payments</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" href="admin-settings.html">
+          <i class="bi bi-gear"></i>
+          <span class="sidebar-text">Settings</span>
+        </a>
+      </div>
+      
+      <div class="nav-item mt-4">
+        <a class="nav-link text-warning" href="admin-login.html">
+          <i class="bi bi-box-arrow-right"></i>
+          <span class="sidebar-text">Logout</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="admin-main" id="adminMain">
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h4 class="fw-bold mb-0">User Management</h4>
+          <small class="text-muted">Manage all platform users and permissions</small>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn btn-primary" data-action="exportUsers">
+              <i class="bi bi-download me-2"></i>Export Users
+          </button>
+          <button class="btn btn-success" data-action="showAddUserModal">
+              <i class="bi bi-plus-circle me-2"></i>Add User
+          </button>
+          <div class="dropdown">
+            <button class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+              <i class="bi bi-bell"></i>
+              <span class="notification-badge" id="headerNotification">0</span>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end">
+              <h6 class="dropdown-header">User Alerts</h6>
+              <div id="userAlerts">
+                <!-- Alerts will be populated here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="admin-content">
+      <!-- Analytics Overview -->
+      <div class="analytics-grid">
+        <div class="analytics-card total">
+          <div class="text-primary mb-2">
+            <i class="bi bi-people-fill fs-1"></i>
+          </div>
+          <h3 class="fw-bold" id="totalUsersCount">0</h3>
+          <p class="text-muted mb-0">Total Users</p>
+        </div>
+        <div class="analytics-card landlords">
+          <div class="text-success mb-2">
+            <i class="bi bi-house-check fs-1"></i>
+          </div>
+          <h3 class="fw-bold" id="landlordCount">0</h3>
+          <p class="text-muted mb-0">Landlords</p>
+        </div>
+        <div class="analytics-card students">
+          <div class="text-info mb-2">
+            <i class="bi bi-person-badge fs-1"></i>
+          </div>
+          <h3 class="fw-bold" id="studentCount">0</h3>
+          <p class="text-muted mb-0">Students</p>
+        </div>
+        <div class="analytics-card pending">
+          <div class="text-warning mb-2">
+            <i class="bi bi-clock-history fs-1"></i>
+          </div>
+          <h3 class="fw-bold" id="pendingCount">0</h3>
+          <p class="text-muted mb-0">Pending Verification</p>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <button class="btn btn-outline-primary action-btn" data-action="filterByRole" data-role="">
+            <i class="bi bi-people me-1"></i>All Users
+        </button>
+        <button class="btn btn-outline-success action-btn" data-action="filterByRole" data-role="landlord">
+            <i class="bi bi-house me-1"></i>Landlords
+        </button>
+        <button class="btn btn-outline-info action-btn" data-action="filterByRole" data-role="student">
+            <i class="bi bi-person me-1"></i>Students
+        </button>
+        <button class="btn btn-outline-warning action-btn" data-action="filterByStatus" data-status="pending">
+            <i class="bi bi-clock me-1"></i>Pending
+        </button>
+        <button class="btn btn-outline-danger action-btn" data-action="filterByStatus" data-status="suspended">
+            <i class="bi bi-slash-circle me-1"></i>Suspended
+        </button>
+      </div>
+
+      <!-- Search and Filters -->
+      <div class="filter-card">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Search Users</label>
+            <input type="text" class="form-control" id="searchInput" placeholder="Search by name, email, username...">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Role</label>
+            <select class="form-select" id="roleFilter">
+              <option value="">All Roles</option>
+              <option value="student">Student</option>
+              <option value="landlord">Landlord</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="statusFilter">
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="pending">Pending</option>
+              <option value="suspended">Suspended</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">&nbsp;</label>
+            <button class="btn btn-primary w-100" data-action="applyFilters">
+              <i class="bi bi-funnel"></i> Filter
+          </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Users Table -->
+      <div class="data-table">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0" id="tableTitle">All Users</h5>
+          <div class="d-flex align-items-center gap-2">
+            <span class="text-muted" id="tableInfo">Loading users...</span>
+            <div class="btn-group">
+              <button class="btn btn-outline-secondary btn-sm" data-action="previousPage">
+                  <i class="bi bi-chevron-left"></i>
+              </button>
+              <button class="btn btn-outline-secondary btn-sm" data-action="nextPage">
+                  <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th width="50">
+                  <input type="checkbox" class="form-check-input" id="selectAll">
+                </th>
+                <th>User</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Joined</th>
+                <th>Last Active</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr>
+                <td colspan="9" class="text-center py-4">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading users...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="p-3 border-top d-flex justify-content-between align-items-center">
+          <div class="btn-group">
+            <button class="btn btn-outline-success btn-sm" data-action="bulkAction" data-bulk-action="activate">
+                <i class="bi bi-check-circle me-1"></i>Activate
+            </button>
+            <button class="btn btn-outline-warning btn-sm" data-action="bulkAction" data-bulk-action="suspend">
+                <i class="bi bi-slash-circle me-1"></i>Suspend
+            </button>
+            <button class="btn btn-outline-danger btn-sm" data-action="bulkAction" data-bulk-action="delete">
+                <i class="bi bi-trash me-1"></i>Delete
+            </button>
+          </div>
+          <nav>
+            <ul class="pagination mb-0" id="pagination">
+              <!-- Pagination will be generated here -->
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add User Modal -->
+  <div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="btn btn-warning" data-action="editUser">
+              <i class="bi bi-pencil me-2"></i>Edit User
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="addUserForm">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">First Name *</label>
+                <input type="text" class="form-control" name="firstName" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Last Name *</label>
+                <input type="text" class="form-control" name="lastName" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Username *</label>
+                <input type="text" class="form-control" name="username" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Email *</label>
+                <input type="email" class="form-control" name="email" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Role *</label>
+                <select class="form-select" name="role" required>
+                  <option value="student">Student</option>
+                  <option value="landlord">Landlord</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Status *</label>
+                <select class="form-select" name="status" required>
+                  <option value="active">Active</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Phone</label>
+              <input type="tel" class="form-control" name="phone">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Password *</label>
+              <input type="password" class="form-control" name="password" required minlength="8">
+              <div class="form-text">Password must be at least 8 characters long</div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="adminUsersManager.addUser()">
+            <i class="bi bi-plus-circle me-2"></i>Create User
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Details Modal -->
+  <div class="modal fade" id="userDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">User Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="userDetails">
+          <!-- User details will be loaded here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-warning" data-action="editUser">
+            <i class="bi bi-pencil me-2"></i>Edit User
+        </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="admin-users.js"></script>
+</body>
+</html>
