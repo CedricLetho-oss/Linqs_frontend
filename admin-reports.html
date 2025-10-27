@@ -706,6 +706,41 @@
     }
 }
 
+// Add this method to AdminReportsManager class in admin-reports.html
+async deleteReport(reportId) {
+    if (!confirm('Are you sure you want to delete this report? This action cannot be undone and all report data will be permanently removed.')) {
+        return;
+    }
+
+    try {
+        console.log('Deleting report:', reportId);
+        
+        const response = await fetch(`${API_BASE_URL}/admin/reports/${reportId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${this.token}`
+            }
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            this.showSuccess('Report deleted successfully!');
+            await this.loadReportStats();
+            await this.loadPendingReports();
+            
+            // Close modal if open
+            const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
+            if (modal) modal.hide();
+        } else {
+            throw new Error(data.error || 'Failed to delete report');
+        }
+    } catch (error) {
+        console.error('Error deleting report:', error);
+        this.showError('Failed to delete report: ' + error.message);
+    }
+}
+
 // NEW METHOD: Filter reports based on current tab
 filterReportsByTab(reports) {
     const currentTab = this.getCurrentTab();
@@ -769,69 +804,100 @@ getStatusBreakdown(reports) {
   }
 
   // UPDATED METHOD: Display pending reports in table
-  displayPendingReportsTable(reports) {
-      const tbody = document.getElementById('pendingReportsTable');
-      
-      if (!reports || reports.length === 0) {
-          tbody.innerHTML = `
-              <tr>
-                  <td colspan="7" class="text-center py-4">
-                      <i class="bi bi-flag fs-1 text-muted mb-3 d-block"></i>
-                      <p class="text-muted">No pending reports found</p>
-                      <small class="text-muted">Total reports in system: ${this.getTotalReportsCount()}</small>
-                  </td>
-              </tr>
-          `;
-          return;
-      }
+  // In displayPendingReportsTable method, update the dropdown menu:
+displayPendingReportsTable(reports) {
+    const tbody = document.getElementById('pendingReportsTable');
+    
+    if (!reports || reports.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-4">
+                    <i class="bi bi-flag fs-1 text-muted mb-3 d-block"></i>
+                    <p class="text-muted">No pending reports found</p>
+                    <small class="text-muted">Total reports in system: ${this.getTotalReportsCount()}</small>
+                </td>
+            </tr>
+        `;
+        return;
+    }
 
-      tbody.innerHTML = reports.map(report => `
-          <tr>
-              <td>
-                  <strong>#${report._id ? report._id.slice(-6) : 'N/A'}</strong>
-              </td>
-              <td>
-                  <span class="report-type-badge">${this.formatReportType(report.reportType)}</span>
-              </td>
-              <td>
-                  <div class="fw-semibold">${report.reporter?.firstName || 'Anonymous'} ${report.reporter?.surname || ''}</div>
-                  <small class="text-muted">${report.reporter?.email || 'No email'}</small>
-              </td>
-              <td>
-                  ${this.getReportTarget(report)}
-              </td>
-              <td>
-                  <span class="priority-badge priority-${report.priority}">${report.priority}</span>
-              </td>
-              <td>
-                  <div>${new Date(report.createdAt).toLocaleDateString()}</div>
-                  <small class="text-muted">${new Date(report.createdAt).toLocaleTimeString()}</small>
-              </td>
-              <td>
-                  <div class="dropdown">
-                      <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
-                          Actions
-                      </button>
-                      <ul class="dropdown-menu">
-                          <li><a class="dropdown-item" href="#" onclick="adminReportsManager.viewReport('${report._id}')">
-                              <i class="bi bi-eye me-2"></i>View Details
-                          </a></li>
-                          <li><a class="dropdown-item" href="#" onclick="adminReportsManager.updateReportStatus('${report._id}', 'under_review')">
-                              <i class="bi bi-eye me-2"></i>Start Review
-                          </a></li>
-                          <li><a class="dropdown-item" href="#" onclick="adminReportsManager.updateReportStatus('${report._id}', 'resolved')">
-                              <i class="bi bi-check-circle me-2"></i>Mark Resolved
-                          </a></li>
-                          <li><hr class="dropdown-divider"></li>
-                          <li><a class="dropdown-item text-danger" href="#" onclick="adminReportsManager.dismissReport('${report._id}')">
-                              <i class="bi bi-x-circle me-2"></i>Dismiss
-                          </a></li>
-                      </ul>
-                  </div>
-              </td>
-          </tr>
-      `).join('');
-  }
+    tbody.innerHTML = reports.map(report => {
+        const isResolved = report.status === 'resolved';
+        const isDismissed = report.status === 'dismissed';
+        const isUserDeleted = !report.reporter || report.reporter.email === 'deleted@user.com' || report.reporter.firstName === '[Deleted User]';
+        
+        return `
+            <tr>
+                <td>
+                    <strong>#${report._id ? report._id.slice(-6) : 'N/A'}</strong>
+                    ${isUserDeleted ? '<br><small class="text-danger">User Deleted</small>' : ''}
+                </td>
+                <td>
+                    <span class="report-type-badge">${this.formatReportType(report.reportType)}</span>
+                </td>
+                <td>
+                    <div class="fw-semibold">${report.reporter?.firstName || 'Anonymous'} ${report.reporter?.surname || ''}</div>
+                    <small class="text-muted">${report.reporter?.email || 'No email'}</small>
+                    ${isUserDeleted ? '<small class="text-danger d-block"><i class="bi bi-exclamation-triangle"></i> Account Deleted</small>' : ''}
+                </td>
+                <td>
+                    ${this.getReportTarget(report)}
+                </td>
+                <td>
+                    <span class="priority-badge priority-${report.priority}">${report.priority}</span>
+                </td>
+                <td>
+                    <div>${new Date(report.createdAt).toLocaleDateString()}</div>
+                    <small class="text-muted">${new Date(report.createdAt).toLocaleTimeString()}</small>
+                </td>
+                <td>
+                    ${isResolved || isDismissed ? `
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                Actions
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="adminReportsManager.viewReport('${report._id}')">
+                                    <i class="bi bi-eye me-2"></i>View Details
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="adminReportsManager.deleteReport('${report._id}')">
+                                    <i class="bi bi-trash me-2"></i>Delete Report
+                                </a></li>
+                            </ul>
+                        </div>
+                    ` : `
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                Actions
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="adminReportsManager.viewReport('${report._id}')">
+                                    <i class="bi bi-eye me-2"></i>View Details
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="adminReportsManager.updateReportStatus('${report._id}', 'under_review')">
+                                    <i class="bi bi-eye me-2"></i>Start Review
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="adminReportsManager.updateReportStatus('${report._id}', 'resolved')">
+                                    <i class="bi bi-check-circle me-2"></i>Mark Resolved
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-warning" href="#" onclick="adminReportsManager.dismissReport('${report._id}')">
+                                    <i class="bi bi-x-circle me-2"></i>Dismiss
+                                </a></li>
+                                ${isUserDeleted ? `
+                                <li><a class="dropdown-item text-danger" href="#" onclick="adminReportsManager.deleteReport('${report._id}')">
+                                    <i class="bi bi-trash me-2"></i>Delete Report
+                                </a></li>
+                                ` : ''}
+                            </ul>
+                        </div>
+                    `}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
 
   // NEW METHOD: Display review reports in grid
   displayReviewReportsGrid(reports) {
@@ -867,69 +933,103 @@ getStatusBreakdown(reports) {
   }
 
   // NEW METHOD: Display resolved reports
-  displayResolvedReportsTable(reports) {
-      const tbody = document.getElementById('resolvedReportsTable');
-      
-      if (!reports || reports.length === 0) {
-          tbody.innerHTML = `
-              <tr>
-                  <td colspan="6" class="text-center py-4">
-                      <i class="bi bi-check-circle fs-1 text-muted mb-3 d-block"></i>
-                      <p class="text-muted">No resolved reports</p>
-                  </td>
-              </tr>
-          `;
-          return;
-      }
+  // In displayResolvedReportsTable method, update the actions column:
+displayResolvedReportsTable(reports) {
+    const tbody = document.getElementById('resolvedReportsTable');
+    
+    if (!reports || reports.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-4">
+                    <i class="bi bi-check-circle fs-1 text-muted mb-3 d-block"></i>
+                    <p class="text-muted">No resolved reports</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
 
-      tbody.innerHTML = reports.map(report => `
-          <tr>
-              <td><strong>#${report._id ? report._id.slice(-6) : 'N/A'}</strong></td>
-              <td><span class="report-type-badge">${this.formatReportType(report.reportType)}</span></td>
-              <td>${report.adminNotes || 'No resolution notes'}</td>
-              <td>${report.resolvedBy?.firstName || 'System'} ${report.resolvedBy?.surname || ''}</td>
-              <td>${report.resolvedAt ? new Date(report.resolvedAt).toLocaleDateString() : 'N/A'}</td>
-              <td>
-                  <button class="btn btn-sm btn-outline-primary" onclick="adminReportsManager.viewReport('${report._id}')">
-                      View
-                  </button>
-              </td>
-          </tr>
-      `).join('');
-  }
+    tbody.innerHTML = reports.map(report => {
+        const isUserDeleted = !report.reporter || report.reporter.email === 'deleted@user.com' || report.reporter.firstName === '[Deleted User]';
+        
+        return `
+            <tr>
+                <td><strong>#${report._id ? report._id.slice(-6) : 'N/A'}</strong></td>
+                <td><span class="report-type-badge">${this.formatReportType(report.reportType)}</span></td>
+                <td>${report.adminNotes || 'No resolution notes'}</td>
+                <td>${report.resolvedBy?.firstName || 'System'} ${report.resolvedBy?.surname || ''}</td>
+                <td>${report.resolvedAt ? new Date(report.resolvedAt).toLocaleDateString() : 'N/A'}</td>
+                <td>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                            Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="adminReportsManager.viewReport('${report._id}')">
+                                <i class="bi bi-eye me-2"></i>View
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="adminReportsManager.deleteReport('${report._id}')">
+                                <i class="bi bi-trash me-2"></i>Delete Report
+                            </a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
 
-  // NEW METHOD: Display all reports
-  displayAllReportsTable(reports) {
-      const tbody = document.getElementById('allReportsTable');
-      
-      if (!reports || reports.length === 0) {
-          tbody.innerHTML = `
-              <tr>
-                  <td colspan="7" class="text-center py-4">
-                      <i class="bi bi-list-ul fs-1 text-muted mb-3 d-block"></i>
-                      <p class="text-muted">No reports found</p>
-                  </td>
-              </tr>
-          `;
-          return;
-      }
+  // In displayAllReportsTable method, update the actions column:
+displayAllReportsTable(reports) {
+    const tbody = document.getElementById('allReportsTable');
+    
+    if (!reports || reports.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-4">
+                    <i class="bi bi-list-ul fs-1 text-muted mb-3 d-block"></i>
+                    <p class="text-muted">No reports found</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
 
-      tbody.innerHTML = reports.map(report => `
-          <tr>
-              <td><strong>#${report._id ? report._id.slice(-6) : 'N/A'}</strong></td>
-              <td><span class="report-type-badge">${this.formatReportType(report.reportType)}</span></td>
-              <td><span class="status-badge status-${report.status}">${report.status.replace('_', ' ')}</span></td>
-              <td><span class="priority-badge priority-${report.priority}">${report.priority}</span></td>
-              <td>${report.reporter?.firstName || 'Anonymous'} ${report.reporter?.surname || ''}</td>
-              <td>${new Date(report.createdAt).toLocaleDateString()}</td>
-              <td>
-                  <button class="btn btn-sm btn-outline-primary" onclick="adminReportsManager.viewReport('${report._id}')">
-                      View
-                  </button>
-              </td>
-          </tr>
-      `).join('');
-  }
+    tbody.innerHTML = reports.map(report => {
+        const isUserDeleted = !report.reporter || report.reporter.email === 'deleted@user.com' || report.reporter.firstName === '[Deleted User]';
+        
+        return `
+            <tr>
+                <td><strong>#${report._id ? report._id.slice(-6) : 'N/A'}</strong></td>
+                <td><span class="report-type-badge">${this.formatReportType(report.reportType)}</span></td>
+                <td><span class="status-badge status-${report.status}">${report.status.replace('_', ' ')}</span></td>
+                <td><span class="priority-badge priority-${report.priority}">${report.priority}</span></td>
+                <td>
+                    ${report.reporter?.firstName || 'Anonymous'} ${report.reporter?.surname || ''}
+                    ${isUserDeleted ? '<br><small class="text-danger">User Deleted</small>' : ''}
+                </td>
+                <td>${new Date(report.createdAt).toLocaleDateString()}</td>
+                <td>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                            Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="adminReportsManager.viewReport('${report._id}')">
+                                <i class="bi bi-eye me-2"></i>View
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="adminReportsManager.deleteReport('${report._id}')">
+                                <i class="bi bi-trash me-2"></i>Delete Report
+                            </a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
 
   // NEW METHOD: Get total reports count for display
   getTotalReportsCount() {
@@ -1123,12 +1223,14 @@ getStatusBreakdown(reports) {
       }
     }
 
-    displayReportModal(report) {
+    // Update the displayReportModal method to include delete button
+displayReportModal(report) {
     const modalContent = document.getElementById('reportDetails');
     
     // Determine which action buttons to show based on report status
     const isResolved = report.status === 'resolved';
     const isDismissed = report.status === 'dismissed';
+    const isUserDeleted = !report.reporter || report.reporter.email === 'deleted@user.com' || report.reporter.firstName === '[Deleted User]';
     
     modalContent.innerHTML = `
         <div class="row">
@@ -1140,12 +1242,17 @@ getStatusBreakdown(reports) {
                 <p><strong>Status:</strong> <span class="status-badge status-${report.status}">${report.status.replace('_', ' ')}</span></p>
                 <p><strong>Created:</strong> ${new Date(report.createdAt).toLocaleString()}</p>
                 ${report.resolvedAt ? `<p><strong>Resolved:</strong> ${new Date(report.resolvedAt).toLocaleString()}</p>` : ''}
+                ${isUserDeleted ? `<p class="text-danger"><strong><i class="bi bi-exclamation-triangle"></i> Reporter Account Deleted</strong></p>` : ''}
             </div>
             <div class="col-md-6">
                 <h6>Reporter Information</h6>
                 <p><strong>Name:</strong> ${report.reporter?.firstName || 'Anonymous'} ${report.reporter?.surname || ''}</p>
                 <p><strong>Email:</strong> ${report.reporter?.email || 'Not provided'}</p>
                 <p><strong>Phone:</strong> ${report.reporter?.phone || 'Not provided'}</p>
+                ${isUserDeleted ? `<div class="alert alert-warning mt-2">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    This reporter's account has been deleted
+                </div>` : ''}
             </div>
         </div>
         
@@ -1188,13 +1295,30 @@ getStatusBreakdown(reports) {
 
     const modal = new bootstrap.Modal(document.getElementById('reportModal'));
     
-    // Update modal footer based on report status
+    // Update modal footer based on report status and user deletion
     const modalFooter = document.querySelector('#reportModal .modal-footer');
     if (modalFooter) {
         if (isResolved || isDismissed) {
-            // For resolved/dismissed reports, only show Close button
+            // For resolved/dismissed reports, show Close and Delete buttons
             modalFooter.innerHTML = `
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" onclick="adminReportsManager.deleteReport('${report._id}')">
+                    <i class="bi bi-trash me-2"></i>Delete Report
+                </button>
+            `;
+        } else if (isUserDeleted) {
+            // For reports from deleted users, show delete option prominently
+            modalFooter.innerHTML = `
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-warning" onclick="startReview('${report._id}')">
+                    <i class="bi bi-eye me-2"></i>Start Review
+                </button>
+                <button type="button" class="btn btn-success" onclick="resolveReport('${report._id}')">
+                    <i class="bi bi-check-circle me-2"></i>Resolve
+                </button>
+                <button type="button" class="btn btn-danger" onclick="adminReportsManager.deleteReport('${report._id}')">
+                    <i class="bi bi-trash me-2"></i>Delete
+                </button>
             `;
         } else {
             // For pending/under review reports, show action buttons
@@ -1212,6 +1336,8 @@ getStatusBreakdown(reports) {
     
     modal.show();
 }
+
+
 
     async updateReportStatus(reportId, status) {
       const adminNotes = prompt('Enter admin notes (optional):');
