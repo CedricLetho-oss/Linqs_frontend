@@ -147,79 +147,87 @@ class AdminVerificationManager {
     }
 
     updateVerificationList() {
-        const verificationList = document.getElementById('verificationList');
-        
-        console.log('Updating verification list with:', this.verifications.length, 'items');
-        console.log('Current filters:', this.filters);
-        
-        if (!this.verifications || this.verifications.length === 0) {
-            verificationList.innerHTML = `
-                <div class="text-center py-5">
-                    <i class="bi bi-search display-1 text-muted mb-3"></i>
-                    <h5 class="text-muted">No verification requests found</h5>
-                    <p class="text-muted">No verification requests match your current filters.</p>
-                    <button class="btn btn-primary mt-3" onclick="adminVerificationManager.resetFilters()">
-                        <i class="bi bi-arrow-clockwise me-2"></i>Reset Filters
-                    </button>
-                </div>
-            `;
-            document.getElementById('loadMoreContainer').style.display = 'none';
-            return;
-        }
+    const verificationList = document.getElementById('verificationList');
+    
+    console.log('Updating verification list with:', this.verifications.length, 'items');
+    console.log('Current filters:', this.filters);
+    
+    if (!this.verifications || this.verifications.length === 0) {
+        verificationList.innerHTML = `
+            <div class="text-center py-5">
+                <i class="bi bi-search display-1 text-muted mb-3"></i>
+                <h5 class="text-muted">No verification requests found</h5>
+                <p class="text-muted">No verification requests match your current filters.</p>
+                <button class="btn btn-primary mt-3" onclick="adminVerificationManager.resetFilters()">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Reset Filters
+                </button>
+            </div>
+        `;
+        document.getElementById('loadMoreContainer').style.display = 'none';
+        return;
+    }
 
-        verificationList.innerHTML = this.verifications.map(verification => {
-            const user = verification.userId;
-            const statusClass = `status-${verification.status}`;
-            const itemClass = `verification-item ${verification.status}`;
-            
-            return `
-                <div class="${itemClass}">
-                    <div class="row align-items-center">
-                        <div class="col-md-2">
-                            <div class="d-flex align-items-center">
-                                <img src="${user.avatar || 'https://via.placeholder.com/60'}" alt="${user.firstName}" class="user-avatar me-3" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
-                                <div>
-                                    <h6 class="fw-bold mb-0">${user.firstName} ${user.lastName}</h6>
-                                    <small class="text-muted">${user.role}</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <span class="status-badge ${statusClass}">
-                                ${this.getStatusText(verification.status)}
-                            </span>
-                        </div>
-                        <div class="col-md-2">
-                            <small class="text-muted">Submitted</small>
-                            <div class="fw-semibold">${this.formatTime(verification.submittedAt)}</div>
-                        </div>
-                        <div class="col-md-3">
-                            <small class="text-muted">Type</small>
-                            <div class="fw-semibold">${verification.type === 'landlord' ? 'Landlord' : 'Student'}</div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="action-buttons">
-                                <button class="btn btn-sm btn-outline-primary" onclick="adminVerificationManager.viewDetails('${verification._id}')">
-                                    <i class="bi bi-eye me-1"></i>View
-                                </button>
-                                ${verification.status === 'pending' ? `
-                                    <button class="btn btn-sm btn-success" onclick="adminVerificationManager.approveVerification('${verification._id}')">
-                                        <i class="bi bi-check-lg me-1"></i>Approve
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" onclick="adminVerificationManager.rejectVerification('${verification._id}')">
-                                        <i class="bi bi-x-lg me-1"></i>Reject
-                                    </button>
-                                ` : ''}
+    verificationList.innerHTML = this.verifications.map(verification => {
+        // FIX: Handle null user data
+        const user = verification.userId || {};
+        const statusClass = `status-${verification.status}`;
+        const itemClass = `verification-item ${verification.status}`;
+        
+        // FIX: Safe avatar access
+        const userAvatar = user.avatar || 'https://via.placeholder.com/60';
+        const userName = user.firstName && user.lastName 
+            ? `${user.firstName} ${user.lastName}` 
+            : 'Unknown User';
+        const userRole = user.role || 'unknown';
+        
+        return `
+            <div class="${itemClass}">
+                <div class="row align-items-center">
+                    <div class="col-md-2">
+                        <div class="d-flex align-items-center">
+                            <img src="${userAvatar}" alt="${userName}" class="user-avatar me-3" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                            <div>
+                                <h6 class="fw-bold mb-0">${userName}</h6>
+                                <small class="text-muted">${userRole}</small>
                             </div>
                         </div>
                     </div>
+                    <div class="col-md-2">
+                        <span class="status-badge ${statusClass}">
+                            ${this.getStatusText(verification.status)}
+                        </span>
+                    </div>
+                    <div class="col-md-2">
+                        <small class="text-muted">Submitted</small>
+                        <div class="fw-semibold">${this.formatTime(verification.submittedAt)}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Type</small>
+                        <div class="fw-semibold">${verification.type === 'landlord' ? 'Landlord' : 'Student'}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-outline-primary" onclick="adminVerificationManager.viewDetails('${verification._id}')">
+                                <i class="bi bi-eye me-1"></i>View
+                            </button>
+                            ${verification.status === 'pending' ? `
+                                <button class="btn btn-sm btn-success" onclick="adminVerificationManager.approveVerification('${verification._id}')">
+                                    <i class="bi bi-check-lg me-1"></i>Approve
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="adminVerificationManager.rejectVerification('${verification._id}')">
+                                    <i class="bi bi-x-lg me-1"></i>Reject
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
                 </div>
-            `;
-        }).join('');
+            </div>
+        `;
+    }).join('');
 
-        // Show/hide load more button
-        document.getElementById('loadMoreContainer').style.display = this.hasMore ? 'block' : 'none';
-    }
+    // Show/hide load more button
+    document.getElementById('loadMoreContainer').style.display = this.hasMore ? 'block' : 'none';
+}
 
     // FIXED: Proper filter handling for all filter types
     setFilter(filter) {
@@ -433,77 +441,87 @@ class AdminVerificationManager {
     }
 
     showVerificationDetails(verification) {
-        const user = verification.userId;
-        const modalContent = document.getElementById('verificationDetailContent');
-        
-        modalContent.innerHTML = `
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="text-center mb-4">
-                        <img src="${user.avatar || 'https://via.placeholder.com/100'}" alt="${user.firstName}" class="user-avatar mb-3" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
-                        <h5 class="fw-bold">${user.firstName} ${user.lastName}</h5>
-                        <p class="text-muted">${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</p>
-                        <div class="status-badge status-${verification.status} mb-3">
-                            ${this.getStatusText(verification.status)}
-                        </div>
-                    </div>
-                    
-                    <div class="verification-details">
-                        <h6 class="fw-bold mb-3">User Information</h6>
-                        <div class="detail-row">
-                            <span class="detail-label">Email:</span>
-                            <span class="detail-value">${user.email}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Phone:</span>
-                            <span class="detail-value">${user.phone || 'Not provided'}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Submitted:</span>
-                            <span class="detail-value">${this.formatTime(verification.submittedAt)}</span>
-                        </div>
-                        ${verification.reviewedAt ? `
-                            <div class="detail-row">
-                                <span class="detail-label">Reviewed:</span>
-                                <span class="detail-value">${this.formatTime(verification.reviewedAt)}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Reviewed By:</span>
-                                <span class="detail-value">${verification.reviewedBy?.firstName || 'Admin'} ${verification.reviewedBy?.lastName || ''}</span>
-                            </div>
-                        ` : ''}
-                        ${verification.rejectionReason ? `
-                            <div class="detail-row">
-                                <span class="detail-label">Rejection Reason:</span>
-                                <span class="detail-value text-danger">${verification.rejectionReason}</span>
-                            </div>
-                        ` : ''}
+    // FIX: Handle null user data
+    const user = verification.userId || {};
+    const modalContent = document.getElementById('verificationDetailContent');
+    
+    // FIX: Safe user data access
+    const userAvatar = user.avatar || 'https://via.placeholder.com/100';
+    const userName = user.firstName && user.lastName 
+        ? `${user.firstName} ${user.lastName}` 
+        : 'Unknown User';
+    const userRole = user.role || 'unknown';
+    const userEmail = user.email || 'No email provided';
+    const userPhone = user.phone || 'Not provided';
+    
+    modalContent.innerHTML = `
+        <div class="row">
+            <div class="col-md-4">
+                <div class="text-center mb-4">
+                    <img src="${userAvatar}" alt="${userName}" class="user-avatar mb-3" style="width: 100px; height: 100px; border-radius: 50%; object-fix: cover;">
+                    <h5 class="fw-bold">${userName}</h5>
+                    <p class="text-muted">${userRole.charAt(0).toUpperCase() + userRole.slice(1)}</p>
+                    <div class="status-badge status-${verification.status} mb-3">
+                        ${this.getStatusText(verification.status)}
                     </div>
                 </div>
                 
-                <div class="col-md-8">
-                    <h6 class="fw-bold mb-3">Verification Documents</h6>
-                    <div class="document-preview">
-                        ${this.renderDocuments(verification.documents, verification.type)}
+                <div class="verification-details">
+                    <h6 class="fw-bold mb-3">User Information</h6>
+                    <div class="detail-row">
+                        <span class="detail-label">Email:</span>
+                        <span class="detail-value">${userEmail}</span>
                     </div>
-                    
-                    ${verification.status === 'pending' ? `
-                        <div class="action-buttons mt-4">
-                            <button class="btn btn-success" onclick="adminVerificationManager.approveVerification('${verification._id}')">
-                                <i class="bi bi-check-lg me-2"></i>Approve Verification
-                            </button>
-                            <button class="btn btn-danger" onclick="adminVerificationManager.rejectVerification('${verification._id}')">
-                                <i class="bi bi-x-lg me-2"></i>Reject Verification
-                            </button>
+                    <div class="detail-row">
+                        <span class="detail-label">Phone:</span>
+                        <span class="detail-value">${userPhone}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Submitted:</span>
+                        <span class="detail-value">${this.formatTime(verification.submittedAt)}</span>
+                    </div>
+                    ${verification.reviewedAt ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Reviewed:</span>
+                            <span class="detail-value">${this.formatTime(verification.reviewedAt)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Reviewed By:</span>
+                            <span class="detail-value">${verification.reviewedBy?.firstName || 'Admin'} ${verification.reviewedBy?.lastName || ''}</span>
+                        </div>
+                    ` : ''}
+                    ${verification.rejectionReason ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Rejection Reason:</span>
+                            <span class="detail-value text-danger">${verification.rejectionReason}</span>
                         </div>
                     ` : ''}
                 </div>
             </div>
-        `;
+            
+            <div class="col-md-8">
+                <h6 class="fw-bold mb-3">Verification Documents</h6>
+                <div class="document-preview">
+                    ${this.renderDocuments(verification.documents, verification.type)}
+                </div>
+                
+                ${verification.status === 'pending' ? `
+                    <div class="action-buttons mt-4">
+                        <button class="btn btn-success" onclick="adminVerificationManager.approveVerification('${verification._id}')">
+                            <i class="bi bi-check-lg me-2"></i>Approve Verification
+                        </button>
+                        <button class="btn btn-danger" onclick="adminVerificationManager.rejectVerification('${verification._id}')">
+                            <i class="bi bi-x-lg me-2"></i>Reject Verification
+                        </button>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
 
-        const modal = new bootstrap.Modal(document.getElementById('verificationDetailModal'));
-        modal.show();
-    }
+    const modal = new bootstrap.Modal(document.getElementById('verificationDetailModal'));
+    modal.show();
+}
 
     renderDocuments(documents, type) {
     if (!documents || Object.keys(documents).length === 0) {
@@ -527,11 +545,12 @@ class AdminVerificationManager {
             const isWord = ['doc', 'docx'].includes(fileExtension);
             
             // Ensure URL is properly formatted
+           // In renderDocuments() - FIX FOR CLOUDINARY
             let documentUrl = doc.url;
-            if (documentUrl.startsWith('/uploads/')) {
-                documentUrl = `http://localhost:5000${documentUrl}`;
-            } else if (!documentUrl.startsWith('http')) {
-                documentUrl = `http://localhost:5000/uploads/verifications/${documentUrl}`;
+            // Remove the localhost conversion - Cloudinary URLs should work as-is
+            if (documentUrl && !documentUrl.startsWith('http') && !documentUrl.startsWith('//')) {
+                // If it's a relative path, prepend your backend URL
+                documentUrl = `https://linqs-backend.onrender.com${documentUrl}`;
             }
             
             html += `
