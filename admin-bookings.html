@@ -907,79 +907,6 @@ function displayBookings(bookings) {
     }).join('');
 }
 
-    tbody.innerHTML = bookings.map(booking => {
-        // Safe property access with admin format
-        const property = booking.property || {};
-        const student = booking.student || {};
-        
-        const propertyImage = property.images && property.images[0] 
-          ? property.images[0] 
-          : 'https://via.placeholder.com/40';
-        
-        const studentName = student.username || student.firstName 
-          ? `${student.firstName || ''} ${student.surname || ''}`.trim() 
-          : 'Unknown Student';
-        
-        const studentEmail = student.email || 'No email';
-        const propertyName = property.title || 'Unknown Property';
-        const status = booking.status || 'pending';
-        
-        // Extract booking type from special requests
-        const bookingType = extractBookingType(booking.specialRequests);
-        const bookingTypeBadge = getBookingTypeBadge(bookingType);
-        
-        // Format date and time
-        const dateTime = formatBookingDateTime(booking.checkIn);
-
-        // Get initials for avatar
-        const getInitials = (name) => {
-          return name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : '?';
-        };
-
-        // Generate action buttons based on booking status
-        const actionButtons = generateActionButtons(booking);
-
-        return `
-          <tr>
-            <td>
-              <strong>#${booking._id ? booking._id.slice(-6) : 'N/A'}</strong>
-            </td>
-            <td>
-              <div class="d-flex align-items-center">
-                <img src="${propertyImage}" 
-                    class="rounded me-2" width="30" height="30" style="object-fit: cover;"
-                    onerror="this.src='https://via.placeholder.com/40'">
-                <span>${propertyName}</span>
-              </div>
-            </td>
-            <td>
-              <div class="d-flex align-items-center">
-                <div class="student-avatar me-2" style="width: 35px; height: 35px; border-radius: 50%; background: #1e3a8a; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem;">
-                  ${getInitials(studentName)}
-                </div>
-                <div>
-                  <div class="fw-bold small">${studentName}</div>
-                  <small class="text-muted">${studentEmail}</small>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="fw-bold">${dateTime.date}</div>
-              <div class="time-display">${dateTime.time}</div>
-            </td>
-            <td>
-              ${bookingTypeBadge}
-            </td>
-            <td>
-              <span class="status-badge status-${status}">${status}</span>
-            </td>
-            <td>
-              ${actionButtons}
-            </td>
-          </tr>
-        `;
-    }).join('');
-
 
 
     // Update booking alerts
@@ -1681,6 +1608,7 @@ function createBookingModalContent(booking) {
     }
 
     // NEW: Generate action buttons based on booking status
+// Update generateActionButtons to include delete option, especially for deleted entities
 // Update generateActionButtons to include delete option, especially for deleted entities
 function generateActionButtons(booking, hasDeletedEntity = false) {
     const status = booking.status || 'pending';
