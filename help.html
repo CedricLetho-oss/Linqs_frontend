@@ -214,161 +214,163 @@
       color: white;
     }
 
-    /* Responsive Design */
+    /* Enhanced Mobile Responsiveness */
     @media (max-width: 768px) {
       .help-hero {
         padding: 4rem 0;
         border-radius: 0 0 2rem 2rem;
       }
+      
+      .help-hero h1 {
+        font-size: 2.5rem;
+      }
+      
+      .help-hero .hero-subtitle {
+        font-size: 1rem;
+      }
+      
+      .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
     }
 
-    /* Mobile Bottom Navigation */
-.mobile-bottom-nav {
-  display: none;
-}
+    /* Mobile Bottom Navigation - UPDATED for consistency */
+    .mobile-bottom-nav {
+      display: none;
+    }
 
-@media (max-width: 767px) {
-  .mobile-bottom-nav {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: #1C2B4A;
-    z-index: 1030;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-  }
-  
-  .mobile-nav-item {
-    flex: 1;
-    text-align: center;
-    padding: 0.5rem;
-    color: #fff;
-    text-decoration: none;
-    font-size: 0.75rem;
-  }
-  
-  .mobile-nav-item.active {
-    color: #64748b;
-  }
-  
-  .mobile-nav-item i {
-    display: block;
-    font-size: 1.25rem;
-    margin-bottom: 0.25rem;
-  }
-  
-  .mobile-nav-item span {
-  display: none;
-}
-  /* Add padding to main content to account for bottom nav */
-  main {
-    margin-bottom: 80px;
-  }
-}
+    @media (max-width: 767px) {
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #1C2B4A;
+        z-index: 1030;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        height: 60px; /* FIX: Consistent height */
+      }
+      
+      .mobile-nav-item {
+        flex: 1;
+        text-align: center;
+        padding: 0.5rem;
+        color: #fff;
+        text-decoration: none;
+        font-size: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%; /* FIX: Ensure full height */
+      }
+      
+      .mobile-nav-item.active {
+        color: #64748b;
+      }
+      
+      .mobile-nav-item i {
+        display: block;
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+      }
 
-#logoutModal .modal-content {
-  border: none;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
+      .mobile-nav-item span {
+        display: none; /* FIX: Consistent with listings */
+      }
+      
+      /* Add padding to main content to account for bottom nav - FIXED */
+      main {
+        padding-bottom: 60px !important; /* FIX: Use important to override any other styles */
+        margin-bottom: 0 !important; /* FIX: Remove margin, use padding instead */
+      }
 
-#logoutModal .logout-icon-container {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
-}
-
-#logoutModal .logout-icon-container i {
-  color: white !important;
-}
-
-#logoutModal .modal-header {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  border-radius: 15px 15px 0 0 !important;
-}
-
-#logoutModal .btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  border: none;
-  border-radius: 8px;
-  padding: 10px 24px;
-  font-weight: 500;
-}
-
-#logoutModal .btn-outline-secondary {
-  border-radius: 8px;
-  padding: 10px 24px;
-  font-weight: 500;
-}
-
-#logoutModal .modal-body i.bi-person-check {
-  color: var(--primary) !important;
-}
-
-.hero-subtitle {
-        color:#e2e8f0;
-        animation: fadeInUp 0.8s ease-out 0.6s both;
-        font-size: 1.2rem;
+      /* Better mobile layout for help cards */
+      .help-card .card-body {
+        padding: 1rem;
+      }
+      
+      /* Mobile quick actions layout */
+      .quick-action-item {
         margin-bottom: 1rem;
-        opacity: 0.9;
-        line-height: 1.5;
-        }
+      }
+    }
 
-        /* Add this CSS to protect the navbar while keeping animations */
-.navbar,
-.mobile-bottom-nav {
-  transform: none !important;
-  transform-style: flat !important;
-  backface-visibility: visible !important;
-  perspective: none !important;
-  will-change: auto !important;
-  position: relative;
-  z-index: 9999;
-  isolation: isolate; /* Creates a new stacking context */
-}
+    @media (max-width: 480px) {
+      .help-hero h1 {
+        font-size: 2rem;
+      }
+      
+      .help-hero .hero-subtitle {
+        font-size: 0.9rem;
+      }
+    }
 
-/* Create a container that will handle all animations */
-.animation-container {
-  position: relative;
-  z-index: 1;
-}
+    #logoutModal .modal-content {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
 
+    #logoutModal .logout-icon-container {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+    }
 
+    #logoutModal .logout-icon-container i {
+      color: white !important;
+    }
 
-/* Specific protection for mobile navbar */
-@media (max-width: 767px) {
-  .mobile-bottom-nav {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    transform: translate3d(0, 0, 0) !important;
-    animation: none !important;
-    transition: none !important;
-  }
-  
-  /* Add a safe wrapper around animated content */
-  .aos-safe-wrapper {
-    position: relative;
-    z-index: 1;
-  }
-  
-  /* Ensure content doesn't overlap navbar */
-  main {
-    margin-bottom: 80px;
-    position: relative;
-    z-index: 1;
-  }
-}
+    #logoutModal .modal-header {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      border-radius: 15px 15px 0 0 !important;
+    }
 
-/* Force AOS to respect our boundaries */
-[data-aos] {
-  pointer-events: auto;
-}
+    #logoutModal .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-weight: 500;
+    }
 
-.navbar[data-aos],
-.mobile-bottom-nav[data-aos] {
-  pointer-events: none;
-}
+    #logoutModal .btn-outline-secondary {
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-weight: 500;
+    }
+
+    #logoutModal .modal-body i.bi-person-check {
+      color: var(--primary) !important;
+    }
+
+    .hero-subtitle {
+      color:#e2e8f0;
+      animation: fadeInUp 0.8s ease-out 0.6s both;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      opacity: 0.9;
+      line-height: 1.5;
+    }
+
+    /* Mobile header adjustments */
+    @media (max-width: 768px) {
+      .navbar-brand {
+        font-size: 1.1rem;
+      }
+      
+      .nav-link {
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Ensure body doesn't have extra padding/margin */
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
   </style>
 </head>
 <body>
@@ -383,13 +385,28 @@
 
       <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
         <ul class="navbar-nav">
-          <!-- Navigation will be populated by navbar.js -->
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <i class="bi bi-house-door-fill"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="listings.html">
+              <i class="bi bi-building"></i> Listings
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="help.html">
+              <i class="bi bi-question-circle-fill"></i> Help
+            </a>
+          </li>
         </ul>
       </div>
       
       <!-- Dynamic Auth Buttons -->
       <div class="signup-login-buttons">
-        <!-- Content will be populated by navbar.js -->
+        <a href="authorization.html" class="btn btn-outline-light me-2 nav-btn">Login</a>
+        <a href="signup.html" class="btn btn-primary nav-btn">Sign Up</a>
       </div>
     </div>
   </nav>
@@ -625,24 +642,24 @@
   </section>
 
   <!-- Mobile Bottom Navigation -->
-<div class="mobile-bottom-nav d-lg-none">
-  <a href="home.html" class="mobile-nav-item">
-    <i class="bi bi-house"></i>
-    <span>Home</span>
-  </a>
-  <a href="listings.html" class="mobile-nav-item">
-    <i class="bi bi-building"></i>
-    <span>Listings</span>
-  </a>
-  <a href="my-bookings.html" class="mobile-nav-item">
-    <i class="bi bi-calendar-check"></i>
-    <span>Bookings</span>
-  </a>
-  <a href="help.html" class="mobile-nav-item active">
-    <i class="bi bi-question-circle"></i>
-    <span>Help</span>
-  </a>
-</div>
+  <div class="mobile-bottom-nav d-lg-none">
+    <a href="home.html" class="mobile-nav-item">
+      <i class="bi bi-house"></i>
+      <span>Home</span>
+    </a>
+    <a href="listings.html" class="mobile-nav-item">
+      <i class="bi bi-building"></i>
+      <span>Listings</span>
+    </a>
+    <a href="my-bookings.html" class="mobile-nav-item">
+      <i class="bi bi-calendar-check"></i>
+      <span>Bookings</span>
+    </a>
+    <a href="help.html" class="mobile-nav-item active">
+      <i class="bi bi-question-circle"></i>
+      <span>Help</span>
+    </a>
+  </div>
 
   <!-- Footer -->
   <footer class="py-5 bg-navy text-white">
