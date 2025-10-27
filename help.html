@@ -289,7 +289,7 @@
       }
     }
 
-    /* Mobile Bottom Navigation - COMPLETELY FIXED */
+    /* Mobile Bottom Navigation - FIXED & CONSISTENT */
 .mobile-bottom-nav {
   display: none;
 }
@@ -304,28 +304,21 @@
     background: #1C2B4A;
     z-index: 1030;
     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-    height: 60px !important; /* Force consistent height */
-    padding: 0 !important; /* Remove any extra padding */
-    margin: 0 !important; /* Remove any margins */
-    width: 100%;
-    box-sizing: border-box;
+    height: 60px;
   }
   
   .mobile-nav-item {
     flex: 1;
     text-align: center;
-    padding: 0.4rem 0.3rem !important; /* Reduced padding */
+    padding: 0.5rem;
     color: #fff;
     text-decoration: none;
-    font-size: 0.7rem !important; /* Smaller font */
+    font-size: 0.75rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100%;
-    box-sizing: border-box;
-    min-width: 0;
-    line-height: 1;
   }
   
   .mobile-nav-item.active {
@@ -334,36 +327,31 @@
   
   .mobile-nav-item i {
     display: block;
-    font-size: 1.1rem !important; /* Smaller icons */
-    margin-bottom: 0.1rem !important; /* Reduced spacing */
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
   }
 
   .mobile-nav-item span {
     display: block;
-    font-size: 0.65rem !important; /* Smaller text */
-    line-height: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   
-  /* Fix body spacing to prevent overflow */
-  body {
+  /* Add padding to main content to account for bottom nav - FIXED */
+  main {
     padding-bottom: 60px !important;
-    margin: 0 !important;
-    overflow-x: hidden;
-  }
-  
-  /* Ensure content doesn't hide behind nav */
-  main, .container, section {
     margin-bottom: 0 !important;
   }
+
+  /* FIX: Ensure body doesn't have extra padding/margin */
+  body {
+    margin: 0;
+    padding: 0;
+  }
+}
   
   /* Fix footer spacing */
   footer {
     margin-bottom: 60px !important;
   }
-}
 
 /* Remove any conflicting styles that might be causing the issue */
 @media (max-width: 767px) {
@@ -382,11 +370,18 @@
 }
 
     /* Ensure body doesn't have extra padding/margin */
-    body {
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-    }
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Mobile body padding fix */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: 60px !important;
+  }
+}
 
     /* Fix for navbar on mobile */
     .navbar-collapse {
