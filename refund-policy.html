@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResLinQ | Refund Policy</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --secondary: #f59e0b;
+      --success: #059669;
+      --light-bg: #f8fafc;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Enhanced Background */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 40%;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      clip-path: polygon(0 0, 100% 0, 100% 80%, 0 100%);
+      z-index: -1;
+    }
+
+    /* Floating Elements */
+    .floating-elements {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .floating-element {
+      position: absolute;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 50%;
+      animation: floatElement 20s infinite linear;
+    }
+
+    .floating-element:nth-child(1) {
+      width: 80px;
+      height: 80px;
+      top: 15%;
+      right: 10%;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      width: 120px;
+      height: 120px;
+      top: 65%;
+      left: 5%;
+      animation-delay: -7s;
+    }
+
+    .floating-element:nth-child(3) {
+      width: 60px;
+      height: 60px;
+      bottom: 20%;
+      right: 15%;
+      animation-delay: -14s;
+    }
+
+    @keyframes floatElement {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+      }
+      33% {
+        transform: translateY(-20px) rotate(120deg);
+      }
+      66% {
+        transform: translateY(15px) rotate(240deg);
+      }
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1 0 auto;
+      padding: 2rem 1rem;
+      width: 100%;
+    }
+
+    /* Enhanced Refund Container */
+    .refund-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      max-width: 1000px;
+      margin: 0 auto;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      position: relative;
+    }
+
+    .refund-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .refund-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+      background-size: 15px 15px;
+      animation: float 20s linear infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(-15px, -15px) rotate(360deg); }
+    }
+
+    .logo {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .refund-content {
+      padding: 2.5rem;
+      max-height: 60vh;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    /* Enhanced Typography */
+    .refund-section {
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .refund-section:last-child {
+      border-bottom: none;
+    }
+
+    .refund-section h5 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .refund-section h5 i {
+      color: var(--secondary);
+    }
+
+    .refund-section h6 {
+      color: var(--primary-dark);
+      margin: 1.25rem 0 0.75rem 0;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .refund-section p {
+      color: #374151;
+      line-height: 1.6;
+      margin-bottom: 0.75rem;
+    }
+
+    .refund-section ul {
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .refund-section li {
+      color: #374151;
+      line-height: 1.6;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+
+    .refund-section li::before {
+      content: '•';
+      color: var(--primary-light);
+      font-weight: bold;
+      position: absolute;
+      left: -1rem;
+    }
+
+    /* Important Notice Styling */
+    .important-notice {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border: 2px solid #f59e0b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      position: relative;
+    }
+
+    .important-notice::before {
+      content: '⚠️';
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      background: white;
+      padding: 0 10px;
+      font-size: 1.2rem;
+    }
+
+    .important-notice h6 {
+      color: #92400e;
+      margin-bottom: 0.5rem;
+    }
+
+    .important-notice p {
+      color: #92400e;
+      margin-bottom: 0;
+    }
+
+    /* No-Cost Section */
+    .no-cost-section {
+      background: #f0f9ff;
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 2rem 0;
+      border-left: 4px solid var(--primary-light);
+    }
+
+    .no-cost-section h5 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    /* Progress Indicator */
+    .progress-indicator {
+      position: sticky;
+      top: 0;
+      background: white;
+      padding: 1rem 0;
+      border-bottom: 1px solid #e2e8f0;
+      z-index: 10;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    /* Enhanced Footer */
+    footer {
+      flex-shrink: 0;
+      background: #1C2B4A;
+      color: white;
+      padding: 1.5rem 0;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+      text-align: center;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .refund-content {
+        padding: 1.5rem;
+        max-height: 50vh;
+      }
+
+      .refund-header {
+        padding: 2rem 1.5rem;
+      }
+
+      body::before {
+        height: 30%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .refund-content {
+        padding: 1rem;
+      }
+
+      .refund-header {
+        padding: 1.5rem 1rem;
+      }
+
+      .logo {
+        font-size: 2.5rem;
+      }
+    }
+
+    /* Scrollbar Styling */
+    .refund-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .refund-content::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 3px;
+    }
+
+    .refund-content::-webkit-scrollbar-thumb {
+      background: var(--primary-light);
+      border-radius: 3px;
+    }
+
+    .refund-content::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
+    }
+
+    /* Section Highlight on Scroll */
+    .refund-section {
+      transition: all 0.3s ease;
+    }
+
+    .refund-section.highlighted {
+      background: #f0f9ff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 0 -1rem 1.5rem -1rem;
+      border-left: 4px solid var(--primary-light);
+    }
+
+    /* Contact Information Box */
+    .contact-box {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      border: 2px solid #10b981;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .contact-box h6 {
+      color: #065f46;
+      margin-bottom: 1rem;
+    }
+
+    .contact-box p {
+      color: #065f46;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .status-badge.success {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-badge.info {
+      background-color: #dbeafe;
+      color: #1e40af;
+    }
+
+    .status-badge.warning {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    /* Footer Grid */
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-section h5 {
+      color: white;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .footer-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer-section li {
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-section a {
+      color: #cbd5e1;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer-section a:hover {
+      color: white;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid #334155;
+      padding-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Floating Background Elements -->
+  <div class="floating-elements">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="refund-container animate__animated animate__fadeInUp">
+      <div class="refund-header">
+        <i class="bi bi-arrow-left-right logo"></i>
+        <h2>Refund Policy</h2>
+        <p class="mb-0">Last Updated: October 2025 | Consumer Protection Act Compliant</p>
+      </div>
+
+      <!-- Progress Indicator -->
+      <div class="progress-indicator">
+        <div class="progress-text">
+          <i class="bi bi-clock me-2"></i>Estimated reading time: 5 minutes
+        </div>
+      </div>
+
+      <div class="refund-content">
+        <div class="important-notice">
+          <h6>Important Refund Information</h6>
+          <p>This Refund Policy explains ResLinQ's approach to refunds and financial transactions. Please read this policy carefully to understand our practices regarding payments and refunds.</p>
+        </div>
+
+        <div class="no-cost-section">
+          <h5><i class="bi bi-currency-dollar"></i>No Cost to Students</h5>
+          <p>ResLinQ is a free platform for students seeking accommodation. Students can browse listings, contact landlords, and arrange accommodation without any charges.</p>
+          <p><strong>Key Points:</strong></p>
+          <ul>
+            <li>No registration fees for students</li>
+            <li>No charges for browsing listings</li>
+            <li>No fees for contacting landlords</li>
+            <li>No commission on rental agreements</li>
+          </ul>
+        </div>
+
+        <div class="refund-section">
+          <h5><i class="bi bi-check-circle"></i>1. Our Business Model</h5>
+          <p>ResLinQ operates on a landlord-paid model where property owners and managers pay to list their accommodations on our platform.</p>
+          
+          <h6>1.1 For Students</h6>
+          <p>Students use our platform completely free of charge:</p>
+          <ul>
+            <li>Free account creation and profile management</li>
+            <li>Free access to all accommodation listings</li>
+            <li>Free communication with landlords</li>
+            <li>No hidden fees or charges</li>
+          </ul>
+
+          <h6>1.2 For Landlords</h6>
+          <p>Landlords pay subscription fees for listing their properties:</p>
+          <ul>
+            <li>Various listing packages available</li>
+            <li>Payment required before listing activation</li>
+            <li>Clear pricing with no hidden costs</li>
+            <li>Transparent billing cycles</li>
+          </ul>
+        </div>
+
+        <div class="refund-section">
+          <h5><i class="bi bi-cash-coin"></i>2. Refund Policy for Landlords</h5>
+          
+          <h6>2.1 Subscription Refunds</h6>
+          <p>Landlord subscription fees are generally non-refundable, except in the following circumstances:</p>
+          <ul>
+            <li><span class="status-badge success">Refundable</span> Technical errors causing duplicate payments</li>
+            <li><span class="status-badge success">Refundable</span> Accidental overpayments</li>
+            <li><span class="status-badge info">Case by Case</span> Platform service unavailability for extended periods</li>
+            <li><span class="status-badge warning">Non-refundable</span> Change of mind after purchase</li>
+            <li><span class="status-badge warning">Non-refundable</span> Underutilization of listing features</li>
+            <li><span class="status-badge warning">Non-refundable</span> Property already rented through other channels</li>
+          </ul>
+
+          <h6>2.2 Refund Request Process</h6>
+          <p>Landlords requesting refunds must:</p>
+          <ul>
+            <li>Submit a written request to reslinqco@gmail.com</li>
+            <li>Include payment details and transaction reference</li>
+            <li>Clearly state the reason for the refund request</li>
+            <li>Provide supporting documentation if applicable</li>
+          </ul>
+          <p>Refund requests are processed within 14 business days of receipt.</p>
+
+          <h6>2.3 Pro-rated Refunds</h6>
+          <p>In exceptional circumstances, pro-rated refunds may be considered for:</p>
+          <ul>
+            <li>Platform service discontinuation</li>
+            <li>Substantial changes to service terms</li>
+            <li>Verified technical issues preventing platform use</li>
+          </ul>
+        </div>
+
+        <div class="refund-section">
+          <h5><i class="bi bi-shield-check"></i>3. Student Protection</h5>
+          
+          <h6>3.1 No Financial Risk</h6>
+          <p>Students face no financial risk when using ResLinQ:</p>
+          <ul>
+            <li>No payments required to use the platform</li>
+            <li>Direct rental agreements with landlords (outside ResLinQ)</li>
+            <li>Clear separation between platform services and rental transactions</li>
+          </ul>
+
+          <h6>3.2 Rental Deposits and Payments</h6>
+          <p>Important information regarding rental transactions:</p>
+          <ul>
+            <li>ResLinQ does not process rental payments or deposits</li>
+            <li>All financial transactions occur directly between students and landlords</li>
+            <li>Students should follow standard rental agreement practices</li>
+            <li>We recommend using secure payment methods and written agreements</li>
+          </ul>
+
+          <div class="important-notice">
+            <h6>Rental Agreement Disclaimer</h6>
+            <p>ResLinQ acts as a connection platform only. We are not party to rental agreements and do not handle financial transactions between students and landlords. Students should exercise due diligence when entering rental agreements.</p>
+          </div>
+        </div>
+
+        <div class="refund-section">
+          <h5><i class="bi bi-exclamation-triangle"></i>4. Dispute Resolution</h5>
+          
+          <h6>4.1 Platform-related Issues</h6>
+          <p>For issues related to platform functionality:</p>
+          <ul>
+            <li>Contact our support team at reslinqco@gmail.com</li>
+            <li>Provide detailed description of the issue</li>
+            <li>Include screenshots or error messages if applicable</li>
+            <li>We aim to resolve technical issues within 48 hours</li>
+          </ul>
+
+          <h6>4.2 Rental Disputes</h6>
+          <p>For disputes related to rental agreements:</p>
+          <ul>
+            <li>ResLinQ is not involved in rental disputes</li>
+            <li>Parties should refer to their rental agreement terms</li>
+            <li>Consult with relevant consumer protection authorities if needed</li>
+            <li>Consider mediation or legal advice for unresolved issues</li>
+          </ul>
+        </div>
+
+        <div class="refund-section">
+          <h5><i class="bi bi-arrow-clockwise"></i>5. Policy Updates</h5>
+          <p>We may update this Refund Policy periodically to reflect changes in our business practices or legal requirements. Significant changes will be communicated to registered users via email or platform notifications.</p>
+          <p>Continued use of ResLinQ after policy updates constitutes acceptance of the revised terms.</p>
+        </div>
+
+        <div class="contact-box">
+          <h6><i class="bi bi-envelope me-2"></i>Contact Information</h6>
+          <p><strong>For Refund Inquiries:</strong> ResLinQ Support Team</p>
+          <p><strong>Email:</strong> reslinqco@gmail.com</p>
+          <p><strong>Phone:</strong> +27 82 305 6754</p>
+          <p><strong>Address:</strong> South Africa</p>
+          <p><strong>Response Time:</strong> Within 2 business days</p>
+        </div>
+
+        <div class="refund-section">
+          <h5><i class="bi bi-file-earmark-check"></i>6. Consumer Rights</h5>
+          <p>This Refund Policy operates in accordance with South African consumer protection laws, including the Consumer Protection Act. Users maintain all statutory rights unaffected by this policy.</p>
+          
+          <div class="important-notice">
+            <h6>Consumer Protection Notice</h6>
+            <p>Nothing in this policy limits your rights under the Consumer Protection Act 68 of 2008. If any provision conflicts with applicable law, the legal requirements will prevail.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-grid">
+        <div class="footer-section">
+          <h5><i class="bi bi-house-heart-fill me-2"></i>ResLinQ</h5>
+          <p>Your trusted platform for student accommodation. Connecting students with quality housing solutions.</p>
+        </div>
+        
+        <div class="footer-section">
+          <h5>Quick Links</h5>
+          <ul>
+            <li><a href="home.html">Home</a></li>
+            <li><a href="listings.html">Listings</a></li>
+            <li><a href="help.html">Help Center</a></li>
+            <li><a href="about.html">About Us</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h5>Legal</h5>
+          <ul>
+            <li><a href="privacy-policy.html">Privacy Policy</a></li>
+            <li><a href="terms_conditions.html">Terms of Service</a></li>
+            <li><a href="refund-policy.html">Refund Policy</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="safety-guide.html">Safety Guidelines</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h5>Contact Info</h5>
+          <ul>
+            <li><i class="bi bi-envelope me-2"></i>reslinqco@gmail.com</li>
+            <li><i class="bi bi-telephone me-2"></i>+27 82 305 6754</li>
+            <li><i class="bi bi-geo-alt me-2"></i>South Africa</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 ResLinQ (Pty) Ltd. All rights reserved. | POPIA Compliant | Making student accommodation simple and reliable</p>
+        <p class="small mt-2">Registration Number: 2025/826617/07</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Scroll highlighting
+    const sections = document.querySelectorAll('.refund-section');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('highlighted');
+        } else {
+          entry.target.classList.remove('highlighted');
+        }
+      });
+    }, { threshold: 0.3 });
+
+    sections.forEach(section => {
+      observer.observe(section);
+    });
+
+    // Reading progress
+    let startTime = Date.now();
+    const content = document.querySelector('.refund-content');
+
+    content.addEventListener('scroll', function() {
+      const scrollPercentage = (content.scrollTop / (content.scrollHeight - content.clientHeight)) * 100;
+      if (scrollPercentage > 80) {
+        document.querySelector('.progress-text').innerHTML = 
+          '<i class="bi bi-check-circle me-2"></i>Thank you for reviewing our Refund Policy';
+      }
+    });
+
+    // Update last read time
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible') {
+        startTime = Date.now();
+      }
+    });
+  </script>
+</body>
+</html>
