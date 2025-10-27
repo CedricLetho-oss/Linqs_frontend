@@ -367,7 +367,7 @@
         background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
     }
 
-    /* NEW: Filter Toggle Button Styles */
+    /* NEW: Enhanced Mobile Filter System */
     .filter-toggle-btn {
       background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
       border: none;
@@ -451,40 +451,61 @@
       cursor: pointer;
     }
 
-    /* Responsive Design */
+    /* Enhanced Mobile Responsiveness */
     @media (max-width: 768px) {
       .hero-section {
         padding: 3rem 0;
         border-radius: 0 0 2rem 2rem;
       }
       
-      .filter-card {
-        position: static;
-        margin-bottom: 2rem;
-      }
-
-      /* NEW: Hide filter sidebar on mobile by default */
+      /* Hide desktop filter sidebar on mobile */
       .filter-sidebar {
         display: none;
       }
 
-      /* NEW: Show filter toggle button on mobile */
+      /* Show mobile filter controls */
       .filter-toggle-container {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 1rem;
+        padding: 0 1rem;
+      }
+
+      /* Mobile search and sort layout */
+      .mobile-search-sort {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .mobile-search-sort .input-group {
+        width: 100% !important;
+      }
+
+      .mobile-search-sort .sort-select {
+        width: 100% !important;
+      }
+
+      /* Adjust card layout for mobile */
+      .listing-card .card-body {
+        padding: 1rem;
+      }
+
+      /* Better spacing for mobile */
+      .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
       }
     }
 
     @media (min-width: 769px) {
-      /* NEW: Hide filter toggle button on desktop */
+      /* Hide mobile filter toggle on desktop */
       .filter-toggle-container {
         display: none;
       }
     }
 
-     /* Mobile Bottom Navigation */
+    /* Mobile Bottom Navigation */
     .mobile-bottom-nav {
       display: none;
     }
@@ -528,57 +549,129 @@
       main {
         margin-bottom: 80px;
       }
+
+      /* Better mobile layout for listings */
+      #listingsContainer .col-md-6 {
+        margin-bottom: 1.5rem;
+      }
     }
 
-.hero-subtitle {
-  color:#e2e8f0;
-  animation: fadeInUp 0.8s ease-out 0.6s both;
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
-  opacity: 0.9;
-  line-height: 1.5;
-}
+    .hero-subtitle {
+      color:#e2e8f0;
+      animation: fadeInUp 0.8s ease-out 0.6s both;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      opacity: 0.9;
+      line-height: 1.5;
+    }
 
+    /* FIX: Amenities layout for mobile - same as home.html */
+    .amenities-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
 
-#logoutModal .modal-content {
-  border: none;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
+    .amenity-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem;
+      border-radius: 0.5rem;
+      background: #f8fafc;
+      font-size: 0.75rem;
+    }
 
-#logoutModal .logout-icon-container {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
-}
+    .amenity-item i {
+      font-size: 0.875rem;
+    }
 
-#logoutModal .logout-icon-container i {
-  color: white !important;
-}
+    .rating {
+      display: flex;
+      align-items: center;
+    }
 
-#logoutModal .modal-header {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  border-radius: 15px 15px 0 0 !important;
-}
+    /* Enhanced card hover effects */
+    .listing-card {
+      transition: all 0.3s ease;
+      border: 1px solid #e2e8f0;
+    }
 
-#logoutModal .btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  border: none;
-  border-radius: 8px;
-  padding: 10px 24px;
-  font-weight: 500;
-}
+    .listing-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(30, 58, 138, 0.15);
+      border-color: var(--primary-light);
+    }
 
-#logoutModal .btn-outline-secondary {
-  border-radius: 8px;
-  padding: 10px 24px;
-  font-weight: 500;
-}
+    /* Badge enhancements */
+    .badge {
+      font-weight: 500;
+      padding: 0.5rem 0.75rem;
+    }
 
-#logoutModal .modal-body i.bi-person-check {
-  color: var(--primary) !important;
-}
+    /* FIX: Responsive adjustments for amenities */
+    @media (max-width: 768px) {
+      .amenities-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.3rem;
+      }
+      
+      .amenity-item {
+        font-size: 0.7rem;
+        padding: 0.2rem;
+      }
+      
+      .listing-card .card-body {
+        padding: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .amenities-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.2rem;
+      }
+    }
+
+    #logoutModal .modal-content {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    #logoutModal .logout-icon-container {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+    }
+
+    #logoutModal .logout-icon-container i {
+      color: white !important;
+    }
+
+    #logoutModal .modal-header {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      border-radius: 15px 15px 0 0 !important;
+    }
+
+    #logoutModal .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-weight: 500;
+    }
+
+    #logoutModal .btn-outline-secondary {
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-weight: 500;
+    }
+
+    #logoutModal .modal-body i.bi-person-check {
+      color: var(--primary) !important;
+    }
 
   </style>
-
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
@@ -709,15 +802,15 @@
     <div class="container">
       <div class="row">
         
-        <!-- NEW: Filter Toggle Button for Mobile -->
+        <!-- NEW: Enhanced Filter Toggle for Mobile -->
         <div class="col-12 d-lg-none mb-3 filter-toggle-container">
-          <h5 class="text-navy mb-0 fw-bold"><i class="bi bi-funnel me-2"></i>Filters</h5>
+          <h5 class="text-navy mb-0 fw-bold"><i class="bi bi-building me-2"></i>All Listings</h5>
           <button class="filter-toggle-btn" id="filterToggleBtn">
-            <i class="bi bi-chevron-down"></i>
+            <i class="bi bi-funnel"></i>
           </button>
         </div>
         
-        <!-- Enhanced Filter Sidebar -->
+        <!-- Enhanced Filter Sidebar (Hidden on Mobile) -->
         <aside class="col-lg-3 mb-4 filter-sidebar">
           <div class="card shadow-sm filter-card" data-aos="fade-right">
             <div class="card-body">
@@ -778,23 +871,28 @@
         <!-- Listings -->
         <div class="col-lg-9">
           
-          <!-- Enhanced Sort + Search -->
-          <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-up">
-            <div class="d-flex align-items-center gap-3">
-              <div class="input-group" style="width: 300px;">
+          <!-- Enhanced Mobile Search + Sort -->
+          <div class="d-flex justify-content-between align-items-center mb-4 mobile-search-sort" data-aos="fade-up">
+            <div class="d-flex align-items-center gap-3 flex-grow-1">
+              <div class="input-group flex-grow-1">
                 <span class="input-group-text bg-white border-end-0">
                   <i class="bi bi-search text-muted"></i>
                 </span>
                 <input type="text" id="searchBar" class="form-control border-start-0 search-box" placeholder="Search by name...">
               </div>
-              <span class="results-count" id="resultsCount">6 listings found</span>
+              <span class="results-count d-none d-md-block" id="resultsCount">6 listings found</span>
             </div>
             
-            <select class="form-select sort-select" id="sortOptions" style="width: 200px;">
+            <select class="form-select sort-select ms-2" id="sortOptions">
               <option value="default">Sort by: Recommended</option>
               <option value="priceLow">Price: Low to High</option>
               <option value="priceHigh">Price: High to Low</option>
             </select>
+          </div>
+
+          <!-- Mobile Results Count -->
+          <div class="d-md-none mb-3">
+            <span class="results-count" id="mobileResultsCount">6 listings found</span>
           </div>
 
           <!-- Accommodation Cards -->
@@ -885,7 +983,7 @@
       offset: 100
     });
 
-    // NEW: Filter Toggle Functionality
+    // Enhanced Mobile Filter Functionality
     document.addEventListener('DOMContentLoaded', function() {
       const filterToggleBtn = document.getElementById('filterToggleBtn');
       const mobileFilterPanel = document.getElementById('mobileFilterPanel');
@@ -899,24 +997,23 @@
           mobileFilterPanel.classList.add('active');
           filterOverlay.classList.add('active');
           document.body.style.overflow = 'hidden';
+          
+          // Sync current filter values to mobile panel
+          syncFiltersToMobile();
         });
       }
       
       // Close mobile filter panel
       if (mobileFilterClose) {
         mobileFilterClose.addEventListener('click', function() {
-          mobileFilterPanel.classList.remove('active');
-          filterOverlay.classList.remove('active');
-          document.body.style.overflow = '';
+          closeMobileFilters();
         });
       }
       
       // Close mobile filter panel when overlay is clicked
       if (filterOverlay) {
         filterOverlay.addEventListener('click', function() {
-          mobileFilterPanel.classList.remove('active');
-          filterOverlay.classList.remove('active');
-          document.body.style.overflow = '';
+          closeMobileFilters();
         });
       }
       
@@ -924,56 +1021,55 @@
       if (mobileApplyFilters) {
         mobileApplyFilters.addEventListener('click', function() {
           // Sync mobile filter values with desktop filters
-          document.getElementById('filterAccreditation').value = document.getElementById('mobileFilterAccreditation').value;
-          document.getElementById('filterAvailability').value = document.getElementById('mobileFilterAvailability').value;
-          document.getElementById('filterPrice').value = document.getElementById('mobileFilterPrice').value;
-          document.getElementById('filterLocation').value = document.getElementById('mobileFilterLocation').value;
+          syncFiltersToDesktop();
           
           // Apply filters
           applyFilters();
           
           // Close mobile panel
-          mobileFilterPanel.classList.remove('active');
-          filterOverlay.classList.remove('active');
-          document.body.style.overflow = '';
+          closeMobileFilters();
         });
       }
       
-      // Sync filter values when mobile panel opens
-      if (filterToggleBtn) {
-        filterToggleBtn.addEventListener('click', function() {
-          document.getElementById('mobileFilterAccreditation').value = document.getElementById('filterAccreditation').value;
-          document.getElementById('mobileFilterAvailability').value = document.getElementById('filterAvailability').value;
-          document.getElementById('mobileFilterPrice').value = document.getElementById('filterPrice').value;
-          document.getElementById('mobileFilterLocation').value = document.getElementById('filterLocation').value;
-        });
+      function syncFiltersToMobile() {
+        document.getElementById('mobileFilterAccreditation').value = document.getElementById('filterAccreditation').value;
+        document.getElementById('mobileFilterAvailability').value = document.getElementById('filterAvailability').value;
+        document.getElementById('mobileFilterPrice').value = document.getElementById('filterPrice').value;
+        document.getElementById('mobileFilterLocation').value = document.getElementById('filterLocation').value;
+      }
+      
+      function syncFiltersToDesktop() {
+        document.getElementById('filterAccreditation').value = document.getElementById('mobileFilterAccreditation').value;
+        document.getElementById('filterAvailability').value = document.getElementById('mobileFilterAvailability').value;
+        document.getElementById('filterPrice').value = document.getElementById('mobileFilterPrice').value;
+        document.getElementById('filterLocation').value = document.getElementById('mobileFilterLocation').value;
+      }
+      
+      function closeMobileFilters() {
+        mobileFilterPanel.classList.remove('active');
+        filterOverlay.classList.remove('active');
+        document.body.style.overflow = '';
       }
     });
 
     // UPDATED: Unified Filter Functionality for both Desktop and Mobile
-    // Grab elements
     const container = document.getElementById('listingsContainer');
     const resultsCount = document.getElementById('resultsCount');
+    const mobileResultsCount = document.getElementById('mobileResultsCount');
     const accSelect = document.getElementById('filterAccreditation');
     const priceInput = document.getElementById('filterPrice');
     const locationInput = document.getElementById('filterLocation');
     const sortSelect = document.getElementById('sortOptions');
     const searchBar = document.getElementById('searchBar');
 
-    // Mobile filter elements
-    const mobileAccSelect = document.getElementById('mobileFilterAccreditation');
-    const mobilePriceInput = document.getElementById('mobileFilterPrice');
-    const mobileLocationInput = document.getElementById('mobileFilterLocation');
-    const mobileAvailabilitySelect = document.getElementById('mobileFilterAvailability');
-
     // Helper - get only top-level listing cards (outer columns)
     function getListingCards() {
       return Array.from(container.querySelectorAll(':scope > .col-md-6'));
     }
 
-    // UPDATED: Unified applyFilters function that works with both desktop and mobile
+    // UPDATED: Enhanced applyFilters function
     function applyFilters(){
-      // Get values from desktop OR mobile filters (they should be synced)
+      // Get values from desktop filters
       const accFilter = accSelect.value;
       const priceFilterRaw = priceInput.value;
       const priceFilter = priceFilterRaw === '' ? null : Number(priceFilterRaw);
@@ -1045,7 +1141,11 @@
       });
 
       // Update results count (pluralized nicely)
-      resultsCount.textContent = `${visibleCount} listing${visibleCount === 1 ? '' : 's'} found`;
+      const resultsText = `${visibleCount} listing${visibleCount === 1 ? '' : 's'} found`;
+      resultsCount.textContent = resultsText;
+      if (mobileResultsCount) {
+        mobileResultsCount.textContent = resultsText;
+      }
     }
 
     // UPDATED: Enhanced sorting function
@@ -1084,10 +1184,14 @@
       
       // Update results count after sorting
       const visibleCards = cards.filter(card => card.style.display !== 'none');
-      resultsCount.textContent = `${visibleCards.length} listing${visibleCards.length === 1 ? '' : 's'} found`;
+      const resultsText = `${visibleCards.length} listing${visibleCards.length === 1 ? '' : 's'} found`;
+      resultsCount.textContent = resultsText;
+      if (mobileResultsCount) {
+        mobileResultsCount.textContent = resultsText;
+      }
     });
 
-    // UPDATED: Event listeners for all filter inputs
+    // UPDATED: Enhanced event listeners for all filter inputs
     function setupFilterEventListeners() {
       // Desktop filter events
       if (accSelect) accSelect.addEventListener('change', applyFilters);
@@ -1099,28 +1203,6 @@
       // Availability filter
       const availabilitySelect = document.getElementById('filterAvailability');
       if (availabilitySelect) availabilitySelect.addEventListener('change', applyFilters);
-      
-      // Mobile filter events (for real-time filtering if desired)
-      if (mobileAccSelect) mobileAccSelect.addEventListener('change', function() {
-        accSelect.value = this.value;
-        applyFilters();
-      });
-      
-      if (mobilePriceInput) mobilePriceInput.addEventListener('input', function() {
-        priceInput.value = this.value;
-        applyFilters();
-      });
-      
-      if (mobileLocationInput) mobileLocationInput.addEventListener('input', function() {
-        locationInput.value = this.value;
-        applyFilters();
-      });
-      
-      if (mobileAvailabilitySelect) mobileAvailabilitySelect.addEventListener('change', function() {
-        const desktopAvailability = document.getElementById('filterAvailability');
-        if (desktopAvailability) desktopAvailability.value = this.value;
-        applyFilters();
-      });
     }
 
     // Clear all filters - UPDATED for both desktop and mobile
@@ -1136,6 +1218,11 @@
       if (availabilitySelect) availabilitySelect.value = 'all';
       
       // Clear mobile filters
+      const mobileAccSelect = document.getElementById('mobileFilterAccreditation');
+      const mobilePriceInput = document.getElementById('mobileFilterPrice');
+      const mobileLocationInput = document.getElementById('mobileFilterLocation');
+      const mobileAvailabilitySelect = document.getElementById('mobileFilterAvailability');
+      
       if (mobileAccSelect) mobileAccSelect.value = 'all';
       if (mobilePriceInput) mobilePriceInput.value = '';
       if (mobileLocationInput) mobileLocationInput.value = '';
