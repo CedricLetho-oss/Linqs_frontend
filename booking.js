@@ -616,15 +616,23 @@ async function handleBookingSubmission(e) {
         }
 
         // Prepare booking data - FIXED to match backend expectations
+        // FIXED: Proper date calculation for viewing appointments
+        const bookingDateTimeObj = new Date(bookingDateTime);
+        const checkOutDate = new Date(bookingDateTimeObj.getTime() + 2 * 60 * 60 * 1000); // Add 2 hours for viewing duration
+
         const bookingData = {
             propertyId: selectedAccommodation.propertyId,
-            checkIn: bookingDateTime,
-            checkOut: new Date(new Date(bookingDateTime).getTime() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours later
+            checkIn: bookingDateTimeObj.toISOString(),
+            checkOut: checkOutDate.toISOString(),
             numberOfGuests: 1,
             specialRequests: `Booking Type: ${bookingType}${bookingNotes ? `\nNotes: ${bookingNotes}` : ''}`
         };
 
-        console.log('📤 Sending booking data to backend:', bookingData);
+        console.log('📤 Fixed booking data:', {
+            checkIn: bookingData.checkIn,
+            checkOut: bookingData.checkOut,
+            timeDifference: (new Date(bookingData.checkOut) - new Date(bookingData.checkIn)) / (1000 * 60 * 60) + ' hours'
+        });
 
         // Send booking to backend
         const response = await fetch(`${API_BASE_URL}/bookings`, {
