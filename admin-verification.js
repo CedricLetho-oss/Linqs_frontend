@@ -168,17 +168,23 @@ class AdminVerificationManager {
     }
 
     verificationList.innerHTML = this.verifications.map(verification => {
-        // FIX: Handle null user data
+        // ENHANCED: Better null user handling
         const user = verification.userId || {};
         const statusClass = `status-${verification.status}`;
         const itemClass = `verification-item ${verification.status}`;
         
-        // FIX: Safe avatar access
-        const userAvatar = user.avatar || 'https://via.placeholder.com/60';
-        const userName = user.firstName && user.lastName 
-            ? `${user.firstName} ${user.lastName}` 
-            : 'Unknown User';
+        // ENHANCED: Check if user is deleted
+        const isUserDeleted = !user.email || user.email === 'deleted@user.com' || user.firstName === '[Deleted User]';
+        const userAvatar = user.avatar || 'https://via.placeholder.com/60?text=User';
+        const userName = isUserDeleted 
+            ? '[Deleted User]' 
+            : (user.firstName && user.lastName 
+                ? `${user.firstName} ${user.lastName}` 
+                : 'Unknown User');
         const userRole = user.role || 'unknown';
+        
+        // ENHANCED: Disable actions for deleted users
+        const isActionDisabled = isUserDeleted || verification.status !== 'pending';
         
         return `
             <div class="${itemClass}">
@@ -187,8 +193,8 @@ class AdminVerificationManager {
                         <div class="d-flex align-items-center">
                             <img src="${userAvatar}" alt="${userName}" class="user-avatar me-3" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
                             <div>
-                                <h6 class="fw-bold mb-0">${userName}</h6>
-                                <small class="text-muted">${userRole}</small>
+                                <h6 class="fw-bold mb-0 ${isUserDeleted ? 'text-muted' : ''}">${userName}</h6>
+                                <small class="text-muted">${userRole} ${isUserDeleted ? '(Deleted)' : ''}</small>
                             </div>
                         </div>
                     </div>
@@ -211,11 +217,20 @@ class AdminVerificationManager {
                                 <i class="bi bi-eye me-1"></i>View
                             </button>
                             ${verification.status === 'pending' ? `
-                                <button class="btn btn-sm btn-success" onclick="adminVerificationManager.approveVerification('${verification._id}')">
+                                <button class="btn btn-sm btn-success" 
+                                    onclick="adminVerificationManager.approveVerification('${verification._id}')"
+                                    ${isUserDeleted ? 'disabled title="Cannot approve - user deleted"' : ''}>
                                     <i class="bi bi-check-lg me-1"></i>Approve
                                 </button>
-                                <button class="btn btn-sm btn-danger" onclick="adminVerificationManager.rejectVerification('${verification._id}')">
+                                <button class="btn btn-sm btn-danger" 
+                                    onclick="adminVerificationManager.rejectVerification('${verification._id}')"
+                                    ${isUserDeleted ? 'disabled title="Cannot reject - user deleted"' : ''}>
                                     <i class="bi bi-x-lg me-1"></i>Reject
+                                </button>
+                            ` : ''}
+                            ${isUserDeleted ? `
+                                <button class="btn btn-sm btn-outline-secondary" onclick="adminVerificationManager.deleteVerificationRecord('${verification._id}')">
+                                    <i class="bi bi-trash me-1"></i>Delete Record
                                 </button>
                             ` : ''}
                         </div>
@@ -225,8 +240,36 @@ class AdminVerificationManager {
         `;
     }).join('');
 
-    // Show/hide load more button
     document.getElementById('loadMoreContainer').style.display = this.hasMore ? 'block' : 'none';
+}
+
+// Add this method to AdminVerificationManager class
+async deleteVerificationRecord(verificationId) {
+    if (!confirm('Are you sure you want to delete this verification record? This action cannot be undone.')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${this.API_BASE_URL}/admin/verification/${verificationId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${this.token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            this.showSuccess('Verification record deleted successfully!');
+            await this.loadVerificationStats();
+            await this.loadVerifications();
+        } else {
+            const data = await response.json();
+            throw new Error(data.error || 'Failed to delete verification record');
+        }
+    } catch (error) {
+        console.error('Error deleting verification record:', error);
+        this.showError('Failed to delete verification record: ' + error.message);
+    }
 }
 
     // FIXED: Proper filter handling for all filter types
@@ -441,26 +484,29 @@ class AdminVerificationManager {
     }
 
     showVerificationDetails(verification) {
-    // FIX: Handle null user data
+    // ENHANCED: Handle deleted users properly
     const user = verification.userId || {};
     const modalContent = document.getElementById('verificationDetailContent');
     
-    // FIX: Safe user data access
-    const userAvatar = user.avatar || 'https://via.placeholder.com/100';
-    const userName = user.firstName && user.lastName 
-        ? `${user.firstName} ${user.lastName}` 
-        : 'Unknown User';
+    // ENHANCED: Check if user is deleted
+    const isUserDeleted = !user.email || user.email === 'deleted@user.com' || user.firstName === '[Deleted User]';
+    const userAvatar = user.avatar || 'https://via.placeholder.com/100?text=User';
+    const userName = isUserDeleted 
+        ? '[Deleted User]' 
+        : (user.firstName && user.lastName 
+            ? `${user.firstName} ${user.lastName}` 
+            : 'Unknown User');
     const userRole = user.role || 'unknown';
-    const userEmail = user.email || 'No email provided';
-    const userPhone = user.phone || 'Not provided';
+    const userEmail = isUserDeleted ? 'User account has been deleted' : (user.email || 'No email provided');
+    const userPhone = isUserDeleted ? 'Not available' : (user.phone || 'Not provided');
     
     modalContent.innerHTML = `
         <div class="row">
             <div class="col-md-4">
                 <div class="text-center mb-4">
-                    <img src="${userAvatar}" alt="${userName}" class="user-avatar mb-3" style="width: 100px; height: 100px; border-radius: 50%; object-fix: cover;">
-                    <h5 class="fw-bold">${userName}</h5>
-                    <p class="text-muted">${userRole.charAt(0).toUpperCase() + userRole.slice(1)}</p>
+                    <img src="${userAvatar}" alt="${userName}" class="user-avatar mb-3" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+                    <h5 class="fw-bold ${isUserDeleted ? 'text-muted' : ''}">${userName}</h5>
+                    <p class="text-muted">${userRole} ${isUserDeleted ? '(Deleted)' : ''}</p>
                     <div class="status-badge status-${verification.status} mb-3">
                         ${this.getStatusText(verification.status)}
                     </div>
@@ -470,11 +516,11 @@ class AdminVerificationManager {
                     <h6 class="fw-bold mb-3">User Information</h6>
                     <div class="detail-row">
                         <span class="detail-label">Email:</span>
-                        <span class="detail-value">${userEmail}</span>
+                        <span class="detail-value ${isUserDeleted ? 'text-muted' : ''}">${userEmail}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Phone:</span>
-                        <span class="detail-value">${userPhone}</span>
+                        <span class="detail-value ${isUserDeleted ? 'text-muted' : ''}">${userPhone}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Submitted:</span>
@@ -505,13 +551,25 @@ class AdminVerificationManager {
                     ${this.renderDocuments(verification.documents, verification.type)}
                 </div>
                 
-                ${verification.status === 'pending' ? `
+                ${verification.status === 'pending' && !isUserDeleted ? `
                     <div class="action-buttons mt-4">
                         <button class="btn btn-success" onclick="adminVerificationManager.approveVerification('${verification._id}')">
                             <i class="bi bi-check-lg me-2"></i>Approve Verification
                         </button>
                         <button class="btn btn-danger" onclick="adminVerificationManager.rejectVerification('${verification._id}')">
                             <i class="bi bi-x-lg me-2"></i>Reject Verification
+                        </button>
+                    </div>
+                ` : ''}
+                
+                ${isUserDeleted ? `
+                    <div class="alert alert-warning mt-4">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        This user account has been deleted. You can only view or delete this verification record.
+                    </div>
+                    <div class="action-buttons mt-3">
+                        <button class="btn btn-outline-danger" onclick="adminVerificationManager.deleteVerificationRecord('${verification._id}')">
+                            <i class="bi bi-trash me-2"></i>Delete Verification Record
                         </button>
                     </div>
                 ` : ''}
