@@ -281,14 +281,6 @@
       }
     }
 
-    /*[data-aos]:not(.mobile-bottom-nav):not(.mobile-nav-item) {
-    pointer-events: none;
-    }
-
-    [data-aos].aos-animate:not(.mobile-bottom-nav):not(.mobile-nav-item) {
-      pointer-events: auto;
-    }*/
-
     /* Custom Button */
     .btn-gradient {
       background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
@@ -306,95 +298,182 @@
       color: white;
     }
 
-    /* Mobile Bottom Navigation */
-.mobile-bottom-nav {
-  display: none;
-}
-
-@media (max-width: 767px) {
-  .mobile-bottom-nav {
-    display: flex;
-    position: fixed !important;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: #1C2B4A;
-    z-index: 1030;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1); 
+    /* Mobile Bottom Navigation - UPDATED TO MATCH BOOKING GUIDE EXACTLY */
+    .mobile-bottom-nav {
+      display: none;
     }
 
-  
-  .mobile-nav-item {
-    flex: 1;
-    text-align: center;
-    padding: 0.5rem;
-    color: #fff;
-    text-decoration: none;
-    font-size: 0.75rem;
-  }
-  
-  .mobile-nav-item.active {
-    color: #64748b;
-  }
-  
-  .mobile-nav-item i {
-    display: block;
-    font-size: 1.25rem;
-    margin-bottom: 0.25rem;
-  }
+    @media (max-width: 767px) {
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #1C2B4A;
+        z-index: 1030;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        height: 60px;
+      }
+      
+      .mobile-nav-item {
+        flex: 1;
+        text-align: center;
+        padding: 0.5rem;
+        color: #fff;
+        text-decoration: none;
+        font-size: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+      }
+      
+      .mobile-nav-item.active {
+        color: #64748b;
+      }
+      
+      .mobile-nav-item i {
+        display: block;
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+      }
 
-  
-  /* Add padding to main content to account for bottom nav */
-  main {
-    margin-bottom: 80px;
-  }
-}
+      .mobile-nav-item span {
+        display: block;
+      }
+    }
 
-.hero-subtitle {
-        color:#e2e8f0;
-        animation: fadeInUp 0.8s ease-out 0.6s both;
-        font-size: 1.2rem;
-        margin-bottom: 1rem;
-        opacity: 0.9;
-        line-height: 1.5;
-        }
+    .hero-subtitle {
+      color:#e2e8f0;
+      animation: fadeInUp 0.8s ease-out 0.6s both;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      opacity: 0.9;
+      line-height: 1.5;
+    }
 
-        #logoutModal .modal-content {
-  border: none;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
+    #logoutModal .modal-content {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
 
-#logoutModal .logout-icon-container {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
-}
+    #logoutModal .logout-icon-container {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+    }
 
-#logoutModal .logout-icon-container i {
-  color: white !important;
-}
+    #logoutModal .logout-icon-container i {
+      color: white !important;
+    }
 
-#logoutModal .modal-header {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  border-radius: 15px 15px 0 0 !important;
-}
+    #logoutModal .modal-header {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      border-radius: 15px 15px 0 0 !important;
+    }
 
-#logoutModal .btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  border: none;
-  border-radius: 8px;
-  padding: 10px 24px;
-  font-weight: 500;
-}
+    #logoutModal .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-weight: 500;
+    }
 
-#logoutModal .btn-outline-secondary {
-  border-radius: 8px;
-  padding: 10px 24px;
-  font-weight: 500;
-}
+    #logoutModal .btn-outline-secondary {
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-weight: 500;
+    }
 
-#logoutModal .modal-body i.bi-person-check {
-  color: var(--primary) !important;
-}
+    #logoutModal .modal-body i.bi-person-check {
+      color: var(--primary) !important;
+    }
+
+    /* CRITICAL FIXES TO MATCH BOOKING GUIDE */
+    @media (max-width: 767px) {
+      /* Remove any previous problematic styles */
+      .mobile-bottom-nav {
+        max-height: 60px !important;
+        min-height: 60px !important;
+      }
+      
+      /* Ensure no extra margins/padding on mobile - MATCHES BOOKING GUIDE */
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        position: relative;
+        width: 100%;
+        overflow-x: hidden;
+      }
+      
+      /* Body padding for mobile bottom nav - MATCHES BOOKING GUIDE */
+      body {
+        padding-bottom: 60px !important;
+      }
+      
+      /* Prevent horizontal overflow - MATCHES BOOKING GUIDE */
+      .container, .container-fluid {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+      
+      /* Fix for any potential content overflow - MATCHES BOOKING GUIDE */
+      .row {
+        margin-left: 0;
+        margin-right: 0;
+      }
+      
+      .col, .col-1, .col-2, .col-3, .col-4, .col-5, .col-6, 
+      .col-7, .col-8, .col-9, .col-10, .col-11, .col-12,
+      .col-md, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, 
+      .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12,
+      .col-lg, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, 
+      .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12 {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
+
+      /* Remove the old main margin-bottom that was causing issues */
+      main {
+        margin-bottom: 0 !important;
+      }
+    }
+
+    /* Additional mobile fixes to match booking guide */
+    @media (max-width: 767px) {
+      /* Fix for navbar toggler */
+      .navbar-toggler {
+        padding: 0.25rem 0.5rem;
+        font-size: 1rem;
+      }
+      
+      /* Fix for signup/login buttons */
+      .signup-login-buttons {
+        display: flex;
+        flex-wrap: nowrap;
+        margin-top: 0.5rem;
+      }
+      
+      .signup-login-buttons .btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+      }
+      
+      /* Ensure content doesn't overflow */
+      .about-hero {
+        overflow: hidden;
+      }
+    }
+
+    /* Ensure body doesn't have extra padding/margin - MATCHES BOOKING GUIDE */
+    body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      position: relative;
+    }
   </style>
 </head>
 <body>
@@ -623,7 +702,7 @@
           </p>
         </div>
       </div>
-     
+    </div>
   </section>
 
   <!-- CTA Section -->
@@ -646,25 +725,25 @@
     </div>
   </section>
 
-  <!-- Mobile Bottom Navigation -->
-<div class="mobile-bottom-nav d-lg-none">
-  <a href="home.html" class="mobile-nav-item">
-    <i class="bi bi-house"></i>
-    <span>Home</span>
-  </a>
-  <a href="listings.html" class="mobile-nav-item">
-    <i class="bi bi-building"></i>
-    <span>Listings</span>
-  </a>
-  <a href="my-bookings.html" class="mobile-nav-item">
-    <i class="bi bi-calendar-check"></i>
-    <span>Bookings</span>
-  </a>
-  <a href="help.html" class="mobile-nav-item">
-    <i class="bi bi-question-circle"></i>
-    <span>Help</span>
-  </a>
-</div>
+  <!-- Mobile Bottom Navigation - UPDATED TO MATCH BOOKING GUIDE EXACTLY -->
+  <div class="mobile-bottom-nav d-lg-none">
+    <a href="home.html" class="mobile-nav-item">
+      <i class="bi bi-house"></i>
+      <span>Home</span>
+    </a>
+    <a href="listings.html" class="mobile-nav-item">
+      <i class="bi bi-building"></i>
+      <span>Listings</span>
+    </a>
+    <a href="my-bookings.html" class="mobile-nav-item">
+      <i class="bi bi-calendar-check"></i>
+      <span>Bookings</span>
+    </a>
+    <a href="help.html" class="mobile-nav-item">
+      <i class="bi bi-question-circle"></i>
+      <span>Help</span>
+    </a>
+  </div>
 
   <!-- Footer -->
   <footer class="py-5 bg-navy text-white">
@@ -772,6 +851,16 @@
         }
       });
     });
+
+    // Prevent horizontal overflow on mobile (matching booking guide)
+    function preventHorizontalScroll() {
+      document.body.style.overflowX = 'hidden';
+      document.documentElement.style.overflowX = 'hidden';
+    }
+    
+    // Apply on load and resize
+    preventHorizontalScroll();
+    window.addEventListener('resize', preventHorizontalScroll);
   </script>
 </body>
 </html>
