@@ -214,7 +214,7 @@
       color: white;
     }
 
-    /* Enhanced Mobile Responsiveness */
+    /* Enhanced Mobile Responsiveness - FIXED */
     @media (max-width: 768px) {
       .help-hero {
         padding: 4rem 0;
@@ -233,9 +233,63 @@
         padding-left: 1rem;
         padding-right: 1rem;
       }
+      
+      /* Fix for mobile navbar */
+      .navbar-brand {
+        font-size: 1.1rem;
+      }
+      
+      .nav-link {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+      }
+      
+      /* Fix for quick action items */
+      .quick-action-item {
+        margin-bottom: 1rem;
+      }
+      
+      /* Fix for help cards */
+      .help-card .card-body {
+        padding: 1.5rem;
+      }
+      
+      /* Fix for search bar */
+      .input-group .btn-light {
+        padding: 0.75rem 1rem;
+      }
     }
 
-    /* Mobile Bottom Navigation - UPDATED for consistency */
+    @media (max-width: 480px) {
+      .help-hero {
+        padding: 3rem 0;
+      }
+      
+      .help-hero h1 {
+        font-size: 2rem;
+      }
+      
+      .help-hero .hero-subtitle {
+        font-size: 0.9rem;
+      }
+      
+      /* Fix for cards on very small screens */
+      .help-card {
+        margin-bottom: 1.5rem;
+      }
+      
+      .card-icon {
+        font-size: 2rem;
+      }
+      
+      /* Fix for buttons */
+      .btn-gradient {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Mobile Bottom Navigation - COMPLETELY FIXED */
     .mobile-bottom-nav {
       display: none;
     }
@@ -250,7 +304,11 @@
         background: #1C2B4A;
         z-index: 1030;
         box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        height: 60px; /* FIX: Consistent height */
+        height: 60px;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        box-sizing: border-box;
       }
       
       .mobile-nav-item {
@@ -264,7 +322,9 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        height: 100%; /* FIX: Ensure full height */
+        height: 100%;
+        box-sizing: border-box;
+        min-width: 0;
       }
       
       .mobile-nav-item.active {
@@ -278,33 +338,41 @@
       }
 
       .mobile-nav-item span {
-        display: none; /* FIX: Consistent with listings */
+        display: block;
+        font-size: 0.7rem;
+        line-height: 1;
       }
       
-      /* Add padding to main content to account for bottom nav - FIXED */
+      /* Add padding to main content to account for bottom nav */
       main {
-        padding-bottom: 60px !important; /* FIX: Use important to override any other styles */
-        margin-bottom: 0 !important; /* FIX: Remove margin, use padding instead */
-      }
-
-      /* Better mobile layout for help cards */
-      .help-card .card-body {
-        padding: 1rem;
+        padding-bottom: 60px !important;
       }
       
-      /* Mobile quick actions layout */
-      .quick-action-item {
-        margin-bottom: 1rem;
+      body {
+        padding-bottom: 0 !important;
       }
     }
 
-    @media (max-width: 480px) {
-      .help-hero h1 {
-        font-size: 2rem;
+    /* Ensure body doesn't have extra padding/margin */
+    body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* Fix for navbar on mobile */
+    .navbar-collapse {
+      max-height: none;
+    }
+
+    /* Fix for footer on mobile */
+    @media (max-width: 767px) {
+      footer .row > div {
+        margin-bottom: 1.5rem;
       }
       
-      .help-hero .hero-subtitle {
-        font-size: 0.9rem;
+      footer .text-center {
+        text-align: left !important;
       }
     }
 
@@ -354,21 +422,40 @@
       line-height: 1.5;
     }
 
-    /* Mobile header adjustments */
-    @media (max-width: 768px) {
-      .navbar-brand {
-        font-size: 1.1rem;
+    /* Additional mobile fixes */
+    @media (max-width: 767px) {
+      /* Fix for navbar toggler */
+      .navbar-toggler {
+        padding: 0.25rem 0.5rem;
+        font-size: 1rem;
       }
       
-      .nav-link {
-        font-size: 0.9rem;
+      /* Fix for signup/login buttons */
+      .signup-login-buttons {
+        display: flex;
+        flex-wrap: nowrap;
+        margin-top: 0.5rem;
       }
-    }
-
-    /* Ensure body doesn't have extra padding/margin */
-    body {
-      margin: 0;
-      padding: 0;
+      
+      .signup-login-buttons .btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+      }
+      
+      /* Fix for support card */
+      .support-card .card-body {
+        padding: 1.5rem;
+      }
+      
+      /* Fix for feature icons */
+      .feature-icon {
+        width: 50px;
+        height: 50px;
+      }
+      
+      .feature-icon i {
+        font-size: 1.25rem;
+      }
     }
 
   </style>
@@ -378,7 +465,7 @@
   <!-- Dynamic Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
     <div class="container">
-      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-3"></i>ResLinQ</a>
+      <a class="navbar-brand" href="home.html"><i class="bi bi-house-heart-fill me-2"></i>ResLinQ</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -457,7 +544,7 @@
         </div>
       </div>
       <div class="row g-4">
-        <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+        <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="100">
           <div class="quick-action-item p-4 text-center bg-white rounded">
             <div class="feature-icon mx-auto">
               <i class="bi bi-search-heart"></i>
@@ -466,7 +553,7 @@
             <small class="text-muted">Search & compare listings</small>
           </div>
         </div>
-        <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+        <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="200">
           <div class="quick-action-item p-4 text-center bg-white rounded">
             <div class="feature-icon mx-auto">
               <i class="bi bi-journal-check"></i>
@@ -475,7 +562,7 @@
             <small class="text-muted">Manage reservations</small>
           </div>
         </div>
-        <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+        <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="300">
           <div class="quick-action-item p-4 text-center bg-white rounded">
             <div class="feature-icon mx-auto">
               <i class="bi bi-flag"></i>
@@ -484,7 +571,7 @@
             <small class="text-muted">Submit complaints</small>
           </div>
         </div>
-        <div class="col-md-3" data-aos="fade-up" data-aos-delay="400">
+        <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="400">
           <div class="quick-action-item p-4 text-center bg-white rounded">
             <div class="feature-icon mx-auto">
               <i class="bi bi-question-circle"></i>
