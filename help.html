@@ -290,98 +290,109 @@
     }
 
     /* Mobile Bottom Navigation - FIXED & CONSISTENT */
-.mobile-bottom-nav {
-  display: none;
-}
+    .mobile-bottom-nav {
+      display: none;
+    }
 
-@media (max-width: 767px) {
-  .mobile-bottom-nav {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: #1C2B4A;
-    z-index: 1030;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-    height: 60px;
-  }
-  
-  .mobile-nav-item {
-    flex: 1;
-    text-align: center;
-    padding: 0.5rem;
-    color: #fff;
-    text-decoration: none;
-    font-size: 0.75rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-  }
-  
-  .mobile-nav-item.active {
-    color: #64748b;
-  }
-  
-  .mobile-nav-item i {
-    display: block;
-    font-size: 1.25rem;
-    margin-bottom: 0.25rem;
-  }
+    @media (max-width: 767px) {
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #1C2B4A;
+        z-index: 1030;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        height: 60px;
+      }
+      
+      .mobile-nav-item {
+        flex: 1;
+        text-align: center;
+        padding: 0.5rem;
+        color: #fff;
+        text-decoration: none;
+        font-size: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+      }
+      
+      .mobile-nav-item.active {
+        color: #64748b;
+      }
+      
+      .mobile-nav-item i {
+        display: block;
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+      }
 
-  .mobile-nav-item span {
-    display: block;
-  }
-  
-  /* Add padding to main content to account for bottom nav - FIXED */
-  main {
-    padding-bottom: 60px !important;
-    margin-bottom: 0 !important;
-  }
+      .mobile-nav-item span {
+        display: block;
+      }
+      
+      /* Add padding to main content to account for bottom nav - FIXED */
+      main {
+        padding-bottom: 60px !important;
+        margin-bottom: 0 !important;
+      }
 
-  /* FIX: Ensure body doesn't have extra padding/margin */
-  body {
-    margin: 0;
-    padding: 0;
-  }
-}
-  
-  /* Fix footer spacing */
-  footer {
-    margin-bottom: 60px !important;
-  }
+      /* FIX: Ensure body doesn't have extra padding/margin */
+      body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+      }
+      
+      /* Fix for footer spacing */
+      footer {
+        margin-bottom: 60px !important;
+      }
+    }
 
-/* Remove any conflicting styles that might be causing the issue */
-@media (max-width: 767px) {
-  /* Remove any previous problematic styles */
-  .mobile-bottom-nav {
-    max-height: 60px !important;
-    min-height: 60px !important;
-  }
-  
-  /* Ensure no extra margins/padding on mobile */
-  html, body {
-    margin: 0 !important;
-    padding: 0 !important;
-    position: relative;
-  }
-}
-
-    /* Ensure body doesn't have extra padding/margin */
-body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-}
-
-/* Mobile body padding fix */
-@media (max-width: 767px) {
-  body {
-    padding-bottom: 60px !important;
-  }
-}
+    /* Remove any conflicting styles that might be causing the issue */
+    @media (max-width: 767px) {
+      /* Remove any previous problematic styles */
+      .mobile-bottom-nav {
+        max-height: 60px !important;
+        min-height: 60px !important;
+      }
+      
+      /* Ensure no extra margins/padding on mobile */
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        position: relative;
+        width: 100%;
+        overflow-x: hidden;
+      }
+      
+      /* Prevent horizontal overflow */
+      .container, .container-fluid {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+      
+      /* Fix for any potential content overflow */
+      .row {
+        margin-left: 0;
+        margin-right: 0;
+      }
+      
+      .col, .col-1, .col-2, .col-3, .col-4, .col-5, .col-6, 
+      .col-7, .col-8, .col-9, .col-10, .col-11, .col-12,
+      .col-md, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, 
+      .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12,
+      .col-lg, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, 
+      .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12 {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
+    }
 
     /* Fix for navbar on mobile */
     .navbar-collapse {
@@ -479,8 +490,35 @@ body {
       .feature-icon i {
         font-size: 1.25rem;
       }
+      
+      /* Ensure content doesn't overflow */
+      .help-hero {
+        overflow: hidden;
+      }
+      
+      /* Fix for any potential content overflow */
+      .quick-action-item,
+      .help-card,
+      .support-card {
+        max-width: 100%;
+        overflow: hidden;
+      }
     }
 
+    /* Ensure body doesn't have extra padding/margin */
+    body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Mobile body padding fix */
+    @media (max-width: 767px) {
+      body {
+        padding-bottom: 60px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -751,7 +789,7 @@ body {
     </div>
   </section>
 
-  <!-- Mobile Bottom Navigation -->
+  <!-- Mobile Bottom Navigation - UPDATED to match favorites page -->
   <div class="mobile-bottom-nav d-lg-none">
     <a href="home.html" class="mobile-nav-item">
       <i class="bi bi-house"></i>
@@ -846,6 +884,16 @@ body {
           searchButton.click();
         }
       });
+      
+      // Prevent horizontal overflow on mobile
+      function preventHorizontalScroll() {
+        document.body.style.overflowX = 'hidden';
+        document.documentElement.style.overflowX = 'hidden';
+      }
+      
+      // Apply on load and resize
+      preventHorizontalScroll();
+      window.addEventListener('resize', preventHorizontalScroll);
     });
   </script>
 </body>
