@@ -228,8 +228,6 @@
       .help-hero .hero-subtitle {
         font-size: 1rem;
       }
-      
-      
     
       
       /* Fix for quick action items */
@@ -338,45 +336,58 @@
       
     }
 
-    /* Remove any conflicting styles that might be causing the issue */
-    @media (max-width: 767px) {
-      /* Remove any previous problematic styles */
-      .mobile-bottom-nav {
-        max-height: 60px !important;
-        min-height: 60px !important;
-      }
-      
-      /* Ensure no extra margins/padding on mobile */
-      html, body {
-        margin: 0 !important;
-        padding: 0 !important;
-        position: relative;
-        width: 100%;
-        overflow-x: hidden;
-      }
-      
-      /* Prevent horizontal overflow */
-      .container, .container-fluid {
-        max-width: 100%;
-        overflow-x: hidden;
-      }
-      
-      /* Fix for any potential content overflow */
-      .row {
-        margin-left: 0;
-        margin-right: 0;
-      }
-      
-      .col, .col-1, .col-2, .col-3, .col-4, .col-5, .col-6, 
-      .col-7, .col-8, .col-9, .col-10, .col-11, .col-12,
-      .col-md, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, 
-      .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12,
-      .col-lg, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, 
-      .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12 {
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-      }
-    }
+   @media (max-width: 767px) {
+  /* Remove any previous problematic styles */
+  .mobile-bottom-nav {
+    max-height: 60px !important;
+    min-height: 60px !important;
+  }
+  
+  /* Ensure no extra margins/padding on mobile */
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative;
+    width: 100%;
+    overflow-x: hidden;
+  }
+  
+  /* Prevent horizontal overflow */
+  .container, .container-fluid {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  
+  /* Fix for any potential content overflow */
+  .row {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  
+  /* FIX: Apply reduced padding to all columns EXCEPT navbar containers */
+  .col, .col-1, .col-2, .col-3, .col-4, .col-5, .col-6, 
+  .col-7, .col-8, .col-9, .col-10, .col-11, .col-12,
+  .col-md, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, 
+  .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12,
+  .col-lg, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, 
+  .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  
+  /* EXCEPTION: Keep normal padding for navbar containers */
+  .navbar .container,
+  .navbar .container-fluid {
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+  }
+  
+  /* Ensure navbar content has proper spacing */
+  .navbar-nav .nav-item {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
 
     /* Fix for navbar on mobile */
     .navbar-collapse {
