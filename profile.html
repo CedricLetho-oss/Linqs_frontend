@@ -348,6 +348,29 @@
 #logoutModal .modal-body i.bi-person-check {
   color: var(--primary) !important;
 }
+
+/* Password toggle button styles */
+.toggle-password {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: none;
+  transition: all 0.3s ease;
+}
+
+.toggle-password:hover {
+  background-color: var(--primary-light);
+  color: white;
+  border-color: var(--primary-light);
+}
+
+.input-group .form-control:focus {
+  z-index: 1;
+}
+
+.input-group .toggle-password:focus {
+  z-index: 2;
+  box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.1);
+}
   </style>
 </head>
 <body>
@@ -841,49 +864,64 @@
       </div>
 
       <!-- Security Tab -->
-      <div class="tab-pane fade" id="security" role="tabpanel">
-        <div class="row">
-          <div class="col-lg-8">
-            <div class="form-section">
-              <h4 class="text-navy mb-4"><i class="bi bi-shield-lock me-2"></i>Change Password</h4>
-              <form id="passwordForm">
-                <div class="mb-3">
-                  <label class="form-label fw-semibold">Current Password</label>
-                  <input type="password" class="form-control" id="currentPassword" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label fw-semibold">New Password</label>
-                  <input type="password" class="form-control" id="newPassword" required>
-                  <div class="form-text">Password must be at least 8 characters long</div>
-                </div>
-                <div class="mb-4">
-                  <label class="form-label fw-semibold">Confirm New Password</label>
-                  <input type="password" class="form-control" id="confirmPassword" required>
-                </div>
-                <button type="button" class="btn btn-navy btn-profile" onclick="updatePassword()">
-                  <i class="bi bi-shield-lock me-2"></i>Update Password
-                </button>
-              </form>
+<div class="tab-pane fade" id="security" role="tabpanel">
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="form-section">
+        <h4 class="text-navy mb-4"><i class="bi bi-shield-lock me-2"></i>Change Password</h4>
+        <form id="passwordForm">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Current Password</label>
+            <div class="input-group">
+              <input type="password" class="form-control" id="currentPassword" required>
+              <button type="button" class="btn btn-outline-secondary toggle-password" data-target="currentPassword">
+                <i class="bi bi-eye"></i>
+              </button>
             </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">New Password</label>
+            <div class="input-group">
+              <input type="password" class="form-control" id="newPassword" required>
+              <button type="button" class="btn btn-outline-secondary toggle-password" data-target="newPassword">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            <div class="form-text">Password must be at least 8 characters long</div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Confirm New Password</label>
+            <div class="input-group">
+              <input type="password" class="form-control" id="confirmPassword" required>
+              <button type="button" class="btn btn-outline-secondary toggle-password" data-target="confirmPassword">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+          </div>
+          <button type="button" class="btn btn-navy btn-profile" onclick="updatePassword()">
+            <i class="bi bi-shield-lock me-2"></i>Update Password
+          </button>
+        </form>
+      </div>
 
-            <div class="form-section">
-              <h4 class="text-navy mb-4"><i class="bi bi-shield-check me-2"></i>Two-Factor Authentication</h4>
-              <div class="alert alert-warning alert-profile">
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <i class="bi bi-shield-exclamation me-2"></i>
-                    <strong>2FA is not enabled</strong>
-                    <p class="mb-0 mt-1">Add an extra layer of security to your account</p>
-                  </div>
-                  <button class="btn btn-navy" onclick="enable2FA()">
-                    Enable 2FA
-                  </button>
-                </div>
-              </div>
+      <div class="form-section">
+        <h4 class="text-navy mb-4"><i class="bi bi-shield-check me-2"></i>Two-Factor Authentication</h4>
+        <div class="alert alert-warning alert-profile">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <i class="bi bi-shield-exclamation me-2"></i>
+              <strong>2FA is not enabled</strong>
+              <p class="mb-0 mt-1">Add an extra layer of security to your account</p>
             </div>
+            <button class="btn btn-navy" onclick="enable2FA()">
+              Enable 2FA
+            </button>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
 
       <!-- Preferences Tab -->
       <div class="tab-pane fade" id="preferences" role="tabpanel">
@@ -1161,6 +1199,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('Initializing profile page...');
         initializeProfile();
+        initializePasswordToggles();
     });
 
     async function initializeProfile() {
@@ -1193,6 +1232,28 @@
             loadAdminStats();
         }
     }
+
+    // Password visibility toggle functionality
+function initializePasswordToggles() {
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.toggle-password')) {
+      const button = e.target.closest('.toggle-password');
+      const targetId = button.getAttribute('data-target');
+      const passwordInput = document.getElementById(targetId);
+      const icon = button.querySelector('i');
+      
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+        button.setAttribute('aria-label', 'Hide password');
+      } else {
+        passwordInput.type = 'password';
+        icon.className = 'bi bi-eye';
+        button.setAttribute('aria-label', 'Show password');
+      }
+    }
+  });
+}
 
     // Load admin statistics
     async function loadAdminStats() {
