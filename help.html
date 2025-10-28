@@ -12,7 +12,7 @@
   <!-- AOS CSS -->
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
- <style>
+<style>
     :root {
       --primary: #1e3a8a;
       --primary-light: #3b82f6;
@@ -24,27 +24,7 @@
       --bg-light: #f8fafc;
     }
 
-    /* Floating Animation */
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-    }
-
-    /* Pulse Animation */
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-
-    /* Gradient Text */
-    .gradient-text {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    /* Enhanced Hero Section for Help Page - USING ORIGINAL COLORS */
+    /* Enhanced Hero Section */
     .help-hero {
       background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--primary) 100%);
       color: white;
@@ -97,47 +77,22 @@
       animation-delay: -4s;
     }
 
-    /* Help Search */
-    .help-search {
-      max-width: 600px;
-      margin: 0 auto;
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
     }
 
-    .help-search .input-group {
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      border-radius: 2rem;
-      overflow: hidden;
-    }
-
-    .help-search .form-control {
-      border: none;
-      padding: 1rem 1.5rem;
-      font-size: 1rem;
-    }
-
-    .help-search .btn {
-      background: var(--accent);
-      border: none;
-      color: white;
-      padding: 1rem 2rem;
-      font-weight: 600;
-    }
-
-    /* Category Cards */
-    .category-card {
-      background: white;
+    /* Enhanced Cards */
+    .help-card {
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
       border: none;
       border-radius: 1.5rem;
-      padding: 2rem;
-      text-align: center;
-      transition: all 0.3s ease;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-      height: 100%;
-      position: relative;
       overflow: hidden;
+      position: relative;
+      height: 100%;
     }
 
-    .category-card::before {
+    .help-card::before {
       content: '';
       position: absolute;
       top: 0;
@@ -148,82 +103,86 @@
       z-index: 1;
     }
 
-    .category-card:hover {
+    .help-card:hover {
       transform: translateY(-10px);
       box-shadow: 0 20px 60px rgba(30, 58, 138, 0.2);
     }
 
-    .category-icon {
-      width: 80px;
-      height: 80px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    .card-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      transition: transform 0.3s ease;
+      color: var(--primary);
+    }
+
+    .help-card:hover .card-icon {
+      transform: scale(1.1) rotate(-5deg);
+    }
+
+    /* Enhanced Search */
+    .search-help {
+      border-radius: 2rem;
+      padding: 0.75rem 1.5rem;
+      border: 2px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+
+    .search-help:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 0.3rem rgba(30, 58, 138, 0.15);
+      transform: scale(1.02);
+    }
+
+    /* Quick Action Items */
+    .quick-action-item {
+      transition: all 0.3s ease;
+      border-radius: 1rem;
+      border: none;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .quick-action-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(30, 58, 138, 0.15);
+    }
+
+    .feature-icon {
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 1.5rem;
-      color: white;
-      font-size: 2rem;
-      transition: transform 0.3s ease;
-    }
-
-    .category-card:hover .category-icon {
-      transform: scale(1.1);
-    }
-
-    /* FAQ Items */
-    .faq-item {
-      background: white;
-      border: none;
-      border-radius: 1rem;
       margin-bottom: 1rem;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      overflow: hidden;
       transition: all 0.3s ease;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
     }
 
-    .faq-item:hover {
-      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    .quick-action-item:hover .feature-icon {
+      transform: scale(1.1) rotate(-10deg);
     }
 
-    .faq-header {
-      background: none;
-      border: none;
-      padding: 1.5rem;
-      font-weight: 600;
-      color: var(--text-dark);
-      text-align: left;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: all 0.3s ease;
+    /* Gradient Text */
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
-    .faq-header:not(.collapsed) {
-      background: var(--bg-light);
-      color: var(--primary);
-    }
-
-    .faq-body {
-      padding: 1.5rem;
-      background: var(--bg-light);
-      color: var(--text-light);
-      line-height: 1.6;
-    }
-
-    /* Contact Section */
-    .contact-card {
+    /* Enhanced Support Card */
+    .support-card {
       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
       color: white;
-      border-radius: 1.5rem;
-      padding: 2rem;
-      text-align: center;
-      position: relative;
+      border-radius: 2rem;
+      border: none;
+      box-shadow: 0 20px 60px rgba(30, 58, 138, 0.3);
       overflow: hidden;
+      position: relative;
     }
 
-    .contact-card::before {
+    .support-card::before {
       content: '';
       position: absolute;
       top: 0;
@@ -233,23 +192,9 @@
       background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M0 0h40v40H0V0zm1 1h38v38H1V1z'/%3E%3C/g%3E%3C/svg%3E");
     }
 
-    .contact-method {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-      padding: 1rem;
-      background: rgba(255,255,255,0.1);
-      border-radius: 1rem;
-      transition: all 0.3s ease;
+    .support-card .card-body {
       position: relative;
       z-index: 2;
-    }
-
-    .contact-method:hover {
-      background: rgba(255,255,255,0.2);
-      transform: translateX(10px);
     }
 
     /* Custom Button Styles */
@@ -269,21 +214,68 @@
       color: white;
     }
 
-    /* Form Enhancements */
-    .form-select, .form-control {
-      border-radius: 1rem;
-      border: 2px solid #e2e8f0;
-      padding: 0.75rem 1rem;
-      transition: all 0.3s ease;
+    /* Enhanced Mobile Responsiveness - FIXED */
+    @media (max-width: 768px) {
+      .help-hero {
+        padding: 4rem 0;
+        border-radius: 0 0 2rem 2rem;
+      }
+      
+      .help-hero h1 {
+        font-size: 2.5rem;
+      }
+      
+      .help-hero .hero-subtitle {
+        font-size: 1rem;
+      }
+    
+      
+      /* Fix for quick action items */
+      .quick-action-item {
+        margin-bottom: 1rem;
+      }
+      
+      /* Fix for help cards */
+      .help-card .card-body {
+        padding: 1.5rem;
+      }
+      
+      /* Fix for search bar */
+      .input-group .btn-light {
+        padding: 0.75rem 1rem;
+      }
     }
 
-    .form-select:focus, .form-control:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.1);
-      transform: translateY(-2px);
+    @media (max-width: 480px) {
+      .help-hero {
+        padding: 3rem 0;
+      }
+      
+      .help-hero h1 {
+        font-size: 2rem;
+      }
+      
+      .help-hero .hero-subtitle {
+        font-size: 0.9rem;
+      }
+      
+      /* Fix for cards on very small screens */
+      .help-card {
+        margin-bottom: 1.5rem;
+      }
+      
+      .card-icon {
+        font-size: 2rem;
+      }
+      
+      /* Fix for buttons */
+      .btn-gradient {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.9rem;
+      }
     }
 
-    /* Mobile Bottom Navigation - UPDATED STRUCTURE WITH ORIGINAL COLORS */
+    /* Mobile Bottom Navigation - FIXED & CONSISTENT */
     .mobile-bottom-nav {
       display: none;
     }
@@ -298,6 +290,7 @@
         background: #1C2B4A;
         z-index: 1030;
         box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        height: 60px;
       }
       
       .mobile-nav-item {
@@ -328,77 +321,76 @@
         display: block;
       }
       
-      /* Add padding to main content to account for bottom nav */
+      /* Add padding to main content to account for bottom nav - FIXED */
       main {
-        margin-bottom: 80px;
+        padding-bottom: 60px !important;
+        margin-bottom: 0 !important;
       }
 
-      /* Mobile responsive adjustments for help page */
-      .help-hero {
-        padding: 3rem 0;
-        border-radius: 0 0 2rem 2rem;
+      /* FIX: Ensure body doesn't have extra padding/margin */
+      body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
       }
+      
+    }
 
-      .category-card {
-        padding: 1.5rem;
-        margin-bottom: 1rem;
+    /* Remove any conflicting styles that might be causing the issue */
+    @media (max-width: 767px) {
+      /* Remove any previous problematic styles */
+      .mobile-bottom-nav {
+        max-height: 60px !important;
+        min-height: 60px !important;
       }
-
-      .category-icon {
-        width: 60px;
-        height: 60px;
-        font-size: 1.5rem;
+      
+      /* Ensure no extra margins/padding on mobile */
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        position: relative;
+        width: 100%;
+        overflow-x: hidden;
       }
-
-      .contact-method {
-        flex-direction: column;
-        text-align: center;
-        gap: 0.5rem;
+      
+      /* Prevent horizontal overflow */
+      .container, .container-fluid {
+        max-width: 100%;
+        overflow-x: hidden;
       }
-
-      .contact-method:hover {
-        transform: translateY(-5px);
+      
+      /* Fix for any potential content overflow */
+      .row {
+        margin-left: 0;
+        margin-right: 0;
+      }
+      
+      .col, .col-1, .col-2, .col-3, .col-4, .col-5, .col-6, 
+      .col-7, .col-8, .col-9, .col-10, .col-11, .col-12,
+      .col-md, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, 
+      .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12,
+      .col-lg, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, 
+      .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12 {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
       }
     }
 
-    @media (min-width: 769px) {
-      /* Hide mobile filter toggle on desktop */
-      .filter-toggle-container {
-        display: none;
+    /* Fix for navbar on mobile */
+    .navbar-collapse {
+      max-height: none;
+    }
+
+    /* Fix for footer on mobile */
+    @media (max-width: 767px) {
+      footer .row > div {
+        margin-bottom: 1.5rem;
+      }
+      
+      footer .text-center {
+        text-align: left !important;
       }
     }
-
-    .hero-subtitle {
-      color:#e2e8f0;
-      animation: fadeInUp 0.8s ease-out 0.6s both;
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
-      opacity: 0.9;
-      line-height: 1.5;
-    }
-
-    /* Animation for FAQ items */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .faq-item {
-      animation: fadeInUp 0.5s ease-out;
-    }
-
-    /* Stagger animation for FAQ items */
-    .faq-item:nth-child(1) { animation-delay: 0.1s; }
-    .faq-item:nth-child(2) { animation-delay: 0.2s; }
-    .faq-item:nth-child(3) { animation-delay: 0.3s; }
-    .faq-item:nth-child(4) { animation-delay: 0.4s; }
-    .faq-item:nth-child(5) { animation-delay: 0.5s; }
 
     #logoutModal .modal-content {
       border: none;
@@ -437,49 +429,20 @@
       color: var(--primary) !important;
     }
 
-    /* FIXED: Navbar Toggle Styling to match bookings.html */
-    .navbar-dark .navbar-toggler {
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      padding: 0.375rem 0.75rem;
-      border-radius: 0.375rem;
-    }
-
-    .navbar-dark .navbar-toggler:focus {
-      box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
-    }
-
-    .navbar-dark .navbar-toggler-icon {
-      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-      width: 1.5em;
-      height: 1.5em;
-    }
-
-    /* Ensure navbar consistency - ORIGINAL COLORS */
-    .navbar-brand {
-      font-weight: 700;
-    }
-
-    .nav-link {
-      font-weight: 500;
-      transition: all 0.3s ease;
-    }
-
-    .nav-link:hover {
-      color: var(--primary) !important;
-    }
-
-    @media (max-width: 991px) {
-      .navbar-collapse {
-        background: white;
-        padding: 1rem;
-        border-radius: 1rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        margin-top: 1rem;
-      }
+    .hero-subtitle {
+      color:#e2e8f0;
+      animation: fadeInUp 0.8s ease-out 0.6s both;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      opacity: 0.9;
+      line-height: 1.5;
     }
 
     /* Additional mobile fixes */
     @media (max-width: 767px) {
+      /* Fix for navbar toggler */
+      
+      
       /* Fix for signup/login buttons */
       .signup-login-buttons {
         display: flex;
@@ -511,6 +474,14 @@
       .help-hero {
         overflow: hidden;
       }
+      
+      /* Fix for any potential content overflow */
+      .quick-action-item,
+      .help-card,
+      .support-card {
+        max-width: 100%;
+        overflow: hidden;
+      }
     }
 
     /* Ensure body doesn't have extra padding/margin */
@@ -520,7 +491,14 @@
       overflow-x: hidden;
       position: relative;
     }
-</style>
+
+    /* Mobile body padding fix */
+    @media (max-width: 767px) {
+      body {
+        padding-bottom: 60px !important;
+      }
+    }
+  </style>
 </head>
 <body>
 
