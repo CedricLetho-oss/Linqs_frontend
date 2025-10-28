@@ -217,6 +217,8 @@ document.addEventListener('DOMContentLoaded', function() {
     passwordInput.addEventListener('input', validatePasswords);
     confirmPasswordInput.addEventListener('input', validatePasswords);
   }
+
+  initializePasswordToggles();
 });
 
 // Password visibility toggle functionality
