@@ -409,7 +409,7 @@
       color: var(--primary) !important;
     }
 
-    /* Mobile Bottom Navigation - FIXED & CONSISTENT */
+    /* Mobile Bottom Navigation - EXACT COPY FROM BOOKINGS.HTML */
     .mobile-bottom-nav {
       display: none;
     }
@@ -424,7 +424,6 @@
         background: #1C2B4A;
         z-index: 1030;
         box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        height: 60px;
       }
       
       .mobile-nav-item {
@@ -434,11 +433,6 @@
         color: #fff;
         text-decoration: none;
         font-size: 0.75rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
       }
       
       .mobile-nav-item.active {
@@ -453,21 +447,20 @@
 
       .mobile-nav-item span {
         display: block;
+        font-size: 0.75rem;
       }
       
-      /* Add padding to main content to account for bottom nav - FIXED */
-      /*main {
-        padding-bottom: 60px !important;
-        margin-bottom: 0 !important;
+      /* Add padding to main content to account for bottom nav */
+      main {
+        margin-bottom: 80px;
       }
-
+    }
       /* FIX: Ensure body doesn't have extra padding/margin */
       body {
         margin: 0;
         padding: 0;
         overflow-x: hidden;
       }
-    }
 
     /* Remove any conflicting styles that might be causing the issue */
     @media (max-width: 767px) {
