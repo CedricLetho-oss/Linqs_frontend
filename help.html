@@ -451,22 +451,33 @@
       line-height: 1.5;
     }
 
-    /* Additional mobile fixes */
-    @media (max-width: 767px) {
-      /* Fix for navbar toggler */
-      
-      
-      /* Fix for signup/login buttons */
-      .signup-login-buttons {
-        display: flex;
-        flex-wrap: nowrap;
-        margin-top: 0.5rem;
-      }
-      
-      .signup-login-buttons .btn {
-        padding: 0.375rem 0.75rem;
-        font-size: 0.875rem;
-      }
+/* Ensure navbar toggler and brand have proper spacing */
+@media (max-width: 767px) {
+  .navbar-brand {
+    margin-right: auto;
+  }
+  
+  .navbar-toggler {
+    margin-left: auto;
+  }
+  
+  /* Fix for signup/login buttons in navbar */
+  .signup-login-buttons {
+    display: flex;
+    flex-wrap: nowrap;
+    margin-top: 0.5rem;
+  }
+  
+  .signup-login-buttons .btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  /* Ensure navbar container uses full width */
+  .navbar > .container {
+    max-width: 100% !important;
+  }
+
       
       /* Fix for support card */
       .support-card .card-body {
