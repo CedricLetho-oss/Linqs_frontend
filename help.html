@@ -437,6 +437,23 @@
       color: var(--primary) !important;
     }
 
+    /* FIXED: Navbar Toggle Styling to match bookings.html */
+    .navbar-dark .navbar-toggler {
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.375rem;
+    }
+
+    .navbar-dark .navbar-toggler:focus {
+      box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+    }
+
+    .navbar-dark .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+      width: 1.5em;
+      height: 1.5em;
+    }
+
     /* Ensure navbar consistency - ORIGINAL COLORS */
     .navbar-brand {
       font-weight: 700;
@@ -449,14 +466,6 @@
 
     .nav-link:hover {
       color: var(--primary) !important;
-    }
-
-    .navbar-toggler {
-      padding: 0.25rem 0.5rem;
-    }
-
-    .navbar-toggler:focus {
-      box-shadow: none;
     }
 
     @media (max-width: 991px) {
