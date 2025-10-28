@@ -449,6 +449,30 @@
       text-decoration: underline;
     }
 
+    /* Password toggle button styles */
+.toggle-password {
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.toggle-password:hover {
+  color: var(--primary) !important;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.input-with-icon {
+  position: relative;
+}
+
+.input-with-icon .form-control {
+  padding-right: 3rem;
+}
+
+/* Ensure proper spacing for the toggle buttons */
+.input-icon {
+  right: 3rem !important; /* Move existing icons left to make space for toggle */
+}
+
     
   </style>
 </head>
@@ -568,7 +592,9 @@
             <label class="form-label" for="password">Password *</label>
             <div class="input-with-icon">
               <input type="password" class="form-control" id="password" name="password" placeholder="Create a strong password" required>
-              <i class="bi bi-lock input-icon"></i>
+              <button type="button" class="btn btn-link text-decoration-none p-0 border-0 bg-transparent toggle-password" data-target="password" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);">
+                <i class="bi bi-eye text-muted"></i>
+              </button>
             </div>
             <small class="text-muted">Minimum 8 characters with at least 1 capital letter and 1 number</small>
           </div>
@@ -578,7 +604,9 @@
             <label class="form-label" for="confirmPassword">Confirm Password *</label>
             <div class="input-with-icon">
               <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Re-enter your password" required>
-              <i class="bi bi-lock-fill input-icon"></i>
+              <button type="button" class="btn btn-link text-decoration-none p-0 border-0 bg-transparent toggle-password" data-target="confirmPassword" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);">
+                <i class="bi bi-eye text-muted"></i>
+              </button>
             </div>
           </div>
 

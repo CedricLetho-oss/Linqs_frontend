@@ -218,3 +218,28 @@ document.addEventListener('DOMContentLoaded', function() {
     confirmPasswordInput.addEventListener('input', validatePasswords);
   }
 });
+
+// Password visibility toggle functionality
+function initializePasswordToggles() {
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.toggle-password')) {
+      const button = e.target.closest('.toggle-password');
+      const targetId = button.getAttribute('data-target');
+      const passwordInput = document.getElementById(targetId);
+      const icon = button.querySelector('i');
+      
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.className = 'bi bi-eye-slash text-muted';
+        button.setAttribute('aria-label', 'Hide password');
+      } else {
+        passwordInput.type = 'password';
+        icon.className = 'bi bi-eye text-muted';
+        button.setAttribute('aria-label', 'Show password');
+      }
+      
+      // Trigger input event to update validation colors
+      passwordInput.dispatchEvent(new Event('input'));
+    }
+  });
+}
