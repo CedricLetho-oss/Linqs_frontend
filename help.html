@@ -275,7 +275,7 @@
       }
     }
 
-    /* Mobile Bottom Navigation - FIXED & CONSISTENT */
+    /* Mobile Bottom Navigation - EXACT COPY FROM BOOKINGS.HTML */
     .mobile-bottom-nav {
       display: none;
     }
@@ -290,7 +290,6 @@
         background: #1C2B4A;
         z-index: 1030;
         box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        height: 60px;
       }
       
       .mobile-nav-item {
@@ -300,11 +299,6 @@
         color: #fff;
         text-decoration: none;
         font-size: 0.75rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
       }
       
       .mobile-nav-item.active {
@@ -319,21 +313,13 @@
 
       .mobile-nav-item span {
         display: block;
+        font-size: 0.75rem;
       }
       
-      /* Add padding to main content to account for bottom nav - FIXED */
+      /* Add padding to main content to account for bottom nav */
       main {
-        padding-bottom: 60px !important;
-        margin-bottom: 0 !important;
+        margin-bottom: 80px;
       }
-
-      /* FIX: Ensure body doesn't have extra padding/margin */
-      body {
-        margin: 0;
-        padding: 0;
-        overflow-x: hidden;
-      }
-      
     }
 
     /* Remove any conflicting styles that might be causing the issue */
@@ -357,22 +343,6 @@
       .container, .container-fluid {
         max-width: 100%;
         overflow-x: hidden;
-      }
-      
-      /* Fix for any potential content overflow */
-      .row {
-        margin-left: 0;
-        margin-right: 0;
-      }
-      
-      .col, .col-1, .col-2, .col-3, .col-4, .col-5, .col-6, 
-      .col-7, .col-8, .col-9, .col-10, .col-11, .col-12,
-      .col-md, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, 
-      .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12,
-      .col-lg, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, 
-      .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12 {
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
       }
     }
 
@@ -440,9 +410,6 @@
 
     /* Additional mobile fixes */
     @media (max-width: 767px) {
-      /* Fix for navbar toggler */
-      
-      
       /* Fix for signup/login buttons */
       .signup-login-buttons {
         display: flex;
@@ -474,14 +441,6 @@
       .help-hero {
         overflow: hidden;
       }
-      
-      /* Fix for any potential content overflow */
-      .quick-action-item,
-      .help-card,
-      .support-card {
-        max-width: 100%;
-        overflow: hidden;
-      }
     }
 
     /* Ensure body doesn't have extra padding/margin */
@@ -491,14 +450,7 @@
       overflow-x: hidden;
       position: relative;
     }
-
-    /* Mobile body padding fix */
-    @media (max-width: 767px) {
-      body {
-        padding-bottom: 60px !important;
-      }
-    }
-  </style>
+</style>
 </head>
 <body>
 
