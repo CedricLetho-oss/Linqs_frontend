@@ -322,46 +322,6 @@
       }
     }
 
-    /* Remove any conflicting styles that might be causing the issue */
-    @media (max-width: 767px) {
-      /* Remove any previous problematic styles */
-      .mobile-bottom-nav {
-        max-height: 60px !important;
-        min-height: 60px !important;
-      }
-      
-      /* Ensure no extra margins/padding on mobile */
-      html, body {
-        margin: 0 !important;
-        padding: 0 !important;
-        position: relative;
-        width: 100%;
-        overflow-x: hidden;
-      }
-      
-      /* Prevent horizontal overflow */
-      .container, .container-fluid {
-        max-width: 100%;
-        overflow-x: hidden;
-      }
-    }
-
-    /* Fix for navbar on mobile */
-    .navbar-collapse {
-      max-height: none;
-    }
-
-    /* Fix for footer on mobile */
-    @media (max-width: 767px) {
-      footer .row > div {
-        margin-bottom: 1.5rem;
-      }
-      
-      footer .text-center {
-        text-align: left !important;
-      }
-    }
-
     #logoutModal .modal-content {
       border: none;
       border-radius: 15px;
