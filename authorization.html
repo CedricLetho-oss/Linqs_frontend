@@ -667,15 +667,6 @@
     });
   });
 
-  // Forgot password handler
-  document.getElementById('forgotPassword').addEventListener('click', function(e) {
-    e.preventDefault();
-    const email = document.getElementById('loginEmail').value.trim() || prompt('Please enter your email address:');
-    if (email) {
-      alert(`Password reset link would be sent to ${email}`);
-    }
-  });
-
   // Add input focus effects
   document.querySelectorAll('.form-control').forEach(input => {
     input.addEventListener('focus', function() {
