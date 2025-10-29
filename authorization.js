@@ -93,6 +93,70 @@ document.addEventListener('DOMContentLoaded', function() {
   checkLoginStatus();
 });
 
+// authorization.js - ADD THIS CODE AFTER YOUR EXISTING LOGIN FUNCTION
+
+// Forgot Password Handler
+document.getElementById("forgotPassword").addEventListener("click", async function (e) {
+  e.preventDefault();
+  
+  const email = document.getElementById("loginEmail").value.trim();
+  let userEmail = email;
+  
+  // If no email in the field, prompt user
+  if (!userEmail) {
+    userEmail = prompt("Please enter your email address to reset your password:");
+    if (!userEmail) return; // User cancelled
+  }
+  
+  if (!userEmail) {
+    alert("Please enter your email address.");
+    return;
+  }
+
+  // Basic email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(userEmail)) {
+    alert("Please enter a valid email address.");
+    return;
+  }
+
+  try {
+    console.log('Sending password reset request for:', userEmail);
+    
+    const response = await axios.post(`${API_BASE_URL}/auth/forgot-password`, {
+      email: userEmail
+    }, {
+      timeout: 15000,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    console.log('Password reset response:', response.data);
+    
+    if (response.data.success) {
+      alert("If an account with that email exists, we've sent a password reset link. Please check your email (including spam folder).");
+    } else {
+      alert("Failed to send reset email. Please try again.");
+    }
+
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    
+    // Still show success message for security (don't reveal if email exists)
+    alert("If an account with that email exists, we've sent a password reset link. Please check your email.");
+    
+    // Log actual error for debugging
+    if (error.response) {
+      console.error('Server error:', error.response.data);
+    } else if (error.request) {
+      console.error('No response received');
+    } else {
+      console.error('Error:', error.message);
+    }
+  }
+});
+
 function checkLoginStatus() {
   const token = localStorage.getItem('token');
   const userData = localStorage.getItem('user');
