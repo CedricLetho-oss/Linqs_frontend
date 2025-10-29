@@ -1145,8 +1145,9 @@
           <i class="bi bi-house-door"></i>
           <h4>No properties yet</h4>
           <p class="text-muted">Start by adding your first student accommodation property to begin receiving booking requests.</p>
-          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPropertyModal">
-            <i class="bi bi-plus-circle me-1"></i>Add Your First Property
+          <!-- In your empty state section -->
+          <button class="btn btn-primary" id="addFirstPropertyBtn">
+              <i class="bi bi-plus-circle me-1"></i>Add Your First Property
           </button>
         </div>
       </div>
@@ -2154,6 +2155,7 @@
 // Completely separate the modal triggers - FIXED VERSION
 // FIXED: Proper photography modal handling
 // FIXED: Proper photography modal handling for ALL add property buttons
+// FIXED: Proper photography modal handling for ALL add property buttons
 document.addEventListener('DOMContentLoaded', function() {
   // Function to handle add property clicks
   function handleAddPropertyClick(e) {
@@ -2172,20 +2174,20 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Handle the "Add Your First Property" button in empty state
-  const emptyStateBtn = document.querySelector('.empty-state button');
+  const emptyStateBtn = document.getElementById('addFirstPropertyBtn');
   if (emptyStateBtn) {
     emptyStateBtn.addEventListener('click', handleAddPropertyClick);
   }
 
   // Also handle any dynamically created empty state buttons
   document.addEventListener('click', function(e) {
-    if (e.target.closest('.empty-state button') || 
-        (e.target.classList.contains('empty-state') && e.target.tagName === 'BUTTON')) {
+    if (e.target.closest('.empty-state button') && e.target.id === 'addFirstPropertyBtn') {
       handleAddPropertyClick(e);
     }
   });
 });
 
+// FIXED: Proceed to add property function
 // FIXED: Proceed to add property function
 function proceedToAddProperty() {
   // Close photography modal first
