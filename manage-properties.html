@@ -2153,32 +2153,37 @@
 // Function to proceed to add property form
 // Completely separate the modal triggers - FIXED VERSION
 // FIXED: Proper photography modal handling
+// FIXED: Proper photography modal handling for ALL add property buttons
 document.addEventListener('DOMContentLoaded', function() {
+  // Function to handle add property clicks
+  function handleAddPropertyClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Show photography modal first
+    const photographyModal = new bootstrap.Modal(document.getElementById('photographyPromptModal'));
+    photographyModal.show();
+  }
+
   // Handle the "Add New Property" button in hero section
   const heroAddBtn = document.querySelector('.hero-actions button');
-  if (heroAddBtn && heroAddBtn.textContent.includes('Add New Property')) {
-    heroAddBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Show photography modal first
-      const photographyModal = new bootstrap.Modal(document.getElementById('photographyPromptModal'));
-      photographyModal.show();
-    });
+  if (heroAddBtn) {
+    heroAddBtn.addEventListener('click', handleAddPropertyClick);
   }
 
   // Handle the "Add Your First Property" button in empty state
   const emptyStateBtn = document.querySelector('.empty-state button');
-  if (emptyStateBtn && emptyStateBtn.textContent.includes('Add Your First Property')) {
-    emptyStateBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Show photography modal first
-      const photographyModal = new bootstrap.Modal(document.getElementById('photographyPromptModal'));
-      photographyModal.show();
-    });
+  if (emptyStateBtn) {
+    emptyStateBtn.addEventListener('click', handleAddPropertyClick);
   }
+
+  // Also handle any dynamically created empty state buttons
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.empty-state button') || 
+        (e.target.classList.contains('empty-state') && e.target.tagName === 'BUTTON')) {
+      handleAddPropertyClick(e);
+    }
+  });
 });
 
 // FIXED: Proceed to add property function
