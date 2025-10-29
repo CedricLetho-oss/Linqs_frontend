@@ -527,6 +527,29 @@ body {
     padding: 1rem;
   }
   
+  /* Mobile button fixes */
+  .welcome-card .col-md-4.text-md-end {
+    text-align: left !important;
+    margin-top: 1rem;
+  }
+  
+  .welcome-card .d-grid.gap-2.d-md-flex.justify-content-md-end {
+    display: flex !important;
+    flex-direction: row;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .welcome-card .btn-landlord {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    margin: 0 !important;
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+    white-space: nowrap;
+  }
+  
   .action-card {
     padding: 1rem;
   }
@@ -577,6 +600,16 @@ body {
   
   .stats-card h5 {
     font-size: 1.25rem;
+  }
+  
+  /* Extra small screen button adjustments */
+  .welcome-card .btn-landlord {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.5rem;
+  }
+  
+  .welcome-card .btn-landlord .bi {
+    margin-right: 0.25rem !important;
   }
 }
 
@@ -663,7 +696,7 @@ body {
 .navbar { z-index: 1030 !important; }
 .dropdown-menu { z-index: 1050 !important; }
 .modal { z-index: 1060 !important; }
-  </style>
+</style>
 </head>
 <body>
 
@@ -744,7 +777,7 @@ body {
                   <i class="bi bi-plus-circle me-1"></i> Add Property
                 </a>
                 <a href="listings.html" class="btn btn-outline-primary btn-landlord">
-                  <i class="bi bi-eye me-1"></i> View as Student
+                  <i class="bi bi-eye me-1"></i> View as a Student
                 </a>
               </div>
             </div>
