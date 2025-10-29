@@ -409,7 +409,7 @@
       }
     }
 
-/* Mobile Bottom Navigation */
+/* Mobile Bottom Navigation - FIXED VERSION */
 .mobile-bottom-nav {
   display: none;
 }
@@ -424,6 +424,9 @@
     background: #1C2B4A;
     z-index: 1030;
     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    height: 60px; /* ✅ EXPLICIT HEIGHT */
+    min-height: 60px;
+    max-height: 60px;
   }
   
   .mobile-nav-item {
@@ -433,6 +436,10 @@
     color: #fff;
     text-decoration: none;
     font-size: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
   
   .mobile-nav-item.active {
@@ -450,10 +457,8 @@
     font-size: 0.75rem;
   }
   
-  /* Add padding to main content to account for bottom nav */
-  main {
-    margin-bottom: 80px;
-  }
+  /* REMOVE THIS ENTIRE SECTION - DON'T ADD MARGIN TO MAIN */
+  /* The body padding handles spacing instead */
 }
       /* Better mobile layout for featured listings */
       #listingContainer .col-md-6 {
@@ -610,11 +615,6 @@
     /* Additional mobile fixes to match about-us page */
     /* Additional mobile fixes to match about-us page */
 @media (max-width: 767px) {
-  /* Remove any previous problematic styles */
-  .mobile-bottom-nav {
-    max-height: 60px !important;
-    min-height: 60px !important;
-  }
   
   /* Ensure no extra margins/padding on mobile - MATCHES ABOUT-US PAGE */
   html, body {
