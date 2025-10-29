@@ -409,52 +409,51 @@
       }
     }
 
-    /* Mobile Bottom Navigation - EXACT COPY FROM BOOKINGS.HTML */
-    .mobile-bottom-nav {
-      display: none;
-    }
+.mobile-bottom-nav {
+  display: none;
+}
 
-    @media (max-width: 767px) {
-      .mobile-bottom-nav {
-        display: flex;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: #1C2B4A;
-        z-index: 1030;
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-      }
-      
-      .mobile-nav-item {
-        flex: 1;
-        text-align: center;
-        padding: 0.5rem;
-        color: #fff;
-        text-decoration: none;
-        font-size: 0.75rem;
-      }
-      
-      .mobile-nav-item.active {
-        color: #64748b;
-      }
-      
-      .mobile-nav-item i {
-        display: block;
-        font-size: 1.25rem;
-        margin-bottom: 0.25rem;
-      }
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1C2B4A;
+    z-index: 1030;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+  
+  .mobile-nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+  
+  .mobile-nav-item.active {
+    color: #64748b;
+  }
+  
+  .mobile-nav-item i {
+    display: block;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
 
-      .mobile-nav-item span {
-        display: block;
-        font-size: 0.75rem;
-      }
-      
-      /* Add padding to main content to account for bottom nav */
-      main {
-        margin-bottom: 80px;
-      }
-    }
+  .mobile-nav-item span {
+    display: block;
+    font-size: 0.75rem;
+  }
+  
+  /* Add padding to main content to account for bottom nav */
+  main {
+    margin-bottom: 80px;
+  }
+}
 
       /* Better mobile layout for featured listings */
       #listingContainer .col-md-6 {
