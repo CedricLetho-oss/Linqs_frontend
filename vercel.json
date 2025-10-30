@@ -26,26 +26,6 @@
       "use": "@vercel/static"
     }
   ],
-  "routes": [
-    {
-      "src": "/sitemap.xml",
-      "headers": {
-        "Content-Type": "application/xml"
-      },
-      "continue": true
-    },
-    {
-      "src": "/robots.txt",
-      "headers": {
-        "Content-Type": "text/plain"
-      },
-      "continue": true
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
   "redirects": [
     {
       "source": "/:path*",
