@@ -65,6 +65,15 @@
 
 body {
   background-color: var(--light-bg);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+}
+
+main {
+  flex: 1 0 auto;
+  padding-bottom: 2rem;
 }
 
 /* Enhanced Hero Section - FIXED MOBILE RESPONSIVENESS */
@@ -133,12 +142,12 @@ body {
   font-weight: 500;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  min-width: 120px; /* Ensures both buttons have same base width */
+  min-width: 120px;
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0; /* Prevents buttons from shrinking */
+  flex-shrink: 0;
 }
 
 .hero-actions .btn:hover {
@@ -146,7 +155,7 @@ body {
   box-shadow: 0 6px 20px rgba(0,0,0,0.2);
 }
 
-/* Mobile Responsiveness for Hero Section Only */
+/* Mobile Responsiveness for Hero Section */
 @media (max-width: 768px) {
   .booking-hero {
     padding: 3rem 0;
@@ -173,8 +182,8 @@ body {
   .hero-actions .btn {
     padding: 0.6rem 1.2rem;
     font-size: 0.9rem;
-    min-width: 110px; /* Slightly smaller for mobile but still equal */
-    flex: 0 0 auto; /* Prevents flex growing/shrinking */
+    min-width: 110px;
+    flex: 0 0 auto;
   }
 }
 
@@ -193,40 +202,22 @@ body {
   }
   
   .hero-actions {
-    flex-direction: row; /* Keep buttons side by side on mobile */
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    flex-wrap: nowrap; /* Prevent wrapping to new line */
+    flex-wrap: nowrap;
     gap: 0.5rem;
     padding: 0 0.5rem;
   }
   
   .hero-actions .btn {
-    width: auto; /* Let content determine width */
-    min-width: 100px; /* Minimum equal width */
+    width: auto;
+    min-width: 100px;
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
-    flex: 1; /* Make buttons equal width */
-    max-width: 140px; /* Maximum width to prevent overflow */
+    flex: 1;
+    max-width: 140px;
   }
-}
-
-/* Extra small devices */
-@media (max-width: 375px) {
-  .hero-actions .btn {
-    min-width: 90px;
-    padding: 0.5rem 0.8rem;
-    font-size: 0.8rem;
-  }
-  
-  .hero-actions .btn i {
-    margin-right: 0.3rem !important;
-  }
-}
-
-/* Ensure button icons have consistent spacing */
-.hero-actions .btn i {
-  margin-right: 0.5rem;
 }
 
 /* Stats Cards - Mobile Responsive */
@@ -417,7 +408,7 @@ body {
 .timeline-item.active::before { background: var(--primary); }
 .timeline-item.completed::before { background: var(--success); }
 
-/* Notification Badge - FIXED POSITIONING */
+/* Notification Badge */
 .notification-badge {
   position: absolute;
   top: -8px;
@@ -425,21 +416,26 @@ body {
   z-index: 10;
 }
 
-.stats-card-pending {
+.stats-card {
   position: relative;
 }
 
-.stats-card {
-  position: relative; /* Add this so the badge anchors properly */
-}
+/* ==================== */
+/* ENHANCED CALENDAR STYLING - FIXED */
+/* ==================== */
 
-/* Enhanced Calendar Styling */
 #calendar {
   background: white;
   border-radius: 1rem;
   padding: 1.5rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  min-height: 600px;
+}
+
+/* Fix Calendar Container */
+.fc {
+  width: 100% !important;
 }
 
 /* FullCalendar Toolbar Styling */
@@ -542,6 +538,33 @@ body {
   font-weight: 600 !important;
 }
 
+/* Fix calendar header */
+.fc-header-toolbar {
+  margin-bottom: 1.5em !important;
+}
+
+/* Fix day cell heights */
+.fc-daygrid-day-frame {
+  min-height: 100px !important;
+}
+
+/* Ensure events are visible */
+.fc-event {
+  z-index: 1 !important;
+  position: relative !important;
+}
+
+/* Fix for calendar view tab */
+#calendarView {
+  position: relative;
+  z-index: 1;
+}
+
+.tab-pane.active #calendar {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
 /* Events - Enhanced Styling */
 .fc-event {
   border: none !important;
@@ -642,11 +665,36 @@ body {
   background: white !important;
 }
 
+/* Calendar Loading State */
+#calendarView.loading {
+  position: relative;
+  min-height: 400px;
+}
+
+#calendarView.loading::after {
+  content: 'Loading Calendar...';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #6c757d;
+}
+
+/* Ensure calendar container is properly sized */
+.fc-view-harness {
+  min-height: 500px !important;
+}
+
+.fc-view-harness-active {
+  min-height: 500px !important;
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   #calendar {
     padding: 1rem 0.5rem;
     border-radius: 0.75rem;
+    min-height: 500px;
   }
   
   .fc-toolbar {
@@ -686,11 +734,16 @@ body {
     padding: 0.125rem 0.25rem !important;
     margin: 0.0625rem 0.125rem !important;
   }
+  
+  .fc-daygrid-day-frame {
+    min-height: 80px !important;
+  }
 }
 
 @media (max-width: 576px) {
   #calendar {
     padding: 0.75rem 0.25rem;
+    min-height: 450px;
   }
   
   .fc-toolbar-title {
@@ -780,13 +833,14 @@ body {
 /* Footer Improvements */
 footer {
   font-size: 0.875rem;
+  flex-shrink: 0;
 }
 
 /* Utility Classes */
 .text-truncate-fade {
   position: relative;
   line-height: 1.5em;
-  max-height: 3em; /* 2 lines */
+  max-height: 3em;
   overflow: hidden;
 }
 
@@ -800,27 +854,6 @@ footer {
   background: linear-gradient(to right, transparent, white 50%);
 }
 
-/* Ensure proper spacing between content and footer */
-html, body {
-    height: 100%;
-    margin: 0;
-}
-
-body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
-main {
-    flex: 1 0 auto;
-    padding-bottom: 2rem; /* Increased bottom padding */
-}
-
-footer {
-    flex-shrink: 0;
-}
-
 /* Loading Spinner */
 .loading-spinner {
   display: inline-block;
@@ -832,7 +865,6 @@ footer {
   animation: spin 1s linear infinite;
 }
 
-/* Add this to your existing CSS */
 .btn .loading-spinner {
     width: 14px;
     height: 14px;
@@ -937,6 +969,7 @@ footer {
   }
 }
 
+/* Logout Modal Styles */
 #logoutModal .modal-content {
   border: none;
   border-radius: 15px;
@@ -972,6 +1005,11 @@ footer {
 
 #logoutModal .modal-body i.bi-person-check {
   color: var(--primary) !important;
+}
+
+/* Ensure button icons have consistent spacing */
+.hero-actions .btn i {
+  margin-right: 0.5rem;
 }
   </style>
 </head>
@@ -1737,11 +1775,15 @@ function renderFilteredBookings() {
 
     // Initialize FullCalendar - FIXED VERSION
     // Update the initializeCalendar function with better event rendering
+// Improved Calendar Initialization - FIXED
 function initializeCalendar() {
   const calendarEl = document.getElementById('calendar');
-  if (!calendarEl) return;
+  if (!calendarEl) {
+    console.error('Calendar element not found');
+    return;
+  }
   
-  // Destroy existing calendar first to prevent multiple instances
+  // Destroy existing calendar first
   if (calendar) {
     calendar.destroy();
   }
@@ -1752,6 +1794,12 @@ function initializeCalendar() {
       left: 'prev,next today',
       center: 'title',
       right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    },
+    views: {
+      dayGridMonth: {
+        dayMaxEventRows: 3,
+        dayMaxEvents: true
+      }
     },
     events: generateCalendarEvents(),
     eventClick: function(info) {
@@ -1770,6 +1818,8 @@ function initializeCalendar() {
       return classes;
     },
     height: 'auto',
+    contentHeight: 'auto',
+    aspectRatio: 1.5,
     eventTimeFormat: {
       hour: '2-digit',
       minute: '2-digit',
@@ -1782,10 +1832,9 @@ function initializeCalendar() {
     },
     slotMinTime: '08:00',
     slotMaxTime: '20:00',
-    dayMaxEvents: 3, // Limit events per day before showing "more" link
+    dayMaxEvents: 3,
     eventDisplay: 'block',
     eventContent: function(arg) {
-      // Custom event content with icons
       const status = arg.event.extendedProps.status;
       const icons = {
         pending: '⏰',
@@ -1800,18 +1849,26 @@ function initializeCalendar() {
       return {
         html: `
           <div class="d-flex align-items-center w-100">
-            <span class="me-1">${icons[status] || '📅'}</span>
-            <span class="flex-grow-1">${shortTitle}</span>
+            <span class="me-1 small">${icons[status] || '📅'}</span>
+            <span class="flex-grow-1 small">${shortTitle}</span>
           </div>
         `
       };
     },
-    // Better date formatting
-    titleFormat: { year: 'numeric', month: 'long' },
-    dayHeaderFormat: { weekday: 'short', day: 'numeric' }
+    datesSet: function() {
+      // Ensure calendar renders properly after view changes
+      setTimeout(() => {
+        calendar.updateSize();
+      }, 100);
+    }
   });
   
   calendar.render();
+  
+  // Force calendar to update its size
+  setTimeout(() => {
+    calendar.updateSize();
+  }, 300);
 }
 
     // Generate calendar events from bookings
@@ -2498,10 +2555,15 @@ async function viewBookingDetails(bookingId) {
           setTimeout(() => {
             if (!calendar) {
               initializeCalendar();
-            } else if (calendar.getEvents().length === 0) {
-              updateCalendar();
+            } else {
+              // Force calendar to refresh and resize
+              calendar.render();
+              setTimeout(() => {
+                calendar.updateSize();
+                updateCalendar(); // Refresh events
+              }, 200);
             }
-          }, 100);
+          }, 150);
         });
       }
       
