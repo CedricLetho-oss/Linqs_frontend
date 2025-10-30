@@ -29,20 +29,24 @@
   "routes": [
     {
       "src": "/sitemap.xml",
-      "dest": "/sitemap.xml",
       "headers": {
         "Content-Type": "application/xml"
       }
     },
     {
       "src": "/robots.txt",
-      "dest": "/robots.txt",
       "headers": {
         "Content-Type": "text/plain"
       }
     },
     {
-      "src": "/:path*",
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
       "has": [
         {
           "type": "host",
@@ -51,10 +55,6 @@
       ],
       "destination": "https://www.reslinq.co.za/:path*",
       "permanent": true
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
     }
   ]
 }
