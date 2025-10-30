@@ -1,18 +1,20 @@
-// my-bookings.js - Backend Integration
+// my-bookings.js - Backend Integration with Reschedule Feature
 const API_BASE_URL = 'https://linqs-backend.onrender.com/api';
 
 class MyBookingsManager {
     constructor() {
         this.bookings = [];
         this.isLoading = false;
+        this.rescheduleModal = null;
+        this.currentRescheduleBooking = null;
     }
 
     async init() {
         await this.loadBookings();
         this.setupEventListeners();
+        this.initializeRescheduleModal();
     }
 
-    // CORRECTED: Fixed function syntax - removed "function" keyword
     async loadBookings() {
         try {
             this.showLoadingState(true);
@@ -101,6 +103,7 @@ class MyBookingsManager {
     generateBookingCard(booking) {
         const status = this.getStatusConfig(booking.status);
         const isUpcoming = booking.status === 'confirmed' && new Date(booking.checkIn) > new Date();
+        const canReschedule = this.canRescheduleBooking(booking);
         const property = booking.property || {};
         const landlord = booking.landlord || {};
         
@@ -168,6 +171,11 @@ class MyBookingsManager {
                             <i class="bi bi-x-circle me-1"></i>Cancel Request
                           </button>` : ''}
                         
+                        ${canReschedule ? 
+                          `<button class="btn btn-outline-primary btn-booking" onclick="myBookingsManager.openRescheduleModal('${booking._id}')">
+                            <i class="bi bi-calendar-week me-1"></i>Reschedule
+                          </button>` : ''}
+                        
                         ${booking.status === 'confirmed' && new Date(booking.checkIn) > new Date() ? 
                           `<button class="btn btn-outline-success btn-booking" onclick="myBookingsManager.confirmAttendance('${booking._id}')">
                             <i class="bi bi-check-lg me-1"></i>Confirm Attendance
@@ -178,7 +186,7 @@ class MyBookingsManager {
                         </button>
 
                         ${booking.status === 'confirmed' && new Date(booking.checkIn) > new Date() ? 
-                          `<button class="btn btn-outline-primary btn-booking" onclick="myBookingsManager.addToCalendar('${booking._id}')">
+                          `<button class="btn btn-outline-info btn-booking" onclick="myBookingsManager.addToCalendar('${booking._id}')">
                             <i class="bi bi-calendar-plus me-1"></i>Add to Calendar
                           </button>` : ''}
                     </div>
@@ -186,6 +194,166 @@ class MyBookingsManager {
             </div>
         </div>
         `;
+    }
+
+    // NEW: Check if booking can be rescheduled
+    canRescheduleBooking(booking) {
+        if (booking.status !== 'confirmed') return false;
+        
+        const bookingDate = new Date(booking.checkIn);
+        const now = new Date();
+        const hoursUntilBooking = (bookingDate - now) / (1000 * 60 * 60);
+        
+        // Allow rescheduling up to 2 hours before the booking
+        return hoursUntilBooking > 2;
+    }
+
+    // NEW: Initialize reschedule modal
+    initializeRescheduleModal() {
+        // Create modal HTML if it doesn't exist
+        if (!document.getElementById('rescheduleModal')) {
+            const modalHTML = `
+            <div class="modal fade" id="rescheduleModal" tabindex="-1" aria-labelledby="rescheduleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-gradient-primary text-white">
+                            <h5 class="modal-title" id="rescheduleModalLabel">
+                                <i class="bi bi-calendar-week me-2"></i>Reschedule Viewing
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="rescheduleBookingInfo" class="mb-4">
+                                <!-- Booking info will be populated here -->
+                            </div>
+                            
+                            <form id="rescheduleForm">
+                                <div class="mb-3">
+                                    <label for="newDateTime" class="form-label">New Date & Time</label>
+                                    <input type="datetime-local" class="form-control" id="newDateTime" required>
+                                    <div class="form-text">Please select a new date and time for your viewing</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="rescheduleReason" class="form-label">Reason for Rescheduling (Optional)</label>
+                                    <textarea class="form-control" id="rescheduleReason" rows="3" placeholder="Let the landlord know why you need to reschedule..."></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="submitRescheduleBtn" onclick="myBookingsManager.submitReschedule()">
+                                <i class="bi bi-calendar-check me-1"></i>Request Reschedule
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        this.rescheduleModal = new bootstrap.Modal(document.getElementById('rescheduleModal'));
+    }
+
+    // NEW: Open reschedule modal
+    openRescheduleModal(bookingId) {
+        const booking = this.bookings.find(b => b._id === bookingId);
+        if (!booking) return;
+
+        this.currentRescheduleBooking = booking;
+
+        // Populate booking info
+        const bookingInfo = document.getElementById('rescheduleBookingInfo');
+        bookingInfo.innerHTML = `
+            <div class="alert alert-light border">
+                <h6 class="mb-2">${booking.property.title}</h6>
+                <p class="mb-1 small">
+                    <i class="bi bi-calendar me-1"></i>
+                    Current: ${this.formatDateTime(booking.checkIn)}
+                </p>
+                <p class="mb-0 small text-muted">
+                    <i class="bi bi-person me-1"></i>
+                    Landlord: ${booking.landlord.username}
+                </p>
+            </div>
+        `;
+
+        // Set min date/time for rescheduling (at least 2 hours from now)
+        const now = new Date();
+        const minDateTime = new Date(now.getTime() + 2 * 60 * 60 * 1000); // 2 hours from now
+        const minDateTimeString = minDateTime.toISOString().slice(0, 16);
+        
+        const dateTimeInput = document.getElementById('newDateTime');
+        dateTimeInput.min = minDateTimeString;
+        dateTimeInput.value = '';
+
+        // Clear previous form data
+        document.getElementById('rescheduleReason').value = '';
+
+        this.rescheduleModal.show();
+    }
+
+    // NEW: Submit reschedule request
+    async submitReschedule() {
+        if (!this.currentRescheduleBooking) return;
+
+        const newDateTime = document.getElementById('newDateTime').value;
+        const reason = document.getElementById('rescheduleReason').value;
+
+        if (!newDateTime) {
+            alert('Please select a new date and time for your viewing.');
+            return;
+        }
+
+        const selectedDateTime = new Date(newDateTime);
+        const now = new Date();
+
+        if (selectedDateTime <= now) {
+            alert('Please select a future date and time for your viewing.');
+            return;
+        }
+
+        try {
+            const submitBtn = document.getElementById('submitRescheduleBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Processing...';
+
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/bookings/${this.currentRescheduleBooking._id}/reschedule`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    newCheckIn: newDateTime,
+                    reason: reason || 'No reason provided',
+                    status: 'pending' // Reset to pending for landlord approval
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to reschedule booking');
+            }
+
+            const result = await response.json();
+            
+            this.rescheduleModal.hide();
+            alert('Reschedule request sent successfully! The landlord will review your request.');
+            
+            // Reload bookings to reflect changes
+            await this.loadBookings();
+
+        } catch (error) {
+            console.error('Error rescheduling booking:', error);
+            alert(`Failed to reschedule: ${error.message}`);
+        } finally {
+            const submitBtn = document.getElementById('submitRescheduleBtn');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-calendar-check me-1"></i>Request Reschedule';
+        }
     }
 
     getStatusConfig(status) {
@@ -209,6 +377,11 @@ class MyBookingsManager {
                 class: 'secondary', 
                 text: 'Completed', 
                 icon: 'bi-check-lg'
+            },
+            rescheduled: { 
+                class: 'info', 
+                text: 'Rescheduled', 
+                icon: 'bi-calendar-week'
             }
         };
         return config[status] || { class: 'secondary', text: status, icon: 'bi-question-circle' };
@@ -219,7 +392,8 @@ class MyBookingsManager {
             pending: 'Awaiting landlord confirmation',
             confirmed: 'Viewing confirmed',
             cancelled: 'Booking cancelled',
-            completed: 'Viewing completed'
+            completed: 'Viewing completed',
+            rescheduled: 'Reschedule requested'
         };
         return descriptions[status] || status;
     }

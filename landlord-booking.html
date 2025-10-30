@@ -986,8 +986,23 @@ footer {
       pending: { class: 'warning', text: 'Pending', icon: 'bi-clock' },
       confirmed: { class: 'success', text: 'Confirmed', icon: 'bi-check-circle' },
       cancelled: { class: 'danger', text: 'Cancelled', icon: 'bi-x-circle' },
-      completed: { class: 'secondary', text: 'Completed', icon: 'bi-check-lg' }
+      completed: { class: 'secondary', text: 'Completed', icon: 'bi-check-lg' },
+      rescheduled: { class: 'info', text: 'Reschedule Requested', icon: 'bi-calendar-week' }
     };
+
+    // NEW: Check if booking has pending reschedule request
+    function hasPendingReschedule(booking) {
+      return booking.rescheduleRequests && 
+            booking.rescheduleRequests.some(req => req.status === 'pending');
+    }
+
+    // NEW: Get latest reschedule request
+    function getLatestRescheduleRequest(booking) {
+      if (!booking.rescheduleRequests || booking.rescheduleRequests.length === 0) {
+        return null;
+      }
+      return booking.rescheduleRequests[booking.rescheduleRequests.length - 1];
+    }
 
     // Format date and time
     function formatDateTime(dateString) {
@@ -1020,104 +1035,292 @@ footer {
 
     // Generate table row for booking
     function generateBookingRow(booking) {
-      const status = statusConfig[booking.status];
-      const isUpcoming = booking.status === 'confirmed' && new Date(booking.checkIn) > new Date();
-      const studentName = booking.student?.username || 'Unknown Student';
-      const propertyName = booking.property?.title || 'Unknown Property';
+  const status = statusConfig[booking.status];
+  const isUpcoming = booking.status === 'confirmed' && new Date(booking.checkIn) > new Date();
+  const studentName = booking.student?.username || 'Unknown Student';
+  const propertyName = booking.property?.title || 'Unknown Property';
+  const hasRescheduleRequest = hasPendingReschedule(booking);
+  const latestReschedule = getLatestRescheduleRequest(booking);
+  
+  return `
+    <tr class="booking-row" data-booking-id="${booking._id}">
+      <td>
+        <div class="d-flex align-items-center">
+          <div class="student-avatar me-2">${getInitials(studentName)}</div>
+          <div>
+            <div class="fw-bold small">${studentName}</div>
+            <small class="text-muted">${booking.student?.email || 'No email'}</small>
+            ${hasRescheduleRequest ? '<small class="text-warning d-block"><i class="bi bi-exclamation-triangle"></i> Reschedule Requested</small>' : ''}
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="fw-bold small">${propertyName}</div>
+        <small class="text-muted">R${booking.property?.price || 0}/month</small>
+      </td>
+      <td>
+        <div class="small">${formatDateTime(booking.checkIn)}</div>
+        <small class="text-muted">${booking.numberOfGuests || 1} guest(s)</small>
+        ${isUpcoming ? '<small class="text-info d-block">Upcoming</small>' : ''}
+        ${hasRescheduleRequest && latestReschedule ? `
+          <small class="text-warning d-block">
+            <i class="bi bi-arrow-clockwise"></i> Requested: ${formatDateTime(latestReschedule.newCheckIn)}
+          </small>
+        ` : ''}
+      </td>
+      <td>
+        <span class="badge bg-${status.class} status-badge">
+          <i class="${status.icon} me-1"></i>${status.text}
+        </span>
+        ${hasRescheduleRequest ? '<span class="badge bg-info status-badge ms-1"><i class="bi bi-calendar-week"></i> Reschedule</span>' : ''}
+      </td>
+      <td>
+        <div class="action-buttons d-flex gap-1">
+          <button class="btn btn-sm btn-outline-primary" onclick="viewBookingDetails('${booking._id}')" title="View Details">
+            <i class="bi bi-eye"></i>
+          </button>
+          ${booking.status === 'pending' ? `
+            <button class="btn btn-sm btn-outline-success" onclick="updateBookingStatus('${booking._id}', 'confirmed')" title="Confirm">
+              <i class="bi bi-check-lg"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" onclick="updateBookingStatus('${booking._id}', 'cancelled')" title="Cancel">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          ` : ''}
+          ${booking.status === 'confirmed' ? `
+            <button class="btn btn-sm btn-outline-secondary" onclick="updateBookingStatus('${booking._id}', 'completed')" title="Mark Completed">
+              <i class="bi bi-check2-all"></i>
+            </button>
+          ` : ''}
+          ${hasRescheduleRequest ? `
+            <button class="btn btn-sm btn-outline-info" onclick="viewRescheduleRequest('${booking._id}')" title="Review Reschedule">
+              <i class="bi bi-calendar-week"></i>
+            </button>
+          ` : ''}
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+// NEW: View and respond to reschedule request
+async function viewRescheduleRequest(bookingId) {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch booking details');
+    }
+
+    const data = await response.json();
+    const booking = data.booking;
+    const latestReschedule = getLatestRescheduleRequest(booking);
+
+    if (!latestReschedule || latestReschedule.status !== 'pending') {
+      alert('No pending reschedule request found for this booking.');
+      return;
+    }
+
+    const modalContent = `
+      <div class="alert alert-warning">
+        <h6><i class="bi bi-exclamation-triangle me-2"></i>Reschedule Request</h6>
+        <p class="mb-0">Student has requested to reschedule this viewing appointment.</p>
+      </div>
       
-      return `
-        <tr class="booking-row" data-booking-id="${booking._id}">
-          <td>
-            <div class="d-flex align-items-center">
-              <div class="student-avatar me-2">${getInitials(studentName)}</div>
-              <div>
-                <div class="fw-bold small">${studentName}</div>
-                <small class="text-muted">${booking.student?.email || 'No email'}</small>
-              </div>
+      <div class="row">
+        <div class="col-md-6">
+          <h6>Current Schedule</h6>
+          <div class="card bg-light">
+            <div class="card-body">
+              <p class="mb-1"><strong>Original Time:</strong></p>
+              <p class="mb-0">${formatDateTime(latestReschedule.originalCheckIn)}</p>
             </div>
-          </td>
-          <td>
-            <div class="fw-bold small">${propertyName}</div>
-            <small class="text-muted">R${booking.property?.price || 0}/month</small>
-          </td>
-          <td>
-            <div class="small">${formatDateTime(booking.checkIn)}</div>
-            <small class="text-muted">${booking.numberOfGuests || 1} guest(s)</small>
-            ${isUpcoming ? '<small class="text-info d-block">Upcoming</small>' : ''}
-          </td>
-          <td>
-            <span class="badge bg-${status.class} status-badge">
-              <i class="${status.icon} me-1"></i>${status.text}
-            </span>
-          </td>
-          <td>
-            <div class="action-buttons d-flex gap-1">
-              <button class="btn btn-sm btn-outline-primary" onclick="viewBookingDetails('${booking._id}')" title="View Details">
-                <i class="bi bi-eye"></i>
-              </button>
-              ${booking.status === 'pending' ? `
-                <button class="btn btn-sm btn-outline-success" onclick="updateBookingStatus('${booking._id}', 'confirmed')" title="Confirm">
-                  <i class="bi bi-check-lg"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="updateBookingStatus('${booking._id}', 'cancelled')" title="Cancel">
-                  <i class="bi bi-x-lg"></i>
-                </button>
-              ` : ''}
-              ${booking.status === 'confirmed' ? `
-                <button class="btn btn-sm btn-outline-secondary" onclick="updateBookingStatus('${booking._id}', 'completed')" title="Mark Completed">
-                  <i class="bi bi-check2-all"></i>
-                </button>
-              ` : ''}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <h6>Requested New Time</h6>
+          <div class="card bg-light">
+            <div class="card-body">
+              <p class="mb-1"><strong>New Time:</strong></p>
+              <p class="mb-0">${formatDateTime(latestReschedule.newCheckIn)}</p>
             </div>
-          </td>
-        </tr>
-      `;
-    }
+          </div>
+        </div>
+      </div>
+      
+      <div class="row mt-3">
+        <div class="col-12">
+          <h6>Student's Reason</h6>
+          <div class="alert alert-info">
+            ${latestReschedule.reason || "No reason provided"}
+          </div>
+        </div>
+      </div>
+      
+      <div class="row mt-3">
+        <div class="col-12">
+          <h6>Your Response</h6>
+          <form id="rescheduleResponseForm">
+            <div class="mb-3">
+              <label for="responseAction" class="form-label">Action</label>
+              <select class="form-select" id="responseAction" required>
+                <option value="">Choose action...</option>
+                <option value="approve">Approve Reschedule</option>
+                <option value="reject">Reject Reschedule</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="responseReason" class="form-label">Response Message (Optional)</label>
+              <textarea class="form-control" id="responseReason" rows="3" placeholder="Add a message for the student..."></textarea>
+            </div>
+            <div class="alert alert-info">
+              <small>
+                <i class="bi bi-info-circle"></i> 
+                If you approve, the booking will be updated to the new time. 
+                If you reject, the original time will be maintained.
+              </small>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="submitRescheduleResponse('${bookingId}')">
+              <i class="bi bi-send me-1"></i>Submit Response
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
     
-    // Load bookings from backend - FIXED VERSION
-    async function loadBookings() {
-        try {
-            // Only show loading state if not already loaded
-            if (allBookings.length === 0) {
-                showLoadingState();
-            }
-            
-            const token = localStorage.getItem("token");
-            if (!token) {
-                throw new Error('No authentication token found');
-            }
+    document.getElementById('bookingDetailsContent').innerHTML = modalContent;
+    new bootstrap.Modal(document.getElementById('bookingDetailsModal')).show();
+    
+  } catch (error) {
+    console.error('Error loading reschedule request:', error);
+    alert('Failed to load reschedule request: ' + error.message);
+  }
+}
 
-            const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+// NEW: Submit reschedule response
+async function submitRescheduleResponse(bookingId) {
+  const action = document.getElementById('responseAction').value;
+  const reason = document.getElementById('responseReason').value;
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch bookings: ${response.status}`);
-            }
+  if (!action) {
+    alert('Please select an action (approve or reject).');
+    return;
+  }
 
-            const data = await response.json();
-            allBookings = data.bookings || [];
-            filteredBookings = [...allBookings];
-
-            hideLoadingState();
-            renderFilteredBookings();
-            populatePropertyFilter();
-            
-            // Initialize calendar after bookings are loaded - FIXED
-            if (document.getElementById('calendar')) {
-                initializeCalendar();
-            }
-            
-        } catch (error) {
-            console.error('Error loading bookings:', error);
-            hideLoadingState();
-            showEmptyState();
-            alert('Failed to load bookings: ' + error.message);
-        }
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error('No authentication token found');
     }
+
+    // Show loading state
+    const submitBtn = document.querySelector('#bookingDetailsModal .btn-primary');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span class="loading-spinner"></span> Processing...';
+    submitBtn.disabled = true;
+
+    const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}/respond-reschedule`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        action: action,
+        reason: reason || 'No reason provided'
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to respond to reschedule request');
+    }
+
+    const result = await response.json();
+    
+    // Close the modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('bookingDetailsModal'));
+    modal.hide();
+    
+    // Show success message
+    alert(`Reschedule request ${action === 'approve' ? 'approved' : 'rejected'} successfully!`);
+    
+    // Reload bookings to reflect changes
+    await loadBookings();
+    
+  } catch (error) {
+    console.error('Error responding to reschedule:', error);
+    alert('Failed to respond to reschedule request: ' + error.message);
+    
+    // Restore button state
+    const submitBtn = document.querySelector('#bookingDetailsModal .btn-primary');
+    if (submitBtn) {
+      submitBtn.innerHTML = '<i class="bi bi-send me-1"></i>Submit Response';
+      submitBtn.disabled = false;
+    }
+  }
+}
+    
+// UPDATED: Load bookings from backend with reschedule support
+async function loadBookings() {
+    try {
+        if (allBookings.length === 0) {
+            showLoadingState();
+        }
+        
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch bookings: ${response.status}`);
+        }
+
+        const data = await response.json();
+        allBookings = data.bookings || [];
+        filteredBookings = [...allBookings];
+
+        hideLoadingState();
+        renderFilteredBookings();
+        populatePropertyFilter();
+        
+        if (document.getElementById('calendar')) {
+            initializeCalendar();
+        }
+        
+    } catch (error) {
+        console.error('Error loading bookings:', error);
+        hideLoadingState();
+        showEmptyState();
+        alert('Failed to load bookings: ' + error.message);
+    }
+}
 
     // Populate property filter dropdown
     function populatePropertyFilter() {
@@ -1185,42 +1388,45 @@ footer {
       renderFilteredBookings();
     }
 
-    // Render filtered bookings
-    function renderFilteredBookings() {
-      // Update stats based on filtered bookings
-      document.getElementById('totalBookings').textContent = filteredBookings.length;
-      document.getElementById('pendingBookings').textContent = filteredBookings.filter(b => b.status === 'pending').length;
-      document.getElementById('confirmedBookings').textContent = filteredBookings.filter(b => b.status === 'confirmed').length;
-      document.getElementById('upcomingBookings').textContent = filteredBookings.filter(b => 
-        b.status === 'confirmed' && new Date(b.checkIn) > new Date()
-      ).length;
-      document.getElementById('completedBookings').textContent = filteredBookings.filter(b => b.status === 'completed').length;
-      document.getElementById('cancelledBookings').textContent = filteredBookings.filter(b => b.status === 'cancelled').length;
+    // UPDATED: Render filtered bookings with reschedule counts
+function renderFilteredBookings() {
+  // Update stats based on filtered bookings
+  document.getElementById('totalBookings').textContent = filteredBookings.length;
+  document.getElementById('pendingBookings').textContent = filteredBookings.filter(b => b.status === 'pending').length;
+  document.getElementById('confirmedBookings').textContent = filteredBookings.filter(b => b.status === 'confirmed').length;
+  document.getElementById('upcomingBookings').textContent = filteredBookings.filter(b => 
+    b.status === 'confirmed' && new Date(b.checkIn) > new Date()
+  ).length;
+  document.getElementById('completedBookings').textContent = filteredBookings.filter(b => b.status === 'completed').length;
+  document.getElementById('cancelledBookings').textContent = filteredBookings.filter(b => b.status === 'cancelled').length;
 
-      // Show notification badge for pending bookings
-      const pendingBadge = document.getElementById('pendingBadge');
-      const pendingCount = filteredBookings.filter(b => b.status === 'pending').length;
-      pendingBadge.style.display = pendingCount > 0 ? 'block' : 'none';
-      if (pendingCount > 0) {
-        pendingBadge.textContent = pendingCount > 9 ? '9+' : pendingCount;
-      }
+  // Show notification badge for pending bookings AND reschedule requests
+  const pendingBadge = document.getElementById('pendingBadge');
+  const pendingCount = filteredBookings.filter(b => b.status === 'pending').length;
+  const rescheduleCount = filteredBookings.filter(b => hasPendingReschedule(b)).length;
+  const totalNotifications = pendingCount + rescheduleCount;
+  
+  pendingBadge.style.display = totalNotifications > 0 ? 'block' : 'none';
+  if (totalNotifications > 0) {
+    pendingBadge.textContent = totalNotifications > 9 ? '9+' : totalNotifications;
+  }
 
-      // Show empty state if no bookings match filters
-      if (filteredBookings.length === 0) {
-        document.getElementById('emptyState').style.display = 'block';
-        document.getElementById('bookingsCard').style.display = 'none';
-        document.getElementById('bookingsTable').innerHTML = '';
-      } else {
-        document.getElementById('emptyState').style.display = 'none';
-        document.getElementById('bookingsCard').style.display = 'block';
-        document.getElementById('bookingsTable').innerHTML = filteredBookings.map(booking => generateBookingRow(booking)).join('');
-      }
+  // Show empty state if no bookings match filters
+  if (filteredBookings.length === 0) {
+    document.getElementById('emptyState').style.display = 'block';
+    document.getElementById('bookingsCard').style.display = 'none';
+    document.getElementById('bookingsTable').innerHTML = '';
+  } else {
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('bookingsCard').style.display = 'block';
+    document.getElementById('bookingsTable').innerHTML = filteredBookings.map(booking => generateBookingRow(booking)).join('');
+  }
 
-      // Update calendar if it exists
-      if (calendar) {
-        updateCalendar();
-      }
-    }
+  // Update calendar if it exists
+  if (calendar) {
+    updateCalendar();
+  }
+}
 
     // Initialize FullCalendar - FIXED VERSION
     function initializeCalendar() {
@@ -1354,86 +1560,134 @@ footer {
       }
     }
 
-    // View booking details
-    async function viewBookingDetails(bookingId) {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error('No authentication token found');
-        }
-
-        const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch booking details');
-        }
-
-        const data = await response.json();
-        const booking = data.booking;
-
-        const modalContent = `
-          <div class="row">
-            <div class="col-md-6">
-              <h6>Student Information</h6>
-              <p><strong>Name:</strong> ${booking.student?.username || 'Unknown'}</p>
-              <p><strong>Email:</strong> ${booking.student?.email || 'No email'}</p>
-              <p><strong>Phone:</strong> ${booking.student?.phone || 'No phone'}</p>
-            </div>
-            <div class="col-md-6">
-              <h6>Booking Details</h6>
-              <p><strong>Property:</strong> ${booking.property?.title || 'Unknown'}</p>
-              <p><strong>Check-in:</strong> ${formatDateTime(booking.checkIn)}</p>
-              <p><strong>Check-out:</strong> ${formatDateTime(booking.checkOut)}</p>
-              <p><strong>Guests:</strong> ${booking.numberOfGuests || 1}</p>
-              <p><strong>Total Price:</strong> R${booking.totalPrice || 0}</p>
-              <p><strong>Status:</strong> <span class="badge bg-${statusConfig[booking.status].class}">${statusConfig[booking.status].text}</span></p>
-            </div>
-          </div>
-          ${booking.specialRequests ? `
-          <div class="row mt-3">
-            <div class="col-12">
-              <h6>Special Requests</h6>
-              <div class="alert alert-light">${booking.specialRequests}</div>
-            </div>
-          </div>
-          ` : ''}
-          ${booking.cancellationReason ? `
-          <div class="row mt-3">
-            <div class="col-12">
-              <h6>Cancellation Reason</h6>
-              <div class="alert alert-warning">${booking.cancellationReason}</div>
-            </div>
-          </div>
-          ` : ''}
-          <div class="timeline mt-3">
-            <div class="timeline-item completed">
-              <small class="text-muted">Booking Requested</small>
-              <div>${formatDateTime(booking.createdAt)}</div>
-            </div>
-            <div class="timeline-item ${['confirmed', 'completed'].includes(booking.status) ? 'completed' : booking.status === 'pending' ? 'active' : ''}">
-              <small class="text-muted">Scheduled Viewing</small>
-              <div>${formatDateTime(booking.checkIn)}</div>
-            </div>
-            <div class="timeline-item ${booking.status === 'completed' ? 'completed' : ''}">
-              <small class="text-muted">Viewing Completed</small>
-              <div>${booking.status === 'completed' ? 'Completed' : 'Pending'}</div>
-            </div>
-          </div>
-        `;
-        
-        document.getElementById('bookingDetailsContent').innerHTML = modalContent;
-        new bootstrap.Modal(document.getElementById('bookingDetailsModal')).show();
-        
-      } catch (error) {
-        console.error('Error loading booking details:', error);
-        alert('Failed to load booking details: ' + error.message);
-      }
+    // UPDATED: View booking details with reschedule history
+async function viewBookingDetails(bookingId) {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error('No authentication token found');
     }
+
+    const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch booking details');
+    }
+
+    const data = await response.json();
+    const booking = data.booking;
+    const hasRescheduleRequests = booking.rescheduleRequests && booking.rescheduleRequests.length > 0;
+
+    let rescheduleHistory = '';
+    if (hasRescheduleRequests) {
+      rescheduleHistory = `
+        <div class="row mt-3">
+          <div class="col-12">
+            <h6>Reschedule History</h6>
+            <div class="list-group">
+              ${booking.rescheduleRequests.map((req, index) => `
+                <div class="list-group-item">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <small class="text-muted">Request ${index + 1}</small>
+                      <div><strong>From:</strong> ${formatDateTime(req.originalCheckIn)}</div>
+                      <div><strong>To:</strong> ${formatDateTime(req.newCheckIn)}</div>
+                      ${req.reason ? `<div><strong>Reason:</strong> ${req.reason}</div>` : ''}
+                      <div><strong>Status:</strong> 
+                        <span class="badge bg-${req.status === 'approved' ? 'success' : req.status === 'rejected' ? 'danger' : 'warning'}">
+                          ${req.status}
+                        </span>
+                      </div>
+                    </div>
+                    <small class="text-muted">${formatDateTime(req.requestedAt)}</small>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    const modalContent = `
+      <div class="row">
+        <div class="col-md-6">
+          <h6>Student Information</h6>
+          <p><strong>Name:</strong> ${booking.student?.username || 'Unknown'}</p>
+          <p><strong>Email:</strong> ${booking.student?.email || 'No email'}</p>
+          <p><strong>Phone:</strong> ${booking.student?.phone || 'No phone'}</p>
+        </div>
+        <div class="col-md-6">
+          <h6>Booking Details</h6>
+          <p><strong>Property:</strong> ${booking.property?.title || 'Unknown'}</p>
+          <p><strong>Check-in:</strong> ${formatDateTime(booking.checkIn)}</p>
+          <p><strong>Check-out:</strong> ${formatDateTime(booking.checkOut)}</p>
+          <p><strong>Guests:</strong> ${booking.numberOfGuests || 1}</p>
+          <p><strong>Total Price:</strong> R${booking.totalPrice || 0}</p>
+          <p><strong>Status:</strong> <span class="badge bg-${statusConfig[booking.status].class}">${statusConfig[booking.status].text}</span></p>
+          ${hasPendingReschedule(booking) ? `
+            <p><strong>Reschedule:</strong> <span class="badge bg-info">Pending Request</span></p>
+          ` : ''}
+        </div>
+      </div>
+      ${booking.specialRequests ? `
+      <div class="row mt-3">
+        <div class="col-12">
+          <h6>Special Requests</h6>
+          <div class="alert alert-light">${booking.specialRequests}</div>
+        </div>
+      </div>
+      ` : ''}
+      ${booking.cancellationReason ? `
+      <div class="row mt-3">
+        <div class="col-12">
+          <h6>Cancellation Reason</h6>
+          <div class="alert alert-warning">${booking.cancellationReason}</div>
+        </div>
+      </div>
+      ` : ''}
+      ${rescheduleHistory}
+      <div class="timeline mt-3">
+        <div class="timeline-item completed">
+          <small class="text-muted">Booking Requested</small>
+          <div>${formatDateTime(booking.createdAt)}</div>
+        </div>
+        <div class="timeline-item ${['confirmed', 'completed'].includes(booking.status) ? 'completed' : booking.status === 'pending' ? 'active' : ''}">
+          <small class="text-muted">Scheduled Viewing</small>
+          <div>${formatDateTime(booking.checkIn)}</div>
+        </div>
+        <div class="timeline-item ${booking.status === 'completed' ? 'completed' : ''}">
+          <small class="text-muted">Viewing Completed</small>
+          <div>${booking.status === 'completed' ? 'Completed' : 'Pending'}</div>
+        </div>
+      </div>
+      
+      ${hasPendingReschedule(booking) ? `
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="d-grid">
+            <button class="btn btn-info" onclick="viewRescheduleRequest('${booking._id}')">
+              <i class="bi bi-calendar-week me-1"></i>Review Reschedule Request
+            </button>
+          </div>
+        </div>
+      </div>
+      ` : ''}
+    `;
+    
+    document.getElementById('bookingDetailsContent').innerHTML = modalContent;
+    new bootstrap.Modal(document.getElementById('bookingDetailsModal')).show();
+    
+  } catch (error) {
+    console.error('Error loading booking details:', error);
+    alert('Failed to load booking details: ' + error.message);
+  }
+}
 
     // View booking statistics
     function viewBookingStats() {
