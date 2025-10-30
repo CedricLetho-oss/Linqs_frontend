@@ -26,40 +26,24 @@
       "use": "@vercel/static"
     }
   ],
-  "routes": [
-    {
-      "src": "/sitemap.xml",
-      "dest": "/sitemap.xml"
-    },
-    {
-      "src": "/robots.txt", 
-      "dest": "/robots.txt"
-    },
-    {
-      "src": "/(.*)",
-      "has": [
-        {
-          "type": "host",
-          "value": "reslinq.co.za"
-        }
-      ],
-      "destination": "https://www.reslinq.co.za/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
   "redirects": [
     {
-      "source": "/",
+      "source": "/sitemap.xml",
+      "destination": "/sitemap.xml"
+    },
+    {
+      "source": "/robots.txt", 
+      "destination": "/robots.txt"
+    },
+    {
+      "source": "/:path*",
       "has": [
         {
           "type": "host",
           "value": "reslinq.co.za"
         }
       ],
-      "destination": "https://www.reslinq.co.za",
+      "destination": "https://www.reslinq.co.za/:path*",
       "permanent": true
     }
   ]
