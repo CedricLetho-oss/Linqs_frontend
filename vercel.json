@@ -26,17 +26,23 @@
       "use": "@vercel/static"
     }
   ],
-  "redirects": [
+  "routes": [
     {
-      "source": "/sitemap.xml",
-      "destination": "/sitemap.xml"
+      "src": "/sitemap.xml",
+      "dest": "/sitemap.xml",
+      "headers": {
+        "Content-Type": "application/xml"
+      }
     },
     {
-      "source": "/robots.txt", 
-      "destination": "/robots.txt"
+      "src": "/robots.txt",
+      "dest": "/robots.txt",
+      "headers": {
+        "Content-Type": "text/plain"
+      }
     },
     {
-      "source": "/:path*",
+      "src": "/:path*",
       "has": [
         {
           "type": "host",
@@ -45,6 +51,10 @@
       ],
       "destination": "https://www.reslinq.co.za/:path*",
       "permanent": true
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ]
 }
