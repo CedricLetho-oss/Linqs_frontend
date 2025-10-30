@@ -421,15 +421,10 @@ main {
 }
 
 /* ==================== */
-/* ==================== */
-/* ENHANCED CALENDAR STYLING - FULL WIDTH */
-/* ==================== */
-
-/* ==================== */
-/* ==================== */
-/* ENHANCED CALENDAR STYLING - FULL WIDTH */
+/* FULL WIDTH CALENDAR - BREAK OUT OF CONTAINER */
 /* ==================== */
 
+/* Make the calendar tab content break out of container */
 #calendar {
   background: white;
   border-radius: 1rem;
@@ -438,17 +433,18 @@ main {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   min-height: 600px;
   width: 100%;
+  max-width: 100%;
 }
 
 /* Remove container constraints for calendar view */
 #calendarView {
   position: relative;
   z-index: 1;
-  width: 100%;
-  margin-left: -1.5rem;
-  margin-right: -1.5rem;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 .tab-pane.active #calendar {
@@ -462,21 +458,6 @@ main {
   width: 100% !important;
   max-width: 100% !important;
 }
-
-/* Make calendar tab content full width */
-#calendar.tab-pane {
-  width: 100%;
-  max-width: 100%;
-}
-
-/* Override card body padding for calendar view */
-.tab-content .tab-pane#calendar {
-  margin-left: -1rem;
-  margin-right: -1rem;
-  margin-top: -1rem;
-  padding: 1rem;
-}
-
 
 /* FullCalendar Toolbar Styling */
 .fc-toolbar {
@@ -722,6 +703,11 @@ main {
     min-height: 700px;
   }
   
+  #calendarView {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+  
   .fc-toolbar {
     flex-wrap: nowrap;
   }
@@ -746,6 +732,13 @@ main {
     padding: 1rem 0.5rem;
     border-radius: 0.75rem;
     min-height: 500px;
+  }
+  
+  #calendarView {
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
   
   .fc-toolbar {
@@ -795,6 +788,13 @@ main {
   #calendar {
     padding: 0.75rem 0.25rem;
     min-height: 450px;
+  }
+  
+  #calendarView {
+    margin-left: -0.25rem;
+    margin-right: -0.25rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
   }
   
   .fc-toolbar-title {
@@ -1824,7 +1824,7 @@ function renderFilteredBookings() {
   }
 }
 
-  // Improved Calendar Initialization - FULL WIDTH
+// Improved Calendar Initialization - FULL WIDTH (FIXED)
 function initializeCalendar() {
   const calendarEl = document.getElementById('calendar');
   if (!calendarEl) {
@@ -1868,7 +1868,7 @@ function initializeCalendar() {
     },
     height: 'auto',
     contentHeight: 'auto',
-    aspectRatio: 1.8, // Wider aspect ratio for desktop
+    aspectRatio: 1.3, // Better aspect ratio for full width
     eventTimeFormat: {
       hour: '2-digit',
       minute: '2-digit',
@@ -1881,7 +1881,7 @@ function initializeCalendar() {
     },
     slotMinTime: '08:00',
     slotMaxTime: '20:00',
-    dayMaxEvents: 4, // Show more events before "more" link
+    dayMaxEvents: 4,
     eventDisplay: 'block',
     eventContent: function(arg) {
       const status = arg.event.extendedProps.status;
@@ -1893,7 +1893,7 @@ function initializeCalendar() {
       };
       
       const title = arg.event.title;
-      const shortTitle = title.length > 25 ? title.substring(0, 25) + '...' : title;
+      const shortTitle = title.length > 30 ? title.substring(0, 30) + '...' : title;
       
       return {
         html: `
@@ -1917,7 +1917,8 @@ function initializeCalendar() {
   // Force calendar to update its size and take full width
   setTimeout(() => {
     calendar.updateSize();
-    // Additional force resize for full width
+    // Remove any max-width constraints
+    calendarEl.style.maxWidth = 'none';
     calendarEl.style.width = '100%';
     calendar.updateSize();
   }, 400);
@@ -2611,6 +2612,7 @@ async function viewBookingDetails(bookingId) {
               // Force calendar to refresh and resize to full width
               const calendarEl = document.getElementById('calendar');
               if (calendarEl) {
+                calendarEl.style.maxWidth = 'none';
                 calendarEl.style.width = '100%';
               }
               calendar.render();
