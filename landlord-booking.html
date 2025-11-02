@@ -421,29 +421,40 @@ main {
 }
 
 /* ==================== */
-/* FULL WIDTH CALENDAR - COMPLETE FIX */
+/* FULL WIDTH CALENDAR - FIXED FOR DESKTOP */
 /* ==================== */
 
-/* Remove container constraints for calendar tab */
-#calendar {
+/* Make the calendar tab content break out of container */
+#calendarView {
   position: relative;
-  width: 100vw !important;
+  width: 100vw;
   left: 50%;
   right: 50%;
-  margin-left: -50vw !important;
-  margin-right: -50vw !important;
-  padding: 1.5rem;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  padding: 0;
   background: white;
-  min-height: 600px;
   box-sizing: border-box;
+}
+
+#calendar {
+  background: white;
+  border-radius: 0;
+  padding: 1.5rem;
+  box-shadow: none;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  min-height: 600px;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0;
 }
 
 /* Fix Calendar Container - Full Width */
 .fc {
   width: 100% !important;
   max-width: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
+  margin: 0;
+  padding: 0;
 }
 
 /* FullCalendar Toolbar Styling */
@@ -454,6 +465,7 @@ main {
   padding-bottom: 1rem;
   border-bottom: 1px solid #e2e8f0;
   width: 100% !important;
+  padding: 0 1rem;
 }
 
 .fc-toolbar-title {
@@ -560,61 +572,6 @@ main {
   justify-content: center;
   margin: 0.25rem;
   font-weight: 600 !important;
-}
-
-/* TIME GRID VIEW FIXES */
-.fc-timegrid-slots table,
-.fc-timegrid-axis table,
-.fc-timegrid-divider {
-  width: 100% !important;
-}
-
-.fc-timegrid-slot {
-  height: 2.5em !important;
-  border-bottom: 1px solid #e2e8f0 !important;
-}
-
-.fc-timegrid-slot-label {
-  vertical-align: top !important;
-  font-size: 0.8em !important;
-  color: #64748b !important;
-}
-
-.fc-timegrid-event {
-  border: none !important;
-  border-radius: 0.5rem !important;
-  font-size: 0.75rem !important;
-  padding: 0.25rem 0.5rem !important;
-  margin: 0.125rem 0.25rem !important;
-  font-weight: 500 !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease-in-out !important;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
-  border-left: 4px solid !important;
-  min-height: 2em !important;
-}
-
-.fc-timegrid-event:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
-}
-
-.fc-timegrid-event .fc-event-main {
-  padding: 0.125rem 0 !important;
-}
-
-.fc-timegrid-event .fc-event-time {
-  font-weight: 600 !important;
-  margin-bottom: 0.125rem !important;
-  font-size: 0.7rem !important;
-}
-
-.fc-timegrid-event .fc-event-title {
-  font-weight: 500 !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  font-size: 0.7rem !important;
 }
 
 /* Ensure events are visible */
@@ -748,6 +705,7 @@ main {
   
   .fc-toolbar {
     flex-wrap: nowrap;
+    padding: 0 2rem;
   }
   
   .fc-toolbar-title {
@@ -762,21 +720,19 @@ main {
     font-size: 0.8rem !important;
     padding: 0.35rem 0.6rem !important;
   }
-  
-  .fc-timegrid-event {
-    font-size: 0.8rem !important;
-    padding: 0.35rem 0.6rem !important;
-  }
 }
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
+  #calendarView {
+    width: 100%;
+    left: 0;
+    right: 0;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  
   #calendar {
-    width: 100% !important;
-    left: 0 !important;
-    right: 0 !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
     padding: 1rem 0.5rem;
     min-height: 500px;
   }
@@ -785,6 +741,7 @@ main {
     flex-direction: column;
     gap: 0.75rem;
     text-align: center;
+    padding: 0 0.5rem;
   }
   
   .fc-toolbar-title {
@@ -821,11 +778,6 @@ main {
   
   .fc-daygrid-day-frame {
     min-height: 80px !important;
-  }
-  
-  .fc-timegrid-event {
-    font-size: 0.6rem !important;
-    padding: 0.1rem 0.2rem !important;
   }
 }
 
@@ -1862,7 +1814,7 @@ function renderFilteredBookings() {
   }
 }
 
-// Improved Calendar Initialization - FULL WIDTH WITH PROPER TIME VIEWS
+// Improved Calendar Initialization - FULL WIDTH (FIXED)
 function initializeCalendar() {
   const calendarEl = document.getElementById('calendar');
   if (!calendarEl) {
@@ -1886,18 +1838,6 @@ function initializeCalendar() {
       dayGridMonth: {
         dayMaxEventRows: 3,
         dayMaxEvents: true
-      },
-      timeGridWeek: {
-        allDaySlot: false,
-        slotMinTime: '07:00:00',
-        slotMaxTime: '21:00:00',
-        slotDuration: '01:00:00'
-      },
-      timeGridDay: {
-        allDaySlot: false,
-        slotMinTime: '07:00:00',
-        slotMaxTime: '21:00:00',
-        slotDuration: '00:30:00'
       }
     },
     events: generateCalendarEvents(),
@@ -1924,19 +1864,13 @@ function initializeCalendar() {
       minute: '2-digit',
       hour12: false
     },
-    slotLabelFormat: {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-      meridiem: false
-    },
     businessHours: {
       daysOfWeek: [1, 2, 3, 4, 5],
       startTime: '09:00',
       endTime: '18:00',
     },
-    slotMinTime: '07:00:00',
-    slotMaxTime: '21:00:00',
+    slotMinTime: '08:00',
+    slotMaxTime: '20:00',
     dayMaxEvents: 4,
     eventDisplay: 'block',
     eventContent: function(arg) {
@@ -1951,30 +1885,14 @@ function initializeCalendar() {
       const title = arg.event.title;
       const shortTitle = title.length > 30 ? title.substring(0, 30) + '...' : title;
       
-      // Different display for timeGrid views
-      if (arg.view.type.includes('timeGrid')) {
-        const timeText = arg.event.start ? arg.timeText : '';
-        return {
-          html: `
-            <div class="d-flex flex-column w-100 h-100 p-1">
-              <div class="d-flex align-items-center">
-                <span class="me-1 small">${icons[status] || '📅'}</span>
-                <span class="fw-bold small">${timeText}</span>
-              </div>
-              <span class="flex-grow-1 small">${shortTitle}</span>
-            </div>
-          `
-        };
-      } else {
-        return {
-          html: `
-            <div class="d-flex align-items-center w-100">
-              <span class="me-1 small">${icons[status] || '📅'}</span>
-              <span class="flex-grow-1 small">${shortTitle}</span>
-            </div>
-          `
-        };
-      }
+      return {
+        html: `
+          <div class="d-flex align-items-center w-100">
+            <span class="me-1 small">${icons[status] || '📅'}</span>
+            <span class="flex-grow-1 small">${shortTitle}</span>
+          </div>
+        `
+      };
     },
     datesSet: function() {
       // Ensure calendar renders properly after view changes
@@ -1989,51 +1907,11 @@ function initializeCalendar() {
   // Force calendar to update its size and take full width
   setTimeout(() => {
     calendar.updateSize();
-    // Remove any constraints and ensure full width
+    // Remove any max-width constraints
     calendarEl.style.maxWidth = 'none';
     calendarEl.style.width = '100%';
-    calendarEl.style.margin = '0';
-    calendarEl.style.padding = '0';
-    
-    // Force the parent container to also be full width
-    const calendarView = document.getElementById('calendarView');
-    if (calendarView) {
-      calendarView.style.width = '100vw';
-      calendarView.style.marginLeft = 'calc(-50vw + 50%)';
-      calendarView.style.marginRight = 'calc(-50vw + 50%)';
-      calendarView.style.padding = '0';
-    }
-    
     calendar.updateSize();
-  }, 500);
-}
-
-// UPDATED: Generate calendar events with proper time data
-function generateCalendarEvents() {
-  return filteredBookings.map(booking => {
-    const studentName = booking.student?.username || 'Unknown';
-    const propertyName = booking.property?.title || 'Unknown';
-    
-    // Create proper start and end times for calendar
-    const startDate = new Date(booking.checkIn);
-    const endDate = new Date(booking.checkOut);
-    
-    // If it's the same day, make it a 1-hour viewing slot
-    if (startDate.toDateString() === endDate.toDateString()) {
-      endDate.setHours(startDate.getHours() + 1);
-    }
-    
-    return {
-      title: `${studentName} - ${propertyName}`,
-      start: startDate,
-      end: endDate,
-      extendedProps: {
-        bookingId: booking._id,
-        status: booking.status
-      },
-      className: `fc-event ${booking.status}`
-    };
-  });
+  }, 400);
 }
 
     // Generate calendar events from bookings
