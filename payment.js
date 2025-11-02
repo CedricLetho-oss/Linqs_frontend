@@ -391,7 +391,6 @@ class ResLinQPaymentManager {
         
         try {
             console.log('🔍 Sending payment data:', JSON.stringify(paymentData, null, 2));
-            console.log('🔍 Token present:', !!this.token);
             
             const response = await fetch(`${API_BASE_URL}/payments/create-intent`, {
                 method: 'POST',
@@ -416,12 +415,10 @@ class ResLinQPaymentManager {
             
         } catch (error) {
             console.error('🔍 API call failed:', error);
-            // Fallback to demo mode for testing
-            console.warn('API call failed, using demo mode');
-            return this.createDemoPaymentIntent(paymentData);
+            // REMOVE the demo fallback in production:
+            throw new Error('Payment service unavailable. Please try again.');
         }
     }
-
     createDemoPaymentIntent(paymentData) {
         // Demo response - replace with actual payment gateway integration
         const demoPaymentUrls = {
@@ -438,24 +435,10 @@ class ResLinQPaymentManager {
     }
 
     redirectToPaymentGateway(paymentUrl) {
-        console.log(`🔗 Redirecting to ${this.selectedProvider}...`);
-        
-        // For real implementation, uncomment this:
-        // window.location.href = paymentUrl;
-        
-        // For demo/testing:
-        this.showSuccess(`Redirecting to ${this.selectedProvider.toUpperCase()} secure payment page...`);
-        
-        setTimeout(() => {
-            const proceed = confirm(`DEMO: Would redirect to: ${paymentUrl}\n\nClick OK to simulate successful payment or Cancel to stay on page.`);
-            if (proceed) {
-                // Simulate successful payment
-                this.showSuccess('Payment completed successfully! Subscription activated.');
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 3000);
-            }
-        }, 2000);
+    console.log(`🔗 Redirecting to ${this.selectedProvider}...`);
+    console.log('🔗 Payment URL:', paymentUrl);
+    
+    window.location.href = paymentUrl;
     }
 
     showLoading(show) {
