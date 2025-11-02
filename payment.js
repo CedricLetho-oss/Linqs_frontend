@@ -1,10 +1,10 @@
-// ResLinQ Payment Manager - Updated for Subscription Plans
+// ResLinQ Payment Manager - FIXED VERSION
 class ResLinQPaymentManager {
     constructor() {
         this.token = localStorage.getItem("token");
         this.user = JSON.parse(localStorage.getItem("user") || "{}");
         this.selectedProvider = 'payfast';
-        this.selectedMethod = '';
+        this.selectedMethod = 'credit_card'; // Set default method
         
         // Get selected subscription plan
         this.selectedPlan = JSON.parse(localStorage.getItem('selectedSubscriptionPlan') || '{}');
@@ -28,19 +28,55 @@ class ResLinQPaymentManager {
     }
 
     init() {
-        console.log('ResLinQ Payment Manager initialized');
+        console.log('🔍 Payment Manager initialized with plan:', this.selectedPlan);
+        console.log('🔍 User:', this.user);
+        console.log('🔍 Token present:', !!this.token);
+        
         this.setupEventListeners();
         this.selectProvider('payfast');
-        this.updateSubscriptionDetails(); // NEW: Update UI with subscription details
+        this.updateSubscriptionDetails();
+        
+        // Add loading spinner CSS if not exists
+        this.addLoadingSpinnerCSS();
     }
 
-    // NEW: Update UI with subscription plan details
+    addLoadingSpinnerCSS() {
+        if (!document.querySelector('#loading-spinner-css')) {
+            const style = document.createElement('style');
+            style.id = 'loading-spinner-css';
+            style.textContent = `
+                .loading-spinner {
+                    width: 16px;
+                    height: 16px;
+                    border: 2px solid #ffffff;
+                    border-bottom-color: transparent;
+                    border-radius: 50%;
+                    display: inline-block;
+                    animation: rotation 1s linear infinite;
+                }
+                @keyframes rotation {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
     updateSubscriptionDetails() {
-        if (this.selectedPlan && this.selectedPlan.name) {
+        if (this.selectedPlan && this.selectedPlan.name && this.selectedPlan.price) {
+            console.log('✅ Valid plan found:', this.selectedPlan);
+            
             // Update amount display
             const amountElement = document.getElementById('paymentAmount');
             if (amountElement) {
-                amountElement.textContent = this.selectedPlan.price.toLocaleString();
+                amountElement.textContent = 'R ' + this.selectedPlan.price.toLocaleString();
+            }
+
+            // Update summary amount
+            const summaryAmount = document.getElementById('summaryAmount');
+            if (summaryAmount) {
+                summaryAmount.textContent = this.selectedPlan.price.toLocaleString();
             }
 
             // Update description
@@ -55,21 +91,7 @@ class ResLinQPaymentManager {
                 propertyNameElement.textContent = this.selectedPlan.name;
             }
 
-            const durationElement = document.querySelector('.d-flex.justify-content-between:nth-child(2) .fw-medium');
-            if (durationElement) {
-                durationElement.textContent = '1 Year';
-            }
-
-            const totalElement = document.querySelector('.d-flex.justify-content-between.fw-bold.fs-5 .text-primary');
-            if (totalElement) {
-                totalElement.textContent = `R ${this.selectedPlan.price.toLocaleString()}`;
-            }
-
-            // Update page title and header
-            document.querySelector('.payment-header h2').textContent = 'Complete Subscription Payment';
-            document.querySelector('.payment-header p').textContent = `Activate your ${this.selectedPlan.name} plan`;
-
-            console.log('Subscription details loaded:', this.selectedPlan);
+            console.log('✅ Subscription details loaded:', this.selectedPlan);
         } else {
             // No plan selected, redirect back to plans
             this.showError('No subscription plan selected. Redirecting to plans...');
@@ -94,7 +116,7 @@ class ResLinQPaymentManager {
             this.processPayment();
         });
 
-        // Cancel payment button - UPDATED
+        // Cancel payment button
         document.getElementById('cancelPayment').addEventListener('click', () => {
             if (confirm('Are you sure you want to cancel this subscription?')) {
                 localStorage.removeItem('selectedSubscriptionPlan');
@@ -256,65 +278,64 @@ class ResLinQPaymentManager {
     }
 
     async processPayment() {
-    const amount = this.selectedPlan.price;
+        const amount = this.selectedPlan.price;
 
-    // ADD THIS VALIDATION BLOCK
-    console.log('🔍 Required data check:', {
-        amount: amount,
-        plan: this.selectedPlan,
-        user: this.user,
-        token: this.token ? 'Present' : 'Missing'
-    });
-
-    if (!this.selectedPlan || !this.selectedPlan.price) {
-        this.showError('No valid subscription plan selected');
-        return;
-    }
-
-    if (!this.user || !this.user.id) {
-        this.showError('User not logged in');
-        return;
-    }
-
-    if (!this.token) {
-        this.showError('Authentication token missing');
-        return;
-    }
-    
-    if (!this.validatePaymentDetails()) {
-        return;
-    }
-
-    try {
-        this.showLoading(true);
-
-        const paymentData = {
+        // Enhanced validation
+        console.log('🔍 Required data check:', {
             amount: amount,
-            provider: this.selectedProvider,
-            method: this.selectedMethod,
-            description: `ResLinQ ${this.selectedPlan.name} Annual Subscription`,
-        };
+            plan: this.selectedPlan,
+            user: this.user,
+            token: this.token ? 'Present' : 'Missing'
+        });
 
-        // DEBUG: Log the payment data
-        console.log('🔍 Payment Data being sent:', paymentData);
-        console.log('🔍 User Token:', this.token ? 'Present' : 'Missing');
-
-        // Add card details if applicable
-        if (this.selectedMethod.includes('card')) {
-            paymentData.cardDetails = {
-                number: document.getElementById('cardNumber').value.replace(/\s/g, ''),
-                expiry: document.getElementById('cardExpiry').value,
-                cvv: document.getElementById('cardCVV').value,
-                name: document.getElementById('cardholderName').value
-            };
+        if (!this.selectedPlan || !this.selectedPlan.price) {
+            this.showError('No valid subscription plan selected');
+            return;
         }
 
-        console.log('Processing subscription payment:', paymentData);
+        if (!this.user || !this.user.id) {
+            this.showError('User not logged in');
+            return;
+        }
 
-        const response = await this.createPaymentIntent(paymentData);
+        if (!this.token) {
+            this.showError('Authentication token missing');
+            return;
+        }
+        
+        if (!this.validatePaymentDetails()) {
+            return;
+        }
+
+        try {
+            this.showLoading(true);
+
+            // FIXED: Added planType field that backend expects
+            const paymentData = {
+                amount: amount,
+                provider: this.selectedProvider,
+                method: this.selectedMethod,
+                description: `ResLinQ ${this.selectedPlan.name} Annual Subscription`,
+                planType: 'subscription', // REQUIRED by backend
+                planId: this.selectedPlan.id || 'annual_subscription' // Optional but good to include
+            };
+
+            console.log('🔍 Payment Data being sent:', paymentData);
+
+            // Add card details if applicable
+            if (this.selectedMethod.includes('card')) {
+                paymentData.cardDetails = {
+                    number: document.getElementById('cardNumber')?.value.replace(/\s/g, ''),
+                    expiry: document.getElementById('cardExpiry')?.value,
+                    cvv: document.getElementById('cardCVV')?.value,
+                    name: document.getElementById('cardholderName')?.value
+                };
+            }
+
+            const response = await this.createPaymentIntent(paymentData);
             
             if (response.success) {
-                this.showSuccess('Subscription activated successfully! Redirecting...');
+                this.showSuccess('Payment processed successfully! Redirecting...');
                 // Clear the selected plan from storage
                 localStorage.removeItem('selectedSubscriptionPlan');
                 
@@ -326,8 +347,8 @@ class ResLinQPaymentManager {
             }
 
         } catch (error) {
-            console.error('Payment processing error:', error);
-            this.showError('Payment processing failed. Please try again.');
+            console.error('❌ Payment processing error:', error);
+            this.showError('Payment processing failed: ' + error.message);
         } finally {
             this.showLoading(false);
         }
@@ -336,10 +357,10 @@ class ResLinQPaymentManager {
     validatePaymentDetails() {
         // Basic validation
         if (this.selectedMethod.includes('card')) {
-            const cardNumber = document.getElementById('cardNumber').value;
-            const cardExpiry = document.getElementById('cardExpiry').value;
-            const cardCVV = document.getElementById('cardCVV').value;
-            const cardName = document.getElementById('cardholderName').value;
+            const cardNumber = document.getElementById('cardNumber')?.value;
+            const cardExpiry = document.getElementById('cardExpiry')?.value;
+            const cardCVV = document.getElementById('cardCVV')?.value;
+            const cardName = document.getElementById('cardholderName')?.value;
 
             if (!cardNumber || cardNumber.replace(/\s/g, '').length < 16) {
                 this.showError('Please enter a valid card number');
@@ -366,38 +387,40 @@ class ResLinQPaymentManager {
     }
 
     async createPaymentIntent(paymentData) {
-    const API_BASE_URL = 'https://linqs-backend.onrender.com/api';
-    
-    try {
-        // ADD DEBUGGING
-        console.log('🔍 Sending payment data:', JSON.stringify(paymentData, null, 2));
-        console.log('🔍 Token present:', !!this.token);
+        const API_BASE_URL = 'https://linqs-backend.onrender.com/api';
         
-        const response = await fetch(`${API_BASE_URL}/payments/create-intent`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.token}`
-            },
-            body: JSON.stringify(paymentData)
-        });
+        try {
+            console.log('🔍 Sending payment data:', JSON.stringify(paymentData, null, 2));
+            console.log('🔍 Token present:', !!this.token);
+            
+            const response = await fetch(`${API_BASE_URL}/payments/create-intent`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.token}`
+                },
+                body: JSON.stringify(paymentData)
+            });
 
-        console.log('🔍 Response status:', response.status);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('🔍 Error response:', errorText);
-            throw new Error(`HTTP ${response.status}: ${errorText}`);
+            console.log('🔍 Response status:', response.status);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('🔍 Error response:', errorText);
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+            
+            const result = await response.json();
+            console.log('🔍 Payment intent created:', result);
+            return result;
+            
+        } catch (error) {
+            console.error('🔍 API call failed:', error);
+            // Fallback to demo mode for testing
+            console.warn('API call failed, using demo mode');
+            return this.createDemoPaymentIntent(paymentData);
         }
-        
-        return await response.json();
-    } catch (error) {
-        console.error('🔍 API call failed:', error);
-        // Fallback to demo mode
-        console.warn('API call failed, using demo mode:', error);
-        return this.createDemoPaymentIntent(paymentData);
     }
-}
 
     createDemoPaymentIntent(paymentData) {
         // Demo response - replace with actual payment gateway integration
@@ -415,15 +438,23 @@ class ResLinQPaymentManager {
     }
 
     redirectToPaymentGateway(paymentUrl) {
-        console.log(`Redirecting to ${this.selectedProvider}...`);
-        // In production, this would redirect to the actual payment gateway
-        // For demo, we'll show a success message instead
+        console.log(`🔗 Redirecting to ${this.selectedProvider}...`);
+        
+        // For real implementation, uncomment this:
+        // window.location.href = paymentUrl;
+        
+        // For demo/testing:
         this.showSuccess(`Redirecting to ${this.selectedProvider.toUpperCase()} secure payment page...`);
         
-        // Simulate redirect after 2 seconds
         setTimeout(() => {
-            alert(`DEMO: Would redirect to: ${paymentUrl}\n\nIn production, this would go to the actual payment gateway.`);
-            // window.location.href = paymentUrl; // Uncomment for real redirect
+            const proceed = confirm(`DEMO: Would redirect to: ${paymentUrl}\n\nClick OK to simulate successful payment or Cancel to stay on page.`);
+            if (proceed) {
+                // Simulate successful payment
+                this.showSuccess('Payment completed successfully! Subscription activated.');
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 3000);
+            }
         }, 2000);
     }
 
@@ -433,7 +464,7 @@ class ResLinQPaymentManager {
             button.innerHTML = '<div class="loading-spinner me-2"></div> Processing...';
             button.disabled = true;
         } else {
-            button.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Continue to Secure Payment';
+            button.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Complete Secure Payment';
             button.disabled = false;
         }
     }
@@ -466,7 +497,9 @@ class ResLinQPaymentManager {
         // Auto-remove success messages after 5 seconds
         if (type === 'success') {
             setTimeout(() => {
-                alertDiv.remove();
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
             }, 5000);
         }
     }
@@ -478,4 +511,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Make it globally available for debugging
     window.paymentManager = paymentManager;
+    
+    console.log('✅ Payment Manager initialized successfully');
 });
