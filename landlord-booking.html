@@ -421,37 +421,40 @@ main {
 }
 
 /* ==================== */
-/* FULL WIDTH CALENDAR - BREAK OUT OF CONTAINER */
+/* FULL WIDTH CALENDAR - FIXED FOR DESKTOP */
 /* ==================== */
 
 /* Make the calendar tab content break out of container */
 #calendarView {
   position: relative;
-  z-index: 1;
   width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  margin-right: calc(-50vw + 50%);
-  padding-left: 2rem;
-  padding-right: 2rem;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  padding: 0;
   background: white;
   box-sizing: border-box;
 }
 
 #calendar {
   background: white;
-  border-radius: 1rem;
+  border-radius: 0;
   padding: 1.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: none;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   min-height: 600px;
   width: 100% !important;
   max-width: 100% !important;
+  margin: 0;
 }
 
 /* Fix Calendar Container - Full Width */
 .fc {
   width: 100% !important;
   max-width: 100% !important;
+  margin: 0;
+  padding: 0;
 }
 
 /* FullCalendar Toolbar Styling */
@@ -462,6 +465,7 @@ main {
   padding-bottom: 1rem;
   border-bottom: 1px solid #e2e8f0;
   width: 100% !important;
+  padding: 0 1rem;
 }
 
 .fc-toolbar-title {
@@ -689,6 +693,7 @@ main {
 
 .fc-scroller {
   width: 100% !important;
+  overflow: visible !important;
 }
 
 /* Desktop Full Width Calendar */
@@ -698,13 +703,9 @@ main {
     min-height: 700px;
   }
   
-  #calendarView {
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
-  
   .fc-toolbar {
     flex-wrap: nowrap;
+    padding: 0 2rem;
   }
   
   .fc-toolbar-title {
@@ -723,23 +724,24 @@ main {
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-  #calendar {
-    padding: 1rem 0.5rem;
-    border-radius: 0.75rem;
-    min-height: 500px;
+  #calendarView {
+    width: 100%;
+    left: 0;
+    right: 0;
+    margin-left: 0;
+    margin-right: 0;
   }
   
-  #calendarView {
-    margin-left: -0.5rem;
-    margin-right: -0.5rem;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+  #calendar {
+    padding: 1rem 0.5rem;
+    min-height: 500px;
   }
   
   .fc-toolbar {
     flex-direction: column;
     gap: 0.75rem;
     text-align: center;
+    padding: 0 0.5rem;
   }
   
   .fc-toolbar-title {
@@ -783,13 +785,6 @@ main {
   #calendar {
     padding: 0.75rem 0.25rem;
     min-height: 450px;
-  }
-  
-  #calendarView {
-    margin-left: -0.25rem;
-    margin-right: -0.25rem;
-    padding-left: 0.25rem;
-    padding-right: 0.25rem;
   }
   
   .fc-toolbar-title {
