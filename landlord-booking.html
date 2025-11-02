@@ -421,20 +421,22 @@ main {
 }
 
 /* ==================== */
-/* FULL WIDTH CALENDAR - BREAK OUT OF CONTAINER */
+/* FULL WIDTH CALENDAR - COMPLETE FIX */
 /* ==================== */
 
-/* Make the calendar tab content break out of container */
+/* Remove ALL container constraints for calendar view */
 #calendarView {
   position: relative;
   z-index: 1;
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  margin-right: calc(-50vw + 50%);
-  padding-left: 2rem;
-  padding-right: 2rem;
+  width: 100vw !important;
+  margin-left: calc(-50vw + 50%) !important;
+  margin-right: calc(-50vw + 50%) !important;
+  padding-left: 15px !important;
+  padding-right: 15px !important;
   background: white;
-  box-sizing: border-box;
+  left: 0;
+  right: 0;
+  max-width: none !important;
 }
 
 #calendar {
@@ -446,22 +448,41 @@ main {
   min-height: 600px;
   width: 100% !important;
   max-width: 100% !important;
+  margin: 0 !important;
 }
 
-/* Fix Calendar Container - Full Width */
+/* Remove Bootstrap container constraints */
+.tab-pane#calendar {
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+}
+
+/* Force FullCalendar to take full width */
 .fc {
   width: 100% !important;
   max-width: 100% !important;
+  margin: 0 !important;
 }
 
-/* FullCalendar Toolbar Styling */
-.fc-toolbar {
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem !important;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e2e8f0;
+/* Calendar header full width */
+.fc-header-toolbar {
   width: 100% !important;
+  margin-bottom: 1.5em !important;
+}
+
+.fc-toolbar {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.fc-toolbar-chunk {
+  display: flex !important;
+  align-items: center !important;
 }
 
 .fc-toolbar-title {
@@ -471,40 +492,40 @@ main {
   margin: 0 !important;
 }
 
-.fc-button {
-  background: #f8fafc !important;
-  border: 1px solid #e2e8f0 !important;
-  color: #475569 !important;
-  font-weight: 500 !important;
-  padding: 0.5rem 1rem !important;
-  border-radius: 0.5rem !important;
-  transition: all 0.2s ease-in-out !important;
-  text-transform: none !important;
-  font-size: 0.875rem !important;
+/* Calendar view full width */
+.fc-view-harness {
+  width: 100% !important;
+  min-height: 500px !important;
 }
 
-.fc-button:hover {
-  background: #e2e8f0 !important;
-  border-color: #cbd5e1 !important;
-  color: #334155 !important;
-  transform: translateY(-1px);
+.fc-view {
+  width: 100% !important;
 }
 
-.fc-button:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+.fc-view-harness-active {
+  width: 100% !important;
+  min-height: 500px !important;
 }
 
-.fc-button-active {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
-  border-color: var(--primary) !important;
-  color: white !important;
+/* Calendar table full width */
+.fc-scroller {
+  width: 100% !important;
+  overflow: auto !important;
 }
 
-/* Calendar Header - Full Width */
+.fc-scroller-liquid-absolute {
+  width: 100% !important;
+}
+
+.fc-daygrid-body {
+  width: 100% !important;
+}
+
 .fc-col-header {
   width: 100% !important;
 }
 
+/* Calendar Header - Full Width */
 .fc-col-header-cell {
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
   border: 1px solid #e2e8f0 !important;
@@ -521,10 +542,6 @@ main {
 }
 
 /* Day Grid - Full Width */
-.fc-daygrid-body {
-  width: 100% !important;
-}
-
 .fc-daygrid-day-frame {
   min-height: 100px !important;
   width: 100% !important;
@@ -568,6 +585,36 @@ main {
   justify-content: center;
   margin: 0.25rem;
   font-weight: 600 !important;
+}
+
+/* Button Styling */
+.fc-button {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #475569 !important;
+  font-weight: 500 !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.2s ease-in-out !important;
+  text-transform: none !important;
+  font-size: 0.875rem !important;
+}
+
+.fc-button:hover {
+  background: #e2e8f0 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+  transform: translateY(-1px);
+}
+
+.fc-button:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+.fc-button-active {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+  border-color: var(--primary) !important;
+  color: white !important;
 }
 
 /* Ensure events are visible */
@@ -676,35 +723,25 @@ main {
   background: white !important;
 }
 
-/* Ensure calendar container is properly sized */
-.fc-view-harness {
-  min-height: 500px !important;
-  width: 100% !important;
-}
-
-.fc-view-harness-active {
-  min-height: 500px !important;
-  width: 100% !important;
-}
-
-.fc-scroller {
-  width: 100% !important;
-}
-
-/* Desktop Full Width Calendar */
+/* Desktop Full Width Calendar - EXPANDED */
 @media (min-width: 992px) {
   #calendar {
     padding: 2rem;
     min-height: 700px;
+    width: 100% !important;
+    max-width: none !important;
   }
   
   #calendarView {
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding-left: 30px !important;
+    padding-right: 30px !important;
+    margin-left: calc(-50vw + 50%) !important;
+    margin-right: calc(-50vw + 50%) !important;
+    width: 100vw !important;
   }
   
   .fc-toolbar {
-    flex-wrap: nowrap;
+    flex-wrap: nowrap !important;
   }
   
   .fc-toolbar-title {
@@ -719,6 +756,21 @@ main {
     font-size: 0.8rem !important;
     padding: 0.35rem 0.6rem !important;
   }
+  
+  /* Make calendar cells larger on desktop */
+  .fc-daygrid-day {
+    min-height: 120px !important;
+  }
+  
+  .fc-daygrid-day-number {
+    font-size: 1rem !important;
+    padding: 0.75rem !important;
+  }
+  
+  .fc-col-header-cell-cushion {
+    font-size: 1rem !important;
+    padding: 1rem 0.5rem !important;
+  }
 }
 
 /* Mobile Responsiveness */
@@ -730,10 +782,10 @@ main {
   }
   
   #calendarView {
-    margin-left: -0.5rem;
-    margin-right: -0.5rem;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    margin-left: -0.75rem !important;
+    margin-right: -0.75rem !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
   }
   
   .fc-toolbar {
@@ -786,10 +838,10 @@ main {
   }
   
   #calendarView {
-    margin-left: -0.25rem;
-    margin-right: -0.25rem;
-    padding-left: 0.25rem;
-    padding-right: 0.25rem;
+    margin-left: -0.5rem !important;
+    margin-right: -0.5rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
   }
   
   .fc-toolbar-title {
