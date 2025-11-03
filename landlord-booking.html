@@ -1910,7 +1910,84 @@ function renderFilteredBookings() {
   }
 }
 
-// Simplified Calendar Initialization - FIXED FOR ALL VIEWS
+// Generate calendar events from bookings - IMPROVED FOR TIMEGRID VIEWS
+function generateCalendarEvents() {
+  console.log('Generating calendar events for', filteredBookings.length, 'bookings');
+  
+  return filteredBookings.map(booking => {
+    const studentName = booking.student?.username || 'Unknown';
+    const propertyName = booking.property?.title || 'Unknown';
+    
+    // Parse dates properly
+    const startDate = new Date(booking.checkIn);
+    let endDate = new Date(booking.checkOut);
+    
+    console.log('Booking event:', {
+      studentName,
+      propertyName,
+      checkIn: booking.checkIn,
+      checkOut: booking.checkOut,
+      startDate: startDate.toString(),
+      endDate: endDate.toString()
+    });
+    
+    // Validate and fix dates for calendar display
+    if (!endDate || endDate <= startDate || isNaN(endDate.getTime())) {
+      // If end date is invalid, set it to 1 hour after start for proper timeGrid display
+      endDate = new Date(startDate);
+      endDate.setHours(startDate.getHours() + 1);
+    }
+    
+    // Ensure we have valid time components for timeGrid views
+    if (startDate.getHours() === 0 && startDate.getMinutes() === 0) {
+      // If no specific time is set, default to reasonable viewing hours
+      startDate.setHours(10, 0, 0, 0); // 10 AM
+      endDate.setHours(11, 0, 0, 0);   // 11 AM (1 hour duration)
+    }
+    
+    // Ensure minimum duration for timeGrid visibility
+    const minDuration = 30 * 60 * 1000; // 30 minutes in milliseconds
+    if ((endDate - startDate) < minDuration) {
+      endDate = new Date(startDate.getTime() + minDuration);
+    }
+    
+    const eventData = {
+      id: booking._id,
+      title: `${studentName} - ${propertyName}`,
+      start: startDate,
+      end: endDate,
+      extendedProps: {
+        bookingId: booking._id,
+        status: booking.status,
+        studentName: studentName,
+        propertyName: propertyName,
+        originalCheckIn: booking.checkIn,
+        originalCheckOut: booking.checkOut
+      },
+      className: `fc-event ${booking.status}`,
+      allDay: false,
+      display: 'block',
+      color: getEventColor(booking.status)
+    };
+    
+    console.log('Final event data:', eventData);
+    return eventData;
+  });
+}
+
+// Helper function to get event colors
+function getEventColor(status) {
+  const colors = {
+    pending: '#f59e0b',    // amber-500
+    confirmed: '#10b981',  // emerald-500
+    cancelled: '#ef4444',  // red-500
+    completed: '#6b7280',  // gray-500
+    rescheduled: '#3b82f6' // blue-500
+  };
+  return colors[status] || '#6b7280';
+}
+
+// Improved Calendar Initialization - FIXED FOR ALL VIEWS
 function initializeCalendar() {
   const calendarEl = document.getElementById('calendar');
   if (!calendarEl) {
@@ -1923,7 +2000,7 @@ function initializeCalendar() {
     calendar.destroy();
   }
   
-  // Create calendar with simplified configuration
+  // Create calendar with proper configuration
   calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
     headerToolbar: {
@@ -1932,8 +2009,35 @@ function initializeCalendar() {
       right: 'dayGridMonth,timeGridWeek,timeGridDay'
     },
     
-    // Simple events configuration
-    events: generateCalendarEvents(),
+    // View configurations
+    views: {
+      dayGridMonth: {
+        dayMaxEventRows: 3,
+        dayMaxEvents: true,
+        fixedWeekCount: false
+      },
+      timeGridWeek: {
+        slotMinTime: '06:00:00',
+        slotMaxTime: '22:00:00',
+        allDaySlot: false,
+        slotDuration: '00:30:00',
+        slotLabelInterval: '01:00:00'
+      },
+      timeGridDay: {
+        slotMinTime: '06:00:00',
+        slotMaxTime: '22:00:00',
+        allDaySlot: false,
+        slotDuration: '00:30:00',
+        slotLabelInterval: '01:00:00'
+      }
+    },
+    
+    // Events configuration - FIXED: Use function to generate events dynamically
+    events: function(fetchInfo, successCallback, failureCallback) {
+      const events = generateCalendarEvents();
+      console.log('Calendar fetching events:', events.length);
+      successCallback(events);
+    },
     
     // Event interactions
     eventClick: function(info) {
@@ -1941,36 +2045,73 @@ function initializeCalendar() {
       viewBookingDetails(bookingId);
     },
     
-    // Event styling
     eventClassNames: function(arg) {
-      return [arg.event.extendedProps.status];
+      const classes = [arg.event.extendedProps.status];
+      
+      // Add reschedule class if there's a pending reschedule request
+      const booking = allBookings.find(b => b._id === arg.event.extendedProps.bookingId);
+      if (booking && hasPendingReschedule(booking)) {
+        classes.push('rescheduled');
+      }
+      
+      return classes;
     },
     
     // Calendar display settings
     height: 'auto',
+    contentHeight: 'auto',
+    aspectRatio: 1.5,
     
-    // Time settings for timeGrid views
+    // Time settings
+    eventTimeFormat: {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    },
+    
+    slotLabelFormat: {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    },
+    
+    // Business hours
+    businessHours: {
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // All days
+      startTime: '08:00',
+      endTime: '20:00',
+    },
+    
     slotMinTime: '06:00:00',
     slotMaxTime: '22:00:00',
-    allDaySlot: false,
     
     // Event display
+    dayMaxEvents: 4,
     eventDisplay: 'block',
     nowIndicator: true,
     
-    // Event content rendering
+    // Event content rendering - FIXED FOR ALL VIEWS
     eventContent: function(arg) {
       const status = arg.event.extendedProps.status;
+      const icons = {
+        pending: '⏰',
+        confirmed: '✅',
+        cancelled: '❌',
+        completed: '✔️'
+      };
+      
       const title = arg.event.title;
       
       // Different content for timeGrid views vs month view
       if (arg.view.type.includes('timeGrid')) {
-        const shortTitle = title.length > 30 ? title.substring(0, 30) + '...' : title;
+        // For timeGrid views, show detailed event info
+        const shortTitle = title.length > 25 ? title.substring(0, 25) + '...' : title;
         return {
           html: `
             <div class="fc-timegrid-event-content p-1 w-100">
               <div class="d-flex align-items-center w-100">
-                <span class="flex-grow-1 small">${shortTitle}</span>
+                <span class="me-1 small">${icons[status] || '📅'}</span>
+                <span class="flex-grow-1 small text-truncate">${shortTitle}</span>
               </div>
               <div class="small text-muted">
                 ${arg.timeText}
@@ -1979,14 +2120,46 @@ function initializeCalendar() {
           `
         };
       } else {
+        // For month view, show compact info
         const shortTitle = title.length > 20 ? title.substring(0, 20) + '...' : title;
         return {
           html: `
             <div class="d-flex align-items-center w-100">
-              <span class="flex-grow-1 small">${shortTitle}</span>
+              <span class="me-1 small">${icons[status] || '📅'}</span>
+              <span class="flex-grow-1 small text-truncate">${shortTitle}</span>
             </div>
           `
         };
+      }
+    },
+    
+    // Handle view changes
+    datesSet: function(info) {
+      console.log('Calendar view changed to:', info.view.type);
+      // Ensure calendar renders properly after view changes
+      setTimeout(() => {
+        calendar.updateSize();
+      }, 100);
+    },
+    
+    // Event rendering callback
+    eventDidMount: function(info) {
+      console.log('Event mounted in', info.view.type, 'view:', info.event.title);
+      
+      // Add custom styling for different statuses in timeGrid views
+      if (info.view.type.includes('timeGrid')) {
+        const status = info.event.extendedProps.status;
+        const statusColors = {
+          pending: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+          confirmed: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)',
+          cancelled: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
+          completed: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)'
+        };
+        
+        if (statusColors[status]) {
+          info.el.style.background = statusColors[status];
+          info.el.style.borderLeft = `4px solid var(--${status === 'pending' ? 'warning' : status === 'confirmed' ? 'success' : status === 'cancelled' ? 'danger' : 'secondary'})`;
+        }
       }
     }
   });
@@ -1994,55 +2167,21 @@ function initializeCalendar() {
   // Render the calendar
   calendar.render();
   
-  console.log('Calendar initialized with events:', calendar.getEvents().length);
+  // Force calendar to update its size and take full width
+  setTimeout(() => {
+    calendar.updateSize();
+    // Remove any max-width constraints
+    calendarEl.style.maxWidth = 'none';
+    calendarEl.style.width = '100%';
+    
+    // Force the calendar to recalculate dimensions
+    calendar.updateSize();
+    
+    console.log('Calendar initialized with events:', calendar.getEvents().length);
+  }, 500);
 }
 
-// Simplified event generation
-function generateCalendarEvents() {
-  console.log('Generating calendar events for', filteredBookings.length, 'bookings');
-  
-  return filteredBookings.map(booking => {
-    const studentName = booking.student?.username || 'Unknown';
-    const propertyName = booking.property?.title || 'Unknown';
-    
-    // Parse dates properly
-    const startDate = new Date(booking.checkIn);
-    let endDate = new Date(booking.checkOut);
-    
-    // Validate and fix dates for calendar display
-    if (!endDate || endDate <= startDate || isNaN(endDate.getTime())) {
-      // If end date is invalid, set it to 1 hour after start
-      endDate = new Date(startDate);
-      endDate.setHours(startDate.getHours() + 1);
-    }
-    
-    // Ensure we have valid time components for timeGrid views
-    if (startDate.getHours() === 0 && startDate.getMinutes() === 0) {
-      // If no specific time is set, default to reasonable viewing hours
-      startDate.setHours(10, 0, 0, 0); // 10 AM
-      endDate.setHours(11, 0, 0, 0);   // 11 AM (1 hour duration)
-    }
-    
-    const eventData = {
-      id: booking._id,
-      title: `${studentName} - ${propertyName}`,
-      start: startDate,
-      end: endDate,
-      extendedProps: {
-        bookingId: booking._id,
-        status: booking.status,
-        studentName: studentName,
-        propertyName: propertyName
-      },
-      className: `fc-event ${booking.status}`,
-      allDay: false
-    };
-    
-    return eventData;
-  });
-}
-
-// Simplified calendar update
+// Update calendar with current filtered bookings - FIXED
 function updateCalendar() {
   if (calendar) {
     console.log('Updating calendar with', filteredBookings.length, 'bookings');
@@ -2052,12 +2191,17 @@ function updateCalendar() {
     
     // Add new events
     const events = generateCalendarEvents();
-    calendar.addEventSource(events);
+    console.log('Generated events:', events);
+    
+    if (events.length > 0) {
+      calendar.addEventSource(events);
+      console.log('Events added to calendar');
+    } else {
+      console.log('No events to add to calendar');
+    }
     
     // Refresh the calendar view
     calendar.render();
-    
-    console.log('Calendar updated with', calendar.getEvents().length, 'events');
   }
 }
 
