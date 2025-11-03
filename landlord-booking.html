@@ -937,12 +937,33 @@ main {
   border: 1px solid #e2e8f0 !important;
 }
 
-/* Weekend day styling - MAKE SURE THEY'RE VISIBLE */
+/* Weekend day styling - FIXED BLUE BACKGROUND */
 .fc-day-sat,
 .fc-day-sun {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%) !important;
   display: table-cell !important;
   visibility: visible !important;
+  border: 1px solid var(--primary-dark) !important;
+}
+
+.fc-day-sat .fc-daygrid-day-number,
+.fc-day-sun .fc-daygrid-day-number {
+  color: white !important;
+  font-weight: 700 !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Ensure weekend column headers also have blue background */
+.fc-col-header-cell.fc-day-sat,
+.fc-col-header-cell.fc-day-sun {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+  display: table-cell !important;
+  visibility: visible !important;
+}
+
+.fc-col-header-cell.fc-day-sat .fc-col-header-cell-cushion,
+.fc-col-header-cell.fc-day-sun .fc-col-header-cell-cushion {
+  color: white !important;
 }
 
 /* Ensure column headers show all days */
@@ -951,17 +972,6 @@ main {
   min-width: 14.2857% !important;
 }
 
-.fc-col-header-cell.fc-day-sat,
-.fc-col-header-cell.fc-day-sun {
-  display: table-cell !important;
-  visibility: visible !important;
-}
-
-.fc-day-sat .fc-daygrid-day-number,
-.fc-day-sun .fc-daygrid-day-number {
-  color: #64748b !important;
-  font-weight: 600 !important;
-}
 
 /* Current time indicator for week/day views */
 .fc-timegrid-now-indicator-line {
