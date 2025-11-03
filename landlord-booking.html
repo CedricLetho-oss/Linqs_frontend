@@ -937,13 +937,22 @@ main {
   border: 1px solid #e2e8f0 !important;
 }
 
-/* Weekend day styling - FIXED BLUE BACKGROUND */
+/* ALTERNATIVE: Weekend day styling - SUBTLE HOVER EFFECT */
 .fc-day-sat,
 .fc-day-sun {
   background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%) !important;
   display: table-cell !important;
   visibility: visible !important;
   border: 1px solid var(--primary-dark) !important;
+  transition: all 0.2s ease !important;
+}
+
+/* SUBTLE HOVER EFFECT FOR WEEKEND DAYS */
+.fc-day-sat:hover,
+.fc-day-sun:hover {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+  transform: scale(1.01) !important;
+  box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3) !important;
 }
 
 .fc-day-sat .fc-daygrid-day-number,
