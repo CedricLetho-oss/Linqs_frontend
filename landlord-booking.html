@@ -1443,15 +1443,12 @@ function renderFilteredBookings() {
   }
 }
 
-// Improved Calendar Initialization - FULL WIDTH (FIXED)
+// Initialize FullCalendar - OLD WORKING VERSION
 function initializeCalendar() {
   const calendarEl = document.getElementById('calendar');
-  if (!calendarEl) {
-    console.error('Calendar element not found');
-    return;
-  }
+  if (!calendarEl) return;
   
-  // Destroy existing calendar first
+  // DESTROY EXISTING CALENDAR FIRST to prevent multiple instances
   if (calendar) {
     calendar.destroy();
   }
@@ -1462,12 +1459,6 @@ function initializeCalendar() {
       left: 'prev,next today',
       center: 'title',
       right: 'dayGridMonth,timeGridWeek,timeGridDay'
-    },
-    views: {
-      dayGridMonth: {
-        dayMaxEventRows: 3,
-        dayMaxEvents: true
-      }
     },
     events: generateCalendarEvents(),
     eventClick: function(info) {
@@ -1486,8 +1477,6 @@ function initializeCalendar() {
       return classes;
     },
     height: 'auto',
-    contentHeight: 'auto',
-    aspectRatio: 1.3,
     eventTimeFormat: {
       hour: '2-digit',
       minute: '2-digit',
@@ -1499,48 +1488,37 @@ function initializeCalendar() {
       endTime: '18:00',
     },
     slotMinTime: '08:00',
-    slotMaxTime: '20:00',
-    dayMaxEvents: 4,
-    eventDisplay: 'block',
-    eventContent: function(arg) {
-      const status = arg.event.extendedProps.status;
-      const icons = {
-        pending: '⏰',
-        confirmed: '✅',
-        cancelled: '❌',
-        completed: '✔️'
-      };
-      
-      const title = arg.event.title;
-      const shortTitle = title.length > 30 ? title.substring(0, 30) + '...' : title;
-      
-      return {
-        html: `
-          <div class="d-flex align-items-center w-100">
-            <span class="me-1 small">${icons[status] || '📅'}</span>
-            <span class="flex-grow-1 small">${shortTitle}</span>
-          </div>
-        `
-      };
-    },
-    datesSet: function() {
-      // Ensure calendar renders properly after view changes
-      setTimeout(() => {
-        calendar.updateSize();
-      }, 100);
-    }
+    slotMaxTime: '20:00'
   });
   
   calendar.render();
-  
-  // Force calendar to update its size and take full width
-  setTimeout(() => {
-    calendar.updateSize();
-    // Remove any max-width constraints
-    calendarEl.style.maxWidth = 'none';
-    calendarEl.style.width = '100%';
-    calendar.updateSize();
-  }, 400);
+}
+
+// Generate calendar events from bookings - OLD WORKING VERSION
+function generateCalendarEvents() {
+  return filteredBookings.map(booking => {
+    const studentName = booking.student?.username || 'Unknown';
+    const propertyName = booking.property?.title || 'Unknown';
+    
+    return {
+      title: `${studentName} - ${propertyName}`,
+      start: booking.checkIn,
+      end: booking.checkOut,
+      extendedProps: {
+        bookingId: booking._id,
+        status: booking.status
+      },
+      className: `fc-event ${booking.status}`
+    };
+  });
+}
+
+// Update calendar with current filtered bookings - OLD WORKING VERSION
+function updateCalendar() {
+  if (calendar) {
+    calendar.removeAllEvents();
+    calendar.addEventSource(generateCalendarEvents());
+  }
 }
 
     // Generate calendar events from bookings
