@@ -930,15 +930,37 @@ main {
   background: #94a3b8;
 }
 
-/* Weekend day styling */
+/* Force all days to be equal width - INCLUDING WEEKENDS */
+.fc-daygrid-day {
+  width: 14.2857% !important; /* 100% / 7 days - THIS ENSURES WEEKENDS ARE VISIBLE */
+  min-width: 14.2857% !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+/* Weekend day styling - MAKE SURE THEY'RE VISIBLE */
 .fc-day-sat,
 .fc-day-sun {
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+  display: table-cell !important;
+  visibility: visible !important;
+}
+
+/* Ensure column headers show all days */
+.fc-col-header-cell {
+  width: 14.2857% !important;
+  min-width: 14.2857% !important;
+}
+
+.fc-col-header-cell.fc-day-sat,
+.fc-col-header-cell.fc-day-sun {
+  display: table-cell !important;
+  visibility: visible !important;
 }
 
 .fc-day-sat .fc-daygrid-day-number,
 .fc-day-sun .fc-daygrid-day-number {
   color: #64748b !important;
+  font-weight: 600 !important;
 }
 
 /* Current time indicator for week/day views */
