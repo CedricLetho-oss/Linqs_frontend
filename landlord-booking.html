@@ -987,13 +987,13 @@ main {
 /* TIME GRID VIEW FIXES - CRITICAL */
 /* ==================== */
 
-/* FIXED: TimeGrid View Specific Styling */
+/* FIXED: TimeGrid View Event Styling - ENSURES VISIBILITY */
 .fc-timegrid-event {
   border: none !important;
   border-radius: 8px !important;
   font-size: 0.75rem !important;
   padding: 0 !important;
-  margin: 2px 4px !important;
+  margin: 1px 2px !important;
   font-weight: 600 !important;
   cursor: pointer !important;
   transition: all 0.3s ease-in-out !important;
@@ -1002,41 +1002,48 @@ main {
   overflow: hidden !important;
   position: absolute !important;
   z-index: 2 !important;
+  min-height: 25px !important; /* Ensure minimum height */
 }
 
+
 .fc-timegrid-event:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
 .fc-timegrid-event .fc-event-main {
-  padding: 0.75rem !important;
+  padding: 0.5rem !important;
   height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
 }
+
 
 .fc-timegrid-event .fc-event-title {
   font-weight: 600 !important;
-  white-space: normal !important;
+  white-space: nowrap !important;
   overflow: hidden !important;
+  text-overflow: ellipsis !important;
   display: block !important;
-  line-height: 1.4 !important;
-  max-height: 100% !important;
+  line-height: 1.2 !important;
+  font-size: 0.7rem !important;
 }
 
-/* FIXED: 2-hour slot duration with proper positioning */
+/* Ensure timeGrid slots are properly sized */
 .fc-timegrid-slot {
-  height: 80px !important; /* 2-hour slots */
+  height: 60px !important; /* Slightly smaller slots for better fit */
   border-bottom: 1px solid #e2e8f0 !important;
   position: relative;
 }
 
 .fc-timegrid-slot-label {
   vertical-align: top !important;
-  padding-top: 1.5rem !important;
+  padding-top: 1rem !important;
   font-weight: 600 !important;
   color: #475569 !important;
   border-right: 1px solid #e2e8f0 !important;
   background: #f8fafc;
+  font-size: 0.8rem !important;
 }
 
 .fc-timegrid-axis-frame {
@@ -2047,7 +2054,7 @@ function renderFilteredBookings() {
   }
 }
 
-// Generate calendar events from bookings - FIXED FOR ALL VIEWS
+// Generate calendar events from bookings - COMPLETELY FIXED FOR ALL VIEWS
 function generateCalendarEvents() {
   console.log('Generating calendar events for', filteredBookings.length, 'bookings');
   
@@ -2059,17 +2066,36 @@ function generateCalendarEvents() {
     const startDate = new Date(booking.checkIn);
     let endDate = new Date(booking.checkOut);
     
+    console.log('Processing booking:', {
+      studentName,
+      propertyName,
+      originalCheckIn: booking.checkIn,
+      originalCheckOut: booking.checkOut,
+      parsedStart: startDate.toString(),
+      parsedEnd: endDate.toString()
+    });
+    
     // Validate and fix dates for calendar display
     if (!endDate || endDate <= startDate || isNaN(endDate.getTime())) {
-      // If end date is invalid, set it to 1 hour after start for timeGrid views
+      // If end date is invalid, set it to 2 hours after start for proper display
       endDate = new Date(startDate);
-      endDate.setHours(startDate.getHours() + 1);
+      endDate.setHours(startDate.getHours() + 2);
+      console.log('Fixed end date to:', endDate.toString());
     }
     
-    // Ensure minimum duration for visibility (30 minutes)
-    const minDuration = 30 * 60 * 1000; // 30 minutes in milliseconds
+    // Ensure we have valid time components for timeGrid views
+    if (startDate.getHours() === 0 && startDate.getMinutes() === 0) {
+      // If no specific time is set, default to reasonable viewing hours (10 AM)
+      startDate.setHours(10, 0, 0, 0);
+      endDate.setHours(12, 0, 0, 0);
+      console.log('Set default times - Start:', startDate.toString(), 'End:', endDate.toString());
+    }
+    
+    // Ensure minimum duration for timeGrid visibility (at least 1 hour)
+    const minDuration = 60 * 60 * 1000; // 1 hour in milliseconds
     if ((endDate - startDate) < minDuration) {
       endDate = new Date(startDate.getTime() + minDuration);
+      console.log('Extended duration to minimum 1 hour');
     }
     
     const eventData = {
@@ -2081,16 +2107,45 @@ function generateCalendarEvents() {
         bookingId: booking._id,
         status: booking.status,
         studentName: studentName,
-        propertyName: propertyName
+        propertyName: propertyName,
+        originalCheckIn: booking.checkIn,
+        originalCheckOut: booking.checkOut
       },
       className: `fc-event ${booking.status}`,
-      allDay: false,
+      allDay: false, // CRITICAL: Ensure events are NOT all-day
       display: 'block',
-      color: getEventColor(booking.status)
+      backgroundColor: getEventColor(booking.status),
+      borderColor: getEventBorderColor(booking.status),
+      textColor: getEventTextColor(booking.status)
     };
     
+    console.log('Final event data:', eventData);
     return eventData;
   });
+}
+
+// Helper function to get event border colors
+function getEventBorderColor(status) {
+  const colors = {
+    pending: '#d97706',    // amber-600
+    confirmed: '#047857',  // emerald-600
+    cancelled: '#dc2626',  // red-600
+    completed: '#4b5563',  // gray-600
+    rescheduled: '#2563eb' // blue-600
+  };
+  return colors[status] || '#6b7280';
+}
+
+// Helper function to get event text colors
+function getEventTextColor(status) {
+  const colors = {
+    pending: '#92400e',    // amber-900
+    confirmed: '#064e3b',  // emerald-900
+    cancelled: '#7f1d1d',  // red-900
+    completed: '#1f2937',  // gray-900
+    rescheduled: '#1e40af' // blue-900
+  };
+  return colors[status] || '#1f2937';
 }
 
 // Helper function to get event colors
