@@ -1521,33 +1521,6 @@ function updateCalendar() {
   }
 }
 
-    // Generate calendar events from bookings
-    function generateCalendarEvents() {
-      return filteredBookings.map(booking => {
-        const studentName = booking.student?.username || 'Unknown';
-        const propertyName = booking.property?.title || 'Unknown';
-        
-        return {
-          title: `${studentName} - ${propertyName}`,
-          start: booking.checkIn,
-          end: booking.checkOut,
-          extendedProps: {
-            bookingId: booking._id,
-            status: booking.status
-          },
-          className: `fc-event ${booking.status}`
-        };
-      });
-    }
-
-    // Update calendar with current filtered bookings - FIXED
-    function updateCalendar() {
-      if (calendar) {
-        calendar.removeAllEvents();
-        calendar.addEventSource(generateCalendarEvents());
-      }
-    }
-
     // Cleanup calendar on page unload
     function cleanupCalendar() {
       if (calendar) {
@@ -2198,27 +2171,17 @@ async function viewBookingDetails(bookingId) {
         }
       });
       
-      // Handle tab changes to reinitialize calendar when needed
+      // Handle tab changes to reinitialize calendar when needed - SIMPLIFIED
       const calendarTab = document.getElementById('calendar-tab');
       if (calendarTab) {
         calendarTab.addEventListener('click', function() {
           setTimeout(() => {
             if (!calendar) {
               initializeCalendar();
-            } else {
-              // Force calendar to refresh and resize to full width
-              const calendarEl = document.getElementById('calendar');
-              if (calendarEl) {
-                calendarEl.style.maxWidth = 'none';
-                calendarEl.style.width = '100%';
-              }
-              calendar.render();
-              setTimeout(() => {
-                calendar.updateSize();
-                updateCalendar(); // Refresh events
-              }, 300);
+            } else if (calendar.getEvents().length === 0) {
+              updateCalendar();
             }
-          }, 200);
+          }, 100);
         });
       }
       
