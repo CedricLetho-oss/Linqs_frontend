@@ -422,7 +422,7 @@ main {
 
 /* ==================== */
 /* ==================== */
-/* FULL WIDTH CALENDAR - FIXED */
+/* FULL WIDTH CALENDAR - COMPLETELY FIXED */
 /* ==================== */
 
 /* Make the calendar tab content break out of container */
@@ -459,76 +459,120 @@ main {
   padding: 0;
 }
 
-/* FullCalendar Toolbar Styling - FIXED HEADER */
+/* ENHANCED: Calendar Toolbar Styling - CREATIVE DESIGN */
 .fc-toolbar {
   flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1.5rem !important;
-  padding-bottom: 1rem;
+  padding: 1.5rem 1rem;
   border-bottom: 1px solid #e2e8f0;
   width: 100% !important;
-  padding: 0 1rem;
   position: relative;
   z-index: 5;
-  background: white;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 12px;
+  margin: 1rem 0 2rem 0 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .fc-toolbar-title {
-  font-size: 1.5rem !important;
-  font-weight: 700 !important;
-  color: #1e293b !important;
+  font-size: 1.75rem !important;
+  font-weight: 800 !important;
+  color: var(--primary) !important;
   margin: 0 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  letter-spacing: -0.025em;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* FIXED: Calendar Navigation Buttons */
+/* ENHANCED: Calendar Navigation Buttons - CREATIVE DESIGN */
 .fc-button {
-  background: #f8fafc !important;
-  border: 1px solid #e2e8f0 !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+  border: 2px solid #e2e8f0 !important;
   color: #475569 !important;
-  font-weight: 500 !important;
-  padding: 0.5rem 1rem !important;
-  border-radius: 0.5rem !important;
-  transition: all 0.2s ease-in-out !important;
+  font-weight: 600 !important;
+  padding: 0.75rem 1.25rem !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease-in-out !important;
   text-transform: none !important;
-  font-size: 0.875rem !important;
+  font-size: 0.9rem !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  min-height: 38px !important;
+  min-height: 44px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.fc-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.fc-button:hover::before {
+  left: 100%;
 }
 
 .fc-button:hover {
-  background: #e2e8f0 !important;
-  border-color: #cbd5e1 !important;
-  color: #334155 !important;
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%) !important;
+  border-color: var(--primary-light) !important;
+  color: var(--primary) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(59, 130, 246, 0.15);
 }
 
 .fc-button:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
 }
 
 .fc-button-active {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
   border-color: var(--primary) !important;
   color: white !important;
+  box-shadow: 0 4px 8px rgba(30, 64, 175, 0.3);
 }
 
-/* FIXED: Ensure navigation buttons have proper icons */
-.fc-prev-button::before {
+/* FIXED: Navigation buttons with proper icons */
+.fc-prev-button, .fc-next-button {
+  position: relative;
+  min-width: 44px !important;
+  padding: 0.75rem !important;
+}
+
+.fc-prev-button::after {
   content: "‹";
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   line-height: 1;
+  font-weight: bold;
 }
 
-.fc-next-button::before {
+.fc-next-button::after {
   content: "›";
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   line-height: 1;
+  font-weight: bold;
 }
 
 .fc-today-button {
-  font-weight: 600 !important;
+  font-weight: 700 !important;
+  background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%) !important;
+  border-color: var(--warning) !important;
+  color: white !important;
+}
+
+.fc-today-button:hover {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important;
+  border-color: #d97706 !important;
 }
 
 /* Calendar Header - Full Width FIXED */
@@ -545,20 +589,20 @@ main {
 }
 
 .fc-col-header-cell {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
-  border: 1px solid #e2e8f0 !important;
-  padding: 0.75rem 0.5rem !important;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+  border: 1px solid var(--primary-dark) !important;
+  padding: 1rem 0.5rem !important;
   position: sticky;
   top: 0;
 }
 
 .fc-col-header-cell-cushion {
-  color: #475569 !important;
-  font-weight: 600 !important;
-  font-size: 0.875rem !important;
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
   text-decoration: none !important;
   text-transform: uppercase;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.05em;
 }
 
 /* Day Grid - Full Width FIXED */
@@ -574,6 +618,9 @@ main {
 .fc-scrollgrid {
   width: 100% !important;
   table-layout: fixed !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .fc-scrollgrid-sync-table {
@@ -582,54 +629,62 @@ main {
 
 /* Day Cells - FIXED SIZING */
 .fc-daygrid-day-frame {
-  min-height: 100px !important;
+  min-height: 120px !important;
   width: 100% !important;
   height: 100% !important;
+  padding: 0.5rem !important;
 }
 
 .fc-daygrid-day {
   border: 1px solid #e2e8f0 !important;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s ease-in-out;
   background: white;
   width: 14.2857% !important; /* 100% / 7 days */
-  height: 120px !important;
+  height: 140px !important;
+  position: relative;
 }
 
 .fc-daygrid-day:hover {
-  background: #f8fafc !important;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
   transform: scale(1.02);
   z-index: 1;
   position: relative;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .fc-daygrid-day.fc-day-today {
   background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+  border: 2px solid var(--warning) !important;
 }
 
 .fc-daygrid-day-number {
   color: #475569 !important;
-  font-weight: 500 !important;
-  padding: 0.5rem !important;
+  font-weight: 600 !important;
+  padding: 0.75rem !important;
   text-decoration: none !important;
-  font-size: 0.875rem !important;
+  font-size: 0.9rem !important;
+  background: rgba(248, 250, 252, 0.8);
+  border-radius: 6px;
+  margin: 0.25rem;
 }
 
 .fc-day-today .fc-daygrid-day-number {
   background: var(--warning) !important;
   color: white !important;
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0.25rem;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
 }
 
 /* Ensure events are visible and properly contained */
 .fc-event {
-  z-index: 1 !important;
+  z-index: 2 !important;
   position: relative !important;
   max-width: 100% !important;
   overflow: hidden !important;
@@ -638,31 +693,32 @@ main {
 /* Events - Enhanced Styling */
 .fc-event {
   border: none !important;
-  border-radius: 0.5rem !important;
-  font-size: 0.75rem !important;
-  padding: 0.25rem 0.5rem !important;
+  border-radius: 8px !important;
+  font-size: 0.8rem !important;
+  padding: 0.5rem 0.75rem !important;
   margin: 0.125rem 0.25rem !important;
-  font-weight: 500 !important;
+  font-weight: 600 !important;
   cursor: pointer !important;
-  transition: all 0.2s ease-in-out !important;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+  transition: all 0.3s ease-in-out !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
   border-left: 4px solid !important;
   width: calc(100% - 0.5rem) !important;
   box-sizing: border-box !important;
+  backdrop-filter: blur(10px);
 }
 
 .fc-event:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
 .fc-event .fc-event-main {
-  padding: 0.125rem 0 !important;
+  padding: 0.25rem 0 !important;
   width: 100% !important;
 }
 
 .fc-event .fc-event-title {
-  font-weight: 500 !important;
+  font-weight: 600 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -672,33 +728,35 @@ main {
 
 /* More Events Popover */
 .fc-daygrid-more-link {
-  background: #f8fafc !important;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
   color: var(--primary) !important;
-  font-size: 0.75rem !important;
-  font-weight: 500 !important;
-  border-radius: 0.25rem !important;
-  padding: 0.125rem 0.375rem !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  padding: 0.5rem 0.75rem !important;
   margin: 0.125rem 0.25rem !important;
   text-decoration: none !important;
   border: 1px solid #e2e8f0 !important;
   width: calc(100% - 0.5rem) !important;
   display: block !important;
   box-sizing: border-box !important;
+  transition: all 0.3s ease;
 }
 
 .fc-daygrid-more-link:hover {
   background: var(--primary) !important;
   color: white !important;
+  transform: translateY(-1px);
 }
 
 /* Ensure calendar container is properly sized */
 .fc-view-harness {
-  min-height: 500px !important;
+  min-height: 600px !important;
   width: 100% !important;
 }
 
 .fc-view-harness-active {
-  min-height: 500px !important;
+  min-height: 600px !important;
   width: 100% !important;
 }
 
@@ -720,24 +778,24 @@ main {
   
   .fc-toolbar {
     flex-wrap: nowrap;
-    padding: 0 2rem;
+    padding: 1.5rem 2rem;
   }
   
   .fc-toolbar-title {
-    font-size: 1.75rem !important;
+    font-size: 2rem !important;
   }
   
   .fc-daygrid-day-frame {
-    min-height: 120px !important;
+    min-height: 140px !important;
   }
   
   .fc-daygrid-day {
-    height: 140px !important;
+    height: 160px !important;
   }
   
   .fc-event {
-    font-size: 0.8rem !important;
-    padding: 0.35rem 0.6rem !important;
+    font-size: 0.85rem !important;
+    padding: 0.6rem 0.8rem !important;
   }
 }
 
@@ -758,13 +816,13 @@ main {
   
   .fc-toolbar {
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1rem;
     text-align: center;
-    padding: 0 0.5rem;
+    padding: 1rem 0.5rem;
   }
   
   .fc-toolbar-title {
-    font-size: 1.25rem !important;
+    font-size: 1.5rem !important;
     order: -1;
   }
   
@@ -773,27 +831,31 @@ main {
     justify-content: center;
     flex-wrap: wrap;
     gap: 0.5rem;
+    width: 100%;
   }
   
   .fc-button {
-    padding: 0.375rem 0.75rem !important;
+    padding: 0.6rem 1rem !important;
     font-size: 0.8rem !important;
+    min-height: 40px !important;
+    flex: 1;
+    min-width: 80px;
   }
   
   .fc-col-header-cell-cushion {
-    font-size: 0.75rem !important;
-    padding: 0.5rem 0.25rem !important;
+    font-size: 0.7rem !important;
+    padding: 0.75rem 0.25rem !important;
   }
   
   .fc-daygrid-day-number {
-    font-size: 0.75rem !important;
-    padding: 0.25rem !important;
+    font-size: 0.7rem !important;
+    padding: 0.5rem !important;
   }
   
   .fc-event {
-    font-size: 0.7rem !important;
-    padding: 0.125rem 0.25rem !important;
-    margin: 0.0625rem 0.125rem !important;
+    font-size: 0.65rem !important;
+    padding: 0.3rem 0.5rem !important;
+    margin: 0.1rem 0.2rem !important;
   }
   
   .fc-daygrid-day-frame {
@@ -801,7 +863,7 @@ main {
   }
   
   .fc-daygrid-day {
-    height: 90px !important;
+    height: 100px !important;
   }
 }
 
@@ -812,34 +874,26 @@ main {
   }
   
   .fc-toolbar-title {
-    font-size: 1.125rem !important;
+    font-size: 1.25rem !important;
   }
   
   .fc-button {
-    padding: 0.25rem 0.5rem !important;
+    padding: 0.5rem 0.75rem !important;
     font-size: 0.75rem !important;
+    min-height: 36px !important;
   }
   
   .fc-event-title {
-    display: none !important;
-  }
-  
-  .fc-event {
-    min-height: 4px !important;
-    padding: 0 !important;
-    margin: 1px !important;
-  }
-  
-  .fc-event:before {
-    content: '';
-    display: block;
-    width: 100%;
-    height: 4px;
-    border-radius: 2px;
+    font-size: 0.6rem !important;
   }
   
   .fc-daygrid-day {
-    height: 70px !important;
+    height: 80px !important;
+  }
+  
+  .fc-daygrid-day-frame {
+    min-height: 60px !important;
+    padding: 0.25rem !important;
   }
 }
 
@@ -859,17 +913,17 @@ main {
 
 /* Custom scrollbar for calendar */
 .fc-scroller::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .fc-scroller::-webkit-scrollbar-track {
   background: #f1f5f9;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .fc-scroller::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .fc-scroller::-webkit-scrollbar-thumb:hover {
@@ -879,7 +933,7 @@ main {
 /* Weekend day styling */
 .fc-day-sat,
 .fc-day-sun {
-  background: #f8fafc !important;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
 }
 
 .fc-day-sat .fc-daygrid-day-number,
@@ -890,62 +944,79 @@ main {
 /* Current time indicator for week/day views */
 .fc-timegrid-now-indicator-line {
   border-color: #ef4444 !important;
-  border-width: 2px !important;
+  border-width: 3px !important;
 }
 
 .fc-timegrid-now-indicator-arrow {
   border-color: #ef4444 !important;
 }
 
-/* TimeGrid View Specific Styling - FIXED FOR 2-HOUR SLOTS */
+/* ==================== */
+/* TIME GRID VIEW FIXES - CRITICAL */
+/* ==================== */
+
+/* FIXED: TimeGrid View Specific Styling */
 .fc-timegrid-event {
   border: none !important;
-  border-radius: 0.5rem !important;
+  border-radius: 8px !important;
   font-size: 0.75rem !important;
   padding: 0 !important;
-  margin: 1px 2px !important;
-  font-weight: 500 !important;
+  margin: 2px 4px !important;
+  font-weight: 600 !important;
   cursor: pointer !important;
-  transition: all 0.2s ease-in-out !important;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+  transition: all 0.3s ease-in-out !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
   border-left: 4px solid !important;
   overflow: hidden !important;
+  position: absolute !important;
+  z-index: 2 !important;
 }
 
 .fc-timegrid-event:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
 .fc-timegrid-event .fc-event-main {
-  padding: 0.5rem !important;
+  padding: 0.75rem !important;
+  height: 100% !important;
 }
 
 .fc-timegrid-event .fc-event-title {
-  font-weight: 500 !important;
+  font-weight: 600 !important;
   white-space: normal !important;
   overflow: hidden !important;
   display: block !important;
-  line-height: 1.3 !important;
+  line-height: 1.4 !important;
+  max-height: 100% !important;
 }
 
-/* FIXED: 2-hour slot duration */
+/* FIXED: 2-hour slot duration with proper positioning */
 .fc-timegrid-slot {
-  height: 4em !important; /* Double the height for 2-hour slots */
+  height: 80px !important; /* 2-hour slots */
+  border-bottom: 1px solid #e2e8f0 !important;
+  position: relative;
 }
 
 .fc-timegrid-slot-label {
   vertical-align: top !important;
-  padding-top: 1em !important; /* Adjust padding for taller slots */
+  padding-top: 1.5rem !important;
+  font-weight: 600 !important;
+  color: #475569 !important;
+  border-right: 1px solid #e2e8f0 !important;
+  background: #f8fafc;
 }
 
 .fc-timegrid-axis-frame {
   justify-content: center !important;
+  background: #f8fafc;
+  font-weight: 600;
+  color: #475569;
 }
 
 /* Ensure timeGrid views have proper spacing */
 .fc-timegrid-body {
-  min-height: 400px !important;
+  min-height: 500px !important;
 }
 
 /* Better event colors for timeGrid views */
@@ -977,6 +1048,16 @@ main {
   background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%) !important;
   color: #1e40af !important;
   border-left-color: var(--info) !important;
+}
+
+/* FIXED: Time grid column styling */
+.fc-timegrid-col {
+  position: relative !important;
+}
+
+.fc-timegrid-col-frame {
+  position: relative !important;
+  height: 100% !important;
 }
 
 /* Modal Improvements for Mobile */
@@ -1934,7 +2015,7 @@ function renderFilteredBookings() {
   }
 }
 
-// Generate calendar events from bookings - IMPROVED FOR TIMEGRID VIEWS
+// Generate calendar events from bookings - COMPLETELY FIXED FOR TIMEGRID VIEWS
 function generateCalendarEvents() {
   console.log('Generating calendar events for', filteredBookings.length, 'bookings');
   
@@ -2011,7 +2092,7 @@ function getEventColor(status) {
   return colors[status] || '#6b7280';
 }
 
-// Improved Calendar Initialization - FIXED FOR ALL VIEWS
+// COMPLETELY FIXED Calendar Initialization
 function initializeCalendar() {
   const calendarEl = document.getElementById('calendar');
   if (!calendarEl) {
@@ -2045,14 +2126,26 @@ function initializeCalendar() {
         slotMaxTime: '22:00:00',
         allDaySlot: false,
         slotDuration: '02:00:00', // FIXED: 2-hour slots
-        slotLabelInterval: '02:00:00' // FIXED: Show labels every 2 hours
+        slotLabelInterval: '02:00:00', // FIXED: Show labels every 2 hours
+        slotLabelFormat: {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          meridiem: false
+        }
       },
       timeGridDay: {
         slotMinTime: '06:00:00',
         slotMaxTime: '22:00:00',
         allDaySlot: false,
         slotDuration: '02:00:00', // FIXED: 2-hour slots
-        slotLabelInterval: '02:00:00' // FIXED: Show labels every 2 hours
+        slotLabelInterval: '02:00:00', // FIXED: Show labels every 2 hours
+        slotLabelFormat: {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          meridiem: false
+        }
       }
     },
     
@@ -2134,13 +2227,15 @@ function initializeCalendar() {
         const shortTitle = title.length > 25 ? title.substring(0, 25) + '...' : title;
         return {
           html: `
-            <div class="fc-timegrid-event-content p-1 w-100">
-              <div class="d-flex align-items-center w-100">
-                <span class="me-1 small">${icons[status] || '📅'}</span>
-                <span class="flex-grow-1 small text-truncate">${shortTitle}</span>
-              </div>
-              <div class="small text-muted">
-                ${arg.timeText}
+            <div class="fc-timegrid-event-content p-2 w-100 h-100">
+              <div class="d-flex align-items-start w-100 h-100">
+                <span class="me-2 small flex-shrink-0">${icons[status] || '📅'}</span>
+                <div class="flex-grow-1">
+                  <div class="small fw-bold text-truncate">${shortTitle}</div>
+                  <div class="x-small text-muted mt-1">
+                    ${arg.timeText}
+                  </div>
+                </div>
               </div>
             </div>
           `
@@ -2186,6 +2281,10 @@ function initializeCalendar() {
           info.el.style.background = statusColors[status];
           info.el.style.borderLeft = `4px solid var(--${status === 'pending' ? 'warning' : status === 'confirmed' ? 'success' : status === 'cancelled' ? 'danger' : 'secondary'})`;
         }
+        
+        // Ensure proper positioning in timeGrid views
+        info.el.style.position = 'absolute';
+        info.el.style.zIndex = '2';
       }
     }
   });
