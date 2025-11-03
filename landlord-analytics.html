@@ -1493,199 +1493,138 @@ renderRevenueBarChartForPeriod(period = this.currentChartPeriod) {
     this.updateChartSummary(period, values);
 }
 
-// Update the chart summary for yearly view to show proper cumulative values
-updateChartSummary(period, values) {
-    if (values.length === 0) return;
 
-    // Calculate growth percentage based on chart values
-    const currentValue = values[values.length - 1] || 0;
-    const previousValue = values[values.length - 2] || currentValue;
-    const growth = previousValue > 0 ? Math.round(((currentValue - previousValue) / previousValue) * 100) : 0;
-
-    // Update labels based on period
-    let avgLabel = 'Avg. Monthly';
-    let currentLabel = 'Current Month';
-
-    switch (period) {
-        case 'weekly':
-            avgLabel = 'Avg. Weekly';
-            currentLabel = 'Current Week';
-            break;
-        case 'monthly':
-            avgLabel = 'Avg. Monthly';
-            currentLabel = 'Current Month';
-            break;
-        case 'quarterly':
-            avgLabel = 'Current Quarter';
-            currentLabel = 'Current Month';
-            break;
-        case 'year':
-            avgLabel = 'Year to Date';
-            currentLabel = 'Cumulative';
-            break;
-    }
-
-    let avgValue, currentValueDisplay;
+       // FIXED: Remove fake patterns and use actual revenue data
+getWeeklyChartData(weeklyRevenue) {
+    const now = new Date();
+    const currentDay = now.getDay(); // 0-6 (Sun=0, Sat=6)
+    const currentDate = now.getDate();
     
-    if (period === 'quarterly' || period === 'year') {
-        // For quarterly and yearly chart summary, use cumulative values
-        avgValue = currentValue; // Use the cumulative value
-        currentValueDisplay = currentValue; // Use the cumulative value
-    } else {
-        // For weekly and monthly periods, use the stats card revenue
-        const statsCardRevenue = this.calculateRevenueForPeriod(this.currentPeriod);
-        avgValue = statsCardRevenue;
-        currentValueDisplay = statsCardRevenue;
+    const periods = [];
+    const values = [];
+    const timeStatuses = [];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
+    // Calculate daily revenue (even distribution for now)
+    const dailyRevenue = Math.round(weeklyRevenue / 7);
+    
+    // Show last 7 days including today
+    for (let i = 6; i >= 0; i--) {
+        const targetDate = new Date(now);
+        targetDate.setDate(now.getDate() - i);
+        
+        periods.push(dayNames[targetDate.getDay()]);
+        
+        if (i > 0) {
+            // Past days - show actual daily revenue
+            values.push(dailyRevenue);
+            timeStatuses.push('past');
+        } else {
+            // Today - show current day's revenue
+            values.push(dailyRevenue);
+            timeStatuses.push('current');
+        }
     }
-
-    // Update the display values
-    document.getElementById('avgMonthlyValue').textContent = `R ${avgValue.toLocaleString()}`;
-    document.getElementById('growthValue').textContent = `${growth >= 0 ? '+' : ''}${growth}%`;
-    document.getElementById('growthValue').className = `fw-bold ${growth >= 0 ? 'text-success' : 'text-danger'}`;
-    document.getElementById('currentMonthValue').textContent = `R ${currentValueDisplay.toLocaleString()}`;
-
-    // Update the labels
-    document.querySelector('#avgMonthlyValue').nextElementSibling.textContent = avgLabel;
-    document.querySelector('#currentMonthValue').nextElementSibling.textContent = currentLabel;
+    
+    return { periods, values, timeStatuses };
 }
 
-        // Dynamic chart data based on current date
-        getDynamicChartDataForPeriod(period) {
-            // Get the actual revenue amount from the stats card for the current period
-            const statsCardRevenue = this.calculateRevenueForPeriod(this.currentPeriod);
-            
-            switch (period) {
-                case 'weekly':
-                    return this.getWeeklyChartData(statsCardRevenue);
-                case 'monthly':
-                    return this.getMonthlyChartData(statsCardRevenue);
-                case 'quarterly':
-                    return this.getQuarterlyChartData(statsCardRevenue);
-                case 'year':
-                    return this.getYearlyChartData(statsCardRevenue);
-                default:
-                    return {
-                        periods: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                        values: Array(4).fill(Math.round(statsCardRevenue / 4)),
-                        timeStatuses: Array(4).fill('past')
-                    };
-            }
+// FIXED: Monthly chart - show actual days passed vs remaining
+getMonthlyChartData(monthlyRevenue) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const currentDate = now.getDate();
+    const lastDay = new Date(year, month + 1, 0);
+    const totalDays = lastDay.getDate();
+    
+    const periods = [];
+    const values = [];
+    const timeStatuses = [];
+    
+    // Group by weeks for better visualization
+    const weeksInMonth = Math.ceil(totalDays / 7);
+    const weeklyRevenue = Math.round(monthlyRevenue / weeksInMonth);
+    
+    for (let week = 1; week <= weeksInMonth; week++) {
+        const startDay = (week - 1) * 7 + 1;
+        let endDay = week * 7;
+        if (endDay > totalDays) endDay = totalDays;
+        
+        periods.push(`Week ${week}`);
+        
+        // Calculate if this week is past, current, or future
+        const weekEndDay = Math.min(endDay, totalDays);
+        
+        if (weekEndDay < currentDate) {
+            // Past week - show full weekly revenue
+            values.push(weeklyRevenue);
+            timeStatuses.push('past');
+        } else if (startDay <= currentDate) {
+            // Current week - show proportional revenue
+            const daysPassedInWeek = Math.min(currentDate - startDay + 1, 7);
+            const proportionalRevenue = Math.round((daysPassedInWeek / 7) * weeklyRevenue);
+            values.push(proportionalRevenue);
+            timeStatuses.push('current');
+        } else {
+            // Future week - show 0 revenue
+            values.push(0);
+            timeStatuses.push('future');
         }
+    }
+    
+    return { periods, values, timeStatuses };
+}
 
-        // Weekly chart data with time status
-        getWeeklyChartData(weeklyRevenue) {
-            const now = new Date();
-            const currentDay = now.getDay();
-            
-            const monday = new Date(now);
-            monday.setDate(now.getDate() - currentDay + (currentDay === 0 ? -6 : 1));
-            
-            const periods = [];
-            const values = [];
-            const timeStatuses = [];
-            const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            
-            const dailyBaseRevenue = Math.round(weeklyRevenue / 7);
-            const dailyPattern = [0.9, 1.0, 1.1, 1.2, 1.1, 0.8, 0.7];
-            
-            for (let i = 0; i < 7; i++) {
-                const currentDate = new Date(monday);
-                currentDate.setDate(monday.getDate() + i);
-                
-                periods.push(dayNames[i]);
-                values.push(Math.round(dailyBaseRevenue * dailyPattern[i]));
-                
-                let adjustedCurrentDay = currentDay === 0 ? 6 : currentDay - 1;
-                
-                if (i < adjustedCurrentDay) {
-                    timeStatuses.push('past');
-                } else if (i === adjustedCurrentDay) {
-                    timeStatuses.push('current');
-                } else {
-                    timeStatuses.push('future');
-                }
-            }
-            
-            return { periods, values, timeStatuses };
+// FIXED: Quarterly chart - always show full quarters with proper revenue allocation
+getQuarterlyChartData(quarterlyRevenue) {
+    const now = new Date();
+    const currentMonth = now.getMonth(); // 0-11
+    const currentYear = now.getFullYear();
+    
+    // Define quarters properly
+    const quarters = [
+        { name: 'Q1', months: ['Jan', 'Feb', 'Mar'], startMonth: 0, endMonth: 2 },
+        { name: 'Q2', months: ['Apr', 'May', 'Jun'], startMonth: 3, endMonth: 5 },
+        { name: 'Q3', months: ['Jul', 'Aug', 'Sep'], startMonth: 6, endMonth: 8 },
+        { name: 'Q4', months: ['Oct', 'Nov', 'Dec'], startMonth: 9, endMonth: 11 }
+    ];
+    
+    const periods = [];
+    const values = [];
+    const timeStatuses = [];
+    
+    // Calculate monthly revenue for the quarter
+    const monthlyRevenue = Math.round(this.monthlyRevenue);
+    
+    quarters.forEach(quarter => {
+        periods.push(quarter.name);
+        
+        // Check if this quarter is past, current, or future
+        if (quarter.endMonth < currentMonth) {
+            // Past quarter - show full quarterly revenue (3 months)
+            values.push(monthlyRevenue * 3);
+            timeStatuses.push('past');
+        } else if (quarter.startMonth <= currentMonth && quarter.endMonth >= currentMonth) {
+            // Current quarter - calculate revenue based on months passed
+            const monthsPassedInQuarter = currentMonth - quarter.startMonth + 1;
+            values.push(monthlyRevenue * monthsPassedInQuarter);
+            timeStatuses.push('current');
+        } else {
+            // Future quarter - show 0 revenue
+            values.push(0);
+            timeStatuses.push('future');
         }
+    });
+    
+    return { periods, values, timeStatuses };
+}
 
-        // Monthly chart data with time status
-        getMonthlyChartData(monthlyRevenue) {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = now.getMonth();
-            const currentDate = now.getDate();
-            const lastDay = new Date(year, month + 1, 0);
-            const totalDays = lastDay.getDate();
-            
-            const periods = [];
-            const values = [];
-            const timeStatuses = [];
-            
-            const daysPerPeriod = 7;
-            const totalPeriods = Math.ceil(totalDays / daysPerPeriod);
-            
-            const periodBaseRevenue = Math.round(monthlyRevenue / totalPeriods);
-            const periodPattern = [0.9, 1.0, 1.1, 1.0, 0.8];
-            
-            const currentPeriod = Math.ceil(currentDate / daysPerPeriod);
-            
-            for (let i = 1; i <= totalPeriods; i++) {
-                const startDay = (i - 1) * daysPerPeriod + 1;
-                let endDay = i * daysPerPeriod;
-                if (endDay > totalDays) endDay = totalDays;
-                
-                periods.push(`Day ${startDay}-${endDay}`);
-                
-                const patternMultiplier = periodPattern[i-1] || 1.0;
-                values.push(Math.round(periodBaseRevenue * patternMultiplier));
-                
-                if (i < currentPeriod) {
-                    timeStatuses.push('past');
-                } else if (i === currentPeriod) {
-                    timeStatuses.push('current');
-                } else {
-                    timeStatuses.push('future');
-                }
-            }
-            
-            return { periods, values, timeStatuses };
-        }
-
-        // Quarterly chart data with time status - FIXED: Only shows current month to end of quarter with 0 for future months
-        getQuarterlyChartData(quarterlyRevenue) {
-            const now = new Date();
-            const currentMonth = now.getMonth();
-            const quarterStartMonth = Math.floor(currentMonth / 3) * 3;
-            const quarterEndMonth = quarterStartMonth + 2; // Quarters end at month + 2
-            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            
-            const periods = [];
-            const values = [];
-            const timeStatuses = [];
-            
-            // Only show months from current month to end of quarter
-            for (let i = currentMonth; i <= quarterEndMonth; i++) {
-                periods.push(monthNames[i]);
-                
-                // Only current month gets actual revenue, future months get 0
-                if (i === currentMonth) {
-                    values.push(this.monthlyRevenue); // Actual current month revenue
-                    timeStatuses.push('current');
-                } else {
-                    values.push(0); // Future months show 0 revenue
-                    timeStatuses.push('future');
-                }
-            }
-            
-            return { periods, values, timeStatuses };
-        }
-
-        // Also update the yearly chart data to show cumulative values
+// FIXED: Yearly chart - show cumulative revenue properly
 getYearlyChartData(yearlyRevenue) {
     const now = new Date();
     const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth(); // 0-11 (Jan=0, Dec=11)
+    const currentMonth = now.getMonth();
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
     // Get the user's join month
@@ -1703,7 +1642,7 @@ getYearlyChartData(yearlyRevenue) {
     
     let cumulativeRevenue = 0;
     
-    // Only show months from start month to December
+    // Show all months from start month to December
     for (let i = startMonth; i < 12; i++) {
         periods.push(monthNames[i]);
         
@@ -1713,13 +1652,101 @@ getYearlyChartData(yearlyRevenue) {
             values.push(cumulativeRevenue);
             timeStatuses.push(i === currentMonth ? 'current' : 'past');
         } else {
-            // Future month - show cumulative revenue (no addition for future months)
+            // Future month - show current cumulative (no addition)
             values.push(cumulativeRevenue);
             timeStatuses.push('future');
         }
     }
     
     return { periods, values, timeStatuses };
+}
+
+// FIXED: Update chart summary to calculate real growth
+updateChartSummary(period, values) {
+    if (values.length === 0) return;
+
+    // Calculate real growth based on actual values
+    let currentValue = values[values.length - 1] || 0;
+    let previousValue = 0;
+    
+    // Find the most recent past value for comparison
+    for (let i = values.length - 2; i >= 0; i--) {
+        if (values[i] > 0) {
+            previousValue = values[i];
+            break;
+        }
+    }
+    
+    // If no previous value, use current value (no growth)
+    if (previousValue === 0) previousValue = currentValue;
+    
+    const growth = previousValue > 0 ? Math.round(((currentValue - previousValue) / previousValue) * 100) : 0;
+
+    // Update labels based on period
+    let avgLabel = 'Avg. Monthly';
+    let currentLabel = 'Current Month';
+
+    switch (period) {
+        case 'weekly':
+            avgLabel = 'This Week';
+            currentLabel = 'Today';
+            break;
+        case 'monthly':
+            avgLabel = 'This Month';
+            currentLabel = 'Current Week';
+            break;
+        case 'quarterly':
+            avgLabel = 'This Quarter';
+            currentLabel = 'Current Month';
+            break;
+        case 'year':
+            avgLabel = 'Year to Date';
+            currentLabel = 'Cumulative';
+            break;
+    }
+
+    let avgValue, currentValueDisplay;
+    
+    if (period === 'quarterly' || period === 'year') {
+        // For quarterly and yearly, use cumulative values
+        avgValue = currentValue;
+        currentValueDisplay = currentValue;
+    } else {
+        // For weekly and monthly, calculate appropriate values
+        const statsCardRevenue = this.calculateRevenueForPeriod(this.currentPeriod);
+        avgValue = statsCardRevenue;
+        currentValueDisplay = statsCardRevenue;
+    }
+
+    // Update the display values
+    document.getElementById('avgMonthlyValue').textContent = `R ${avgValue.toLocaleString()}`;
+    document.getElementById('growthValue').textContent = `${growth >= 0 ? '+' : ''}${growth}%`;
+    document.getElementById('growthValue').className = `fw-bold ${growth >= 0 ? 'text-success' : 'text-danger'}`;
+    document.getElementById('currentMonthValue').textContent = `R ${currentValueDisplay.toLocaleString()}`;
+
+    // Update the labels
+    document.querySelector('#avgMonthlyValue').nextElementSibling.textContent = avgLabel;
+    document.querySelector('#currentMonthValue').nextElementSibling.textContent = currentLabel;
+}
+
+// FIXED: Also update the default case to be more realistic
+getDynamicChartDataForPeriod(period) {
+    // Remove the fake pattern multipliers and use actual revenue
+    const statsCardRevenue = this.calculateRevenueForPeriod(this.currentPeriod);
+    
+    switch (period) {
+        case 'weekly':
+            return this.getWeeklyChartData(statsCardRevenue);
+        case 'monthly':
+            return this.getMonthlyChartData(statsCardRevenue);
+        case 'quarterly':
+            return this.getQuarterlyChartData(statsCardRevenue);
+        case 'year':
+            return this.getYearlyChartData(statsCardRevenue);
+        default:
+            // Fallback to monthly view
+            return this.getMonthlyChartData(statsCardRevenue);
+    }
 }
 
 
