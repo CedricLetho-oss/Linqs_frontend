@@ -2015,7 +2015,7 @@ function renderFilteredBookings() {
   }
 }
 
-// Generate calendar events from bookings - COMPLETELY FIXED FOR TIMEGRID VIEWS
+// Generate calendar events from bookings - FIXED FOR ALL VIEWS
 function generateCalendarEvents() {
   console.log('Generating calendar events for', filteredBookings.length, 'bookings');
   
@@ -2027,31 +2027,15 @@ function generateCalendarEvents() {
     const startDate = new Date(booking.checkIn);
     let endDate = new Date(booking.checkOut);
     
-    console.log('Booking event:', {
-      studentName,
-      propertyName,
-      checkIn: booking.checkIn,
-      checkOut: booking.checkOut,
-      startDate: startDate.toString(),
-      endDate: endDate.toString()
-    });
-    
     // Validate and fix dates for calendar display
     if (!endDate || endDate <= startDate || isNaN(endDate.getTime())) {
-      // If end date is invalid, set it to 2 hours after start for proper timeGrid display
+      // If end date is invalid, set it to 1 hour after start for timeGrid views
       endDate = new Date(startDate);
-      endDate.setHours(startDate.getHours() + 2); // FIXED: 2-hour duration
+      endDate.setHours(startDate.getHours() + 1);
     }
     
-    // Ensure we have valid time components for timeGrid views
-    if (startDate.getHours() === 0 && startDate.getMinutes() === 0) {
-      // If no specific time is set, default to reasonable viewing hours
-      startDate.setHours(10, 0, 0, 0); // 10:00
-      endDate.setHours(12, 0, 0, 0);   // 12:00 (2-hour duration)
-    }
-    
-    // Ensure minimum duration for timeGrid visibility (2 hours)
-    const minDuration = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+    // Ensure minimum duration for visibility (30 minutes)
+    const minDuration = 30 * 60 * 1000; // 30 minutes in milliseconds
     if ((endDate - startDate) < minDuration) {
       endDate = new Date(startDate.getTime() + minDuration);
     }
@@ -2065,9 +2049,7 @@ function generateCalendarEvents() {
         bookingId: booking._id,
         status: booking.status,
         studentName: studentName,
-        propertyName: propertyName,
-        originalCheckIn: booking.checkIn,
-        originalCheckOut: booking.checkOut
+        propertyName: propertyName
       },
       className: `fc-event ${booking.status}`,
       allDay: false,
@@ -2075,7 +2057,6 @@ function generateCalendarEvents() {
       color: getEventColor(booking.status)
     };
     
-    console.log('Final event data:', eventData);
     return eventData;
   });
 }
@@ -2092,7 +2073,7 @@ function getEventColor(status) {
   return colors[status] || '#6b7280';
 }
 
-// COMPLETELY FIXED Calendar Initialization
+// COMPLETELY FIXED Calendar Initialization WITH WEEKENDS
 function initializeCalendar() {
   const calendarEl = document.getElementById('calendar');
   if (!calendarEl) {
@@ -2114,32 +2095,34 @@ function initializeCalendar() {
       right: 'dayGridMonth,timeGridWeek,timeGridDay'
     },
     
-    // View configurations
+    // View configurations - FIXED TO SHOW ALL DAYS
     views: {
       dayGridMonth: {
         dayMaxEventRows: 3,
         dayMaxEvents: true,
-        fixedWeekCount: false
+        fixedWeekCount: false,
+        weekends: true // ENSURES WEEKENDS ARE SHOWN
       },
       timeGridWeek: {
         slotMinTime: '06:00:00',
         slotMaxTime: '22:00:00',
         allDaySlot: false,
-        slotDuration: '02:00:00', // FIXED: 2-hour slots
-        slotLabelInterval: '02:00:00', // FIXED: Show labels every 2 hours
+        slotDuration: '01:00:00', // 1-hour slots for better precision
+        slotLabelInterval: '02:00:00',
         slotLabelFormat: {
           hour: '2-digit',
           minute: '2-digit',
           hour12: false,
           meridiem: false
-        }
+        },
+        weekends: true // ENSURES WEEKENDS ARE SHOWN
       },
       timeGridDay: {
         slotMinTime: '06:00:00',
         slotMaxTime: '22:00:00',
         allDaySlot: false,
-        slotDuration: '02:00:00', // FIXED: 2-hour slots
-        slotLabelInterval: '02:00:00', // FIXED: Show labels every 2 hours
+        slotDuration: '01:00:00', // 1-hour slots for better precision
+        slotLabelInterval: '02:00:00',
         slotLabelFormat: {
           hour: '2-digit',
           minute: '2-digit',
@@ -2149,7 +2132,10 @@ function initializeCalendar() {
       }
     },
     
-    // Events configuration - FIXED: Use function to generate events dynamically
+    // CRITICAL: Enable weekends globally
+    weekends: true,
+    
+    // Events configuration
     events: function(fetchInfo, successCallback, failureCallback) {
       const events = generateCalendarEvents();
       console.log('Calendar fetching events:', events.length);
@@ -2165,7 +2151,6 @@ function initializeCalendar() {
     eventClassNames: function(arg) {
       const classes = [arg.event.extendedProps.status];
       
-      // Add reschedule class if there's a pending reschedule request
       const booking = allBookings.find(b => b._id === arg.event.extendedProps.bookingId);
       if (booking && hasPendingReschedule(booking)) {
         classes.push('rescheduled');
@@ -2179,24 +2164,24 @@ function initializeCalendar() {
     contentHeight: 'auto',
     aspectRatio: 1.5,
     
-    // Time settings - FIXED: Use 24-hour format
+    // Time settings
     eventTimeFormat: {
       hour: '2-digit',
       minute: '2-digit',
-      hour12: false, // FIXED: 24-hour format
+      hour12: false,
       meridiem: false
     },
     
     slotLabelFormat: {
       hour: '2-digit',
       minute: '2-digit',
-      hour12: false, // FIXED: 24-hour format
+      hour12: false,
       meridiem: false
     },
     
-    // Business hours
+    // Business hours - INCLUDING WEEKENDS
     businessHours: {
-      daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // All days
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // 0=Sunday, 6=Saturday - ALL DAYS INCLUDED
       startTime: '08:00',
       endTime: '20:00',
     },
@@ -2209,7 +2194,7 @@ function initializeCalendar() {
     eventDisplay: 'block',
     nowIndicator: true,
     
-    // Event content rendering - FIXED FOR ALL VIEWS
+    // Event content rendering
     eventContent: function(arg) {
       const status = arg.event.extendedProps.status;
       const icons = {
@@ -2221,9 +2206,7 @@ function initializeCalendar() {
       
       const title = arg.event.title;
       
-      // Different content for timeGrid views vs month view
       if (arg.view.type.includes('timeGrid')) {
-        // For timeGrid views, show detailed event info
         const shortTitle = title.length > 25 ? title.substring(0, 25) + '...' : title;
         return {
           html: `
@@ -2241,7 +2224,6 @@ function initializeCalendar() {
           `
         };
       } else {
-        // For month view, show compact info
         const shortTitle = title.length > 20 ? title.substring(0, 20) + '...' : title;
         return {
           html: `
@@ -2256,18 +2238,23 @@ function initializeCalendar() {
     
     // Handle view changes
     datesSet: function(info) {
-      console.log('Calendar view changed to:', info.view.type);
-      // Ensure calendar renders properly after view changes
+      console.log('Calendar view changed to:', info.view.type, 'Showing dates:', info.start, 'to', info.end);
+      
+      // Force re-render to ensure all days are visible
       setTimeout(() => {
         calendar.updateSize();
+        
+        // Debug: Check if weekends are visible
+        const saturdayCells = document.querySelectorAll('.fc-day-sat');
+        const sundayCells = document.querySelectorAll('.fc-day-sun');
+        console.log('Saturday cells:', saturdayCells.length);
+        console.log('Sunday cells:', sundayCells.length);
       }, 100);
     },
     
     // Event rendering callback
     eventDidMount: function(info) {
-      console.log('Event mounted in', info.view.type, 'view:', info.event.title);
-      
-      // Add custom styling for different statuses in timeGrid views
+      // Add custom styling for different statuses
       if (info.view.type.includes('timeGrid')) {
         const status = info.event.extendedProps.status;
         const statusColors = {
@@ -2281,10 +2268,6 @@ function initializeCalendar() {
           info.el.style.background = statusColors[status];
           info.el.style.borderLeft = `4px solid var(--${status === 'pending' ? 'warning' : status === 'confirmed' ? 'success' : status === 'cancelled' ? 'danger' : 'secondary'})`;
         }
-        
-        // Ensure proper positioning in timeGrid views
-        info.el.style.position = 'absolute';
-        info.el.style.zIndex = '2';
       }
     }
   });
@@ -2292,17 +2275,18 @@ function initializeCalendar() {
   // Render the calendar
   calendar.render();
   
-  // Force calendar to update its size and take full width
+  // Force calendar to update its size and ensure weekends are visible
   setTimeout(() => {
     calendar.updateSize();
+    
     // Remove any max-width constraints
     calendarEl.style.maxWidth = 'none';
     calendarEl.style.width = '100%';
     
-    // Force the calendar to recalculate dimensions
-    calendar.updateSize();
+    // Debug logging
+    console.log('Calendar initialized with weekends enabled');
+    console.log('Available views:', calendar.view);
     
-    console.log('Calendar initialized with events:', calendar.getEvents().length);
   }, 500);
 }
 
@@ -2988,20 +2972,22 @@ async function viewBookingDetails(bookingId) {
             if (!calendar) {
               initializeCalendar();
             } else {
-              // Force calendar to refresh and resize to full width
+              // Force calendar to refresh with weekends enabled
               const calendarEl = document.getElementById('calendar');
               if (calendarEl) {
                 calendarEl.style.maxWidth = 'none';
                 calendarEl.style.width = '100%';
               }
               
-              // Refresh events specifically for the current view
-              calendar.refetchEvents();
+              // Refresh the calendar completely
               calendar.render();
               
               setTimeout(() => {
                 calendar.updateSize();
                 console.log('Calendar refreshed for view:', calendar.view.type);
+                
+                // Force weekends to be visible
+                calendar.setOption('weekends', true);
               }, 300);
             }
           }, 200);
