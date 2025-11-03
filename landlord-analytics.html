@@ -1089,18 +1089,21 @@
     const API_BASE_URL = window.API_BASE_URL || 'https://linqs-backend.onrender.com/api';
 
     class AnalyticsManager {
-        constructor() {
-            this.token = localStorage.getItem("token");
-            this.user = JSON.parse(localStorage.getItem("user") || "{}");
-            this.properties = [];
-            this.reviews = [];
-            this.bookings = [];
-            this.currentPeriod = 'month';
-            this.currentChartPeriod = 'monthly';
-            this.monthlyRevenue = 0;
-            this.propertyCreationDate = this.getPropertyCreationDate();
-            this.init();
-        }
+    constructor() {
+        this.token = localStorage.getItem("token");
+        this.user = JSON.parse(localStorage.getItem("user") || "{}");
+        this.properties = [];
+        this.reviews = [];
+        this.bookings = [];
+        this.currentPeriod = 'month';
+        this.currentChartPeriod = 'monthly';
+        this.monthlyRevenue = 0;
+        this.propertyCreationDate = this.getPropertyCreationDate();
+        
+        // NEW: Initialize revenue cache
+        this.revenueCache = this.loadRevenueCache();
+        this.init();
+    }
 
         async init() {
             if (!this.token) return;
@@ -1119,6 +1122,90 @@
                 this.showError('Failed to load analytics data');
             }
         }
+
+        // NEW: Load revenue cache from localStorage
+    loadRevenueCache() {
+        try {
+            const cache = localStorage.getItem('revenueCache');
+            return cache ? JSON.parse(cache) : {
+                weekly: {},
+                monthly: {},
+                quarterly: {},
+                yearly: {},
+                lastUpdated: null
+            };
+        } catch (error) {
+            console.error('Error loading revenue cache:', error);
+            return {
+                weekly: {},
+                monthly: {},
+                quarterly: {},
+                yearly: {},
+                lastUpdated: null
+            };
+        }
+    }
+
+    // NEW: Save revenue cache to localStorage
+    saveRevenueCache() {
+        try {
+            this.revenueCache.lastUpdated = new Date().toISOString();
+            localStorage.setItem('revenueCache', JSON.stringify(this.revenueCache));
+        } catch (error) {
+            console.error('Error saving revenue cache:', error);
+        }
+    }
+
+    // NEW: Update cache with current revenue data
+    updateRevenueCache(period, data) {
+        const now = new Date();
+        const dateKey = this.getDateKey(now);
+        
+        if (!this.revenueCache[period]) {
+            this.revenueCache[period] = {};
+        }
+        
+        // Store the data with timestamp
+        this.revenueCache[period][dateKey] = {
+            data: data,
+            timestamp: now.toISOString(),
+            monthlyRevenue: this.monthlyRevenue
+        };
+        
+        // Keep only last 30 days of cache to prevent storage bloat
+        this.cleanupOldCache(period);
+        
+        this.saveRevenueCache();
+    }
+
+    // NEW: Generate date key for cache (YYYY-MM-DD format)
+    getDateKey(date) {
+        return date.toISOString().split('T')[0];
+    }
+
+    // NEW: Clean up old cache entries (keep only last 30 days)
+    cleanupOldCache(period) {
+        const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+        
+        Object.keys(this.revenueCache[period]).forEach(dateKey => {
+            const cacheDate = new Date(dateKey);
+            if (cacheDate < thirtyDaysAgo) {
+                delete this.revenueCache[period][dateKey];
+            }
+        });
+    }
+
+    // NEW: Get cached revenue data for specific period
+    getCachedRevenueData(period) {
+        const now = new Date();
+        const todayKey = this.getDateKey(now);
+        
+        if (this.revenueCache[period] && this.revenueCache[period][todayKey]) {
+            return this.revenueCache[period][todayKey].data;
+        }
+        return null;
+    }
 
         // Get property creation date (when user started using the app)
         getPropertyCreationDate() {
@@ -1494,172 +1581,216 @@ renderRevenueBarChartForPeriod(period = this.currentChartPeriod) {
 }
 
 
-       // FIXED: Remove fake patterns and use actual revenue data
-getWeeklyChartData(weeklyRevenue) {
-    const now = new Date();
-    const currentDay = now.getDay(); // 0-6 (Sun=0, Sat=6)
-    const currentDate = now.getDate();
-    
-    const periods = [];
-    const values = [];
-    const timeStatuses = [];
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    
-    // Calculate daily revenue (even distribution for now)
-    const dailyRevenue = Math.round(weeklyRevenue / 7);
-    
-    // Show last 7 days including today
-    for (let i = 6; i >= 0; i--) {
-        const targetDate = new Date(now);
-        targetDate.setDate(now.getDate() - i);
+// UPDATED: Weekly chart with caching and proper daily division
+    getWeeklyChartData(weeklyRevenue) {
+        const now = new Date();
+        const currentDay = now.getDay(); // 0-6 (Sun=0, Sat=6)
         
-        periods.push(dayNames[targetDate.getDay()]);
-        
-        if (i > 0) {
-            // Past days - show actual daily revenue
-            values.push(dailyRevenue);
-            timeStatuses.push('past');
-        } else {
-            // Today - show current day's revenue
-            values.push(dailyRevenue);
-            timeStatuses.push('current');
+        // Try to get cached data first
+        const cachedData = this.getCachedRevenueData('weekly');
+        if (cachedData) {
+            return cachedData;
         }
-    }
-    
-    return { periods, values, timeStatuses };
-}
 
-// FIXED: Monthly chart - show actual days passed vs remaining
-getMonthlyChartData(monthlyRevenue) {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const currentDate = now.getDate();
-    const lastDay = new Date(year, month + 1, 0);
-    const totalDays = lastDay.getDate();
-    
-    const periods = [];
-    const values = [];
-    const timeStatuses = [];
-    
-    // Group by weeks for better visualization
-    const weeksInMonth = Math.ceil(totalDays / 7);
-    const weeklyRevenue = Math.round(monthlyRevenue / weeksInMonth);
-    
-    for (let week = 1; week <= weeksInMonth; week++) {
-        const startDay = (week - 1) * 7 + 1;
-        let endDay = week * 7;
-        if (endDay > totalDays) endDay = totalDays;
+        const periods = [];
+        const values = [];
+        const timeStatuses = [];
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         
-        periods.push(`Week ${week}`);
+        // Calculate daily revenue (divide weekly amount by 7 days)
+        const dailyRevenue = Math.round(weeklyRevenue / 7);
         
-        // Calculate if this week is past, current, or future
-        const weekEndDay = Math.min(endDay, totalDays);
-        
-        if (weekEndDay < currentDate) {
-            // Past week - show full weekly revenue
-            values.push(weeklyRevenue);
-            timeStatuses.push('past');
-        } else if (startDay <= currentDate) {
-            // Current week - show proportional revenue
-            const daysPassedInWeek = Math.min(currentDate - startDay + 1, 7);
-            const proportionalRevenue = Math.round((daysPassedInWeek / 7) * weeklyRevenue);
-            values.push(proportionalRevenue);
-            timeStatuses.push('current');
-        } else {
-            // Future week - show 0 revenue
-            values.push(0);
-            timeStatuses.push('future');
+        // Show last 7 days including today
+        for (let i = 6; i >= 0; i--) {
+            const targetDate = new Date(now);
+            targetDate.setDate(now.getDate() - i);
+            
+            periods.push(dayNames[targetDate.getDay()]);
+            
+            if (i > 0) {
+                // Past days - show actual daily revenue
+                values.push(dailyRevenue);
+                timeStatuses.push('past');
+            } else {
+                // Today - show current day's revenue
+                values.push(dailyRevenue);
+                timeStatuses.push('current');
+            }
         }
+        
+        const result = { periods, values, timeStatuses };
+        
+        // Cache the result
+        this.updateRevenueCache('weekly', result);
+        
+        return result;
     }
-    
-    return { periods, values, timeStatuses };
-}
 
-// FIXED: Quarterly chart - always show full quarters with proper revenue allocation
-getQuarterlyChartData(quarterlyRevenue) {
-    const now = new Date();
-    const currentMonth = now.getMonth(); // 0-11
-    const currentYear = now.getFullYear();
-    
-    // Define quarters properly
-    const quarters = [
-        { name: 'Q1', months: ['Jan', 'Feb', 'Mar'], startMonth: 0, endMonth: 2 },
-        { name: 'Q2', months: ['Apr', 'May', 'Jun'], startMonth: 3, endMonth: 5 },
-        { name: 'Q3', months: ['Jul', 'Aug', 'Sep'], startMonth: 6, endMonth: 8 },
-        { name: 'Q4', months: ['Oct', 'Nov', 'Dec'], startMonth: 9, endMonth: 11 }
-    ];
-    
-    const periods = [];
-    const values = [];
-    const timeStatuses = [];
-    
-    // Calculate monthly revenue for the quarter
-    const monthlyRevenue = Math.round(this.monthlyRevenue);
-    
-    quarters.forEach(quarter => {
-        periods.push(quarter.name);
-        
-        // Check if this quarter is past, current, or future
-        if (quarter.endMonth < currentMonth) {
-            // Past quarter - show full quarterly revenue (3 months)
-            values.push(monthlyRevenue * 3);
-            timeStatuses.push('past');
-        } else if (quarter.startMonth <= currentMonth && quarter.endMonth >= currentMonth) {
-            // Current quarter - calculate revenue based on months passed
-            const monthsPassedInQuarter = currentMonth - quarter.startMonth + 1;
-            values.push(monthlyRevenue * monthsPassedInQuarter);
-            timeStatuses.push('current');
-        } else {
-            // Future quarter - show 0 revenue
-            values.push(0);
-            timeStatuses.push('future');
+    // UPDATED: Monthly chart with caching
+    getMonthlyChartData(monthlyRevenue) {
+        // Try to get cached data first
+        const cachedData = this.getCachedRevenueData('monthly');
+        if (cachedData) {
+            return cachedData;
         }
-    });
-    
-    return { periods, values, timeStatuses };
-}
 
-// FIXED: Yearly chart - show cumulative revenue properly
-getYearlyChartData(yearlyRevenue) {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
-    // Get the user's join month
-    const joinDate = this.getPropertyCreationDate();
-    const joinMonth = joinDate.getMonth();
-    const joinYear = joinDate.getFullYear();
-    
-    // If user joined in current year, start from their join month
-    // If user joined in previous years, start from January
-    const startMonth = (joinYear === currentYear) ? joinMonth : 0;
-    
-    const periods = [];
-    const values = [];
-    const timeStatuses = [];
-    
-    let cumulativeRevenue = 0;
-    
-    // Show all months from start month to December
-    for (let i = startMonth; i < 12; i++) {
-        periods.push(monthNames[i]);
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const currentDate = now.getDate();
+        const lastDay = new Date(year, month + 1, 0);
+        const totalDays = lastDay.getDate();
         
-        if (i <= currentMonth) {
-            // This month has passed or is current - add to cumulative revenue
-            cumulativeRevenue += this.monthlyRevenue;
-            values.push(cumulativeRevenue);
-            timeStatuses.push(i === currentMonth ? 'current' : 'past');
-        } else {
-            // Future month - show current cumulative (no addition)
-            values.push(cumulativeRevenue);
-            timeStatuses.push('future');
+        const periods = [];
+        const values = [];
+        const timeStatuses = [];
+        
+        // Group by weeks for better visualization
+        const weeksInMonth = Math.ceil(totalDays / 7);
+        const weeklyRevenue = Math.round(monthlyRevenue / weeksInMonth);
+        
+        for (let week = 1; week <= weeksInMonth; week++) {
+            const startDay = (week - 1) * 7 + 1;
+            let endDay = week * 7;
+            if (endDay > totalDays) endDay = totalDays;
+            
+            periods.push(`Week ${week}`);
+            
+            // Calculate if this week is past, current, or future
+            const weekEndDay = Math.min(endDay, totalDays);
+            
+            if (weekEndDay < currentDate) {
+                // Past week - show full weekly revenue
+                values.push(weeklyRevenue);
+                timeStatuses.push('past');
+            } else if (startDay <= currentDate) {
+                // Current week - show proportional revenue
+                const daysPassedInWeek = Math.min(currentDate - startDay + 1, 7);
+                const proportionalRevenue = Math.round((daysPassedInWeek / 7) * weeklyRevenue);
+                values.push(proportionalRevenue);
+                timeStatuses.push('current');
+            } else {
+                // Future week - show 0 revenue
+                values.push(0);
+                timeStatuses.push('future');
+            }
         }
+        
+        const result = { periods, values, timeStatuses };
+        
+        // Cache the result
+        this.updateRevenueCache('monthly', result);
+        
+        return result;
     }
-    
-    return { periods, values, timeStatuses };
-}
+
+    // UPDATED: Quarterly chart with caching
+    getQuarterlyChartData(quarterlyRevenue) {
+        // Try to get cached data first
+        const cachedData = this.getCachedRevenueData('quarterly');
+        if (cachedData) {
+            return cachedData;
+        }
+
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        
+        // Define quarters properly
+        const quarters = [
+            { name: 'Q1', months: ['Jan', 'Feb', 'Mar'], startMonth: 0, endMonth: 2 },
+            { name: 'Q2', months: ['Apr', 'May', 'Jun'], startMonth: 3, endMonth: 5 },
+            { name: 'Q3', months: ['Jul', 'Aug', 'Sep'], startMonth: 6, endMonth: 8 },
+            { name: 'Q4', months: ['Oct', 'Nov', 'Dec'], startMonth: 9, endMonth: 11 }
+        ];
+        
+        const periods = [];
+        const values = [];
+        const timeStatuses = [];
+        
+        // Calculate monthly revenue for the quarter
+        const monthlyRevenue = Math.round(this.monthlyRevenue);
+        
+        quarters.forEach(quarter => {
+            periods.push(quarter.name);
+            
+            // Check if this quarter is past, current, or future
+            if (quarter.endMonth < currentMonth) {
+                // Past quarter - show full quarterly revenue (3 months)
+                values.push(monthlyRevenue * 3);
+                timeStatuses.push('past');
+            } else if (quarter.startMonth <= currentMonth && quarter.endMonth >= currentMonth) {
+                // Current quarter - calculate revenue based on months passed
+                const monthsPassedInQuarter = currentMonth - quarter.startMonth + 1;
+                values.push(monthlyRevenue * monthsPassedInQuarter);
+                timeStatuses.push('current');
+            } else {
+                // Future quarter - show 0 revenue
+                values.push(0);
+                timeStatuses.push('future');
+            }
+        });
+        
+        const result = { periods, values, timeStatuses };
+        
+        // Cache the result
+        this.updateRevenueCache('quarterly', result);
+        
+        return result;
+    }
+
+    // UPDATED: Yearly chart with caching
+    getYearlyChartData(yearlyRevenue) {
+        // Try to get cached data first
+        const cachedData = this.getCachedRevenueData('yearly');
+        if (cachedData) {
+            return cachedData;
+        }
+
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        // Get the user's join month
+        const joinDate = this.getPropertyCreationDate();
+        const joinMonth = joinDate.getMonth();
+        const joinYear = joinDate.getFullYear();
+        
+        // If user joined in current year, start from their join month
+        // If user joined in previous years, start from January
+        const startMonth = (joinYear === currentYear) ? joinMonth : 0;
+        
+        const periods = [];
+        const values = [];
+        const timeStatuses = [];
+        
+        let cumulativeRevenue = 0;
+        
+        // Show all months from start month to December
+        for (let i = startMonth; i < 12; i++) {
+            periods.push(monthNames[i]);
+            
+            if (i <= currentMonth) {
+                // This month has passed or is current - add to cumulative revenue
+                cumulativeRevenue += this.monthlyRevenue;
+                values.push(cumulativeRevenue);
+                timeStatuses.push(i === currentMonth ? 'current' : 'past');
+            } else {
+                // Future month - show current cumulative (no addition)
+                values.push(cumulativeRevenue);
+                timeStatuses.push('future');
+            }
+        }
+        
+        const result = { periods, values, timeStatuses };
+        
+        // Cache the result
+        this.updateRevenueCache('yearly', result);
+        
+        return result;
+    }
+
 
 // FIXED: Update chart summary to calculate real growth
 updateChartSummary(period, values) {
@@ -1729,26 +1860,23 @@ updateChartSummary(period, values) {
     document.querySelector('#currentMonthValue').nextElementSibling.textContent = currentLabel;
 }
 
-// FIXED: Also update the default case to be more realistic
-getDynamicChartDataForPeriod(period) {
-    // Remove the fake pattern multipliers and use actual revenue
-    const statsCardRevenue = this.calculateRevenueForPeriod(this.currentPeriod);
-    
-    switch (period) {
-        case 'weekly':
-            return this.getWeeklyChartData(statsCardRevenue);
-        case 'monthly':
-            return this.getMonthlyChartData(statsCardRevenue);
-        case 'quarterly':
-            return this.getQuarterlyChartData(statsCardRevenue);
-        case 'year':
-            return this.getYearlyChartData(statsCardRevenue);
-        default:
-            // Fallback to monthly view
-            return this.getMonthlyChartData(statsCardRevenue);
+ // UPDATED: Get dynamic chart data with cache support
+    getDynamicChartDataForPeriod(period) {
+        const statsCardRevenue = this.calculateRevenueForPeriod(this.currentPeriod);
+        
+        switch (period) {
+            case 'weekly':
+                return this.getWeeklyChartData(statsCardRevenue);
+            case 'monthly':
+                return this.getMonthlyChartData(statsCardRevenue);
+            case 'quarterly':
+                return this.getQuarterlyChartData(statsCardRevenue);
+            case 'year':
+                return this.getYearlyChartData(statsCardRevenue);
+            default:
+                return this.getMonthlyChartData(statsCardRevenue);
+        }
     }
-}
-
 
         // Format chart period for display
         formatChartPeriod(period) {
@@ -2209,26 +2337,45 @@ getDynamicChartDataForPeriod(period) {
             if (mobileReportingPeriod) mobileReportingPeriod.textContent = periodText;
         }
 
-        async refreshData() {
-            try {
-                await this.loadData();
-                await this.updateMetrics();
-                this.renderCharts();
-                this.renderPropertyPerformance();
-                this.renderRecentReviews();
-                
-                // Update historical data with current values
-                for (const property of this.properties) {
-                    const currentOccupancy = await this.calculatePropertyOccupancy(property._id);
-                    this.updateHistoricalData(property._id, currentOccupancy);
-                }
-                
-                this.showToast('Data updated successfully', 'success');
-            } catch (error) {
-                console.error('Error refreshing data:', error);
-                this.showToast('Failed to update data', 'error');
+         // UPDATED: Refresh data method to clear cache when needed
+    async refreshData() {
+        try {
+            await this.loadData();
+            await this.updateMetrics();
+            
+            // Clear cache if monthly revenue has changed significantly
+            this.checkAndUpdateCache();
+            
+            this.renderCharts();
+            this.renderPropertyPerformance();
+            this.renderRecentReviews();
+            
+            // Update historical data with current values
+            for (const property of this.properties) {
+                const currentOccupancy = await this.calculatePropertyOccupancy(property._id);
+                this.updateHistoricalData(property._id, currentOccupancy);
             }
+            
+            this.showToast('Data updated successfully', 'success');
+        } catch (error) {
+            console.error('Error refreshing data:', error);
+            this.showToast('Failed to update data', 'error');
         }
+    }
+
+    // NEW: Check if cache needs to be updated based on revenue changes
+    checkAndUpdateCache() {
+        const lastCachedRevenue = this.revenueCache.lastMonthlyRevenue || 0;
+        const revenueChange = Math.abs(this.monthlyRevenue - lastCachedRevenue);
+        const changePercentage = lastCachedRevenue > 0 ? (revenueChange / lastCachedRevenue) * 100 : 100;
+        
+        // If revenue changed by more than 10%, clear the cache for that period
+        if (changePercentage > 10) {
+            console.log(`Revenue changed by ${changePercentage.toFixed(1)}%, updating cache`);
+            this.revenueCache.lastMonthlyRevenue = this.monthlyRevenue;
+            this.saveRevenueCache();
+        }
+    }
 
         // EXPORT METHODS
         async exportPDF() {
