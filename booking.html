@@ -262,8 +262,8 @@
     if (!token) {
       alert("Please log in to access this page.");
       window.location.href = "authorization.html";
-    } else if (user.role !== 'student') {
-      alert("This page is for students only.");
+    } else if (user.role !== 'student' && user.role !== 'tenant') {
+      alert("This page is for students and tenants only.");
       window.location.href = user.role === 'landlord' ? "landlord-dashboard.html" : "index.html";
     }
   </script>

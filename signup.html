@@ -577,14 +577,38 @@
             </div>
           </div>
 
-          <!-- Role Selection -->
+          <!-- In the Role Selection section - Replace the existing select options -->
           <div class="form-group">
             <label class="form-label" for="roleSelect">I am a *</label>
             <select id="roleSelect" class="form-control" name="role" required>
               <option value="" disabled selected>Choose your role</option>
               <option value="student">Student</option>
               <option value="landlord">Landlord</option>
+              <option value="tenant">Short-term Tenant</option>
             </select>
+          </div>
+
+          <!-- Add this NEW section for Short-term Tenant fields -->
+          <div id="tenantFields" class="role-fields d-none">
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2"></i>
+              <strong>Short-term stays only</strong> - Perfect for December & January accommodation
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="occupation">Occupation (Optional)</label>
+              <input type="text" class="form-control" id="occupation" name="occupation" placeholder="e.g. Tourist, Intern, Professional">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="reasonForStay">Reason for Stay (Optional)</label>
+              <select class="form-control" id="reasonForStay" name="reasonForStay">
+                <option value="" selected>Select reason</option>
+                <option value="holiday">Holiday/Vacation</option>
+                <option value="internship">Internship/Work</option>
+                <option value="visiting">Visiting Family/Friends</option>
+                <option value="business">Business Trip</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
           </div>
 
           <!-- Student Fields -->

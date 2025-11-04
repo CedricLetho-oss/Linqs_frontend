@@ -87,7 +87,7 @@ function updateNavbarAuthState(token, user) {
                             <i class="bi bi-person me-2"></i>My Profile
                         </a>
                     </li>
-                    ${user.role === 'student' ? `
+                    ${user.role === 'student' || user.role === 'tenant' ? `
                     <li>
                         <a class="dropdown-item" href="view-reports.html">
                             <i class="bi bi-flag me-2"></i>My Reports
@@ -120,8 +120,8 @@ function updateNavbarAuthState(token, user) {
             navbarNav.innerHTML = '';
             
             // Role-specific navigation
-            if (user.role === 'student') {
-                // Student navbar: Home, Listings, My Bookings, Help
+            if (user.role === 'student' || user.role === 'tenant') {
+                // Student/Tenant navbar: Home, Listings, My Bookings, Help
                 const studentLinks = [
                     { href: 'home.html', icon: 'bi-house-door-fill', text: 'Home' },
                     { href: 'listings.html', icon: 'bi-building', text: 'Listings' },
@@ -355,6 +355,7 @@ function getRoleDisplayName(role) {
     const roleNames = {
         'student': 'Student',
         'landlord': 'Landlord',
+        'tenant': 'Tenant', // ADDED tenant role display
         'admin': 'Administrator'
     };
     return roleNames[role] || 'User';
@@ -399,19 +400,40 @@ function requireAuth(redirectUrl = 'authorization.html') {
     return true;
 }
 
-// Role-based access control
+// Role-based access control - UPDATED to include tenants with students
 function requireRole(allowedRoles, redirectUrl = 'home.html') {
     if (!requireAuth()) return false;
     
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     
-    if (!allowedRoles.includes(user.role)) {
+    // Special handling: if student is allowed, tenant should also be allowed
+    const effectiveAllowedRoles = [...allowedRoles];
+    if (allowedRoles.includes('student') && !allowedRoles.includes('tenant')) {
+        effectiveAllowedRoles.push('tenant');
+    }
+    if (allowedRoles.includes('tenant') && !allowedRoles.includes('student')) {
+        effectiveAllowedRoles.push('student');
+    }
+    
+    if (!effectiveAllowedRoles.includes(user.role)) {
         alert('You do not have permission to access this page.');
         window.location.href = redirectUrl;
         return false;
     }
     
     return true;
+}
+
+// Check if user is student or tenant (for student/tenant pages)
+function isStudentOrTenant() {
+    const user = getCurrentUser();
+    return user.role === 'student' || user.role === 'tenant';
+}
+
+// Check if user is landlord
+function isLandlord() {
+    const user = getCurrentUser();
+    return user.role === 'landlord';
 }
 
 // Get current user info
@@ -428,4 +450,32 @@ function isLoggedIn() {
 function getUserRole() {
     const user = getCurrentUser();
     return user.role || 'student';
+}
+
+// Student/Tenant specific authorization
+function requireStudentOrTenant(redirectUrl = 'home.html') {
+    if (!requireAuth()) return false;
+    
+    const user = getCurrentUser();
+    if (user.role !== 'student' && user.role !== 'tenant') {
+        alert('This page is for students and tenants only.');
+        window.location.href = redirectUrl;
+        return false;
+    }
+    
+    return true;
+}
+
+// Landlord specific authorization
+function requireLandlord(redirectUrl = 'home.html') {
+    if (!requireAuth()) return false;
+    
+    const user = getCurrentUser();
+    if (user.role !== 'landlord') {
+        alert('This page is for landlords only.');
+        window.location.href = redirectUrl;
+        return false;
+    }
+    
+    return true;
 }
