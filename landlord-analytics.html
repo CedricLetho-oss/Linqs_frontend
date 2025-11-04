@@ -1464,7 +1464,7 @@
             }
         }
 
-        // Cumulative revenue calculations
+        // Cumulative revenue calculations - FIXED
         calculateCumulativeRevenueForYear() {
             const now = new Date();
             const currentMonth = now.getMonth();
@@ -1474,12 +1474,13 @@
             const joinMonth = joinDate.getMonth();
             const joinYear = joinDate.getFullYear();
             
+            // Only count from joined month
             const startMonth = (joinYear === currentYear) ? joinMonth : 0;
             const monthsToCount = currentMonth - startMonth + 1;
             
             return this.monthlyRevenue * Math.max(0, monthsToCount);
         }
-
+        
         calculateCumulativeRevenueForQuarter() {
             const now = new Date();
             const currentMonth = now.getMonth();
@@ -1744,45 +1745,52 @@
             return result;
         }
 
-        // Yearly chart with cumulative data
-        getYearlyChartData(yearlyRevenue) {
-            const cachedData = this.getCachedRevenueData('yearly');
-            if (cachedData) return cachedData;
+        // Yearly chart with cumulative data - FIXED VERSION
+getYearlyChartData(yearlyRevenue) {
+    const cachedData = this.getCachedRevenueData('yearly');
+    if (cachedData) return cachedData;
 
-            const now = new Date();
-            const currentYear = now.getFullYear();
-            const currentMonth = now.getMonth();
-            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            
-            const joinDate = this.getPropertyCreationDate();
-            const joinMonth = joinDate.getMonth();
-            const joinYear = joinDate.getFullYear();
-            
-            const startMonth = (joinYear === currentYear) ? joinMonth : 0;
-            
-            const periods = [];
-            const values = [];
-            const timeStatuses = [];
-            
-            let cumulativeRevenue = 0;
-            
-            for (let i = startMonth; i < 12; i++) {
-                periods.push(monthNames[i]);
-                
-                if (i <= currentMonth) {
-                    cumulativeRevenue += this.monthlyRevenue;
-                    values.push(cumulativeRevenue);
-                    timeStatuses.push(i === currentMonth ? 'current' : 'past');
-                } else {
-                    values.push(cumulativeRevenue);
-                    timeStatuses.push('future');
-                }
-            }
-            
-            const result = { periods, values, timeStatuses };
-            this.updateRevenueCache('yearly', result);
-            return result;
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    const joinDate = this.getPropertyCreationDate();
+    const joinMonth = joinDate.getMonth();
+    const joinYear = joinDate.getFullYear();
+    
+    // Only show from joined month onwards
+    const startMonth = (joinYear === currentYear) ? joinMonth : 0;
+    
+    const periods = [];
+    const values = [];
+    const timeStatuses = [];
+    
+    let cumulativeRevenue = 0;
+    
+    // Start from joined month, not January
+    for (let i = startMonth; i <= currentMonth; i++) {
+        periods.push(monthNames[i]);
+        
+        // Add monthly revenue cumulatively
+        cumulativeRevenue += this.monthlyRevenue;
+        values.push(cumulativeRevenue);
+        timeStatuses.push(i === currentMonth ? 'current' : 'past');
+    }
+    
+    // Add future months if we haven't reached December yet
+    if (currentMonth < 11) {
+        for (let i = currentMonth + 1; i < 12; i++) {
+            periods.push(monthNames[i]);
+            values.push(cumulativeRevenue); // Keep same cumulative for future
+            timeStatuses.push('future');
         }
+    }
+    
+    const result = { periods, values, timeStatuses };
+    this.updateRevenueCache('yearly', result);
+    return result;
+}
 
         // Get dynamic chart data
         getDynamicChartDataForPeriod(period) {
