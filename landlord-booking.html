@@ -2063,7 +2063,7 @@ function renderFilteredBookings() {
   }
 }
 
-// Generate calendar events from bookings - FIXED TO DISPLAY AT CORRECT TIMES
+// Generate calendar events from bookings - COMPLETELY FIXED FOR TIME DISPLAY
 function generateCalendarEvents() {
   console.log('Generating calendar events for', filteredBookings.length, 'bookings');
   
@@ -2071,40 +2071,53 @@ function generateCalendarEvents() {
     const studentName = booking.student?.username || 'Unknown';
     const propertyName = booking.property?.title || 'Unknown';
     
-    // Parse dates - CRITICAL: Use ISO string format for proper timezone handling
-    const startDate = new Date(booking.checkIn);
-    let endDate = new Date(booking.checkOut);
+    // CRITICAL FIX: Parse dates and handle timezone properly
+    let startDate, endDate;
     
-    console.log('Processing booking:', {
-      studentName,
-      propertyName,
-      originalCheckIn: booking.checkIn,
-      originalCheckOut: booking.checkOut,
-      parsedStart: startDate.toISOString(),
-      parsedEnd: endDate.toISOString()
+    // Try to parse the date - handle both ISO strings and date objects
+    if (typeof booking.checkIn === 'string') {
+      // Remove timezone info and parse as local time
+      startDate = new Date(booking.checkIn.replace('Z', ''));
+    } else {
+      startDate = new Date(booking.checkIn);
+    }
+    
+    if (typeof booking.checkOut === 'string') {
+      endDate = new Date(booking.checkOut.replace('Z', ''));
+    } else {
+      endDate = new Date(booking.checkOut);
+    }
+    
+    console.log('Raw dates:', {
+      checkIn: booking.checkIn,
+      checkOut: booking.checkOut,
+      parsedStart: startDate,
+      parsedEnd: endDate
     });
     
-    // Validate and fix dates for calendar display
+    // Validate and fix dates
     if (!endDate || endDate <= startDate || isNaN(endDate.getTime())) {
-      // If end date is invalid, set it to 2 hours after start for proper display
-      endDate = new Date(startDate);
-      endDate.setHours(startDate.getHours() + 2);
-      console.log('Fixed end date to:', endDate.toISOString());
+      endDate = new Date(startDate.getTime() + (2 * 60 * 60 * 1000));
+      console.log('Fixed invalid end date');
     }
     
-    // Ensure minimum duration for timeGrid visibility (at least 1 hour)
-    const minDuration = 60 * 60 * 1000; // 1 hour in milliseconds
-    if ((endDate - startDate) < minDuration) {
-      endDate = new Date(startDate.getTime() + (2 * 60 * 60 * 1000)); // 2 hours for better visibility
-      console.log('Extended duration to 2 hours for visibility');
+    // Ensure minimum 2-hour duration for visibility
+    const duration = endDate - startDate;
+    const minDuration = 2 * 60 * 60 * 1000; // 2 hours
+    if (duration < minDuration) {
+      endDate = new Date(startDate.getTime() + minDuration);
+      console.log('Extended duration to 2 hours');
     }
     
-    // CRITICAL FIX: Use ISO string format for FullCalendar
+    // Format for FullCalendar - use local time ISO string WITHOUT 'Z'
+    const startISO = startDate.toISOString().slice(0, -1); // Remove 'Z'
+    const endISO = endDate.toISOString().slice(0, -1);     // Remove 'Z'
+    
     const eventData = {
       id: booking._id,
       title: `${studentName} - ${propertyName}`,
-      start: startDate.toISOString(), // Convert to ISO string
-      end: endDate.toISOString(),     // Convert to ISO string
+      start: startISO,
+      end: endISO,
       extendedProps: {
         bookingId: booking._id,
         status: booking.status,
@@ -2114,17 +2127,24 @@ function generateCalendarEvents() {
         originalCheckOut: booking.checkOut
       },
       className: `fc-event ${booking.status}`,
-      allDay: false, // CRITICAL: Ensure events are NOT all-day
-      display: 'block',
+      allDay: false,
+      editable: false,
       backgroundColor: getEventColor(booking.status),
       borderColor: getEventBorderColor(booking.status),
       textColor: getEventTextColor(booking.status)
     };
     
-    console.log('Final event data:', eventData);
+    console.log('Generated event:', {
+      title: eventData.title,
+      start: eventData.start,
+      end: eventData.end,
+      allDay: eventData.allDay
+    });
+    
     return eventData;
   });
 }
+
 // Helper function to get event border colors
 function getEventBorderColor(status) {
   const colors = {
