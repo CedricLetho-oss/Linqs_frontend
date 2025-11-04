@@ -2160,20 +2160,137 @@ function generateActionButtons(booking, hasDeletedEntity = false) {
     }
 }
 
-    // Update the sendReminder function to be more useful
-function sendReminder(bookingId) {
-    const booking = allBookings.find(b => b._id === bookingId);
-    if (booking) {
+   // NEW: Enhanced sendReminder function with email sending
+async function sendReminder(bookingId) {
+    try {
+        const booking = allBookings.find(b => b._id === bookingId);
+        if (!booking) {
+            showNotification('Booking not found', 'danger');
+            return;
+        }
+
         const studentName = booking.student?.username || 'Student';
         const propertyName = booking.property?.title || 'Property';
         const dateTime = formatBookingDateTime(booking.checkIn);
-        
-        // Show confirmation before sending reminder
-        if (confirm(`Send reminder to ${studentName} about their booking for ${propertyName} on ${dateTime.date} at ${dateTime.time}?`)) {
-            // In a real implementation, this would call your backend API
-            console.log(`Sending reminder for booking ${bookingId}`);
-            showNotification(`Reminder sent to ${studentName}`, 'success');
-        }
+
+        // Create a modal for reminder options
+        const reminderModalContent = `
+            <div class="mb-4">
+                <h6>Send Reminder for Booking</h6>
+                <p class="text-muted">Send reminder emails to both student and landlord about the upcoming viewing.</p>
+                
+                <div class="alert alert-info">
+                    <strong>Booking Details:</strong><br>
+                    <strong>Student:</strong> ${studentName}<br>
+                    <strong>Property:</strong> ${propertyName}<br>
+                    <strong>Date:</strong> ${dateTime.date}<br>
+                    <strong>Time:</strong> ${dateTime.time}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Reminder Type</label>
+                <select class="form-select" id="reminderType">
+                    <option value="general">General Reminder</option>
+                    <option value="24_hours">24 Hours Before</option>
+                    <option value="same_day">Same Day Reminder</option>
+                    <option value="1_hour">1 Hour Before</option>
+                    <option value="custom">Custom Message</option>
+                </select>
+            </div>
+            
+            <div class="mb-3" id="customMessageContainer" style="display: none;">
+                <label class="form-label">Custom Message</label>
+                <textarea class="form-control" id="customMessage" rows="3" placeholder="Enter your custom reminder message..."></textarea>
+                <div class="form-text">This message will be included in the reminder email.</div>
+            </div>
+            
+            <div class="alert alert-warning">
+                <i class="bi bi-info-circle me-2"></i>
+                This will send emails to both <strong>${studentName}</strong> and the landlord.
+            </div>
+        `;
+
+        // Create and show modal
+        const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
+        document.getElementById('bookingDetails').innerHTML = `
+            <div class="modal-header">
+                <h5 class="modal-title">Send Reminder</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                ${reminderModalContent}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmSendReminder">
+                    <i class="bi bi-send me-1"></i>Send Reminder
+                </button>
+            </div>
+        `;
+
+        modal.show();
+
+        // Show/hide custom message based on selection
+        document.getElementById('reminderType').addEventListener('change', function() {
+            const customContainer = document.getElementById('customMessageContainer');
+            customContainer.style.display = this.value === 'custom' ? 'block' : 'none';
+        });
+
+        // Handle send reminder confirmation
+        document.getElementById('confirmSendReminder').addEventListener('click', async function() {
+            const reminderType = document.getElementById('reminderType').value;
+            const customMessage = document.getElementById('customMessage').value;
+            
+            const sendBtn = this;
+            const originalText = sendBtn.innerHTML;
+            sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+            sendBtn.disabled = true;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE_URL}/admin/bookings/${bookingId}/send-reminder`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        reminderType: reminderType,
+                        customMessage: customMessage
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    modal.hide();
+                    
+                    const successMessage = `Reminder sent successfully! Emails delivered to ${data.data.sentTo.join(' and ')}.`;
+                    showNotification(successMessage, 'success');
+                    
+                    // Log for debugging
+                    console.log('Reminder sent:', {
+                        bookingId: bookingId,
+                        reminderType: reminderType,
+                        results: data.data
+                    });
+                } else {
+                    throw new Error(data.error || 'Failed to send reminder');
+                }
+            } catch (error) {
+                console.error('Error sending reminder:', error);
+                showNotification('Failed to send reminder: ' + error.message, 'danger');
+                
+                // Reset button
+                sendBtn.innerHTML = originalText;
+                sendBtn.disabled = false;
+            }
+        });
+
+    } catch (error) {
+        console.error('Error preparing reminder:', error);
+        showNotification('Failed to prepare reminder: ' + error.message, 'danger');
     }
 }
 
