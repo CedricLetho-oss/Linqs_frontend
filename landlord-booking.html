@@ -2063,7 +2063,7 @@ function renderFilteredBookings() {
   }
 }
 
-// Generate calendar events from bookings - COMPLETELY FIXED FOR ALL VIEWS
+// Generate calendar events from bookings - FIXED TO DISPLAY AT CORRECT TIMES
 function generateCalendarEvents() {
   console.log('Generating calendar events for', filteredBookings.length, 'bookings');
   
@@ -2071,7 +2071,7 @@ function generateCalendarEvents() {
     const studentName = booking.student?.username || 'Unknown';
     const propertyName = booking.property?.title || 'Unknown';
     
-    // Parse dates properly
+    // Parse dates - CRITICAL: Use ISO string format for proper timezone handling
     const startDate = new Date(booking.checkIn);
     let endDate = new Date(booking.checkOut);
     
@@ -2080,8 +2080,8 @@ function generateCalendarEvents() {
       propertyName,
       originalCheckIn: booking.checkIn,
       originalCheckOut: booking.checkOut,
-      parsedStart: startDate.toString(),
-      parsedEnd: endDate.toString()
+      parsedStart: startDate.toISOString(),
+      parsedEnd: endDate.toISOString()
     });
     
     // Validate and fix dates for calendar display
@@ -2089,29 +2089,22 @@ function generateCalendarEvents() {
       // If end date is invalid, set it to 2 hours after start for proper display
       endDate = new Date(startDate);
       endDate.setHours(startDate.getHours() + 2);
-      console.log('Fixed end date to:', endDate.toString());
-    }
-    
-    // Ensure we have valid time components for timeGrid views
-    if (startDate.getHours() === 0 && startDate.getMinutes() === 0) {
-      // If no specific time is set, default to reasonable viewing hours (10 AM)
-      startDate.setHours(10, 0, 0, 0);
-      endDate.setHours(12, 0, 0, 0);
-      console.log('Set default times - Start:', startDate.toString(), 'End:', endDate.toString());
+      console.log('Fixed end date to:', endDate.toISOString());
     }
     
     // Ensure minimum duration for timeGrid visibility (at least 1 hour)
     const minDuration = 60 * 60 * 1000; // 1 hour in milliseconds
     if ((endDate - startDate) < minDuration) {
-      endDate = new Date(startDate.getTime() + minDuration);
-      console.log('Extended duration to minimum 1 hour');
+      endDate = new Date(startDate.getTime() + (2 * 60 * 60 * 1000)); // 2 hours for better visibility
+      console.log('Extended duration to 2 hours for visibility');
     }
     
+    // CRITICAL FIX: Use ISO string format for FullCalendar
     const eventData = {
       id: booking._id,
       title: `${studentName} - ${propertyName}`,
-      start: startDate,
-      end: endDate,
+      start: startDate.toISOString(), // Convert to ISO string
+      end: endDate.toISOString(),     // Convert to ISO string
       extendedProps: {
         bookingId: booking._id,
         status: booking.status,
@@ -2132,7 +2125,6 @@ function generateCalendarEvents() {
     return eventData;
   });
 }
-
 // Helper function to get event border colors
 function getEventBorderColor(status) {
   const colors = {
