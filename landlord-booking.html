@@ -996,75 +996,59 @@ main {
 /* TIME GRID VIEW FIXES - CRITICAL */
 /* ==================== */
 
-/* FIXED: TimeGrid View Event Styling - ENSURES VISIBILITY */
-.fc-timegrid-event {
-  border: none !important;
-  border-radius: 8px !important;
-  font-size: 0.75rem !important;
-  padding: 0 !important;
-  margin: 1px 2px !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  transition: all 0.3s ease-in-out !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  border-left: 4px solid !important;
-  overflow: hidden !important;
+/* ==================== */
+/* TIME GRID EVENT POSITIONING FIXES */
+/* ==================== */
+
+/* Ensure time grid events are properly positioned */
+.fc-timegrid-event-harness {
   position: absolute !important;
   z-index: 2 !important;
-  min-height: 25px !important; /* Ensure minimum height */
 }
 
-
-.fc-timegrid-event:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+.fc-timegrid-event {
+  position: absolute !important;
+  top: 0 !important;
+  left: 2px !important;
+  right: 2px !important;
+  min-height: 25px !important;
+  z-index: 3 !important;
 }
 
-.fc-timegrid-event .fc-event-main {
+/* Ensure time grid slots have proper height */
+.fc-timegrid-slot {
+  height: 60px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.fc-timegrid-slot-label {
+  font-size: 0.8rem !important;
   padding: 0.5rem !important;
+}
+
+/* Better event styling for time grid */
+.fc-timegrid-event .fc-event-main {
+  padding: 0.25rem 0.5rem !important;
   height: 100% !important;
   display: flex !important;
   align-items: center !important;
 }
 
-
 .fc-timegrid-event .fc-event-title {
-  font-weight: 600 !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  display: block !important;
+  font-size: 0.75rem !important;
   line-height: 1.2 !important;
-  font-size: 0.7rem !important;
+  white-space: normal !important;
+  overflow: hidden !important;
 }
 
-/* Ensure timeGrid slots are properly sized */
-.fc-timegrid-slot {
-  height: 60px !important; /* Slightly smaller slots for better fit */
-  border-bottom: 1px solid #e2e8f0 !important;
-  position: relative;
-}
-
-.fc-timegrid-slot-label {
-  vertical-align: top !important;
-  padding-top: 1rem !important;
-  font-weight: 600 !important;
-  color: #475569 !important;
-  border-right: 1px solid #e2e8f0 !important;
-  background: #f8fafc;
-  font-size: 0.8rem !important;
-}
-
-.fc-timegrid-axis-frame {
-  justify-content: center !important;
-  background: #f8fafc;
-  font-weight: 600;
-  color: #475569;
-}
-
-/* Ensure timeGrid views have proper spacing */
+/* Ensure calendar container properly displays time grid */
 .fc-timegrid-body {
-  min-height: 500px !important;
+  position: relative !important;
+}
+
+.fc-timegrid-col-events {
+  position: relative !important;
+  margin: 0 2px !important;
 }
 
 /* Better event colors for timeGrid views */
