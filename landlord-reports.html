@@ -878,6 +878,28 @@
 #logoutModal .modal-body i.bi-person-check {
   color: var(--primary) !important;
 }
+
+/* Manual Revenue Update Styles */
+.revenue-edit-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.revenue-manual-badge {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
+}
+
+.revenue-history-item {
+    border-left: 3px solid var(--primary);
+    padding-left: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.revenue-history-item.manual {
+    border-left-color: var(--success);
+    background-color: rgba(5, 150, 105, 0.05);
+}
   </style>
 </head>
 <body>
@@ -1282,27 +1304,44 @@
         
         <!-- Monthly Breakdown -->
         <div class="row mt-4">
-          <div class="col-12">
-            <div class="report-section">
-              <h5 class="text-navy mb-4">Monthly Revenue Breakdown</h5>
-              <div class="table-responsive">
-                <table class="table table-hover">
-                  <thead>
-                    <tr>
-                      <th>Month</th>
-                      <th>Revenue</th>
-                      <th>Properties</th>
-                      <th>Occupancy Rate</th>
-                      <th>YTD Cumulative</th>
-                    </tr>
-                  </thead>
-                  <tbody id="monthlyRevenueTable">
-                    <!-- Monthly data will be populated here -->
-                  </tbody>
-                </table>
-              </div>
+            <div class="col-12">
+                <div class="report-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="text-navy mb-0">Monthly Revenue Breakdown</h5>
+                        <div>
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#updateRevenueModal">
+                                <i class="bi bi-plus-circle me-1"></i>Add/Edit Revenue
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Revenue</th>
+                                    <th>Properties</th>
+                                    <th>Occupancy Rate</th>
+                                    <th>YTD Cumulative</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="monthlyRevenueTable">
+                                <!-- Monthly data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3">
+                        <div class="alert alert-info">
+                            <small>
+                                <i class="bi bi-info-circle me-1"></i>
+                                <strong>Note:</strong> Current month shows live data. Past months show finalized revenue. 
+                                Use the "Add/Edit Revenue" button to manually update historical data.
+                            </small>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
       </div>
     </div>
@@ -1429,6 +1468,68 @@
       </div>
     </div>
   </div>
+
+  <!-- Manual Revenue Update Modal -->
+<div class="modal fade" id="updateRevenueModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Monthly Revenue</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="updateRevenueForm">
+                    <div class="mb-3">
+                        <label class="form-label">Month</label>
+                        <select class="form-select" id="revenueMonth" required>
+                            <option value="">Select Month</option>
+                            <option value="Jan">January</option>
+                            <option value="Feb">February</option>
+                            <option value="Mar">March</option>
+                            <option value="Apr">April</option>
+                            <option value="May">May</option>
+                            <option value="Jun">June</option>
+                            <option value="Jul">July</option>
+                            <option value="Aug">August</option>
+                            <option value="Sep">September</option>
+                            <option value="Oct">October</option>
+                            <option value="Nov">November</option>
+                            <option value="Dec">December</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Year</label>
+                        <select class="form-select" id="revenueYear" required>
+                            <option value="">Select Year</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Revenue Amount (R)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R</span>
+                            <input type="number" class="form-control" id="revenueAmount" 
+                                   placeholder="Enter revenue amount" min="0" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="revenueNotes" 
+                                  placeholder="Add any notes about this revenue..." rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="reportsManager.saveManualRevenue()">
+                    <i class="bi bi-check-circle me-1"></i>Save Revenue
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
   <!-- Mobile Bottom Navigation -->
 <div class="mobile-bottom-nav d-lg-none">
@@ -1730,9 +1831,18 @@ class ReportsManager {
         }
 
         // Update historical data - only update current month with real-time data
-        // Past months remain unchanged
+        // Past months remain unchanged unless manually edited
         const currentMonthName = monthNames[currentMonth];
-        historicalRevenue[currentYear][currentMonthName] = currentMonthRevenue;
+        
+        // Only update current month if it's not already set manually
+        // This preserves manual entries for past months
+        if (historicalRevenue[currentYear][currentMonthName] === 0 || 
+            historicalRevenue[currentYear][currentMonthName] === undefined) {
+            historicalRevenue[currentYear][currentMonthName] = currentMonthRevenue;
+        } else {
+            // If current month already has data (manual entry), use that instead
+            currentMonthRevenue = historicalRevenue[currentYear][currentMonthName];
+        }
 
         // Calculate YTD revenue from historical data (not real-time)
         let ytdRevenue = 0;
@@ -1954,83 +2064,220 @@ updateMonthlyRevenueManually(monthName, year, amount) {
     });
 }
 
-    updateMonthlyRevenueTable() {
-        const monthlyRevenueTable = document.getElementById('monthlyRevenueTable');
-        if (!monthlyRevenueTable) return;
-
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const currentMonth = new Date().getMonth();
+    // Add this method to open the manual revenue update modal
+openManualRevenueModal(month = '', year = '', amount = 0) {
+    if (month && year) {
+        document.getElementById('revenueMonth').value = month;
+        document.getElementById('revenueYear').value = year;
+        document.getElementById('revenueAmount').value = amount;
+    } else {
+        document.getElementById('revenueMonth').value = '';
+        document.getElementById('revenueYear').value = '';
+        document.getElementById('revenueAmount').value = '';
+        document.getElementById('revenueNotes').value = '';
+        
+        // Set current year as default
         const currentYear = new Date().getFullYear();
-        
-        // Find earliest property date
-        let earliestPropertyDate = new Date();
-        if (this.properties.length > 0) {
-            earliestPropertyDate = new Date(Math.min(...this.properties.map(p => new Date(p.createdAt || p.updatedAt || Date.now()))));
-        }
-        
-        const earliestMonth = earliestPropertyDate.getMonth();
-        const earliestYear = earliestPropertyDate.getFullYear();
-        
-        // Determine which months to show
-        const startMonth = (earliestYear === currentYear) ? earliestMonth : 0;
-        const monthsToShow = monthNames.slice(startMonth, currentMonth + 1);
-        
-        let cumulativeRevenue = 0;
-        let tableRows = '';
-
-        monthsToShow.forEach((month, index) => {
-            const monthIndex = monthNames.indexOf(month);
-            const monthlyRevenue = this.financialData.monthlyRevenue[month] || 0;
-            cumulativeRevenue += monthlyRevenue;
-            
-            // Calculate occupancy rate for this month - USE THE SAME CALCULATION AS PERFORMANCE TAB
-            const totalPotentialRevenue = this.properties.reduce((sum, property) => {
-                const propertyCreated = new Date(property.createdAt || property.updatedAt || Date.now());
-                const propertyCreatedMonth = propertyCreated.getMonth();
-                const propertyCreatedYear = propertyCreated.getFullYear();
-                
-                // Only count properties that existed in this month
-                if ((propertyCreatedYear === currentYear && monthIndex >= propertyCreatedMonth) || 
-                    propertyCreatedYear < currentYear) {
-                    return sum + (property.price || 0);
-                }
-                return sum;
-            }, 0);
-            
-            // Use the same calculation as performance tab for consistency
-            const occupancyRate = totalPotentialRevenue > 0 ? 
-                Math.min(100, Math.round((monthlyRevenue / totalPotentialRevenue) * 100)) : 0;
-            
-            // Add row class based on month status
-            const rowClass = monthIndex === currentMonth ? 'table-primary' : '';
-            
-            tableRows += `
-                <tr class="${rowClass}">
-                    <td>${month}</td>
-                    <td>R ${monthlyRevenue.toLocaleString()}</td>
-                    <td>${this.financialData.revenueProperties}</td>
-                    <td>${occupancyRate}%</td>
-                    <td>R ${cumulativeRevenue.toLocaleString()}</td>
-                </tr>
-            `;
-        });
-
-        // Add note about data range if not starting from January
-        if (startMonth > 0) {
-            tableRows = `
-                <tr class="table-info">
-                    <td colspan="5" class="small text-center">
-                        <i class="bi bi-info-circle me-1"></i>
-                        Data shown from ${monthNames[startMonth]} to ${monthNames[currentMonth]} ${currentYear} 
-                        (based on when you added your first property)
-                    </td>
-                </tr>
-                ${tableRows}
-            `;
-        }
-
-        monthlyRevenueTable.innerHTML = tableRows;
+        document.getElementById('revenueYear').value = currentYear;
     }
+    
+    new bootstrap.Modal(document.getElementById('updateRevenueModal')).show();
+}
+
+// Add this method to save manual revenue updates
+saveManualRevenue() {
+    const month = document.getElementById('revenueMonth').value;
+    const year = document.getElementById('revenueYear').value;
+    const amount = parseFloat(document.getElementById('revenueAmount').value);
+    const notes = document.getElementById('revenueNotes').value.trim();
+
+    if (!month || !year || !amount || amount < 0) {
+        this.showToast('Please fill all required fields with valid values', 'warning');
+        return;
+    }
+
+    try {
+        const landlordId = this.user.id || this.user._id;
+        const historicalDataKey = `landlordRevenueHistory_${landlordId}`;
+        const historicalRevenue = JSON.parse(localStorage.getItem(historicalDataKey) || '{}');
+        
+        // Initialize year if it doesn't exist
+        if (!historicalRevenue[year]) {
+            historicalRevenue[year] = {};
+        }
+        
+        // Save the manual revenue
+        historicalRevenue[year][month] = amount;
+        
+        // Save manual revenue notes separately
+        const revenueNotesKey = `landlordRevenueNotes_${landlordId}`;
+        const revenueNotes = JSON.parse(localStorage.getItem(revenueNotesKey) || '{}');
+        if (!revenueNotes[year]) {
+            revenueNotes[year] = {};
+        }
+        revenueNotes[year][month] = notes;
+        
+        // Save to localStorage
+        localStorage.setItem(historicalDataKey, JSON.stringify(historicalRevenue));
+        localStorage.setItem(revenueNotesKey, JSON.stringify(revenueNotes));
+        
+        // Update the financial data
+        this.financialData.monthlyRevenue[month] = amount;
+        
+        // Recalculate YTD
+        this.recalculateYTDRevenue();
+        
+        this.showToast(`Revenue for ${month} ${year} updated to R ${amount.toLocaleString()}`, 'success');
+        bootstrap.Modal.getInstance(document.getElementById('updateRevenueModal')).hide();
+        
+        // Refresh the UI
+        this.updateFinancialUI();
+        this.updateMonthlyRevenueTable();
+        
+    } catch (error) {
+        console.error('Error saving manual revenue:', error);
+        this.showToast('Failed to save revenue data', 'error');
+    }
+}
+
+// Add this method to recalculate YTD revenue
+recalculateYTDRevenue() {
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    let ytdRevenue = 0;
+    for (let i = 0; i <= currentMonth; i++) {
+        ytdRevenue += this.financialData.monthlyRevenue[monthNames[i]] || 0;
+    }
+    
+    this.financialData.ytdRevenue = ytdRevenue;
+}
+
+// Enhanced monthly revenue table with manual editing
+updateMonthlyRevenueTable() {
+    const monthlyRevenueTable = document.getElementById('monthlyRevenueTable');
+    if (!monthlyRevenueTable) return;
+
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    
+    // Find earliest property date
+    let earliestPropertyDate = new Date();
+    if (this.properties.length > 0) {
+        earliestPropertyDate = new Date(Math.min(...this.properties.map(p => new Date(p.createdAt || p.updatedAt || Date.now()))));
+    }
+    
+    const earliestMonth = earliestPropertyDate.getMonth();
+    const earliestYear = earliestPropertyDate.getFullYear();
+    
+    // Determine which months to show
+    const startMonth = (earliestYear === currentYear) ? earliestMonth : 0;
+    const monthsToShow = monthNames.slice(startMonth, currentMonth + 1);
+    
+    let cumulativeRevenue = 0;
+    let tableRows = '';
+
+    monthsToShow.forEach((month, index) => {
+        const monthIndex = monthNames.indexOf(month);
+        const monthlyRevenue = this.financialData.monthlyRevenue[month] || 0;
+        cumulativeRevenue += monthlyRevenue;
+        
+        // Calculate occupancy rate for this month
+        const totalPotentialRevenue = this.properties.reduce((sum, property) => {
+            const propertyCreated = new Date(property.createdAt || property.updatedAt || Date.now());
+            const propertyCreatedMonth = propertyCreated.getMonth();
+            const propertyCreatedYear = propertyCreated.getFullYear();
+            
+            // Only count properties that existed in this month
+            if ((propertyCreatedYear === currentYear && monthIndex >= propertyCreatedMonth) || 
+                propertyCreatedYear < currentYear) {
+                return sum + (property.price || 0);
+            }
+            return sum;
+        }, 0);
+        
+        const occupancyRate = totalPotentialRevenue > 0 ? 
+            Math.min(100, Math.round((monthlyRevenue / totalPotentialRevenue) * 100)) : 0;
+        
+        // Add row class based on month status
+        const rowClass = monthIndex === currentMonth ? 'table-primary' : '';
+        
+        // Check if this is manual data
+        const landlordId = this.user.id || this.user._id;
+        const revenueNotesKey = `landlordRevenueNotes_${landlordId}`;
+        const revenueNotes = JSON.parse(localStorage.getItem(revenueNotesKey) || '{}');
+        const hasManualNotes = revenueNotes[currentYear] && revenueNotes[currentYear][month];
+        const isManual = hasManualNotes || (monthIndex < currentMonth && monthlyRevenue > 0);
+        
+        tableRows += `
+            <tr class="${rowClass}">
+                <td>
+                    ${month}
+                    ${isManual ? '<span class="badge bg-success revenue-manual-badge ms-1">Manual</span>' : ''}
+                </td>
+                <td>R ${monthlyRevenue.toLocaleString()}</td>
+                <td>${this.financialData.revenueProperties}</td>
+                <td>${occupancyRate}%</td>
+                <td>R ${cumulativeRevenue.toLocaleString()}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary revenue-edit-btn" 
+                            onclick="reportsManager.openManualRevenueModal('${month}', '${currentYear}', ${monthlyRevenue})"
+                            title="Edit revenue for ${month}">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    // Add note about data range if not starting from January
+    if (startMonth > 0) {
+        tableRows = `
+            <tr class="table-info">
+                <td colspan="6" class="small text-center">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Data shown from ${monthNames[startMonth]} to ${monthNames[currentMonth]} ${currentYear} 
+                    (based on when you added your first property)
+                </td>
+            </tr>
+            ${tableRows}
+        `;
+    }
+
+    monthlyRevenueTable.innerHTML = tableRows;
+}
+
+// Add method to get revenue history with notes
+getRevenueHistory() {
+    const landlordId = this.user.id || this.user._id;
+    const historicalDataKey = `landlordRevenueHistory_${landlordId}`;
+    const revenueNotesKey = `landlordRevenueNotes_${landlordId}`;
+    
+    const historicalRevenue = JSON.parse(localStorage.getItem(historicalDataKey) || '{}');
+    const revenueNotes = JSON.parse(localStorage.getItem(revenueNotesKey) || '{}');
+    
+    return {
+        revenue: historicalRevenue,
+        notes: revenueNotes
+    };
+}
+
+// Add method to clear revenue data (for testing/reset)
+clearRevenueData() {
+    if (confirm('Are you sure you want to clear all revenue data? This cannot be undone.')) {
+        const landlordId = this.user.id || this.user._id;
+        const historicalDataKey = `landlordRevenueHistory_${landlordId}`;
+        const revenueNotesKey = `landlordRevenueNotes_${landlordId}`;
+        
+        localStorage.removeItem(historicalDataKey);
+        localStorage.removeItem(revenueNotesKey);
+        
+        this.showToast('Revenue data cleared successfully', 'success');
+        this.refreshData();
+    }
+}
 
     updateReportsSummary() {
         const statusCounts = {
