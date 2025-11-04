@@ -1465,21 +1465,25 @@
         }
 
         // Cumulative revenue calculations - FIXED
-        calculateCumulativeRevenueForYear() {
-            const now = new Date();
-            const currentMonth = now.getMonth();
-            const currentYear = now.getFullYear();
-            
-            const joinDate = this.getPropertyCreationDate();
-            const joinMonth = joinDate.getMonth();
-            const joinYear = joinDate.getFullYear();
-            
-            // Only count from joined month
-            const startMonth = (joinYear === currentYear) ? joinMonth : 0;
-            const monthsToCount = currentMonth - startMonth + 1;
-            
-            return this.monthlyRevenue * Math.max(0, monthsToCount);
-        }
+calculateCumulativeRevenueForYear() {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    const joinDate = this.getPropertyCreationDate();
+    const joinMonth = joinDate.getMonth();
+    const joinYear = joinDate.getFullYear();
+    
+    // Handle different join years
+    if (joinYear === currentYear) {
+        // Joined this year - count from joined month
+        const monthsToCount = currentMonth - joinMonth + 1;
+        return this.monthlyRevenue * Math.max(0, monthsToCount);
+    } else {
+        // Joined in previous year - count full year from January
+        return this.monthlyRevenue * (currentMonth + 1);
+    }
+}
         
         calculateCumulativeRevenueForQuarter() {
             const now = new Date();
@@ -1567,25 +1571,29 @@
             this.updateChartSummary(period, values);
         }
 
-        // Calculate optimal max value for Y-axis
-        calculateOptimalMaxValue(values) {
-            if (values.length === 0) return 1000;
-            
-            const maxDataValue = Math.max(...values);
-            if (maxDataValue === 0) return 1000;
-            
-            // Find the next "nice" number above max value
-            const magnitude = Math.pow(10, Math.floor(Math.log10(maxDataValue)));
-            const normalized = maxDataValue / magnitude;
-            
-            let niceMax;
-            if (normalized <= 1) niceMax = 1 * magnitude;
-            else if (normalized <= 2) niceMax = 2 * magnitude;
-            else if (normalized <= 5) niceMax = 5 * magnitude;
-            else niceMax = 10 * magnitude;
-            
-            return Math.max(niceMax, 1000); // Minimum 1000 for better visualization
-        }
+        // Calculate optimal max value for Y-axis - IMPROVED
+calculateOptimalMaxValue(values) {
+    if (values.length === 0) return 1000;
+    
+    // Filter out future months with zero values for max calculation
+    const nonZeroValues = values.filter(val => val > 0);
+    if (nonZeroValues.length === 0) return 1000;
+    
+    const maxDataValue = Math.max(...nonZeroValues);
+    if (maxDataValue === 0) return 1000;
+    
+    // Find the next "nice" number above max value
+    const magnitude = Math.pow(10, Math.floor(Math.log10(maxDataValue)));
+    const normalized = maxDataValue / magnitude;
+    
+    let niceMax;
+    if (normalized <= 1) niceMax = 1 * magnitude;
+    else if (normalized <= 2) niceMax = 2 * magnitude;
+    else if (normalized <= 5) niceMax = 5 * magnitude;
+    else niceMax = 10 * magnitude;
+    
+    return Math.max(niceMax, 1000); // Minimum 1000 for better visualization
+}
 
         // Generate nice Y-axis labels
         generateYAxisLabels(maxValue) {
@@ -1745,7 +1753,7 @@
             return result;
         }
 
-        // Yearly chart with cumulative data - FIXED VERSION
+      // Yearly chart with cumulative data - COMPLETELY FIXED VERSION
 getYearlyChartData(yearlyRevenue) {
     const cachedData = this.getCachedRevenueData('yearly');
     if (cachedData) return cachedData;
@@ -1759,31 +1767,46 @@ getYearlyChartData(yearlyRevenue) {
     const joinMonth = joinDate.getMonth();
     const joinYear = joinDate.getFullYear();
     
-    // Only show from joined month onwards
-    const startMonth = (joinYear === currentYear) ? joinMonth : 0;
-    
     const periods = [];
     const values = [];
     const timeStatuses = [];
     
     let cumulativeRevenue = 0;
     
-    // Start from joined month, not January
-    for (let i = startMonth; i <= currentMonth; i++) {
-        periods.push(monthNames[i]);
-        
-        // Add monthly revenue cumulatively
-        cumulativeRevenue += this.monthlyRevenue;
-        values.push(cumulativeRevenue);
-        timeStatuses.push(i === currentMonth ? 'current' : 'past');
-    }
-    
-    // Add future months if we haven't reached December yet
-    if (currentMonth < 11) {
-        for (let i = currentMonth + 1; i < 12; i++) {
+    // Handle different join years properly
+    if (joinYear === currentYear) {
+        // Joined this year - start from joined month
+        for (let i = joinMonth; i <= currentMonth; i++) {
             periods.push(monthNames[i]);
-            values.push(cumulativeRevenue); // Keep same cumulative for future
-            timeStatuses.push('future');
+            cumulativeRevenue += this.monthlyRevenue;
+            values.push(cumulativeRevenue);
+            timeStatuses.push(i === currentMonth ? 'current' : 'past');
+        }
+        
+        // Add future months with NO revenue (small bars)
+        if (currentMonth < 11) {
+            for (let i = currentMonth + 1; i < 12; i++) {
+                periods.push(monthNames[i]);
+                values.push(0); // Future months get zero revenue
+                timeStatuses.push('future');
+            }
+        }
+    } else {
+        // Joined in previous year - show full year from January
+        for (let i = 0; i <= currentMonth; i++) {
+            periods.push(monthNames[i]);
+            cumulativeRevenue += this.monthlyRevenue;
+            values.push(cumulativeRevenue);
+            timeStatuses.push(i === currentMonth ? 'current' : 'past');
+        }
+        
+        // Add future months with NO revenue (small bars)
+        if (currentMonth < 11) {
+            for (let i = currentMonth + 1; i < 12; i++) {
+                periods.push(monthNames[i]);
+                values.push(0); // Future months get zero revenue
+                timeStatuses.push('future');
+            }
         }
     }
     
