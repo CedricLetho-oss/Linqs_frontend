@@ -3249,31 +3249,28 @@ async function showEnhancedDocumentUploadModal(verificationType, requiredFields 
         initializeFilePreviews(fileData, form);
         
         submitBtn.onclick = async () => {
-            console.log('Submit button clicked, checking file data:', fileData);
-            
-            // Validate required files
-            const requiredFields = verificationType === 'student' 
-                ? ['idCard', 'proofOfEnrollment'] 
-                : ['idCard', 'proofOfOwnership', 'businessLicense'];
-            
-            let isValid = true;
-            let missingFields = [];
-            
-            for (const field of requiredFields) {
-                const files = fileData.get(field) || [];
-                console.log(`Field ${field} has ${files.length} files:`, files.map(f => f.name));
-                
-                if (files.length === 0) {
-                    const fieldName = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                    missingFields.push(fieldName);
-                    isValid = false;
-                }
-            }
-            
-            if (!isValid) {
-                showToast(`Please upload the following required documents:\n• ${missingFields.join('\n• ')}`);
-                return;
-            }
+          console.log('Submit button clicked, checking file data:', fileData);
+          console.log('Required fields for validation:', requiredFields);
+          
+          // Validate required files - USE THE PASSED requiredFields PARAMETER
+          let isValid = true;
+          let missingFields = [];
+          
+          for (const field of requiredFields) {
+              const files = fileData.get(field) || [];
+              console.log(`Field ${field} has ${files.length} files:`, files.map(f => f.name));
+              
+              if (files.length === 0) {
+                  const fieldName = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                  missingFields.push(fieldName);
+                  isValid = false;
+              }
+          }
+          
+          if (!isValid) {
+              showToast(`Please upload the following required documents:\n• ${missingFields.join('\n• ')}`);
+              return;
+          }
             
             // Validate file sizes and types
             let hasInvalidFiles = false;
