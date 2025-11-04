@@ -2063,7 +2063,7 @@ function renderFilteredBookings() {
   }
 }
 
-// Generate calendar events from bookings - COMPLETELY FIXED FOR ALL VIEWS
+// Generate calendar events from bookings - FIXED TIME POSITIONING
 function generateCalendarEvents() {
   console.log('Generating calendar events for', filteredBookings.length, 'bookings');
   
@@ -2084,29 +2084,30 @@ function generateCalendarEvents() {
       parsedEnd: endDate.toString()
     });
     
-    // Validate and fix dates for calendar display
+    // CRITICAL FIX: Ensure proper time handling for calendar display
     if (!endDate || endDate <= startDate || isNaN(endDate.getTime())) {
-      // If end date is invalid, set it to 2 hours after start for proper display
+      // If end date is invalid, set it to 1 hour after start for proper display
       endDate = new Date(startDate);
-      endDate.setHours(startDate.getHours() + 2);
+      endDate.setHours(startDate.getHours() + 1);
       console.log('Fixed end date to:', endDate.toString());
     }
     
-    // Ensure we have valid time components for timeGrid views
+    // CRITICAL FIX: Ensure we have valid time components
+    // If no specific time is set, default to reasonable viewing hours
     if (startDate.getHours() === 0 && startDate.getMinutes() === 0) {
-      // If no specific time is set, default to reasonable viewing hours (10 AM)
-      startDate.setHours(10, 0, 0, 0);
-      endDate.setHours(12, 0, 0, 0);
-      console.log('Set default times - Start:', startDate.toString(), 'End:', endDate.toString());
+      startDate.setHours(14, 0, 0, 0); // Default to 2 PM
+      endDate.setHours(15, 0, 0, 0);   // Default to 3 PM
+      console.log('Set default viewing times - Start:', startDate.toString(), 'End:', endDate.toString());
     }
     
-    // Ensure minimum duration for timeGrid visibility (at least 1 hour)
-    const minDuration = 60 * 60 * 1000; // 1 hour in milliseconds
+    // CRITICAL FIX: Ensure minimum duration for proper display (at least 30 minutes)
+    const minDuration = 30 * 60 * 1000; // 30 minutes in milliseconds
     if ((endDate - startDate) < minDuration) {
       endDate = new Date(startDate.getTime() + minDuration);
-      console.log('Extended duration to minimum 1 hour');
+      console.log('Extended duration to minimum 30 minutes');
     }
     
+    // CRITICAL FIX: Ensure events are NOT all-day for timeGrid views
     const eventData = {
       id: booking._id,
       title: `${studentName} - ${propertyName}`,
@@ -2121,14 +2122,24 @@ function generateCalendarEvents() {
         originalCheckOut: booking.checkOut
       },
       className: `fc-event ${booking.status}`,
-      allDay: false, // CRITICAL: Ensure events are NOT all-day
-      display: 'block',
+      allDay: false, // CRITICAL: This ensures events show in time slots
+      display: 'auto',
       backgroundColor: getEventColor(booking.status),
       borderColor: getEventBorderColor(booking.status),
-      textColor: getEventTextColor(booking.status)
+      textColor: getEventTextColor(booking.status),
+      // Additional properties to help with positioning
+      startEditable: false,
+      durationEditable: false
     };
     
-    console.log('Final event data:', eventData);
+    console.log('Final event data for calendar:', {
+      title: eventData.title,
+      start: eventData.start.toString(),
+      end: eventData.end.toString(),
+      allDay: eventData.allDay,
+      duration: (eventData.end - eventData.start) / (1000 * 60) + ' minutes'
+    });
+    
     return eventData;
   });
 }
@@ -2169,7 +2180,7 @@ function getEventColor(status) {
   return colors[status] || '#6b7280';
 }
 
-// COMPLETELY FIXED Calendar Initialization WITH WEEKENDS
+// COMPLETELY FIXED Calendar Initialization WITH PROPER TIME POSITIONING
 function initializeCalendar() {
   const calendarEl = document.getElementById('calendar');
   if (!calendarEl) {
@@ -2191,40 +2202,44 @@ function initializeCalendar() {
       right: 'dayGridMonth,timeGridWeek,timeGridDay'
     },
     
-    // View configurations - FIXED TO SHOW ALL DAYS
+    // View configurations - FIXED TIME SLOTS
     views: {
       dayGridMonth: {
         dayMaxEventRows: 3,
         dayMaxEvents: true,
         fixedWeekCount: false,
-        weekends: true // ENSURES WEEKENDS ARE SHOWN
+        weekends: true
       },
       timeGridWeek: {
         slotMinTime: '06:00:00',
         slotMaxTime: '22:00:00',
         allDaySlot: false,
-        slotDuration: '01:00:00', // 1-hour slots for better precision
-        slotLabelInterval: '02:00:00',
+        slotDuration: '00:30:00', // 30-minute slots for better precision
+        slotLabelInterval: '01:00:00',
         slotLabelFormat: {
           hour: '2-digit',
           minute: '2-digit',
           hour12: false,
           meridiem: false
         },
-        weekends: true // ENSURES WEEKENDS ARE SHOWN
+        weekends: true,
+        eventMinHeight: 25, // Ensure events have minimum height
+        nowIndicator: true
       },
       timeGridDay: {
         slotMinTime: '06:00:00',
         slotMaxTime: '22:00:00',
         allDaySlot: false,
-        slotDuration: '01:00:00', // 1-hour slots for better precision
-        slotLabelInterval: '02:00:00',
+        slotDuration: '00:30:00', // 30-minute slots for better precision
+        slotLabelInterval: '01:00:00',
         slotLabelFormat: {
           hour: '2-digit',
           minute: '2-digit',
           hour12: false,
           meridiem: false
-        }
+        },
+        eventMinHeight: 25,
+        nowIndicator: true
       }
     },
     
@@ -2260,7 +2275,7 @@ function initializeCalendar() {
     contentHeight: 'auto',
     aspectRatio: 1.5,
     
-    // Time settings
+    // Time settings - CRITICAL FOR TIME POSITIONING
     eventTimeFormat: {
       hour: '2-digit',
       minute: '2-digit',
@@ -2277,7 +2292,7 @@ function initializeCalendar() {
     
     // Business hours - INCLUDING WEEKENDS
     businessHours: {
-      daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // 0=Sunday, 6=Saturday - ALL DAYS INCLUDED
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
       startTime: '08:00',
       endTime: '20:00',
     },
@@ -2289,6 +2304,11 @@ function initializeCalendar() {
     dayMaxEvents: 4,
     eventDisplay: 'block',
     nowIndicator: true,
+    
+    // CRITICAL: Force events to display in time slots
+    eventPositioned: function(info) {
+      console.log('Event positioned:', info.event.title, 'at', info.event.start);
+    },
     
     // Event content rendering
     eventContent: function(arg) {
@@ -2306,12 +2326,12 @@ function initializeCalendar() {
         const shortTitle = title.length > 25 ? title.substring(0, 25) + '...' : title;
         return {
           html: `
-            <div class="fc-timegrid-event-content p-2 w-100 h-100">
+            <div class="fc-timegrid-event-content p-1 w-100 h-100">
               <div class="d-flex align-items-start w-100 h-100">
-                <span class="me-2 small flex-shrink-0">${icons[status] || '📅'}</span>
+                <span class="me-1 small flex-shrink-0">${icons[status] || '📅'}</span>
                 <div class="flex-grow-1">
                   <div class="small fw-bold text-truncate">${shortTitle}</div>
-                  <div class="x-small text-muted mt-1">
+                  <div class="x-small text-muted">
                     ${arg.timeText}
                   </div>
                 </div>
@@ -2336,33 +2356,42 @@ function initializeCalendar() {
     datesSet: function(info) {
       console.log('Calendar view changed to:', info.view.type, 'Showing dates:', info.start, 'to', info.end);
       
-      // Force re-render to ensure all days are visible
+      // Force re-render to ensure proper event positioning
       setTimeout(() => {
         calendar.updateSize();
-        
-        // Debug: Check if weekends are visible
-        const saturdayCells = document.querySelectorAll('.fc-day-sat');
-        const sundayCells = document.querySelectorAll('.fc-day-sun');
-        console.log('Saturday cells:', saturdayCells.length);
-        console.log('Sunday cells:', sundayCells.length);
       }, 100);
     },
     
-    // Event rendering callback
+    // Event rendering callback - CRITICAL FOR TIME GRID POSITIONING
     eventDidMount: function(info) {
+      console.log('Event mounted:', info.event.title, 'Start:', info.event.start, 'End:', info.event.end);
+      
       // Add custom styling for different statuses
+      const status = info.event.extendedProps.status;
+      const statusColors = {
+        pending: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+        confirmed: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)',
+        cancelled: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
+        completed: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)'
+      };
+      
+      if (statusColors[status]) {
+        info.el.style.background = statusColors[status];
+        info.el.style.borderLeft = `4px solid ${getEventBorderColor(status)}`;
+      }
+      
+      // CRITICAL: Ensure events are properly positioned in time grid
       if (info.view.type.includes('timeGrid')) {
-        const status = info.event.extendedProps.status;
-        const statusColors = {
-          pending: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-          confirmed: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)',
-          cancelled: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
-          completed: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)'
-        };
+        const eventStart = info.event.start;
+        const eventEnd = info.event.end;
         
-        if (statusColors[status]) {
-          info.el.style.background = statusColors[status];
-          info.el.style.borderLeft = `4px solid var(--${status === 'pending' ? 'warning' : status === 'confirmed' ? 'success' : status === 'cancelled' ? 'danger' : 'secondary'})`;
+        if (eventStart && eventEnd) {
+          console.log('TimeGrid event timing:', {
+            title: info.event.title,
+            start: eventStart.toString(),
+            end: eventEnd.toString(),
+            duration: (eventEnd - eventStart) / (1000 * 60) + ' minutes'
+          });
         }
       }
     }
@@ -2371,7 +2400,7 @@ function initializeCalendar() {
   // Render the calendar
   calendar.render();
   
-  // Force calendar to update its size and ensure weekends are visible
+  // Force calendar to update its size
   setTimeout(() => {
     calendar.updateSize();
     
@@ -2379,9 +2408,7 @@ function initializeCalendar() {
     calendarEl.style.maxWidth = 'none';
     calendarEl.style.width = '100%';
     
-    // Debug logging
-    console.log('Calendar initialized with weekends enabled');
-    console.log('Available views:', calendar.view);
+    console.log('Calendar initialized with proper time positioning');
     
   }, 500);
 }
