@@ -620,6 +620,42 @@
   </div>
 </div>
 
+<!-- Tenant Stats -->
+<div class="row mb-5" id="tenantStats" style="display: none;">
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card stats-card text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #2d4a9c 100%);">
+            <div class="card-body text-center p-3">
+                <h3 class="mb-2" id="shortTermBookings">0</h3>
+                <small class="opacity-90">Short-term Stays</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card stats-card booking text-white" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);">
+            <div class="card-body text-center p-3">
+                <h3 class="mb-2" id="upcomingStays">0</h3>
+                <small class="opacity-90">Upcoming Stays</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card stats-card reviews text-white" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);">
+            <div class="card-body text-center p-3">
+                <h3 class="mb-2" id="tenantReviews">0</h3>
+                <small class="opacity-90">Reviews Given</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card stats-card properties text-white" style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%);">
+            <div class="card-body text-center p-3">
+                <h3 class="mb-2" id="savedShortTerm">0</h3>
+                <small class="opacity-90">Saved Properties</small>
+            </div>
+        </div>
+    </div>
+</div>
+
     <!-- Enhanced Tabs Navigation -->
     <div class="row mb-4">
       <div class="col-12">
@@ -786,6 +822,41 @@
                   <i class="bi bi-building me-2"></i>Update Business Info
                 </button>
               </form>
+            </div>
+
+            <!-- Tenant Information -->
+            <div class="form-section" id="tenantInfoSection" style="display: none;">
+                <h4 class="text-navy mb-4"><i class="bi bi-person-badge me-2"></i>Tenant Information</h4>
+                <form id="tenantInfoForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Occupation</label>
+                                <input type="text" class="form-control" id="occupation" placeholder="e.g. Tourist, Intern, Professional">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Reason for Stay</label>
+                                <select class="form-select" id="reasonForStay">
+                                    <option value="" selected>Select reason</option>
+                                    <option value="holiday">Holiday/Vacation</option>
+                                    <option value="internship">Internship/Work</option>
+                                    <option value="visiting">Visiting Family/Friends</option>
+                                    <option value="business">Business Trip</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Additional Notes</label>
+                        <textarea class="form-control" id="tenantNotes" rows="3" placeholder="Any additional information about your stay..."></textarea>
+                    </div>
+                    <button type="button" class="btn btn-navy btn-profile" onclick="updateTenantInfo()">
+                        <i class="bi bi-person-badge me-2"></i>Update Tenant Info
+                    </button>
+                </form>
             </div>
 
             <!-- Address Information -->
@@ -1430,7 +1501,10 @@ function initializePasswordToggles() {
             memberSince: user.memberSince || user.createdAt || new Date().toISOString(),
             lastLogin: user.lastLogin || new Date().toISOString(),
             preferences: user.preferences || getDefaultPreferences(),
-            stats: user.stats || getDefaultStats(user.role || 'student')
+            stats: user.stats || getDefaultStats(user.role || 'student'),
+            occupation: user.occupation || '',
+            reasonForStay: user.reasonForStay || '',
+            tenantNotes: user.tenantNotes || '',
         };
 
         return defaultUser;
@@ -1451,29 +1525,36 @@ function initializePasswordToggles() {
 
     // Get default stats based on role
     function getDefaultStats(role) {
-        if (role === 'landlord') {
-            return {
-                totalProperties: 0,
-                occupiedProperties: 0,
-                monthlyRevenue: 0,
-                tenantReviews: 0
-            };
-        } else if (role === 'admin') {
-            return {
-                totalUsers: 0,
-                totalPropertiesAdmin: 0,
-                activeBookingsAdmin: 0,
-                pendingVerifications: 0
-            };
-        } else {
-            return {
-                totalBookings: 0,
-                activeBookings: 0,
-                reviewsCount: 0,
-                savedProperties: 0
-            };
-        }
+    if (role === 'landlord') {
+        return {
+            totalProperties: 0,
+            occupiedProperties: 0,
+            monthlyRevenue: 0,
+            tenantReviews: 0
+        };
+    } else if (role === 'admin') {
+        return {
+            totalUsers: 0,
+            totalPropertiesAdmin: 0,
+            activeBookingsAdmin: 0,
+            pendingVerifications: 0
+        };
+    } else if (role === 'tenant') {
+        return {
+            shortTermBookings: 0,
+            upcomingStays: 0,
+            tenantReviews: 0,
+            savedShortTerm: 0
+        };
+    } else {
+        return {
+            totalBookings: 0,
+            activeBookings: 0,
+            reviewsCount: 0,
+            savedProperties: 0
+        };
     }
+}
 
     // Property stats helper functions
     async function countOccupiedProperties() {
@@ -2079,8 +2160,8 @@ function initializePasswordToggles() {
         }
     }
 
-    // Update profile display
-    function updateProfileDisplay() {
+      // Update profile display
+      function updateProfileDisplay() {
         if (!currentUser) return;
 
         document.getElementById('profileName').textContent = `${currentUser.firstName} ${currentUser.lastName}`.trim() || 'User Name';
@@ -2088,6 +2169,9 @@ function initializePasswordToggles() {
         if (currentUser.role === 'admin') {
             document.getElementById('profileRole').textContent = 'System Administrator';
             document.getElementById('roleDisplay').value = 'Administrator';
+        } else if (currentUser.role === 'tenant') {
+            document.getElementById('profileRole').textContent = 'Short-term Tenant';
+            document.getElementById('roleDisplay').value = 'Tenant';
         } else {
             document.getElementById('profileRole').textContent = currentUser.role === 'landlord' ? 'Property Landlord' : 'Student Tenant';
             document.getElementById('roleDisplay').value = currentUser.role === 'landlord' ? 'Landlord' : 'Student';
@@ -2148,25 +2232,39 @@ function initializePasswordToggles() {
     }
 
     function updateRoleSpecificSections() {
-        const isLandlord = currentUser.role === 'landlord';
-        const isAdmin = currentUser.role === 'admin';
-        
-        if (isAdmin) {
-            document.getElementById('landlordStats').style.display = 'none';
-            document.getElementById('userStats').style.display = 'none';
-            document.getElementById('adminStats').style.display = 'flex';
-            document.getElementById('landlordInfoSection').style.display = 'none';
-            document.getElementById('studentInfoSection').style.display = 'none';
-            document.getElementById('switchToLandlordBtn').style.display = 'none';
-        } else {
-            document.getElementById('landlordStats').style.display = isLandlord ? 'flex' : 'none';
-            document.getElementById('userStats').style.display = isLandlord ? 'none' : 'flex';
-            document.getElementById('adminStats').style.display = 'none';
-            document.getElementById('landlordInfoSection').style.display = isLandlord ? 'block' : 'none';
-            document.getElementById('studentInfoSection').style.display = isLandlord ? 'none' : 'block';
-            document.getElementById('switchToLandlordBtn').style.display = isLandlord ? 'none' : 'block';
-        }
+    const isLandlord = currentUser.role === 'landlord';
+    const isAdmin = currentUser.role === 'admin';
+    const isTenant = currentUser.role === 'tenant';
+    
+    if (isAdmin) {
+        document.getElementById('landlordStats').style.display = 'none';
+        document.getElementById('userStats').style.display = 'none';
+        document.getElementById('tenantStats').style.display = 'none';
+        document.getElementById('adminStats').style.display = 'flex';
+        document.getElementById('landlordInfoSection').style.display = 'none';
+        document.getElementById('studentInfoSection').style.display = 'none';
+        document.getElementById('tenantInfoSection').style.display = 'none';
+        document.getElementById('switchToLandlordBtn').style.display = 'none';
+    } else if (isTenant) {
+        document.getElementById('landlordStats').style.display = 'none';
+        document.getElementById('userStats').style.display = 'flex';
+        document.getElementById('tenantStats').style.display = 'none'; // Can add tenant-specific stats later
+        document.getElementById('adminStats').style.display = 'none';
+        document.getElementById('landlordInfoSection').style.display = 'none';
+        document.getElementById('studentInfoSection').style.display = 'none';
+        document.getElementById('tenantInfoSection').style.display = 'block';
+        document.getElementById('switchToLandlordBtn').style.display = 'block';
+    } else {
+        document.getElementById('landlordStats').style.display = isLandlord ? 'flex' : 'none';
+        document.getElementById('userStats').style.display = isLandlord ? 'none' : 'flex';
+        document.getElementById('tenantStats').style.display = 'none';
+        document.getElementById('adminStats').style.display = 'none';
+        document.getElementById('landlordInfoSection').style.display = isLandlord ? 'block' : 'none';
+        document.getElementById('studentInfoSection').style.display = isLandlord ? 'none' : 'block';
+        document.getElementById('tenantInfoSection').style.display = 'none';
+        document.getElementById('switchToLandlordBtn').style.display = isLandlord ? 'none' : 'block';
     }
+}
 
     function updateStatsDisplay() {
         if (!currentUser) return;
@@ -2215,6 +2313,9 @@ function initializePasswordToggles() {
         setValue('propertyName', currentUser.propertyName);
         setValue('propertyAddress', currentUser.propertyAddress);
         setValue('roomCount', currentUser.roomCount);
+        setValue('occupation', currentUser.occupation);
+        setValue('reasonForStay', currentUser.reasonForStay);
+        setValue('tenantNotes', currentUser.tenantNotes);
     }
 
     function loadPreferences() {
@@ -2382,6 +2483,39 @@ function initializePasswordToggles() {
             alert('Failed to update business information: ' + error.message);
         }
     }
+
+    async function updateTenantInfo() {
+    const updatedData = {
+        occupation: document.getElementById('occupation').value,
+        reasonForStay: document.getElementById('reasonForStay').value,
+        tenantNotes: document.getElementById('tenantNotes').value
+    };
+
+    try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${API_BASE_URL}/users/profile`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            Object.assign(currentUser, data.user);
+            updateLocalStorage();
+            await addActivity('profile', 'Tenant Information Updated', 'You updated your tenant details');
+            alert('Tenant information updated successfully!');
+        } else {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to update tenant info');
+        }
+    } catch (error) {
+        alert('Failed to update tenant information: ' + error.message);
+    }
+}
 
     async function updateNotifications() {
         const updatedPreferences = {
