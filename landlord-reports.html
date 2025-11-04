@@ -1540,6 +1540,7 @@ class ReportsManager {
 
         try {
             await this.loadData();
+            this.finalizeMonthlyRevenue(); // Add this line
             await this.initializeCharts();
             this.setupEventListeners();
             this.setupRealTimeUpdates();
@@ -1666,32 +1667,27 @@ class ReportsManager {
 
     async loadFinancialData() {
     try {
-        const monthlyRevenue = {};
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        // Try to load historical revenue data from localStorage first
+        const landlordId = this.user.id || this.user._id;
+        const historicalDataKey = `landlordRevenueHistory_${landlordId}`;
+        let historicalRevenue = JSON.parse(localStorage.getItem(historicalDataKey) || '{}');
         
-        // Initialize all months to 0
-        monthNames.forEach(month => {
-            monthlyRevenue[month] = 0;
-        });
-
-        let currentMonthRevenue = 0;
-        let ytdRevenue = 0;
-        let revenuePropertiesCount = 0;
-
-        // Find the earliest property creation date to determine start month
-        let earliestPropertyDate = new Date();
-        if (this.properties.length > 0) {
-            earliestPropertyDate = new Date(Math.min(...this.properties.map(p => new Date(p.createdAt || p.updatedAt || Date.now()))));
-        }
-
         const currentYear = new Date().getFullYear();
         const currentMonth = new Date().getMonth();
-        const earliestMonth = earliestPropertyDate.getMonth();
-        const earliestYear = earliestPropertyDate.getFullYear();
-
-        // Determine if we're in the same year or need to start from earliest month
-        const startMonth = (earliestYear === currentYear) ? earliestMonth : 0;
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         
+        // Initialize current year in historical data if it doesn't exist
+        if (!historicalRevenue[currentYear]) {
+            historicalRevenue[currentYear] = {};
+            monthNames.forEach(month => {
+                historicalRevenue[currentYear][month] = 0;
+            });
+        }
+
+        // Calculate current month revenue (real-time)
+        let currentMonthRevenue = 0;
+        let revenuePropertiesCount = 0;
+
         for (const property of this.properties) {
             try {
                 let propertyRevenue = 0;
@@ -1725,24 +1721,7 @@ class ReportsManager {
 
                 if (propertyHasRevenue) {
                     revenuePropertiesCount++;
-                    
-                    // FIXED: Current Month Revenue - Always add property revenue to current month
-                    // if the property is occupied/generating revenue
                     currentMonthRevenue += propertyRevenue;
-
-                    // Distribute revenue across months starting from when property was added
-                    const propertyCreatedMonth = new Date(property.createdAt || property.updatedAt || Date.now()).getMonth();
-                    const propertyCreatedYear = new Date(property.createdAt || property.updatedAt || Date.now()).getFullYear();
-                    
-                    // Only count revenue for months that have passed and current month
-                    for (let i = 0; i <= currentMonth; i++) {
-                        // Only add revenue if this month is after or same as property creation month in current year
-                        // OR if property was created in previous years
-                        if ((propertyCreatedYear === currentYear && i >= propertyCreatedMonth) || 
-                            propertyCreatedYear < currentYear) {
-                            monthlyRevenue[monthNames[i]] += propertyRevenue;
-                        }
-                    }
                 }
 
             } catch (error) {
@@ -1750,12 +1729,21 @@ class ReportsManager {
             }
         }
 
-        // Calculate YTD revenue only from start month to current month (KEEP THIS AS IS - it was working)
-        for (let i = startMonth; i <= currentMonth; i++) {
-            ytdRevenue += monthlyRevenue[monthNames[i]] || 0;
+        // Update historical data - only update current month with real-time data
+        // Past months remain unchanged
+        const currentMonthName = monthNames[currentMonth];
+        historicalRevenue[currentYear][currentMonthName] = currentMonthRevenue;
+
+        // Calculate YTD revenue from historical data (not real-time)
+        let ytdRevenue = 0;
+        for (let i = 0; i <= currentMonth; i++) {
+            ytdRevenue += historicalRevenue[currentYear][monthNames[i]] || 0;
         }
 
-        this.financialData.monthlyRevenue = monthlyRevenue;
+        // Save updated historical data
+        localStorage.setItem(historicalDataKey, JSON.stringify(historicalRevenue));
+
+        this.financialData.monthlyRevenue = historicalRevenue[currentYear];
         this.financialData.currentMonthRevenue = currentMonthRevenue;
         this.financialData.ytdRevenue = ytdRevenue;
         this.financialData.revenueProperties = revenuePropertiesCount;
@@ -1766,6 +1754,51 @@ class ReportsManager {
         console.error('Error loading financial data:', error);
         throw error;
     }
+}
+
+// Add this method to your ReportsManager class
+finalizeMonthlyRevenue() {
+    const landlordId = this.user.id || this.user._id;
+    const historicalDataKey = `landlordRevenueHistory_${landlordId}`;
+    const historicalRevenue = JSON.parse(localStorage.getItem(historicalDataKey) || '{}');
+    
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth();
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    // Check if we need to finalize previous months
+    const lastFinalizedMonthKey = `lastFinalizedMonth_${landlordId}`;
+    const lastFinalizedMonth = localStorage.getItem(lastFinalizedMonthKey);
+    
+    if (!lastFinalizedMonth || parseInt(lastFinalizedMonth) < currentMonth) {
+        // Finalize all months up to the previous month
+        for (let month = 0; month < currentMonth; month++) {
+            const monthName = monthNames[month];
+            // The revenue for past months is already stored in historicalRevenue
+            // We just need to ensure it's not recalculated
+        }
+        
+        // Update the last finalized month
+        localStorage.setItem(lastFinalizedMonthKey, currentMonth.toString());
+    }
+}
+
+// Add this method to manually update revenue for a specific month
+updateMonthlyRevenueManually(monthName, year, amount) {
+    const landlordId = this.user.id || this.user._id;
+    const historicalDataKey = `landlordRevenueHistory_${landlordId}`;
+    const historicalRevenue = JSON.parse(localStorage.getItem(historicalDataKey) || '{}');
+    
+    if (!historicalRevenue[year]) {
+        historicalRevenue[year] = {};
+    }
+    
+    historicalRevenue[year][monthName] = amount;
+    localStorage.setItem(historicalDataKey, JSON.stringify(historicalRevenue));
+    
+    this.showToast(`Revenue for ${monthName} ${year} updated to R ${amount}`, 'success');
+    this.refreshData();
 }
 
     updateDashboardStats() {
@@ -1827,91 +1860,99 @@ class ReportsManager {
     }
 
     updateRevenueChart() {
-        const revenueCtx = document.getElementById('revenueChart')?.getContext('2d');
-        if (!revenueCtx) return;
+    const revenueCtx = document.getElementById('revenueChart')?.getContext('2d');
+    if (!revenueCtx) return;
 
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const currentMonth = new Date().getMonth();
-        const currentYear = new Date().getFullYear();
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    
+    const labels = monthNames.slice(0, currentMonth + 1);
+    const revenueData = labels.map(month => this.financialData.monthlyRevenue[month] || 0);
+    
+    // Create background colors to distinguish historical vs current
+    const backgroundColors = labels.map((month, index) => {
+        const monthIndex = monthNames.indexOf(month);
         
-        // Find earliest property date to determine start month
-        let earliestPropertyDate = new Date();
-        if (this.properties.length > 0) {
-            earliestPropertyDate = new Date(Math.min(...this.properties.map(p => new Date(p.createdAt || p.updatedAt || Date.now()))));
+        if (monthIndex < currentMonth) {
+            return 'rgba(59, 130, 246, 0.6)'; // Historical months - solid blue
+        } else if (monthIndex === currentMonth) {
+            return 'rgba(34, 197, 94, 0.7)'; // Current month - green
         }
-        
-        const earliestMonth = earliestPropertyDate.getMonth();
-        const earliestYear = earliestPropertyDate.getFullYear();
-        
-        // Determine which months to show
-        const startMonth = (earliestYear === currentYear) ? earliestMonth : 0;
-        const labels = monthNames.slice(startMonth, currentMonth + 1);
-        const revenueData = labels.map(month => this.financialData.monthlyRevenue[month] || 0);
-        
-        // Create background colors based on month status
-        const backgroundColors = labels.map((month, index) => {
-            const monthIndex = monthNames.indexOf(month);
-            
-            // Past months - light blue
-            if (monthIndex < currentMonth) {
-                return 'rgba(59, 130, 246, 0.5)';
-            }
-            // Current month - darker blue
-            else if (monthIndex === currentMonth) {
-                return 'rgba(37, 99, 235, 0.7)';
-            }
-            // Future months - should not appear, but just in case
-            else {
-                return 'rgba(156, 163, 175, 0.3)';
-            }
-        });
+    });
 
-        if (this.revenueChart) {
-            this.revenueChart.destroy();
-        }
+    if (this.revenueChart) {
+        this.revenueChart.destroy();
+    }
 
-        this.revenueChart = new Chart(revenueCtx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Monthly Revenue (R)',
-                    data: revenueData,
-                    backgroundColor: backgroundColors,
-                    borderColor: 'rgb(59, 130, 246)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `Revenue: R ${context.parsed.y.toLocaleString()}`;
-                            }
+    this.revenueChart = new Chart(revenueCtx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Monthly Revenue (R)',
+                data: revenueData,
+                backgroundColor: backgroundColors,
+                borderColor: labels.map((month, index) => {
+                    const monthIndex = monthNames.indexOf(month);
+                    return monthIndex === currentMonth ? 'rgb(34, 197, 94)' : 'rgb(59, 130, 246)';
+                }),
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { 
+                    display: true,
+                    labels: {
+                        generateLabels: function(chart) {
+                            return [
+                                {
+                                    text: 'Historical Months',
+                                    fillStyle: 'rgba(59, 130, 246, 0.6)',
+                                    strokeStyle: 'rgb(59, 130, 246)',
+                                    lineWidth: 2
+                                },
+                                {
+                                    text: 'Current Month',
+                                    fillStyle: 'rgba(34, 197, 94, 0.7)',
+                                    strokeStyle: 'rgb(34, 197, 94)',
+                                    lineWidth: 2
+                                }
+                            ];
                         }
                     }
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: { display: true, text: 'Revenue (R)' },
-                        ticks: {
-                            callback: function(value) {
-                                return 'R ' + value.toLocaleString();
-                            }
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const monthIndex = monthNames.indexOf(context.label);
+                            const isCurrent = monthIndex === currentMonth;
+                            const status = isCurrent ? ' (Live)' : ' (Final)';
+                            return `Revenue: R ${context.parsed.y.toLocaleString()}${status}`;
                         }
-                    },
-                    x: {
-                        title: { display: true, text: 'Months' }
                     }
                 }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Revenue (R)' },
+                    ticks: {
+                        callback: function(value) {
+                            return 'R ' + value.toLocaleString();
+                        }
+                    }
+                },
+                x: {
+                    title: { display: true, text: 'Months' }
+                }
             }
-        });
-    }
+        }
+    });
+}
 
     updateMonthlyRevenueTable() {
         const monthlyRevenueTable = document.getElementById('monthlyRevenueTable');
