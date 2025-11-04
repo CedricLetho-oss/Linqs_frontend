@@ -1640,101 +1640,247 @@ function initializePasswordToggles() {
 
     // Load user statistics from API
     async function loadUserStats() {
-        if (!currentUser) return;
+    if (!currentUser) return;
 
-        try {
-            const token = localStorage.getItem("token");
-            
-            if (currentUser.role === 'admin') {
-                await loadAdminStats();
-                return;
-            }
-            
-            if (currentUser.role === 'landlord') {
-                const propertiesResponse = await fetch(`${API_BASE_URL}/properties/user/my-properties`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (propertiesResponse.ok) {
-                    const propertiesData = await propertiesResponse.json();
-                    const properties = propertiesData.properties || [];
-                    
-                    const totalProperties = properties.length;
-                    const occupiedProperties = await countOccupiedProperties();
-                    const monthlyRevenue = await calculateMonthlyRevenue();
-                    const tenantReviews = await countTenantReviews();
-
-                    currentUser.stats = {
-                        ...currentUser.stats,
-                        totalProperties,
-                        occupiedProperties,
-                        monthlyRevenue,
-                        tenantReviews
-                    };
+    try {
+        const token = localStorage.getItem("token");
+        
+        if (currentUser.role === 'admin') {
+            await loadAdminStats();
+            return;
+        }
+        
+        if (currentUser.role === 'landlord') {
+            const propertiesResponse = await fetch(`${API_BASE_URL}/properties/user/my-properties`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
+            });
+
+            if (propertiesResponse.ok) {
+                const propertiesData = await propertiesResponse.json();
+                const properties = propertiesData.properties || [];
+                
+                const totalProperties = properties.length;
+                const occupiedProperties = await countOccupiedProperties();
+                const monthlyRevenue = await calculateMonthlyRevenue();
+                const tenantReviews = await countTenantReviews();
+
+                currentUser.stats = {
+                    ...currentUser.stats,
+                    totalProperties,
+                    occupiedProperties,
+                    monthlyRevenue,
+                    tenantReviews
+                };
+            }
+        } else if (currentUser.role === 'tenant') {
+            // TENANT-SPECIFIC STATS
+            const statsResponse = await fetch(`${API_BASE_URL}/users/stats`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (statsResponse.ok) {
+                const statsData = await statsResponse.json();
+                
+                if (!statsData.tenantReviews) {
+                    statsData.tenantReviews = await countUserReviews();
+                }
+                
+                const shortTermBookingsCount = await countShortTermBookings();
+                const upcomingStaysCount = await countUpcomingStays();
+                const savedShortTermCount = await countSavedShortTerm();
+                
+                currentUser.stats = {
+                    ...statsData,
+                    shortTermBookings: shortTermBookingsCount,
+                    upcomingStays: upcomingStaysCount,
+                    savedShortTerm: savedShortTermCount
+                };
             } else {
-                const statsResponse = await fetch(`${API_BASE_URL}/users/stats`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (statsResponse.ok) {
-                    const statsData = await statsResponse.json();
-                    
-                    if (!statsData.reviewsCount) {
-                        statsData.reviewsCount = await countUserReviews();
-                    }
-                    
-                    const activeBookingsCount = await countActiveBookings();
-                    const savedPropertiesCount = await countSavedProperties();
-                    
-                    currentUser.stats = {
-                        ...statsData,
-                        activeBookings: activeBookingsCount,
-                        savedProperties: savedPropertiesCount
-                    };
-                } else {
-                    const reviewsCount = await countUserReviews();
-                    const activeBookingsCount = await countActiveBookings();
-                    const savedPropertiesCount = await countSavedProperties();
-                    
-                    currentUser.stats = {
-                        ...currentUser.stats,
-                        reviewsCount: reviewsCount,
-                        activeBookings: activeBookingsCount,
-                        savedProperties: savedPropertiesCount
-                    };
-                }
+                const tenantReviews = await countUserReviews();
+                const shortTermBookingsCount = await countShortTermBookings();
+                const upcomingStaysCount = await countUpcomingStays();
+                const savedShortTermCount = await countSavedShortTerm();
+                
+                currentUser.stats = {
+                    ...currentUser.stats,
+                    tenantReviews: tenantReviews,
+                    shortTermBookings: shortTermBookingsCount,
+                    upcomingStays: upcomingStaysCount,
+                    savedShortTerm: savedShortTermCount
+                };
             }
-            
-            updateLocalStorage();
-        } catch (error) {
-            try {
-                if (currentUser.role === 'landlord') {
-                    const tenantReviews = await countTenantReviews();
-                    currentUser.stats.tenantReviews = tenantReviews;
-                } else if (currentUser.role !== 'admin') {
-                    const reviewsCount = await countUserReviews();
-                    const activeBookingsCount = await countActiveBookings();
-                    const savedPropertiesCount = await countSavedProperties();
-                    
-                    currentUser.stats.reviewsCount = reviewsCount;
-                    currentUser.stats.activeBookings = activeBookingsCount;
-                    currentUser.stats.savedProperties = savedPropertiesCount;
+        } else {
+            // STUDENT STATS (original logic)
+            const statsResponse = await fetch(`${API_BASE_URL}/users/stats`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
-                updateLocalStorage();
-            } catch (reviewError) {
-                console.error('Error loading reviews count:', reviewError);
+            });
+
+            if (statsResponse.ok) {
+                const statsData = await statsResponse.json();
+                
+                if (!statsData.reviewsCount) {
+                    statsData.reviewsCount = await countUserReviews();
+                }
+                
+                const activeBookingsCount = await countActiveBookings();
+                const savedPropertiesCount = await countSavedProperties();
+                
+                currentUser.stats = {
+                    ...statsData,
+                    activeBookings: activeBookingsCount,
+                    savedProperties: savedPropertiesCount
+                };
+            } else {
+                const reviewsCount = await countUserReviews();
+                const activeBookingsCount = await countActiveBookings();
+                const savedPropertiesCount = await countSavedProperties();
+                
+                currentUser.stats = {
+                    ...currentUser.stats,
+                    reviewsCount: reviewsCount,
+                    activeBookings: activeBookingsCount,
+                    savedProperties: savedPropertiesCount
+                };
             }
         }
-
-        updateStatsDisplay();
+        
+        updateLocalStorage();
+    } catch (error) {
+        try {
+            if (currentUser.role === 'landlord') {
+                const tenantReviews = await countTenantReviews();
+                currentUser.stats.tenantReviews = tenantReviews;
+            } else if (currentUser.role === 'tenant') {
+                // TENANT ERROR FALLBACK
+                const tenantReviews = await countUserReviews();
+                const shortTermBookingsCount = await countShortTermBookings();
+                const upcomingStaysCount = await countUpcomingStays();
+                const savedShortTermCount = await countSavedShortTerm();
+                
+                currentUser.stats.tenantReviews = tenantReviews;
+                currentUser.stats.shortTermBookings = shortTermBookingsCount;
+                currentUser.stats.upcomingStays = upcomingStaysCount;
+                currentUser.stats.savedShortTerm = savedShortTermCount;
+            } else if (currentUser.role !== 'admin') {
+                // STUDENT ERROR FALLBACK
+                const reviewsCount = await countUserReviews();
+                const activeBookingsCount = await countActiveBookings();
+                const savedPropertiesCount = await countSavedProperties();
+                
+                currentUser.stats.reviewsCount = reviewsCount;
+                currentUser.stats.activeBookings = activeBookingsCount;
+                currentUser.stats.savedProperties = savedPropertiesCount;
+            }
+            updateLocalStorage();
+        } catch (reviewError) {
+            console.error('Error loading reviews count:', reviewError);
+        }
     }
+
+    updateStatsDisplay();
+}
+
+// Add these helper functions for tenant stats
+async function countShortTermBookings() {
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) return 0;
+
+        const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const bookings = data.bookings || [];
+            
+            // Filter for short-term stays (less than 3 months)
+            const shortTermBookings = bookings.filter(booking => {
+                if (!booking.checkIn || !booking.checkOut) return false;
+                
+                const checkIn = new Date(booking.checkIn);
+                const checkOut = new Date(booking.checkOut);
+                const durationMonths = (checkOut - checkIn) / (1000 * 60 * 60 * 24 * 30);
+                return durationMonths <= 3;
+            });
+            
+            return shortTermBookings.length;
+        }
+        return 0;
+    } catch (error) {
+        console.error('Error counting short-term bookings:', error);
+        return 0;
+    }
+}
+
+async function countUpcomingStays() {
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) return 0;
+
+        const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const bookings = data.bookings || [];
+            
+            const upcomingStays = bookings.filter(booking => 
+                booking.status === 'confirmed' && 
+                booking.checkIn && 
+                new Date(booking.checkIn) > new Date()
+            );
+            
+            return upcomingStays.length;
+        }
+        return 0;
+    } catch (error) {
+        console.error('Error counting upcoming stays:', error);
+        return 0;
+    }
+}
+
+async function countSavedShortTerm() {
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) return 0;
+
+        const response = await fetch(`${API_BASE_URL}/favorites`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                return data.data.length;
+            }
+            return 0;
+        }
+        return 0;
+    } catch (error) {
+        console.error('Error counting saved properties:', error);
+        return 0;
+    }
+}
 
     // Helper functions for counting various items
     async function countActiveBookings() {
@@ -2160,43 +2306,45 @@ function initializePasswordToggles() {
         }
     }
 
-      // Update profile display
       function updateProfileDisplay() {
-        if (!currentUser) return;
+    if (!currentUser) return;
 
-        document.getElementById('profileName').textContent = `${currentUser.firstName} ${currentUser.lastName}`.trim() || 'User Name';
-        
-        if (currentUser.role === 'admin') {
-            document.getElementById('profileRole').textContent = 'System Administrator';
-            document.getElementById('roleDisplay').value = 'Administrator';
-        } else if (currentUser.role === 'tenant') {
-            document.getElementById('profileRole').textContent = 'Short-term Tenant';
-            document.getElementById('roleDisplay').value = 'Tenant';
-        } else {
-            document.getElementById('profileRole').textContent = currentUser.role === 'landlord' ? 'Property Landlord' : 'Student Tenant';
-            document.getElementById('roleDisplay').value = currentUser.role === 'landlord' ? 'Landlord' : 'Student';
-        }
-        
-        document.getElementById('profileEmail').textContent = currentUser.email || 'No email';
-        document.getElementById('profilePhone').textContent = currentUser.phone || 'No phone';
-        document.getElementById('profileAvatar').src = currentUser.avatar;
-        
-        updateVerificationStatus();
-        
-        const memberSince = new Date(currentUser.memberSince).getFullYear();
-        document.getElementById('memberSince').textContent = `Member since ${memberSince}`;
-        document.getElementById('memberSinceDisplay').textContent = new Date(currentUser.memberSince).toLocaleDateString();
-
-        if (currentUser.role === 'admin') {
-            document.getElementById('accountTypeDisplay').textContent = 'Administrator Account';
-        } else {
-            document.getElementById('accountTypeDisplay').textContent = currentUser.role === 'landlord' ? 'Landlord Account' : 'Student Account';
-        }
-        
-        updateRoleSpecificSections();
-        updateFormFields();
-        updateStatsDisplay();
+    document.getElementById('profileName').textContent = `${currentUser.firstName} ${currentUser.lastName}`.trim() || 'User Name';
+    
+    if (currentUser.role === 'admin') {
+        document.getElementById('profileRole').textContent = 'System Administrator';
+        document.getElementById('roleDisplay').value = 'Administrator';
+    } else if (currentUser.role === 'tenant') {
+        document.getElementById('profileRole').textContent = 'Short-term Tenant';
+        document.getElementById('roleDisplay').value = 'Tenant';
+    } else {
+        document.getElementById('profileRole').textContent = currentUser.role === 'landlord' ? 'Property Landlord' : 'Student Tenant';
+        document.getElementById('roleDisplay').value = currentUser.role === 'landlord' ? 'Landlord' : 'Student';
     }
+    
+    document.getElementById('profileEmail').textContent = currentUser.email || 'No email';
+    document.getElementById('profilePhone').textContent = currentUser.phone || 'No phone';
+    document.getElementById('profileAvatar').src = currentUser.avatar;
+    
+    updateVerificationStatus();
+    
+    const memberSince = new Date(currentUser.memberSince).getFullYear();
+    document.getElementById('memberSince').textContent = `Member since ${memberSince}`;
+    document.getElementById('memberSinceDisplay').textContent = new Date(currentUser.memberSince).toLocaleDateString();
+
+    // FIXED: Proper account type display for tenant
+    if (currentUser.role === 'admin') {
+        document.getElementById('accountTypeDisplay').textContent = 'Administrator Account';
+    } else if (currentUser.role === 'tenant') {
+        document.getElementById('accountTypeDisplay').textContent = 'Short-term Tenant Account';
+    } else {
+        document.getElementById('accountTypeDisplay').textContent = currentUser.role === 'landlord' ? 'Landlord Account' : 'Student Account';
+    }
+    
+    updateRoleSpecificSections();
+    updateFormFields();
+    updateStatsDisplay();
+}
 
     function updateVerificationStatus() {
         const verificationBadge = document.getElementById('verificationStatus');
@@ -2246,9 +2394,10 @@ function initializePasswordToggles() {
         document.getElementById('tenantInfoSection').style.display = 'none';
         document.getElementById('switchToLandlordBtn').style.display = 'none';
     } else if (isTenant) {
+        // FIXED: Show tenant stats and hide others
         document.getElementById('landlordStats').style.display = 'none';
-        document.getElementById('userStats').style.display = 'flex';
-        document.getElementById('tenantStats').style.display = 'none'; // Can add tenant-specific stats later
+        document.getElementById('userStats').style.display = 'none';
+        document.getElementById('tenantStats').style.display = 'flex';
         document.getElementById('adminStats').style.display = 'none';
         document.getElementById('landlordInfoSection').style.display = 'none';
         document.getElementById('studentInfoSection').style.display = 'none';
@@ -2267,22 +2416,28 @@ function initializePasswordToggles() {
 }
 
     function updateStatsDisplay() {
-        if (!currentUser) return;
+    if (!currentUser) return;
 
-        if (currentUser.role === 'landlord') {
-            setElementText('totalProperties', currentUser.stats.totalProperties || 0);
-            setElementText('occupiedProperties', currentUser.stats.occupiedProperties || 0);
-            setElementText('monthlyRevenue', `R${currentUser.stats.monthlyRevenue || 0}`);
-            setElementText('tenantReviews', currentUser.stats.tenantReviews || 0);
-        } else if (currentUser.role === 'admin') {
-            // Admin stats are handled separately in loadAdminStats()
-        } else {
-            setElementText('totalBookings', currentUser.stats.totalBookings || 0);
-            setElementText('activeBookings', currentUser.stats.activeBookings || 0);
-            setElementText('reviewsCount', currentUser.stats.reviewsCount || 0);
-            setElementText('savedProperties', currentUser.stats.savedProperties || 0);
-        }
+    if (currentUser.role === 'landlord') {
+        setElementText('totalProperties', currentUser.stats.totalProperties || 0);
+        setElementText('occupiedProperties', currentUser.stats.occupiedProperties || 0);
+        setElementText('monthlyRevenue', `R${currentUser.stats.monthlyRevenue || 0}`);
+        setElementText('tenantReviews', currentUser.stats.tenantReviews || 0);
+    } else if (currentUser.role === 'admin') {
+        // Admin stats are handled separately in loadAdminStats()
+    } else if (currentUser.role === 'tenant') {
+        // FIXED: Show tenant-specific stats
+        setElementText('shortTermBookings', currentUser.stats.shortTermBookings || 0);
+        setElementText('upcomingStays', currentUser.stats.upcomingStays || 0);
+        setElementText('tenantReviews', currentUser.stats.tenantReviews || 0);
+        setElementText('savedShortTerm', currentUser.stats.savedShortTerm || 0);
+    } else {
+        setElementText('totalBookings', currentUser.stats.totalBookings || 0);
+        setElementText('activeBookings', currentUser.stats.activeBookings || 0);
+        setElementText('reviewsCount', currentUser.stats.reviewsCount || 0);
+        setElementText('savedProperties', currentUser.stats.savedProperties || 0);
     }
+}
 
     function setElementText(elementId, text) {
         const element = document.getElementById(elementId);
@@ -2290,33 +2445,42 @@ function initializePasswordToggles() {
     }
 
     function updateFormFields() {
-        const setValue = (id, value) => {
-            const element = document.getElementById(id);
-            if (element) element.value = value || '';
-        };
+    const setValue = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) element.value = value || '';
+    };
 
-        setValue('username', currentUser.username);
-        setValue('firstName', currentUser.firstName);
-        setValue('lastName', currentUser.lastName);
-        setValue('email', currentUser.email);
-        setValue('phone', currentUser.phone);
-        setValue('bio', currentUser.bio);
-        setValue('roleDisplay', currentUser.role === 'admin' ? 'Administrator' : (currentUser.role === 'landlord' ? 'Landlord' : 'Student'));
-        setValue('streetAddress', currentUser.streetAddress);
-        setValue('city', currentUser.city);
-        setValue('province', currentUser.province);
-        setValue('postalCode', currentUser.postalCode);
-        setValue('university', currentUser.university);
-        setValue('course', currentUser.course);
-        setValue('faculty', currentUser.faculty);
-        setValue('courseDuration', currentUser.courseDuration);
-        setValue('propertyName', currentUser.propertyName);
-        setValue('propertyAddress', currentUser.propertyAddress);
-        setValue('roomCount', currentUser.roomCount);
-        setValue('occupation', currentUser.occupation);
-        setValue('reasonForStay', currentUser.reasonForStay);
-        setValue('tenantNotes', currentUser.tenantNotes);
+    setValue('username', currentUser.username);
+    setValue('firstName', currentUser.firstName);
+    setValue('lastName', currentUser.lastName);
+    setValue('email', currentUser.email);
+    setValue('phone', currentUser.phone);
+    setValue('bio', currentUser.bio);
+    
+    // FIXED: Proper role display for tenant
+    if (currentUser.role === 'admin') {
+        setValue('roleDisplay', 'Administrator');
+    } else if (currentUser.role === 'tenant') {
+        setValue('roleDisplay', 'Tenant');
+    } else {
+        setValue('roleDisplay', currentUser.role === 'landlord' ? 'Landlord' : 'Student');
     }
+    
+    setValue('streetAddress', currentUser.streetAddress);
+    setValue('city', currentUser.city);
+    setValue('province', currentUser.province);
+    setValue('postalCode', currentUser.postalCode);
+    setValue('university', currentUser.university);
+    setValue('course', currentUser.course);
+    setValue('faculty', currentUser.faculty);
+    setValue('courseDuration', currentUser.courseDuration);
+    setValue('propertyName', currentUser.propertyName);
+    setValue('propertyAddress', currentUser.propertyAddress);
+    setValue('roomCount', currentUser.roomCount);
+    setValue('occupation', currentUser.occupation);
+    setValue('reasonForStay', currentUser.reasonForStay);
+    setValue('tenantNotes', currentUser.tenantNotes);
+}
 
     function loadPreferences() {
         if (!currentUser) return;
