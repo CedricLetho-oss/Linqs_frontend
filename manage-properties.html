@@ -988,6 +988,21 @@
 .modal-backdrop.show {
   opacity: 0.5 !important;
 }
+
+/* Short-term tenant styling */
+.short-term-badge {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+}
+
+.short-term-message {
+    border-left: 4px solid #f59e0b;
+}
+
+.form-switch .form-check-input:checked {
+    background-color: #f59e0b;
+    border-color: #f59e0b;
+}
 </style>
 </head>
 <body>
@@ -1390,6 +1405,50 @@
             </div>
           </div>
 
+          <!-- Short-term Tenant Availability -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h6 class="text-primary mb-3 border-bottom pb-2">
+                <i class="bi bi-calendar-range me-2"></i>Short-term Tenant Availability
+              </h6>
+              
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Accept Short-term Tenants? *</label>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" name="acceptsShortTerm" id="acceptsShortTerm" onchange="toggleShortTermMessage()">
+                  <label class="form-check-label" for="acceptsShortTerm">
+                    Allow short-term stays (December & January)
+                  </label>
+                </div>
+                <small class="text-muted">
+                  Perfect for earning extra income during student holidays
+                </small>
+              </div>
+              
+              <!-- Dynamic Message Based on Selection -->
+              <div id="shortTermMessage" class="alert alert-info" style="display: none;">
+                <div id="shortTermYesMessage">
+                  <i class="bi bi-info-circle me-2"></i>
+                  <strong>Great choice!</strong> Your property will be available to short-term tenants during December & January, giving you extra income when students are away.
+                </div>
+                <div id="shortTermNoMessage" style="display: none;">
+                  <i class="bi bi-info-circle me-2"></i>
+                  <strong>Student-only accommodation.</strong> Your property will only be available to long-term student tenants.
+                </div>
+              </div>
+              
+              <!-- Optional Description -->
+              <div class="mb-3" id="shortTermDescriptionSection" style="display: none;">
+                <label class="form-label fw-semibold">Short-term Stay Details (Optional)</label>
+                <textarea class="form-control" name="shortTermDescription" rows="3" 
+                          placeholder="Describe any special arrangements for short-term tenants, minimum stay requirements, or holiday pricing..."></textarea>
+                <small class="text-muted">
+                  This information will be shown to short-term tenants interested in December/January stays
+                </small>
+              </div>
+            </div>
+          </div>
+
           <!-- Property Images -->
           <div class="row mb-4">
             <div class="col-12">
@@ -1651,6 +1710,50 @@
                     <option value="accredited">Accredited (University-approved)</option>
                     <option value="self">Self-paying (Private accommodation)</option>
                   </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Short-term Tenant Availability - EDIT -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary mb-3 border-bottom pb-2">
+                  <i class="bi bi-calendar-range me-2"></i>Short-term Tenant Availability
+                </h6>
+                
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Accept Short-term Tenants? *</label>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="editAcceptsShortTerm" onchange="toggleEditShortTermMessage()">
+                    <label class="form-check-label" for="editAcceptsShortTerm">
+                      Allow short-term stays (December & January)
+                    </label>
+                  </div>
+                  <small class="text-muted">
+                    Perfect for earning extra income during student holidays
+                  </small>
+                </div>
+                
+                <!-- Dynamic Message Based on Selection -->
+                <div id="editShortTermMessage" class="alert alert-info" style="display: none;">
+                  <div id="editShortTermYesMessage">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Great choice!</strong> Your property will be available to short-term tenants during December & January, giving you extra income when students are away.
+                  </div>
+                  <div id="editShortTermNoMessage" style="display: none;">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Student-only accommodation.</strong> Your property will only be available to long-term student tenants.
+                  </div>
+                </div>
+                
+                <!-- Optional Description -->
+                <div class="mb-3" id="editShortTermDescriptionSection" style="display: none;">
+                  <label class="form-label fw-semibold">Short-term Stay Details (Optional)</label>
+                  <textarea class="form-control" id="editShortTermDescription" rows="3" 
+                            placeholder="Describe any special arrangements for short-term tenants, minimum stay requirements, or holiday pricing..."></textarea>
+                  <small class="text-muted">
+                    This information will be shown to short-term tenants interested in December/January stays
+                  </small>
                 </div>
               </div>
             </div>
@@ -2244,6 +2347,52 @@ function proceedToAddProperty() {
     const addPropertyModal = new bootstrap.Modal(document.getElementById('addPropertyModal'));
     addPropertyModal.show();
   }, 300);
+}
+
+// Toggle short-term tenant message for ADD form
+function toggleShortTermMessage() {
+    const acceptsShortTerm = document.getElementById('acceptsShortTerm').checked;
+    const messageDiv = document.getElementById('shortTermMessage');
+    const descriptionSection = document.getElementById('shortTermDescriptionSection');
+    const yesMessage = document.getElementById('shortTermYesMessage');
+    const noMessage = document.getElementById('shortTermNoMessage');
+    
+    messageDiv.style.display = 'block';
+    
+    if (acceptsShortTerm) {
+        yesMessage.style.display = 'block';
+        noMessage.style.display = 'none';
+        descriptionSection.style.display = 'block';
+        messageDiv.className = 'alert alert-success';
+    } else {
+        yesMessage.style.display = 'none';
+        noMessage.style.display = 'block';
+        descriptionSection.style.display = 'none';
+        messageDiv.className = 'alert alert-info';
+    }
+}
+
+// Toggle short-term tenant message for EDIT form
+function toggleEditShortTermMessage() {
+    const acceptsShortTerm = document.getElementById('editAcceptsShortTerm').checked;
+    const messageDiv = document.getElementById('editShortTermMessage');
+    const descriptionSection = document.getElementById('editShortTermDescriptionSection');
+    const yesMessage = document.getElementById('editShortTermYesMessage');
+    const noMessage = document.getElementById('editShortTermNoMessage');
+    
+    messageDiv.style.display = 'block';
+    
+    if (acceptsShortTerm) {
+        yesMessage.style.display = 'block';
+        noMessage.style.display = 'none';
+        descriptionSection.style.display = 'block';
+        messageDiv.className = 'alert alert-success';
+    } else {
+        yesMessage.style.display = 'none';
+        noMessage.style.display = 'block';
+        descriptionSection.style.display = 'none';
+        messageDiv.className = 'alert alert-info';
+    }
 }
     // ============ IMAGE MANAGEMENT FUNCTIONS ============
 
@@ -2869,6 +3018,8 @@ async function addNewProperty() {
             genderPreference: formData.get('genderPreference'),
             accreditation: formData.get('accreditation'),
             availability: formData.get('availability'),
+            acceptsShortTerm: formData.get('acceptsShortTerm') === 'on',
+            shortTermDescription: formData.get('shortTermDescription') || '',
             contactInfo: {
                 phone: JSON.parse(localStorage.getItem("user")).phone || '',
                 email: JSON.parse(localStorage.getItem("user")).email || ''
@@ -2973,6 +3124,8 @@ async function updateProperty() {
             bedrooms: parseInt(document.getElementById('editPropertyBedrooms').value),
             bathrooms: parseInt(document.getElementById('editPropertyBathrooms').value),
             amenities: getSelectedEditAmenities(),
+            acceptsShortTerm: document.getElementById('editAcceptsShortTerm').checked,
+            shortTermDescription: document.getElementById('editShortTermDescription').value || '',
             genderPreference: document.getElementById('editPropertyGenderPreference').value,
             accreditation: document.getElementById('editPropertyAccreditation').value,
             availability: document.getElementById('editPropertyAvailability').value,
@@ -3096,6 +3249,12 @@ async function uploadMultipleToCloudinary(files) {
                         <span class="badge bg-${availabilityInfo.class} status-badge">
                             <i class="${availabilityInfo.icon} me-1"></i>${availabilityInfo.text}
                         </span>
+
+                        ${property.acceptsShortTerm ? `
+                            <span class="badge bg-warning status-badge short-term-badge">
+                                <i class="bi bi-calendar-range me-1"></i>Short-term Available
+                            </span>
+                        ` : ''}
                     </div>
                     
                     <h6 class="card-title text-navy text-truncate">${property.title}</h6>
@@ -3593,6 +3752,14 @@ function editProperty(propertyId) {
         document.getElementById('editPropertyDescription').value = property.description;
         document.getElementById('editPropertyGenderPreference').value = property.genderPreference || 'unisex';
         document.getElementById('editPropertyAccreditation').value = property.accreditation || 'self';
+
+        document.getElementById('editAcceptsShortTerm').checked = property.acceptsShortTerm || false;
+        document.getElementById('editShortTermDescription').value = property.shortTermDescription || '';
+
+        // Trigger the message display
+        setTimeout(() => {
+            toggleEditShortTermMessage();
+        }, 100);
         
         // Use availability field (landlord-controlled)
         document.getElementById('editPropertyAvailability').value = property.availability || 'available';
