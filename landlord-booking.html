@@ -1300,6 +1300,23 @@ footer {
 .hero-actions .btn i {
   margin-right: 0.5rem;
 }
+
+/* Tenant vs Student styling */
+.tenant-booking {
+  border-left: 4px solid #7e22ce !important;
+}
+
+.student-booking {
+  border-left: 4px solid #d97706 !important;
+}
+
+.tenant-avatar {
+  background: linear-gradient(135deg, #7e22ce 0%, #a855f7 100%) !important;
+}
+
+.student-avatar {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+}
   </style>
 </head>
 <body>
@@ -1461,11 +1478,13 @@ footer {
           <div class="tab-pane fade show active" id="list" role="tabpanel">
             <div class="table-responsive">
               <table class="table table-hover mb-0">
+                <!-- In the table header section -->
                 <thead>
                   <tr>
-                    <th>Student</th>
+                    <th>Student/Tenant</th>
                     <th>Property</th>
                     <th>Date & Time</th>
+                    <th>Type</th> <!-- NEW: Add booking type column -->
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -1668,8 +1687,8 @@ footer {
       return name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : '?';
     }
 
-    // Generate table row for booking
-    function generateBookingRow(booking) {
+// Update generateBookingRow function to include booking type
+function generateBookingRow(booking) {
   const status = statusConfig[booking.status];
   const isUpcoming = booking.status === 'confirmed' && new Date(booking.checkIn) > new Date();
   const studentName = booking.student?.username || 'Unknown Student';
@@ -1677,21 +1696,30 @@ footer {
   const hasRescheduleRequest = hasPendingReschedule(booking);
   const latestReschedule = getLatestRescheduleRequest(booking);
   
+  // NEW: Determine booking type and styling
+  const bookingType = booking.bookingType || 'student';
+  const isTenant = bookingType === 'short-term' || bookingType === 'tenant';
+  const typeBadgeClass = isTenant ? 'bg-info' : 'bg-primary';
+  const typeText = isTenant ? 'Short-term' : 'Student';
+  const typeIcon = isTenant ? 'bi-person' : 'bi-person-check';
+  
   return `
     <tr class="booking-row" data-booking-id="${booking._id}">
       <td>
         <div class="d-flex align-items-center">
-          <div class="student-avatar me-2">${getInitials(studentName)}</div>
+          <div class="student-avatar me-2 ${isTenant ? 'bg-info' : 'bg-primary'}">${getInitials(studentName)}</div>
           <div>
             <div class="fw-bold small">${studentName}</div>
             <small class="text-muted">${booking.student?.email || 'No email'}</small>
             ${hasRescheduleRequest ? '<small class="text-warning d-block"><i class="bi bi-exclamation-triangle"></i> Reschedule Requested</small>' : ''}
+            ${isTenant && booking.stayDuration ? `<small class="text-info d-block"><i class="bi bi-clock"></i> ${booking.stayDuration}</small>` : ''}
+            ${isTenant && booking.negotiatedPrice > 0 ? `<small class="text-success d-block"><i class="bi bi-currency-dollar"></i> R${booking.negotiatedPrice}</small>` : ''}
           </div>
         </div>
       </td>
       <td>
         <div class="fw-bold small">${propertyName}</div>
-        <small class="text-muted">R${booking.property?.price || 0}/month</small>
+        <small class="text-muted">${isTenant ? 'Price negotiated' : `R${booking.property?.price || 0}/month`}</small>
       </td>
       <td>
         <div class="small">${formatDateTime(booking.checkIn)}</div>
@@ -1702,6 +1730,11 @@ footer {
             <i class="bi bi-arrow-clockwise"></i> Requested: ${formatDateTime(latestReschedule.newCheckIn)}
           </small>
         ` : ''}
+      </td>
+      <td>
+        <span class="badge ${typeBadgeClass} status-badge">
+          <i class="${typeIcon} me-1"></i>${typeText}
+        </span>
       </td>
       <td>
         <span class="badge bg-${status.class} status-badge">
@@ -2040,7 +2073,14 @@ function renderFilteredBookings() {
   const pendingCount = filteredBookings.filter(b => b.status === 'pending').length;
   const rescheduleCount = filteredBookings.filter(b => hasPendingReschedule(b)).length;
   const totalNotifications = pendingCount + rescheduleCount;
+  const tenantBookings = filteredBookings.filter(b => 
+    b.bookingType === 'short-term' || b.bookingType === 'tenant'
+  ).length;
+  const studentBookings = filteredBookings.filter(b => 
+    !b.bookingType || b.bookingType === 'student'
+  ).length;
   
+  console.log(`Booking breakdown: ${studentBookings} students, ${tenantBookings} tenants`);
   pendingBadge.style.display = totalNotifications > 0 ? 'block' : 'none';
   if (totalNotifications > 0) {
     pendingBadge.textContent = totalNotifications > 9 ? '9+' : totalNotifications;
@@ -2063,13 +2103,19 @@ function renderFilteredBookings() {
   }
 }
 
-// Generate calendar events from bookings - COMPLETELY FIXED FOR TIME DISPLAY
-function generateCalendarEvents() {
+  // Generate calendar events
+  function generateCalendarEvents() {
   console.log('Generating calendar events for', filteredBookings.length, 'bookings');
   
   return filteredBookings.map(booking => {
     const studentName = booking.student?.username || 'Unknown';
     const propertyName = booking.property?.title || 'Unknown';
+    const bookingType = booking.bookingType || 'student';
+    const isTenant = bookingType === 'short-term' || bookingType === 'tenant';
+    
+    // Add type indicator to title
+    const typeIndicator = isTenant ? '👤' : '🎓';
+    const eventTitle = `${typeIndicator} ${studentName} - ${propertyName}`;
     
     // CRITICAL FIX: Parse dates and handle timezone properly
     let startDate, endDate;
@@ -2115,7 +2161,7 @@ function generateCalendarEvents() {
     
     const eventData = {
       id: booking._id,
-      title: `${studentName} - ${propertyName}`,
+      title: eventTitle,
       start: startISO,
       end: endISO,
       extendedProps: {
@@ -2123,15 +2169,17 @@ function generateCalendarEvents() {
         status: booking.status,
         studentName: studentName,
         propertyName: propertyName,
+        bookingType: bookingType,
+        isTenant: isTenant,
         originalCheckIn: booking.checkIn,
         originalCheckOut: booking.checkOut
       },
-      className: `fc-event ${booking.status}`,
+      className: `fc-event ${booking.status} ${isTenant ? 'tenant-booking' : 'student-booking'}`,
       allDay: false,
       editable: false,
-      backgroundColor: getEventColor(booking.status),
-      borderColor: getEventBorderColor(booking.status),
-      textColor: getEventTextColor(booking.status)
+      backgroundColor: getEventColor(booking.status, isTenant),
+      borderColor: getEventBorderColor(booking.status, isTenant),
+      textColor: getEventTextColor(booking.status, isTenant)
     };
     
     console.log('Generated event:', {
@@ -2169,14 +2217,25 @@ function getEventTextColor(status) {
   return colors[status] || '#1f2937';
 }
 
-// Helper function to get event colors
-function getEventColor(status) {
+// Update helper functions to handle tenant vs student
+function getEventBorderColor(status, isTenant = false) {
   const colors = {
-    pending: '#f59e0b',    // amber-500
-    confirmed: '#10b981',  // emerald-500
-    cancelled: '#ef4444',  // red-500
-    completed: '#6b7280',  // gray-500
-    rescheduled: '#3b82f6' // blue-500
+    pending: isTenant ? '#7e22ce' : '#d97706',    // purple for tenants, amber for students
+    confirmed: isTenant ? '#0369a1' : '#047857',  // blue for tenants, emerald for students
+    cancelled: '#dc2626',
+    completed: '#4b5563',
+    rescheduled: '#2563eb'
+  };
+  return colors[status] || '#6b7280';
+}
+
+function getEventColor(status, isTenant = false) {
+  const colors = {
+    pending: isTenant ? '#a855f7' : '#f59e0b',    // purple for tenants, amber for students
+    confirmed: isTenant ? '#0ea5e9' : '#10b981',  // blue for tenants, emerald for students
+    cancelled: '#ef4444',
+    completed: '#6b7280',
+    rescheduled: '#3b82f6'
   };
   return colors[status] || '#6b7280';
 }
@@ -2484,7 +2543,7 @@ function updateCalendar() {
       }
     }
 
-    // UPDATED: View booking details with reschedule history
+// Update viewBookingDetails function
 async function viewBookingDetails(bookingId) {
   try {
     const token = localStorage.getItem("token");
@@ -2506,6 +2565,13 @@ async function viewBookingDetails(bookingId) {
     const data = await response.json();
     const booking = data.booking;
     const hasRescheduleRequests = booking.rescheduleRequests && booking.rescheduleRequests.length > 0;
+
+    // NEW: Determine booking type
+    const bookingType = booking.bookingType || 'student';
+    const isTenant = bookingType === 'short-term' || bookingType === 'tenant';
+    const typeBadgeClass = isTenant ? 'bg-info' : 'bg-primary';
+    const typeText = isTenant ? 'Short-term Tenant' : 'Student';
+    const typeIcon = isTenant ? 'bi-person' : 'bi-person-check';
 
     let rescheduleHistory = '';
     if (hasRescheduleRequests) {
@@ -2538,13 +2604,28 @@ async function viewBookingDetails(bookingId) {
       `;
     }
 
+    // NEW: Tenant-specific information section
+    const tenantInfo = isTenant ? `
+      <div class="row mt-3">
+        <div class="col-12">
+          <div class="alert alert-info">
+            <h6><i class="bi bi-info-circle me-2"></i>Short-term Tenant Information</h6>
+            ${booking.stayDuration ? `<p><strong>Requested Stay Duration:</strong> ${booking.stayDuration}</p>` : ''}
+            ${booking.negotiatedPrice > 0 ? `<p><strong>Negotiated Price:</strong> R${booking.negotiatedPrice}</p>` : '<p><strong>Pricing:</strong> To be negotiated</p>'}
+            <p class="mb-0"><small>This is a short-term stay inquiry. Please contact the tenant to discuss pricing and stay details.</small></p>
+          </div>
+        </div>
+      </div>
+    ` : '';
+
     const modalContent = `
       <div class="row">
         <div class="col-md-6">
-          <h6>Student Information</h6>
+          <h6>${isTenant ? 'Tenant' : 'Student'} Information</h6>
           <p><strong>Name:</strong> ${booking.student?.username || 'Unknown'}</p>
           <p><strong>Email:</strong> ${booking.student?.email || 'No email'}</p>
           <p><strong>Phone:</strong> ${booking.student?.phone || 'No phone'}</p>
+          <p><strong>Type:</strong> <span class="badge ${typeBadgeClass}"><i class="${typeIcon} me-1"></i>${typeText}</span></p>
         </div>
         <div class="col-md-6">
           <h6>Booking Details</h6>
@@ -2552,13 +2633,16 @@ async function viewBookingDetails(bookingId) {
           <p><strong>Check-in:</strong> ${formatDateTime(booking.checkIn)}</p>
           <p><strong>Check-out:</strong> ${formatDateTime(booking.checkOut)}</p>
           <p><strong>Guests:</strong> ${booking.numberOfGuests || 1}</p>
-          <p><strong>Total Price:</strong> R${booking.totalPrice || 0}</p>
+          ${!isTenant ? `<p><strong>Total Price:</strong> R${booking.totalPrice || 0}</p>` : ''}
           <p><strong>Status:</strong> <span class="badge bg-${statusConfig[booking.status].class}">${statusConfig[booking.status].text}</span></p>
           ${hasPendingReschedule(booking) ? `
             <p><strong>Reschedule:</strong> <span class="badge bg-info">Pending Request</span></p>
           ` : ''}
         </div>
       </div>
+      
+      ${tenantInfo}
+      
       ${booking.specialRequests ? `
       <div class="row mt-3">
         <div class="col-12">
@@ -2567,6 +2651,7 @@ async function viewBookingDetails(bookingId) {
         </div>
       </div>
       ` : ''}
+      
       ${booking.cancellationReason ? `
       <div class="row mt-3">
         <div class="col-12">
@@ -2575,7 +2660,9 @@ async function viewBookingDetails(bookingId) {
         </div>
       </div>
       ` : ''}
+      
       ${rescheduleHistory}
+      
       <div class="timeline mt-3">
         <div class="timeline-item completed">
           <small class="text-muted">Booking Requested</small>
@@ -2598,6 +2685,17 @@ async function viewBookingDetails(bookingId) {
             <button class="btn btn-info" onclick="viewRescheduleRequest('${booking._id}')">
               <i class="bi bi-calendar-week me-1"></i>Review Reschedule Request
             </button>
+          </div>
+        </div>
+      </div>
+      ` : ''}
+      
+      ${isTenant ? `
+      <div class="row mt-3">
+        <div class="col-12">
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Action Required:</strong> Contact this short-term tenant to discuss pricing and stay duration details.
           </div>
         </div>
       </div>

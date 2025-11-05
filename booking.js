@@ -544,7 +544,7 @@ function updateProgress() {
     });
 }
 
-// Handle form submission
+// In booking.js - update the handleBookingSubmission function
 async function handleBookingSubmission(e) {
     e.preventDefault();
     
@@ -553,25 +553,10 @@ async function handleBookingSubmission(e) {
     console.log('Selected accommodation:', selectedAccommodation);
     console.log('Selected booking type:', selectedBookingType);
     
-    // SAFELY Get submit button - use multiple selectors and null checks
-    let submitBtn = null;
-    let originalText = 'Submit Booking';
+    // Get user role
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isTenant = user.role === 'tenant';
     
-    // Try multiple ways to find the submit button
-    submitBtn = document.querySelector('#bookingForm button[type="submit"]');
-    if (!submitBtn) {
-        submitBtn = document.querySelector('button[type="submit"]');
-    }
-    if (!submitBtn) {
-        submitBtn = e.target.querySelector('button[type="submit"]');
-    }
-    
-    if (submitBtn) {
-        originalText = submitBtn.innerHTML;
-    } else {
-        console.warn('Submit button not found, continuing without button state management');
-    }
-
     try {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -591,48 +576,62 @@ async function handleBookingSubmission(e) {
             return;
         }
 
-        // Show loading state - safely
+        // Show loading state
+        const submitBtn = document.querySelector('button[type="submit"]');
         if (submitBtn) {
             submitBtn.innerHTML = '<i class="bi bi-arrow-repeat spinner"></i> Processing...';
             submitBtn.disabled = true;
         }
 
-        // Use stored form data instead of trying to access hidden elements
+        // Use stored form data
         const bookingDateTime = formData.bookingDateTime;
         const bookingNotes = formData.bookingNotes;
-        const bookingType = getBookingTypeText(selectedBookingType);
+        const bookingTypeText = getBookingTypeText(selectedBookingType);
         const propertyName = selectedAccommodation ? selectedAccommodation.property : 'Unknown Property';
 
         console.log('🔍 Using form data:', {
             bookingDateTime,
             bookingNotes, 
-            bookingType,
+            bookingType: bookingTypeText,
             propertyName,
-            selectedAccommodation
+            selectedAccommodation,
+            userRole: user.role
         });
 
         if (!bookingDateTime) {
             throw new Error('Please select a date and time for your booking.');
         }
 
-        // Prepare booking data - FIXED to match backend expectations
-        // FIXED: Proper date calculation for viewing appointments
+        // Prepare booking data - FIXED for both student and tenant
         const bookingDateTimeObj = new Date(bookingDateTime);
         const checkOutDate = new Date(bookingDateTimeObj.getTime() + 2 * 60 * 60 * 1000); // Add 2 hours for viewing duration
+
+        // Build special requests with booking type and notes
+        let specialRequests = `Booking Type: ${bookingTypeText}`;
+        
+        // Add tenant-specific information if applicable
+        if (isTenant) {
+            specialRequests += `\nTenant Booking: Yes`;
+            // Add any tenant-specific notes from the form
+            if (formData.tenantNotes) {
+                specialRequests += `\nTenant Notes: ${formData.tenantNotes}`;
+            }
+        }
+        
+        if (bookingNotes) {
+            specialRequests += `\nAdditional Notes: ${bookingNotes}`;
+        }
 
         const bookingData = {
             propertyId: selectedAccommodation.propertyId,
             checkIn: bookingDateTimeObj.toISOString(),
             checkOut: checkOutDate.toISOString(),
             numberOfGuests: 1,
-            specialRequests: `Booking Type: ${bookingType}${bookingNotes ? `\nNotes: ${bookingNotes}` : ''}`
+            specialRequests: specialRequests,
+            bookingType: isTenant ? "short-term" : "student" // NEW: Set booking type
         };
 
-        console.log('📤 Fixed booking data:', {
-            checkIn: bookingData.checkIn,
-            checkOut: bookingData.checkOut,
-            timeDifference: (new Date(bookingData.checkOut) - new Date(bookingData.checkIn)) / (1000 * 60 * 60) + ' hours'
-        });
+        console.log('📤 Booking data:', bookingData);
 
         // Send booking to backend
         const response = await fetch(`${API_BASE_URL}/bookings`, {
@@ -655,27 +654,30 @@ async function handleBookingSubmission(e) {
 
         console.log('✅ Booking created successfully:', result);
 
-        // Show success message - handle both possible response formats
+        // Show success message
         const booking = result.booking || result;
         showBookingSuccess(booking, {
             propertyName: propertyName,
-            bookingType: bookingType,
+            bookingType: bookingTypeText,
             dateTime: bookingDateTime,
-            bookingNotes: bookingNotes
+            bookingNotes: bookingNotes,
+            isTenant: isTenant
         });
 
     } catch (error) {
         console.error('❌ Booking submission error:', error);
         alert(`Booking failed: ${error.message}`);
         
-        // Reset button safely
+        // Reset button
+        const submitBtn = document.querySelector('button[type="submit"]');
         if (submitBtn) {
-            submitBtn.innerHTML = originalText;
+            submitBtn.innerHTML = '<i class="bi bi-calendar-check me-1"></i> Confirm Booking';
             submitBtn.disabled = false;
         }
     }
 }
 
+// Update the success message to handle tenants
 function showBookingSuccess(booking, formData) {
     const container = document.querySelector('.container .row .col-lg-10');
     if (!container) {
@@ -684,16 +686,22 @@ function showBookingSuccess(booking, formData) {
         return;
     }
 
-    // Safe property access with fallbacks
     const bookingId = booking._id || 'N/A';
     const bookingStatus = booking.status || 'pending';
     const propertyName = formData.propertyName || (booking.property && booking.property.title) || 'Unknown Property';
+
+    // Custom message for tenants
+    const tenantMessage = formData.isTenant ? 
+        `<div class="alert alert-info mt-3">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Note for Short-term Tenants:</strong> The landlord will contact you to discuss pricing and stay duration. No monthly rent amount is shown as this will be negotiated based on your specific needs.
+        </div>` : '';
 
     const successHTML = `
         <div class="text-center py-5">
             <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
             <h3 class="text-success mt-3">Booking Confirmed!</h3>
-            <p class="lead">Your booking has been submitted successfully.</p>
+            <p class="lead">Your ${formData.isTenant ? 'short-term stay inquiry' : 'booking'} has been submitted successfully.</p>
             
             <div class="card mx-auto mt-4" style="max-width: 500px;">
                 <div class="card-body">
@@ -704,13 +712,16 @@ function showBookingSuccess(booking, formData) {
                         <p><strong>Booking Type:</strong> ${formData.bookingType || 'N/A'}</p>
                         <p><strong>Date & Time:</strong> ${formatDateTime(formData.dateTime) || 'N/A'}</p>
                         <p><strong>Status:</strong> <span class="badge bg-warning">${bookingStatus}</span></p>
+                        ${formData.isTenant ? '<p><strong>Tenant Type:</strong> <span class="badge bg-info">Short-term</span></p>' : ''}
                     </div>
                 </div>
             </div>
             
+            ${tenantMessage}
+            
             <div class="alert alert-info mt-4 mx-auto" style="max-width: 500px;">
                 <i class="bi bi-envelope me-2"></i>
-                <strong>Next Steps:</strong> The landlord will review your booking and confirm the appointment.
+                <strong>Next Steps:</strong> The landlord will review your ${formData.isTenant ? 'inquiry' : 'booking'} and confirm the appointment.
             </div>
             
             <div class="mt-4">
@@ -722,3 +733,20 @@ function showBookingSuccess(booking, formData) {
     
     container.innerHTML = successHTML;
 }
+
+// In booking.js - add this to detect tenant role and show appropriate fields
+function setupTenantFields() {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isTenant = user.role === 'tenant';
+    const tenantNotesSection = document.getElementById('tenantNotesSection');
+    
+    if (tenantNotesSection && isTenant) {
+        tenantNotesSection.style.display = 'block';
+    }
+}
+
+// Call this in your initialization
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing initialization code ...
+    setupTenantFields();
+});
