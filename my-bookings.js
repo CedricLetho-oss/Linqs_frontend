@@ -1,4 +1,4 @@
-// my-bookings.js - Backend Integration with Reschedule Feature
+// my-bookings.js - Updated for Short-term Tenant Support
 const API_BASE_URL = 'https://linqs-backend.onrender.com/api';
 
 class MyBookingsManager {
@@ -100,103 +100,213 @@ class MyBookingsManager {
         });
     }
 
-    generateBookingCard(booking) {
-        const status = this.getStatusConfig(booking.status);
-        const isUpcoming = booking.status === 'confirmed' && new Date(booking.checkIn) > new Date();
-        const canReschedule = this.canRescheduleBooking(booking);
-        const property = booking.property || {};
-        const landlord = booking.landlord || {};
-        
-        // Extract booking type from special requests
-        const bookingType = this.extractBookingType(booking.specialRequests);
-        const notes = this.extractNotes(booking.specialRequests);
+    // In the generateBookingCard method - REMOVE the Confirm Attendance button
+generateBookingCard(booking) {
+    const status = this.getStatusConfig(booking.status);
+    const isUpcoming = booking.status === 'confirmed' && new Date(booking.checkIn) > new Date();
+    const canReschedule = this.canRescheduleBooking(booking);
+    const property = booking.property || {};
+    const landlord = booking.landlord || {};
+    
+    // Get booking type and pricing information
+    const bookingType = booking.bookingType || 'student';
+    const isTenant = bookingType === 'short-term' || bookingType === 'tenant';
+    const typeBadgeClass = isTenant ? 'bg-info' : 'bg-primary';
+    const typeText = isTenant ? 'Short-term' : 'Student';
+    const typeIcon = isTenant ? 'bi-person' : 'bi-person-check';
+    
+    // Price display based on booking type
+    const priceDisplay = isTenant ? 
+        (booking.negotiatedPrice > 0 ? 
+            `R${booking.negotiatedPrice} (negotiated)` : 
+            'Price to be negotiated') : 
+        `R${property.price}/month`;
 
-        // FIXED: Consistent image sizing with container
-        const propertyImage = property.images && property.images[0] 
-            ? property.images[0] 
-            : 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250&q=80';
+    const propertyImage = property.images && property.images[0] 
+        ? property.images[0] 
+        : 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250&q=80';
 
-        return `
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card booking-card h-100 ${booking.status}">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center border-bottom-0">
-                    <span class="badge bg-${status.class} status-badge">
-                        <i class="${status.icon} me-1"></i>${status.text}
-                    </span>
-                    ${isUpcoming ? '<span class="badge text-white status-badge" style="background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);"><i class="bi bi-calendar-event me-1"></i>Upcoming</span>' : ''}
+    return `
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card booking-card h-100 ${booking.status}">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center border-bottom-0">
+                <span class="badge bg-${status.class} status-badge">
+                    <i class="${status.icon} me-1"></i>${status.text}
+                </span>
+                ${isUpcoming ? '<span class="badge text-white status-badge" style="background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);"><i class="bi bi-calendar-event me-1"></i>Upcoming</span>' : ''}
+            </div>
+            
+            <!-- Booking Type Badge -->
+            <div class="position-absolute top-0 end-0 m-2">
+                <span class="badge ${typeBadgeClass} status-badge">
+                    <i class="${typeIcon} me-1"></i>${typeText}
+                </span>
+            </div>
+            
+            <!-- Property Image -->
+            <div class="property-image-container">
+                <img src="${propertyImage}" 
+                     class="card-img-top property-image" 
+                     alt="${property.title}"
+                     onerror="this.src='https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250&q=80'">
+            </div>
+            
+            <div class="card-body">
+                <h5 class="card-title text-navy">${property.title}</h5>
+                <p class="text-muted mb-2">
+                    <i class="bi bi-geo-alt me-1"></i>${property.location ? `${property.location.city}, ${property.location.state}` : 'Location not specified'}
+                </p>
+                <p class="text-muted mb-2">
+                    <i class="bi bi-person me-1"></i>${landlord.username || 'Landlord not specified'}
+                </p>
+                <p class="text-muted mb-3">
+                    <i class="bi bi-cash-coin me-1"></i>${priceDisplay}
+                </p>
+                
+                <!-- Show stay duration for tenants -->
+                ${isTenant && booking.stayDuration ? `
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-clock me-1"></i>Requested Stay: ${booking.stayDuration}
+                    </p>
+                ` : ''}
+                
+                <!-- Special requests/notes section -->
+                ${booking.specialRequests ? `
+                    <div class="alert alert-light small mb-3">
+                        <strong><i class="bi bi-chat-text me-1"></i>Notes:</strong><br>
+                        ${this.extractSpecialRequests(booking.specialRequests)}
+                    </div>
+                ` : ''}
+                
+                <div class="booking-timeline mb-3">
+                    <div class="timeline-step ${['confirmed', 'completed', 'cancelled'].includes(booking.status) ? 'completed' : 'active'}">
+                        <small class="text-muted">Booking Requested</small>
+                        <div class="small">${this.formatDate(booking.createdAt)}</div>
+                    </div>
+                    <div class="timeline-step ${['confirmed', 'completed'].includes(booking.status) ? 'completed' : booking.status === 'pending' ? 'active' : ''}">
+                        <small class="text-muted">Scheduled For</small>
+                        <div class="small">${this.formatDateTime(booking.checkIn)}</div>
+                    </div>
+                    <div class="timeline-step ${['completed', 'cancelled'].includes(booking.status) ? 'completed' : ''}">
+                        <small class="text-muted">Status</small>
+                        <div class="small">${this.getStatusDescription(booking.status)}</div>
+                    </div>
                 </div>
                 
-                <!-- FIXED: Consistent image container with fixed dimensions -->
-                <div class="property-image-container">
-                    <img src="${propertyImage}" 
-                         class="card-img-top property-image" 
-                         alt="${property.title}"
-                         onerror="this.src='https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250&q=80'">
-                </div>
+                <!-- Tenant-specific information -->
+                ${isTenant ? `
+                    <div class="alert alert-info small mb-3">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <strong>Short-term Stay:</strong> The landlord will contact you to discuss pricing and stay duration.
+                    </div>
+                ` : ''}
                 
-                <div class="card-body">
-                    <h5 class="card-title text-navy">${property.title}</h5>
-                    <p class="text-muted mb-2">
-                        <i class="bi bi-geo-alt me-1"></i>${property.location ? `${property.location.city}, ${property.location.state}` : 'Location not specified'}
-                    </p>
-                    <p class="text-muted mb-2">
-                        <i class="bi bi-person me-1"></i>${landlord.username || 'Landlord not specified'}
-                    </p>
-                    <p class="text-muted mb-3">
-                        <i class="bi bi-cash-coin me-1"></i>R${property.price}/month
-                    </p>
+                <div class="d-grid gap-2">
+                    ${booking.status === 'pending' ? 
+                      `<button class="btn btn-outline-warning btn-booking" onclick="myBookingsManager.cancelBooking('${booking._id}')">
+                        <i class="bi bi-x-circle me-1"></i>Cancel Request
+                      </button>` : ''}
                     
-                    ${bookingType ? `<p class="text-muted mb-2"><i class="bi bi-tag me-1"></i>${bookingType}</p>` : ''}
-                    
-                    <div class="booking-timeline mb-3">
-                        <div class="timeline-step ${['confirmed', 'completed', 'cancelled'].includes(booking.status) ? 'completed' : 'active'}">
-                            <small class="text-muted">Booking Requested</small>
-                            <div class="small">${this.formatDate(booking.createdAt)}</div>
-                        </div>
-                        <div class="timeline-step ${['confirmed', 'completed'].includes(booking.status) ? 'completed' : booking.status === 'pending' ? 'active' : ''}">
-                            <small class="text-muted">Scheduled For</small>
-                            <div class="small">${this.formatDateTime(booking.checkIn)}</div>
-                        </div>
-                        <div class="timeline-step ${['completed', 'cancelled'].includes(booking.status) ? 'completed' : ''}">
-                            <small class="text-muted">Status</small>
-                            <div class="small">${this.getStatusDescription(booking.status)}</div>
-                        </div>
-                    </div>
-                    
-                    ${notes ? `<div class="alert alert-light small mb-3">${notes}</div>` : ''}
-                    
-                    <div class="d-grid gap-2">
-                        ${booking.status === 'pending' ? 
-                          `<button class="btn btn-outline-warning btn-booking" onclick="myBookingsManager.cancelBooking('${booking._id}')">
-                            <i class="bi bi-x-circle me-1"></i>Cancel Request
-                          </button>` : ''}
-                        
-                        ${canReschedule ? 
-                          `<button class="btn btn-outline-primary btn-booking" onclick="myBookingsManager.openRescheduleModal('${booking._id}')">
-                            <i class="bi bi-calendar-week me-1"></i>Reschedule
-                          </button>` : ''}
-                        
-                        ${booking.status === 'confirmed' && new Date(booking.checkIn) > new Date() ? 
-                          `<button class="btn btn-outline-success btn-booking" onclick="myBookingsManager.confirmAttendance('${booking._id}')">
-                            <i class="bi bi-check-lg me-1"></i>Confirm Attendance
-                          </button>` : ''}
-                          
-                        <button class="btn btn-outline-navy btn-booking" onclick="myBookingsManager.viewPropertyDetails('${property._id}')">
-                            <i class="bi bi-eye me-1"></i>View Property
-                        </button>
+                    ${canReschedule ? 
+                      `<button class="btn btn-outline-primary btn-booking" onclick="myBookingsManager.openRescheduleModal('${booking._id}')">
+                        <i class="bi bi-calendar-week me-1"></i>Reschedule
+                      </button>` : ''}
+                      
+                    <button class="btn btn-outline-navy btn-booking" onclick="myBookingsManager.viewPropertyDetails('${property._id}')">
+                        <i class="bi bi-eye me-1"></i>View Property
+                    </button>
 
-                        ${booking.status === 'confirmed' && new Date(booking.checkIn) > new Date() ? 
-                          `<button class="btn btn-outline-info btn-booking" onclick="myBookingsManager.addToCalendar('${booking._id}')">
-                            <i class="bi bi-calendar-plus me-1"></i>Add to Calendar
-                          </button>` : ''}
-                    </div>
+                    <!-- Contact landlord button for tenants -->
+                    ${isTenant ? 
+                      `<button class="btn btn-outline-info btn-booking" onclick="myBookingsManager.contactLandlord('${booking._id}')">
+                        <i class="bi bi-envelope me-1"></i>Contact Landlord
+                      </button>` : ''}
+
+                    ${booking.status === 'confirmed' && new Date(booking.checkIn) > new Date() ? 
+                      `<button class="btn btn-outline-secondary btn-booking" onclick="myBookingsManager.addToCalendar('${booking._id}')">
+                        <i class="bi bi-calendar-plus me-1"></i>Add to Calendar
+                      </button>` : ''}
                 </div>
             </div>
         </div>
-        `;
+    </div>
+    `;
+}
+
+// Update the getStatusDescription method to be clearer
+getStatusDescription(status) {
+    const descriptions = {
+        pending: 'Awaiting landlord confirmation',
+        confirmed: '✅ Viewing confirmed - See you there!',
+        cancelled: '❌ Booking cancelled',
+        completed: '✅ Viewing completed',
+        rescheduled: '🔄 Reschedule requested'
+    };
+    return descriptions[status] || status;
+}
+
+// Update the getStatusConfig to show better icons for confirmed status
+getStatusConfig(status) {
+    const config = {
+        pending: { 
+            class: 'warning', 
+            text: 'Pending Approval', 
+            icon: 'bi-clock'
+        },
+        confirmed: { 
+            class: 'success', 
+            text: 'Confirmed', 
+            icon: 'bi-check-circle-fill' // Changed to filled icon for confirmed
+        },
+        cancelled: { 
+            class: 'danger', 
+            text: 'Cancelled', 
+            icon: 'bi-x-circle'
+        },
+        completed: { 
+            class: 'secondary', 
+            text: 'Completed', 
+            icon: 'bi-check-lg'
+        },
+        rescheduled: { 
+            class: 'info', 
+            text: 'Rescheduled', 
+            icon: 'bi-calendar-week'
+        }
+    };
+    return config[status] || { class: 'secondary', text: status, icon: 'bi-question-circle' };
+}
+
+    // NEW: Extract and format special requests
+    extractSpecialRequests(specialRequests) {
+        if (!specialRequests) return '';
+        
+        // Remove booking type prefix if present
+        return specialRequests.replace(/Booking Type: .+?(\n|$)/, '')
+                             .replace(/Notes: /, '')
+                             .trim();
     }
 
-    // NEW: Check if booking can be rescheduled
+    // NEW: Contact landlord function for tenants
+    contactLandlord(bookingId) {
+        const booking = this.bookings.find(b => b._id === bookingId);
+        if (!booking || !booking.landlord) return;
+
+        const landlord = booking.landlord;
+        const subject = `Regarding my booking for ${booking.property.title}`;
+        const body = `Hello ${landlord.username},\n\nI would like to discuss my booking for ${booking.property.title}.\n\nBest regards,\n[Your Name]`;
+        
+        const mailtoLink = `mailto:${landlord.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailtoLink;
+    }
+
+    // NEW: Get user role for display customization
+    getUserRole() {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        return user.role || 'student';
+    }
+
+    // Rest of your existing methods remain the same...
     canRescheduleBooking(booking) {
         if (booking.status !== 'confirmed') return false;
         
@@ -208,9 +318,8 @@ class MyBookingsManager {
         return hoursUntilBooking > 2;
     }
 
-    // NEW: Initialize reschedule modal
     initializeRescheduleModal() {
-        // Create modal HTML if it doesn't exist
+        // ... keep your existing reschedule modal code
         if (!document.getElementById('rescheduleModal')) {
             const modalHTML = `
             <div class="modal fade" id="rescheduleModal" tabindex="-1" aria-labelledby="rescheduleModalLabel" aria-hidden="true">
@@ -256,7 +365,7 @@ class MyBookingsManager {
         this.rescheduleModal = new bootstrap.Modal(document.getElementById('rescheduleModal'));
     }
 
-    // NEW: Open reschedule modal
+    // ... rest of your existing methods (openRescheduleModal, submitReschedule, etc.)
     openRescheduleModal(bookingId) {
         const booking = this.bookings.find(b => b._id === bookingId);
         if (!booking) return;
@@ -265,6 +374,9 @@ class MyBookingsManager {
 
         // Populate booking info
         const bookingInfo = document.getElementById('rescheduleBookingInfo');
+        const bookingType = booking.bookingType || 'student';
+        const isTenant = bookingType === 'short-term' || bookingType === 'tenant';
+        
         bookingInfo.innerHTML = `
             <div class="alert alert-light border">
                 <h6 class="mb-2">${booking.property.title}</h6>
@@ -272,10 +384,16 @@ class MyBookingsManager {
                     <i class="bi bi-calendar me-1"></i>
                     Current: ${this.formatDateTime(booking.checkIn)}
                 </p>
-                <p class="mb-0 small text-muted">
+                <p class="mb-1 small">
                     <i class="bi bi-person me-1"></i>
                     Landlord: ${booking.landlord.username}
                 </p>
+                ${isTenant ? `
+                <p class="mb-0 small text-info">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Short-term stay - pricing to be negotiated
+                </p>
+                ` : ''}
             </div>
         `;
 
@@ -294,7 +412,6 @@ class MyBookingsManager {
         this.rescheduleModal.show();
     }
 
-    // NEW: Submit reschedule request
     async submitReschedule() {
         if (!this.currentRescheduleBooking) return;
 
@@ -328,8 +445,7 @@ class MyBookingsManager {
                 },
                 body: JSON.stringify({
                     newCheckIn: newDateTime,
-                    reason: reason || 'No reason provided',
-                    status: 'pending' // Reset to pending for landlord approval
+                    reason: reason || 'No reason provided'
                 })
             });
 
@@ -354,60 +470,6 @@ class MyBookingsManager {
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="bi bi-calendar-check me-1"></i>Request Reschedule';
         }
-    }
-
-    getStatusConfig(status) {
-        const config = {
-            pending: { 
-                class: 'warning', 
-                text: 'Pending Approval', 
-                icon: 'bi-clock'
-            },
-            confirmed: { 
-                class: 'success', 
-                text: 'Confirmed', 
-                icon: 'bi-check-circle'
-            },
-            cancelled: { 
-                class: 'danger', 
-                text: 'Cancelled', 
-                icon: 'bi-x-circle'
-            },
-            completed: { 
-                class: 'secondary', 
-                text: 'Completed', 
-                icon: 'bi-check-lg'
-            },
-            rescheduled: { 
-                class: 'info', 
-                text: 'Rescheduled', 
-                icon: 'bi-calendar-week'
-            }
-        };
-        return config[status] || { class: 'secondary', text: status, icon: 'bi-question-circle' };
-    }
-
-    getStatusDescription(status) {
-        const descriptions = {
-            pending: 'Awaiting landlord confirmation',
-            confirmed: 'Viewing confirmed',
-            cancelled: 'Booking cancelled',
-            completed: 'Viewing completed',
-            rescheduled: 'Reschedule requested'
-        };
-        return descriptions[status] || status;
-    }
-
-    extractBookingType(specialRequests) {
-        if (!specialRequests) return null;
-        const match = specialRequests.match(/Booking Type: (.+?)(\n|$)/);
-        return match ? match[1] : null;
-    }
-
-    extractNotes(specialRequests) {
-        if (!specialRequests) return null;
-        const match = specialRequests.match(/Notes: (.+?)$/);
-        return match ? match[1] : null;
     }
 
     formatDate(dateString) {
