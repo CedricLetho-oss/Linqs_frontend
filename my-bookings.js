@@ -100,7 +100,6 @@ class MyBookingsManager {
         });
     }
 
-    // In the generateBookingCard method - REMOVE the Confirm Attendance button
 generateBookingCard(booking) {
     const status = this.getStatusConfig(booking.status);
     const isUpcoming = booking.status === 'confirmed' && new Date(booking.checkIn) > new Date();
@@ -133,14 +132,13 @@ generateBookingCard(booking) {
                 <span class="badge bg-${status.class} status-badge">
                     <i class="${status.icon} me-1"></i>${status.text}
                 </span>
-                ${isUpcoming ? '<span class="badge text-white status-badge" style="background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);"><i class="bi bi-calendar-event me-1"></i>Upcoming</span>' : ''}
-            </div>
-            
-            <!-- Booking Type Badge -->
-            <div class="position-absolute top-0 end-0 m-2">
-                <span class="badge ${typeBadgeClass} status-badge">
-                    <i class="${typeIcon} me-1"></i>${typeText}
-                </span>
+                <!-- Combined badges container -->
+                <div class="d-flex gap-1">
+                    ${isUpcoming ? '<span class="badge text-white status-badge" style="background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);"><i class="bi bi-calendar-event me-1"></i>Upcoming</span>' : ''}
+                    <span class="badge ${typeBadgeClass} status-badge">
+                        <i class="${typeIcon} me-1"></i>${typeText}
+                    </span>
+                </div>
             </div>
             
             <!-- Property Image -->
