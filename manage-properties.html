@@ -1449,6 +1449,46 @@
             </div>
           </div>
 
+          <!-- In your Add Property Modal - after the short-term toggle -->
+          <div class="row mb-4" id="shortTermPricingSection" style="display: none;">
+            <div class="col-12">
+              <h6 class="text-primary mb-3 border-bottom pb-2">
+                <i class="bi bi-currency-dollar me-2"></i>Short-term Pricing
+              </h6>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label fw-semibold">Pricing Type *</label>
+                  <select class="form-select" name="shortTermPricing" id="shortTermPricing" required onchange="toggleShortTermPriceField()">
+                    <option value="negotiable">Negotiable (Contact for Price)</option>
+                    <option value="fixed">Fixed Daily Rate</option>
+                  </select>
+                </div>
+                
+                <div class="col-md-6 mb-3" id="shortTermPriceField" style="display: none;">
+                  <label class="form-label fw-semibold">Daily Rate (ZAR) *</label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light">R</span>
+                    <input type="number" class="form-control" name="shortTermPrice" id="shortTermPrice" min="0" placeholder="250">
+                    <span class="input-group-text bg-light">/day</span>
+                  </div>
+                  <small class="text-muted">Set your daily rate for short-term stays</small>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label fw-semibold">Minimum Stay (Days)</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" name="shortTermMinStay" id="shortTermMinStay" min="1" value="1">
+                    <span class="input-group-text bg-light">days</span>
+                  </div>
+                  <small class="text-muted">Minimum number of days for short-term bookings</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Property Images -->
           <div class="row mb-4">
             <div class="col-12">
@@ -1754,6 +1794,46 @@
                   <small class="text-muted">
                     This information will be shown to short-term tenants interested in December/January stays
                   </small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Short-term Pricing Section for EDIT -->
+            <div class="row mb-4" id="editShortTermPricingSection" style="display: none;">
+              <div class="col-12">
+                <h6 class="text-primary mb-3 border-bottom pb-2">
+                  <i class="bi bi-currency-dollar me-2"></i>Short-term Pricing
+                </h6>
+                
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label fw-semibold">Pricing Type *</label>
+                    <select class="form-select" name="editShortTermPricing" id="editShortTermPricing" required onchange="toggleEditShortTermPriceField()">
+                      <option value="negotiable">Negotiable (Contact for Price)</option>
+                      <option value="fixed">Fixed Daily Rate</option>
+                    </select>
+                  </div>
+                  
+                  <div class="col-md-6 mb-3" id="editShortTermPriceField" style="display: none;">
+                    <label class="form-label fw-semibold">Daily Rate (ZAR) *</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light">R</span>
+                      <input type="number" class="form-control" name="editShortTermPrice" id="editShortTermPrice" min="0" placeholder="250">
+                      <span class="input-group-text bg-light">/day</span>
+                    </div>
+                    <small class="text-muted">Set your daily rate for short-term stays</small>
+                  </div>
+                </div>
+                
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label fw-semibold">Minimum Stay (Days)</label>
+                    <div class="input-group">
+                      <input type="number" class="form-control" name="editShortTermMinStay" id="editShortTermMinStay" min="1" value="1">
+                      <span class="input-group-text bg-light">days</span>
+                    </div>
+                    <small class="text-muted">Minimum number of days for short-term bookings</small>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2334,7 +2414,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // FIXED: Proceed to add property function
-// FIXED: Proceed to add property function
 function proceedToAddProperty() {
   // Close photography modal first
   const photographyModal = bootstrap.Modal.getInstance(document.getElementById('photographyPromptModal'));
@@ -2349,21 +2428,52 @@ function proceedToAddProperty() {
   }, 300);
 }
 
-// Toggle short-term tenant message for ADD form
+// Toggle short-term pricing section
+function toggleShortTermPricingSection() {
+    const acceptsShortTerm = document.getElementById('acceptsShortTerm').checked;
+    const pricingSection = document.getElementById('shortTermPricingSection');
+    
+    if (acceptsShortTerm) {
+        pricingSection.style.display = 'block';
+    } else {
+        pricingSection.style.display = 'none';
+    }
+}
+
+// Toggle price field based on pricing type
+function toggleShortTermPriceField() {
+    const pricingType = document.getElementById('shortTermPricing').value;
+    const priceField = document.getElementById('shortTermPriceField');
+    
+    if (pricingType === 'fixed') {
+        priceField.style.display = 'block';
+        document.getElementById('shortTermPrice').required = true;
+    } else {
+        priceField.style.display = 'none';
+        document.getElementById('shortTermPrice').required = false;
+    }
+}
+
+// Update your existing toggleShortTermMessage function
 function toggleShortTermMessage() {
     const acceptsShortTerm = document.getElementById('acceptsShortTerm').checked;
     const messageDiv = document.getElementById('shortTermMessage');
     const descriptionSection = document.getElementById('shortTermDescriptionSection');
+    const pricingSection = document.getElementById('shortTermPricingSection');
     const yesMessage = document.getElementById('shortTermYesMessage');
     const noMessage = document.getElementById('shortTermNoMessage');
     
     messageDiv.style.display = 'block';
+    pricingSection.style.display = acceptsShortTerm ? 'block' : 'none';
     
     if (acceptsShortTerm) {
         yesMessage.style.display = 'block';
         noMessage.style.display = 'none';
         descriptionSection.style.display = 'block';
         messageDiv.className = 'alert alert-success';
+        
+        // Initialize pricing section
+        toggleShortTermPriceField();
     } else {
         yesMessage.style.display = 'none';
         noMessage.style.display = 'block';
@@ -2372,21 +2482,52 @@ function toggleShortTermMessage() {
     }
 }
 
-// Toggle short-term tenant message for EDIT form
+// Toggle short-term pricing section for EDIT form
+function toggleEditShortTermPricingSection() {
+    const acceptsShortTerm = document.getElementById('editAcceptsShortTerm').checked;
+    const pricingSection = document.getElementById('editShortTermPricingSection');
+    
+    if (acceptsShortTerm) {
+        pricingSection.style.display = 'block';
+    } else {
+        pricingSection.style.display = 'none';
+    }
+}
+
+// Toggle price field based on pricing type for EDIT form
+function toggleEditShortTermPriceField() {
+    const pricingType = document.getElementById('editShortTermPricing').value;
+    const priceField = document.getElementById('editShortTermPriceField');
+    
+    if (pricingType === 'fixed') {
+        priceField.style.display = 'block';
+        document.getElementById('editShortTermPrice').required = true;
+    } else {
+        priceField.style.display = 'none';
+        document.getElementById('editShortTermPrice').required = false;
+    }
+}
+
+// Update the existing toggleEditShortTermMessage function
 function toggleEditShortTermMessage() {
     const acceptsShortTerm = document.getElementById('editAcceptsShortTerm').checked;
     const messageDiv = document.getElementById('editShortTermMessage');
     const descriptionSection = document.getElementById('editShortTermDescriptionSection');
+    const pricingSection = document.getElementById('editShortTermPricingSection');
     const yesMessage = document.getElementById('editShortTermYesMessage');
     const noMessage = document.getElementById('editShortTermNoMessage');
     
     messageDiv.style.display = 'block';
+    pricingSection.style.display = acceptsShortTerm ? 'block' : 'none';
     
     if (acceptsShortTerm) {
         yesMessage.style.display = 'block';
         noMessage.style.display = 'none';
         descriptionSection.style.display = 'block';
         messageDiv.className = 'alert alert-success';
+        
+        // Initialize pricing section
+        toggleEditShortTermPriceField();
     } else {
         yesMessage.style.display = 'none';
         noMessage.style.display = 'block';
@@ -3020,6 +3161,9 @@ async function addNewProperty() {
             availability: formData.get('availability'),
             acceptsShortTerm: formData.get('acceptsShortTerm') === 'on',
             shortTermDescription: formData.get('shortTermDescription') || '',
+            shortTermPricing: formData.get('shortTermPricing'),
+            shortTermPrice: formData.get('shortTermPrice') ? parseInt(formData.get('shortTermPrice')) : null,
+            shortTermMinStay: parseInt(formData.get('shortTermMinStay')) || 1,
             contactInfo: {
                 phone: JSON.parse(localStorage.getItem("user")).phone || '',
                 email: JSON.parse(localStorage.getItem("user")).email || ''
@@ -3126,6 +3270,9 @@ async function updateProperty() {
             amenities: getSelectedEditAmenities(),
             acceptsShortTerm: document.getElementById('editAcceptsShortTerm').checked,
             shortTermDescription: document.getElementById('editShortTermDescription').value || '',
+            shortTermPricing: document.getElementById('editShortTermPricing').value,
+            shortTermPrice: document.getElementById('editShortTermPrice').value ? parseInt(document.getElementById('editShortTermPrice').value) : null,
+            shortTermMinStay: parseInt(document.getElementById('editShortTermMinStay').value) || 1,
             genderPreference: document.getElementById('editPropertyGenderPreference').value,
             accreditation: document.getElementById('editPropertyAccreditation').value,
             availability: document.getElementById('editPropertyAvailability').value,
@@ -3254,6 +3401,18 @@ async function uploadMultipleToCloudinary(files) {
                             <span class="badge bg-warning status-badge short-term-badge">
                                 <i class="bi bi-calendar-range me-1"></i>Short-term Available
                             </span>
+                        ` : ''}
+
+                        ${property.acceptsShortTerm ? `
+                            <div class="mt-2">
+                                <small class="text-muted">Short-term: </small>
+                                ${property.shortTermPricing === 'fixed' ? `
+                                    <strong class="text-warning">R${property.shortTermPrice}/day</strong>
+                                    <small class="text-muted"> (min ${property.shortTermMinStay} days)</small>
+                                ` : `
+                                    <strong class="text-warning">Price Negotiable</strong>
+                                `}
+                            </div>
                         ` : ''}
                     </div>
                     
@@ -3755,10 +3914,14 @@ function editProperty(propertyId) {
 
         document.getElementById('editAcceptsShortTerm').checked = property.acceptsShortTerm || false;
         document.getElementById('editShortTermDescription').value = property.shortTermDescription || '';
+        document.getElementById('editShortTermPricing').value = property.shortTermPricing || 'negotiable';
+        document.getElementById('editShortTermPrice').value = property.shortTermPrice || '';
+        document.getElementById('editShortTermMinStay').value = property.shortTermMinStay || 1;
 
         // Trigger the message display
         setTimeout(() => {
             toggleEditShortTermMessage();
+            toggleEditShortTermPriceField();
         }, 100);
         
         // Use availability field (landlord-controlled)
