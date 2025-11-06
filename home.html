@@ -1105,14 +1105,23 @@
             return score;
         }
 
-        // NEW: Sort and select best properties
+        // Update this method in HomepageFeaturedManager
         selectFeaturedProperties(properties) {
-            // Filter only available and approved properties
-            const availableProperties = properties.filter(property => {
-                const propertyStatus = this.getPropertyStatus(property);
-                const adminStatus = this.getAdminStatus(property);
-                return propertyStatus === 'available' && adminStatus === 'approved';
-            });
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+            const isTenant = user.role === 'tenant';
+            
+            // For tenants, apply additional filtering
+            let availableProperties;
+            if (isTenant) {
+                availableProperties = this.filterPropertiesForTenants(properties);
+            } else {
+                // For students, filter only available and approved properties
+                availableProperties = properties.filter(property => {
+                    const propertyStatus = this.getPropertyStatus(property);
+                    const adminStatus = this.getAdminStatus(property);
+                    return propertyStatus === 'available' && adminStatus === 'approved';
+                });
+            }
 
             if (availableProperties.length === 0) {
                 return [];
@@ -1176,6 +1185,24 @@
                 
                 console.log(`Using ${demoProperties.length} demo properties, showing ${this.featuredProperties.length} featured properties`);
             }
+        }
+
+        // Add this method to filter properties for tenants
+        filterPropertiesForTenants(properties) {
+            const currentMonth = new Date().getMonth() + 1;
+            const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
+            
+            if (!isNovemberToJanuary) {
+                return []; // No properties outside Nov-Jan for tenants
+            }
+
+            return properties.filter(property => {
+                const acceptsShortTerm = property.acceptsShortTerm === true;
+                const isApproved = this.getAdminStatus(property) === 'approved';
+                const isAvailable = this.getPropertyStatus(property) === 'available';
+                
+                return acceptsShortTerm && isApproved && isAvailable;
+            });
         }
 
         getEnhancedDemoFeatured() {
@@ -1572,6 +1599,286 @@
         }
     }
 
+    // Standalone functions for user type updates
+    function updateHeroSectionForUserType() {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const isTenant = user.role === 'tenant';
+        
+        const heroSubtitle = document.querySelector('.hero-section .hero-subtitle');
+        const searchTitle = document.querySelector('.search-container h5');
+        const statsNumbers = document.querySelectorAll('.stat-number');
+        const statLabels = document.querySelectorAll('.stat-number-label');
+
+        if (isTenant) {
+            // Tenant version
+            if (heroSubtitle) {
+                heroSubtitle.textContent = 'Discover affordable short-term accommodations available during student holidays. Perfect for temporary stays from November to January.';
+            }
+            if (searchTitle) {
+                searchTitle.innerHTML = '<i class="bi bi-search me-2"></i>Find Short-term Accommodation';
+            }
+            
+            // Update stats for tenants
+            if (statsNumbers[0] && statLabels[0]) {
+                statsNumbers[0].textContent = 'Short-term';
+                statLabels[0].textContent = 'Listings';
+            }
+            if (statsNumbers[1] && statLabels[1]) {
+                statsNumbers[1].textContent = 'Holiday';
+                statLabels[1].textContent = 'Stays';
+            }
+            if (statsNumbers[2] && statLabels[2]) {
+                statsNumbers[2].textContent = '95%';
+                statLabels[2].textContent = 'Satisfaction';
+            }
+            
+            // Update filter tags for tenants
+            updateFilterTagsForTenants();
+        } else {
+            // Student version (default)
+            if (heroSubtitle) {
+                heroSubtitle.textContent = 'Discover verified accommodations, book viewings instantly, and join a community of students finding their ideal living spaces.';
+            }
+            if (searchTitle) {
+                searchTitle.innerHTML = '<i class="bi bi-search me-2"></i>Find Your Accommodation';
+            }
+            
+            // Reset stats for students
+            if (statsNumbers[0] && statLabels[0]) {
+                statsNumbers[0].textContent = '500+';
+                statLabels[0].textContent = 'Listings';
+            }
+            if (statsNumbers[1] && statLabels[1]) {
+                statsNumbers[1].textContent = '2K+';
+                statLabels[1].textContent = 'Students';
+            }
+            if (statsNumbers[2] && statLabels[2]) {
+                statsNumbers[2].textContent = '98%';
+                statLabels[2].textContent = 'Satisfaction';
+            }
+        }
+    }
+
+    function updateFilterTagsForTenants() {
+        const filterTagsContainer = document.querySelector('.filter-tags');
+        if (!filterTagsContainer) return;
+
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (user.role !== 'tenant') return;
+
+        // Update or add tenant-specific filter tags
+        const tenantFilterTags = [
+            { text: 'All Locations', location: '' },
+            { text: 'Bloemfontein', location: 'bloemfontein' },
+            { text: 'Johannesburg', location: 'johannesburg' },
+            { text: 'Pretoria', location: 'pretoria' },
+            { text: 'Under R250/day', price: '250' },
+            { text: 'Negotiable Price', price: 'negotiable' },
+            { text: 'Short-term Ready', location: '' }
+        ];
+
+        filterTagsContainer.innerHTML = tenantFilterTags.map(tag => `
+            <button class="filter-tag ${tag.location === '' && !tag.price ? 'active' : ''}" 
+                    data-location="${tag.location || ''}" 
+                    data-price="${tag.price || ''}">
+                ${tag.text}
+            </button>
+        `).join('');
+
+        // Reattach event listeners to new buttons
+        const newFilterTags = filterTagsContainer.querySelectorAll('.filter-tag');
+        newFilterTags.forEach(tag => {
+            tag.addEventListener('click', function() {
+                newFilterTags.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const location = this.getAttribute('data-location');
+                const price = this.getAttribute('data-price');
+                
+                // Apply filters
+                if (window.featuredManager) {
+                    window.featuredManager.filterProperties(location, price);
+                }
+            });
+        });
+    }
+
+    function updateFeaturedSectionForUserType() {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const isTenant = user.role === 'tenant';
+        
+        const featuredTitle = document.querySelector('#listingContainer').previousElementSibling.querySelector('h2');
+        const featuredSubtitle = document.querySelector('#listingContainer').previousElementSibling.querySelector('p');
+
+        if (isTenant) {
+            // Tenant version
+            if (featuredTitle) {
+                featuredTitle.textContent = 'Available Short-term Accommodations';
+            }
+            if (featuredSubtitle) {
+                featuredSubtitle.textContent = 'Verified properties available during student holidays (November-January)';
+            }
+        } else {
+            // Student version
+            if (featuredTitle) {
+                featuredTitle.textContent = 'Featured Accommodations';
+            }
+            if (featuredSubtitle) {
+                featuredSubtitle.textContent = 'AI-selected. Student-approved.';
+            }
+        }
+    }
+
+    function updateFeaturesSectionForUserType() {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const isTenant = user.role === 'tenant';
+        
+        const featuresTitle = document.querySelector('.features-section h2');
+        const featuresSubtitle = document.querySelector('.features-section .text-muted.fs-5');
+        const featureItems = document.querySelectorAll('.features-section .col-md-4');
+
+        if (isTenant) {
+            // Tenant version
+            if (featuresTitle) {
+                featuresTitle.innerHTML = 'Perfect for <span class="gradient-text">Short-term Stays</span>';
+            }
+            if (featuresSubtitle) {
+                featuresSubtitle.textContent = 'Everything you need for comfortable holiday accommodation';
+            }
+            
+            // Update feature items for tenants
+            if (featureItems[0]) {
+                const icon = featureItems[0].querySelector('.feature-icon i');
+                const title = featureItems[0].querySelector('h5');
+                const text = featureItems[0].querySelector('p');
+                
+                if (icon) icon.className = 'bi bi-calendar-range';
+                if (title) title.textContent = 'Seasonal Availability';
+                if (text) text.textContent = 'Available during student holidays from November to January';
+            }
+            
+            if (featureItems[1]) {
+                const icon = featureItems[1].querySelector('.feature-icon i');
+                const title = featureItems[1].querySelector('h5');
+                const text = featureItems[1].querySelector('p');
+                
+                if (icon) icon.className = 'bi bi-cash-coin';
+                if (title) title.textContent = 'Affordable Rates';
+                if (text) text.textContent = 'Competitive daily pricing for short-term stays';
+            }
+            
+            if (featureItems[2]) {
+                const icon = featureItems[2].querySelector('.feature-icon i');
+                const title = featureItems[2].querySelector('h5');
+                const text = featureItems[2].querySelector('p');
+                
+                if (icon) icon.className = 'bi bi-house-check';
+                if (title) title.textContent = 'Verified Properties';
+                if (text) text.textContent = 'All accommodations verified and ready for short-term stays';
+            }
+        } else {
+            // Student version (reset to default)
+            if (featuresTitle) {
+                featuresTitle.innerHTML = 'Why Choose <span class="gradient-text">ResLinQ</span>?';
+            }
+            if (featuresSubtitle) {
+                featuresSubtitle.textContent = 'Everything you need to find your perfect student accommodation';
+            }
+            
+            // Reset feature items for students
+            if (featureItems[0]) {
+                const icon = featureItems[0].querySelector('.feature-icon i');
+                const title = featureItems[0].querySelector('h5');
+                const text = featureItems[0].querySelector('p');
+                
+                if (icon) icon.className = 'bi bi-shield-check';
+                if (title) title.textContent = 'Verified Listings';
+                if (text) text.textContent = 'All accommodations are verified and reviewed by real students';
+            }
+            
+            if (featureItems[1]) {
+                const icon = featureItems[1].querySelector('.feature-icon i');
+                const title = featureItems[1].querySelector('h5');
+                const text = featureItems[1].querySelector('p');
+                
+                if (icon) icon.className = 'bi bi-calendar-check';
+                if (title) title.textContent = 'Easy Booking';
+                if (text) text.textContent = 'Book viewings instantly with our simple scheduling system';
+            }
+            
+            if (featureItems[2]) {
+                const icon = featureItems[2].querySelector('.feature-icon i');
+                const title = featureItems[2].querySelector('h5');
+                const text = featureItems[2].querySelector('p');
+                
+                if (icon) icon.className = 'bi bi-chat-heart';
+                if (title) title.textContent = 'Community Support';
+                if (text) text.textContent = 'Get help and share experiences with fellow students';
+            }
+        }
+    }
+
+    function updateStatsSectionForUserType() {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const isTenant = user.role === 'tenant';
+        
+        const statItems = document.querySelectorAll('.stats-section .stat-item');
+
+        if (isTenant) {
+            // Tenant version
+            if (statItems[0]) {
+                const number = statItems[0].querySelector('.stat-number');
+                const label = statItems[0].querySelector('.stat-number-label');
+                if (number) number.textContent = 'Short-term';
+                if (label) label.textContent = 'Listings';
+            }
+            if (statItems[1]) {
+                const number = statItems[1].querySelector('.stat-number');
+                const label = statItems[1].querySelector('.stat-number-label');
+                if (number) number.textContent = 'Holiday';
+                if (label) label.textContent = 'Stays';
+            }
+            if (statItems[2]) {
+                const number = statItems[2].querySelector('.stat-number');
+                const label = statItems[2].querySelector('.stat-number-label');
+                if (number) number.textContent = 'Verified';
+                if (label) label.textContent = 'Properties';
+            }
+            if (statItems[3]) {
+                const number = statItems[3].querySelector('.stat-number');
+                const label = statItems[3].querySelector('.stat-number-label');
+                if (number) number.textContent = '24/7';
+                if (label) label.textContent = 'Support';
+            }
+        } else {
+            // Student version (reset to default)
+            if (statItems[0]) {
+                const number = statItems[0].querySelector('.stat-number');
+                const label = statItems[0].querySelector('.stat-number-label');
+                if (number) number.textContent = '500+';
+                if (label) label.textContent = 'Verified Listings';
+            }
+            if (statItems[1]) {
+                const number = statItems[1].querySelector('.stat-number');
+                const label = statItems[1].querySelector('.stat-number-label');
+                if (number) number.textContent = '2,000+';
+                if (label) label.textContent = 'Happy Students';
+            }
+            if (statItems[2]) {
+                const number = statItems[2].querySelector('.stat-number');
+                const label = statItems[2].querySelector('.stat-number-label');
+                if (number) number.textContent = '15+';
+                if (label) label.textContent = 'Campuses';
+            }
+            if (statItems[3]) {
+                const number = statItems[3].querySelector('.stat-number');
+                const label = statItems[3].querySelector('.stat-number-label');
+                if (number) number.textContent = '24/7';
+                if (label) label.textContent = 'Support';
+            }
+        }
+    }
+
     // Initialize AOS
     AOS.init({
         duration: 1000,
@@ -1583,6 +1890,7 @@
     document.addEventListener("DOMContentLoaded", () => {
         // Initialize Featured Listings
         const featuredManager = new HomepageFeaturedManager();
+        window.featuredManager = featuredManager; // Make it globally available
         featuredManager.loadFeaturedListings();
 
         // Load user info
@@ -1590,12 +1898,30 @@
         const welcomeMessage = document.getElementById("welcomeMessage");
         const usernameDisplay = document.getElementById("usernameDisplay");
 
-        if (user && user.role === 'student') {
+        if (user) {
             welcomeMessage.style.display = 'block';
             usernameDisplay.textContent = user.username;
+            
+            // Update welcome message based on user role
+            const welcomeTitle = welcomeMessage.querySelector('h4');
+            const welcomeText = welcomeMessage.querySelector('p');
+            
+            if (user.role === 'tenant') {
+                welcomeTitle.innerHTML = 'Welcome back, <span id="usernameDisplay"></span>! 👋';
+                welcomeText.textContent = 'Find affordable short-term accommodation during student holidays. Browse verified properties available from November to January.';
+            } else {
+                welcomeTitle.innerHTML = 'Welcome back, <span id="usernameDisplay"></span>! 👋';
+                welcomeText.textContent = 'Make your student accommodation dreams come true with ResLinQ. Browse listings, book viewings, and share your experience.';
+            }
         } else {
             welcomeMessage.style.display = 'none';
         }
+
+        // Update all sections based on user type
+        updateHeroSectionForUserType();
+        updateFeaturesSectionForUserType();
+        updateStatsSectionForUserType();
+        updateFeaturedSectionForUserType();
 
         // Enhanced search functionality
         const searchForm = document.getElementById("searchForm");
