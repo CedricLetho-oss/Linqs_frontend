@@ -751,8 +751,6 @@ function updateProgress() {
     });
 }
 
-// In booking.js - update the handleBookingSubmission function
-// In booking.js - update the handleBookingSubmission function
 async function handleBookingSubmission(e) {
     e.preventDefault();
     
@@ -795,13 +793,11 @@ async function handleBookingSubmission(e) {
 
         // Use stored form data
         const bookingDateTime = formData.bookingDateTime;
-        const bookingNotes = formData.bookingNotes;
         const bookingTypeText = getBookingTypeText(selectedBookingType);
         const propertyName = selectedAccommodation ? selectedAccommodation.property : 'Unknown Property';
 
         console.log('🔍 Using form data:', {
             bookingDateTime,
-            bookingNotes, 
             bookingType: bookingTypeText,
             propertyName,
             selectedAccommodation,
@@ -853,27 +849,27 @@ async function handleBookingSubmission(e) {
                 specialRequests += `\nStudent Notes: ${formData.studentNotes}`;
             }
         }
-        
-        if (bookingNotes) {
-            specialRequests += `\nAdditional Notes: ${bookingNotes}`;
-        }
 
+        // FIXED: Only include fields that are in your validation schema
         const bookingData = {
             propertyId: selectedAccommodation.propertyId,
             checkIn: bookingDateTimeObj.toISOString(),
             checkOut: checkOutDate.toISOString(),
             numberOfGuests: 1,
             specialRequests: specialRequests,
-            bookingType: isShortTermBooking ? "short-term" : "student", // NEW: Set booking type
-            // NEW: Add short-term specific fields
-            ...(isShortTermBooking && {
-                isShortTerm: true,
-                dailyRate: shortTermParams.dailyRate || null,
-                minStay: shortTermParams.minStay || null
-            })
+            bookingType: isShortTermBooking ? "short-term" : "student" // This is supported
         };
 
-        console.log('📤 Booking data:', bookingData);
+        // FIXED: Only add stayDuration if it's a short-term booking with tenant notes
+        if (isShortTermBooking && formData.tenantNotes) {
+            // Extract duration from tenant notes or set a default
+            bookingData.stayDuration = "To be negotiated based on requirements";
+            
+            // If you want to be more specific, you can parse the notes:
+            // bookingData.stayDuration = extractDurationFromNotes(formData.tenantNotes);
+        }
+
+        console.log('📤 Booking data (VALIDATED):', bookingData);
 
         // Send booking to backend
         const response = await fetch(`${API_BASE_URL}/bookings`, {
@@ -902,10 +898,9 @@ async function handleBookingSubmission(e) {
             propertyName: propertyName,
             bookingType: bookingTypeText,
             dateTime: bookingDateTime,
-            bookingNotes: bookingNotes,
             isTenant: isTenant,
-            isShortTermBooking: isShortTermBooking, // NEW
-            shortTermParams: shortTermParams // NEW
+            isShortTermBooking: isShortTermBooking,
+            shortTermParams: shortTermParams
         });
 
     } catch (error) {
