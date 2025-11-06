@@ -643,6 +643,55 @@
 #logoutModal .modal-body i.bi-person-check {
   color: var(--primary) !important;
 }
+
+/* Short-term tenant specific styles */
+.short-term-badge {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    border: none;
+}
+
+.short-term-pricing {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 1px solid #ffecb3;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.short-term-feature {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-left: 4px solid #f59e0b;
+}
+
+.negotiable-price {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #f59e0b;
+    background: #fff3cd;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    display: inline-block;
+}
+
+.daily-rate {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #059669;
+}
+
+.short-term-highlight {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
   </style>
 </head>
 <body>
@@ -1286,18 +1335,17 @@
         self: { icon: 'bi-house', text: 'Self-paying', class: 'info' }
     };
 
-    //Initialize
+    // Initialization
     document.addEventListener('DOMContentLoaded', function() {
     console.log('Initializing property details page...');
     currentUser = JSON.parse(localStorage.getItem("user") || "{}");
     initializeReviewForm();
     loadPropertyDetails();
     
-    // === ADD THIS LINE HERE ===
     setTimeout(() => {
         updateVisibleReviewsCount();
+        enhanceForShortTermContext();
     }, 500);
-    // ==========================
 });
 
     // Initialize review form event listeners
@@ -1338,69 +1386,230 @@
         return urlParams.get('id');
     }
 
+    // ============ USER TYPE DETECTION ============
+
+function detectUserTypeAndModifyDisplay() {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isShortTermTenant = user.role === 'tenant'; // Assuming 'tenant' role for short-term
+    
+    if (isShortTermTenant && currentProperty && currentProperty.acceptsShortTerm) {
+        modifyForShortTermTenant();
+    }
+}
+
+function isPropertyAvailableForShortTerm() {
+    if (!currentProperty || !currentProperty.acceptsShortTerm) return false;
+    
+    const currentMonth = new Date().getMonth() + 1; // 1-12
+    // December (12) and January (1) are short-term availability months
+    return currentMonth === 12 || currentMonth === 1;
+}
+
+function modifyForShortTermTenant() {
+    if (!currentProperty) return;
+
+    // ADD THIS SAFETY CHECK:
+    if (!currentProperty.acceptsShortTerm) {
+        console.log('Property does not accept short-term tenants');
+        return; // STOP here to prevent errors
+    }
+    
+    // Update pricing display
+    const priceElement = document.getElementById('propertyPrice');
+    const priceLabel = document.querySelector('.price-tag + small');
+    
+    if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
+        priceElement.textContent = `R${currentProperty.shortTermPrice}`;
+        if (priceLabel) {
+            priceLabel.textContent = 'per day';
+        }
+        
+        // Add minimum stay info
+        const minStayInfo = document.createElement('div');
+        minStayInfo.className = 'text-light small mt-1';
+        minStayInfo.innerHTML = `<i class="bi bi-calendar-check me-1"></i>Minimum stay: ${currentProperty.shortTermMinStay || 1} days`;
+        priceElement.parentNode.appendChild(minStayInfo);
+    } else {
+        priceElement.textContent = 'Negotiable';
+        if (priceLabel) {
+            priceLabel.textContent = 'Contact for pricing';
+        }
+    }
+    
+    // Update description to show short-term specific info
+    const descriptionElement = document.getElementById('propertyDescription');
+    if (descriptionElement && currentProperty.shortTermDescription) {
+        descriptionElement.textContent = currentProperty.shortTermDescription;
+        
+        // Add short-term availability period
+        const availabilityInfo = document.createElement('div');
+        availabilityInfo.className = 'alert alert-info mt-3';
+        availabilityInfo.innerHTML = `
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Short-term availability:</strong> This property is available for short-term stays during December & January.
+            ${currentProperty.shortTermMinStay ? `Minimum stay: ${currentProperty.shortTermMinStay} days.` : ''}
+        `;
+        descriptionElement.parentNode.appendChild(availabilityInfo);
+    }
+    
+    // Update booking button text
+    const bookingBtn = document.querySelector('.btn-primary.action-btn');
+    if (bookingBtn) {
+        bookingBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request Short-term Stay';
+    }
+    
+    // Add short-term badge to property status
+    const statusContainer = document.querySelector('.d-flex.flex-wrap.gap-2.align-items-center');
+    if (statusContainer) {
+        const shortTermBadge = document.createElement('span');
+        shortTermBadge.className = 'badge short-term-badge';
+        shortTermBadge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term Available';
+        statusContainer.appendChild(shortTermBadge);
+    }
+    
+    // Modify amenities section to highlight short-term benefits
+    const amenitiesSection = document.getElementById('propertyAmenities');
+    if (amenitiesSection) {
+        const shortTermBenefits = document.createElement('div');
+        shortTermBenefits.className = 'mt-3 p-3 bg-light rounded';
+        shortTermBenefits.innerHTML = `
+            <h6 class="text-navy mb-2"><i class="bi bi-stars me-2"></i>Perfect for Short-term Stays</h6>
+            <div class="row small">
+                <div class="col-md-6">
+                    <div class="room-feature">
+                        <i class="bi bi-check-circle text-success"></i>
+                        <span>Flexible booking options</span>
+                    </div>
+                    <div class="room-feature">
+                        <i class="bi bi-check-circle text-success"></i>
+                        <span>Daily housekeeping available</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="room-feature">
+                        <i class="bi bi-check-circle text-success"></i>
+                        <span>All utilities included</span>
+                    </div>
+                    <div class="room-feature">
+                        <i class="bi bi-check-circle text-success"></i>
+                        <span>Short-term contract</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        amenitiesSection.parentNode.insertBefore(shortTermBenefits, amenitiesSection.nextSibling);
+    }
+}
+
+function enhanceForShortTermContext() {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isShortTermTenant = user.role === 'tenant';
+    
+    if (!isShortTermTenant || !currentProperty || !currentProperty.acceptsShortTerm) return;
+    
+    // Add seasonal availability information
+    const locationSection = document.querySelector('.location-info');
+    if (locationSection) {
+        const seasonalInfo = document.createElement('div');
+        seasonalInfo.className = 'alert alert-warning mt-3';
+        seasonalInfo.innerHTML = `
+            <i class="bi bi-calendar-event me-2"></i>
+            <strong>Seasonal Availability:</strong> Perfect for holiday stays! Available December - January while students are away.
+        `;
+        locationSection.appendChild(seasonalInfo);
+    }
+    
+    // Modify contact button for short-term inquiries
+    const contactBtn = document.querySelector('button[onclick="contactLandlord()"]');
+    if (contactBtn) {
+        contactBtn.innerHTML = '<i class="bi bi-chat-dots me-1"></i>Inquire About Short-term Stay';
+    }
+    
+    // Add quick booking info to sidebar
+    const bookingCard = document.querySelector('.property-card .d-grid');
+    if (bookingCard) {
+        const quickInfo = document.createElement('div');
+        quickInfo.className = 'short-term-pricing mt-3';
+        quickInfo.innerHTML = `
+            <h6 class="text-navy mb-2"><i class="bi bi-lightning me-2"></i>Short-term Stay</h6>
+            ${currentProperty.shortTermPricing === 'fixed' ? `
+                <div class="daily-rate">R${currentProperty.shortTermPrice}/day</div>
+                <small class="text-muted">Minimum ${currentProperty.shortTermMinStay || 1} days</small>
+            ` : `
+                <div class="negotiable-price">Price Negotiable</div>
+                <small class="text-muted">Contact for custom rates</small>
+            `}
+        `;
+        bookingCard.parentNode.insertBefore(quickInfo, bookingCard);
+    }
+}
+
     // ============ PROPERTY DATA LOADING ============
 
     async function loadPropertyDetails() {
-        const propertyId = getPropertyIdFromURL();
+    const propertyId = getPropertyIdFromURL();
+    
+    if (!propertyId) {
+        alert('No property ID specified in URL');
+        window.location.href = 'listings.html';
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem("token");
         
-        if (!propertyId) {
-            alert('No property ID specified in URL');
-            window.location.href = 'listings.html';
+        const propertyResponse = await fetch(`${API_BASE_URL}/properties/${propertyId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!propertyResponse.ok) {
+            throw new Error('Property not found');
+        }
+
+        const propertyData = await propertyResponse.json();
+        currentProperty = propertyData.property || propertyData;
+        
+        console.log('Loaded property:', currentProperty);
+        
+        const adminStatus = getAdminStatus(currentProperty);
+        if (adminStatus !== 'approved') {
+            showToast('This property is not available for viewing.', 'error');
+            setTimeout(() => {
+                window.location.href = 'listings.html';
+            }, 2000);
             return;
         }
-
-        try {
-            const token = localStorage.getItem("token");
-            
-            const propertyResponse = await fetch(`${API_BASE_URL}/properties/${propertyId}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!propertyResponse.ok) {
-                throw new Error('Property not found');
-            }
-
-            const propertyData = await propertyResponse.json();
-            currentProperty = propertyData.property || propertyData;
-            
-            console.log('Loaded property:', currentProperty);
-            
-            const adminStatus = getAdminStatus(currentProperty);
-            if (adminStatus !== 'approved') {
-                showToast('This property is not available for viewing.', 'error');
-                setTimeout(() => {
-                    window.location.href = 'listings.html';
-                }, 2000);
-                return;
-            }
-            
-            const landlordId = String(currentProperty.landlord?._id || currentProperty.landlord);
-            if (landlordId && landlordId !== 'undefined') {
-                await loadLandlordDetails(landlordId);
-            } else {
-                currentLandlord = {
-                    firstName: 'Landlord',
-                    lastName: 'User',
-                    avatar: 'https://via.placeholder.com/80',
-                    isVerified: true
-                };
-            }
-            
-            await loadPropertyReviews(propertyId);
-            updatePropertyDisplay();
-            await loadPropertyRooms();
-            checkUserCanReview();
-            await checkFavoriteStatus();
-            
-        } catch (error) {
-            console.error('Error loading property details:', error);
-            showToast('Failed to load property details: ' + error.message, 'error');
-            window.location.href = 'listings.html';
+        
+        const landlordId = String(currentProperty.landlord?._id || currentProperty.landlord);
+        if (landlordId && landlordId !== 'undefined') {
+            await loadLandlordDetails(landlordId);
+        } else {
+            currentLandlord = {
+                firstName: 'Landlord',
+                lastName: 'User',
+                avatar: 'https://via.placeholder.com/80',
+                isVerified: true
+            };
         }
+        
+        await loadPropertyReviews(propertyId);
+        updatePropertyDisplay();
+        await loadPropertyRooms();
+        checkUserCanReview();
+        await checkFavoriteStatus();
+        
+        // ADD THIS LINE: Detect user type and modify display
+        detectUserTypeAndModifyDisplay();
+        
+    } catch (error) {
+        console.error('Error loading property details:', error);
+        showToast('Failed to load property details: ' + error.message, 'error');
+        window.location.href = 'listings.html';
     }
+}
 
     async function loadLandlordDetails(landlordId) {
         try {
@@ -2342,22 +2551,55 @@ function updateVisibleReviewsCount() {
     }
 
     function submitBookingRequest() {
-        if (!currentProperty) return;
+    if (!currentProperty) return;
+    
+    const propertyStatus = getPropertyStatus(currentProperty);
+    if (propertyStatus !== 'available') {
+        let message = 'This property is not available for booking at the moment.';
+        if (propertyStatus === 'occupied') {
+            message = 'This property is currently occupied and not available for booking.';
+        } else if (propertyStatus === 'maintenance') {
+            message = 'This property is under maintenance and not available for booking.';
+        }
+        showToast(message, 'warning');
+        return;
+    }
+    
+    // NEW: Get current user info to determine booking type
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isShortTermTenant = user.role === 'tenant';
+    
+    // Start with basic booking URL
+    let bookingUrl = `booking.html?propertyId=${currentProperty._id}`;
+    
+    // NEW: If it's a short-term tenant AND property accepts short-term stays
+    if (isShortTermTenant && currentProperty.acceptsShortTerm) {
+        // Add booking type parameter so booking page knows it's short-term
+        bookingUrl += '&bookingType=shortterm';
         
-        const propertyStatus = getPropertyStatus(currentProperty);
-        if (propertyStatus !== 'available') {
-            let message = 'This property is not available for booking at the moment.';
-            if (propertyStatus === 'occupied') {
-                message = 'This property is currently occupied and not available for booking.';
-            } else if (propertyStatus === 'maintenance') {
-                message = 'This property is under maintenance and not available for booking.';
-            }
-            showToast(message, 'warning');
-            return;
+        // NEW: Pass short-term pricing info to pre-fill the booking form
+        if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
+            bookingUrl += `&dailyRate=${currentProperty.shortTermPrice}`;
         }
         
-        window.location.href = `booking.html?propertyId=${currentProperty._id}`;
+        // NEW: Pass minimum stay requirement
+        if (currentProperty.shortTermMinStay) {
+            bookingUrl += `&minStay=${currentProperty.shortTermMinStay}`;
+        }
+        
+        // NEW: Optional - add seasonal availability check
+        const currentMonth = new Date().getMonth() + 1; // 1-12
+        const isShortTermSeason = currentMonth === 12 || currentMonth === 1; // Dec or Jan
+        
+        if (!isShortTermSeason) {
+            showToast('Short-term stays are only available during December and January.', 'info');
+            // You can choose to proceed anyway or return here
+        }
     }
+    
+    // Redirect to booking page with all parameters
+    window.location.href = bookingUrl;
+}
 
     async function saveToFavorites() {
         if (!currentProperty) return;
