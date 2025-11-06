@@ -394,7 +394,7 @@ modifyListingsForUserType() {
         return amenityMap[amenity] || amenity;
     }
 
-    // Add this method to your ListingsManager class
+// Update this method in your ListingsManager class
 filterPropertiesForTenants() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isTenant = user.role === 'tenant';
@@ -404,12 +404,18 @@ filterPropertiesForTenants() {
     }
 
     const currentMonth = new Date().getMonth() + 1; // 1-12 (Jan = 1, Dec = 12)
-    const isDecemberOrJanuary = currentMonth === 12 || currentMonth === 1;
+    const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
     
-    return this.properties.filter(property => {
+    console.log('Tenant access check:', {
+        currentMonth,
+        isNovemberToJanuary,
+        totalProperties: this.properties.length
+    });
+    
+    const filteredProperties = this.properties.filter(property => {
         // For tenants, only show properties that:
         // 1. Accept short-term tenants
-        // 2. Are available during December/January
+        // 2. Are available during November-January
         // 3. Are approved by admin
         // 4. Are marked as available by landlord
         
@@ -417,24 +423,40 @@ filterPropertiesForTenants() {
         const isApproved = this.getAdminStatus(property) === 'approved';
         const isAvailable = this.getPropertyStatus(property) === 'available';
         
-        if (!isDecemberOrJanuary) {
-            // Outside Dec/Jan, don't show any properties to tenants
+        if (!isNovemberToJanuary) {
+            // Outside Nov-Jan, don't show any properties to tenants
             return false;
         }
         
-        return acceptsShortTerm && isApproved && isAvailable;
+        const shouldShow = acceptsShortTerm && isApproved && isAvailable;
+        
+        if (shouldShow) {
+            console.log('Showing property to tenant:', {
+                title: property.title,
+                acceptsShortTerm,
+                isApproved,
+                isAvailable,
+                shortTermPricing: property.shortTermPricing,
+                shortTermPrice: property.shortTermPrice
+            });
+        }
+        
+        return shouldShow;
     });
+    
+    console.log('Final filtered properties for tenant:', filteredProperties.length);
+    return filteredProperties;
 }
 
-    applyFilters() {
+   applyFilters() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isTenant = user.role === 'tenant';
     
     const currentMonth = new Date().getMonth() + 1;
-    const isDecemberOrJanuary = currentMonth === 12 || currentMonth === 1;
+    const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
     
-    // For tenants outside Dec/Jan, show empty state
-    if (isTenant && !isDecemberOrJanuary) {
+    // For tenants outside Nov-Jan, show empty state
+    if (isTenant && !isNovemberToJanuary) {
         this.filteredProperties = [];
         this.renderProperties();
         this.updateResultsCount();
@@ -534,18 +556,42 @@ getNoResultsHTML() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isTenant = user.role === 'tenant';
     const currentMonth = new Date().getMonth() + 1;
-    const isDecemberOrJanuary = currentMonth === 12 || currentMonth === 1;
+    const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
     
-    if (isTenant && !isDecemberOrJanuary) {
+    if (isTenant && !isNovemberToJanuary) {
         return `
         <div class="col-12 text-center py-5">
             <i class="bi bi-calendar-x display-1 text-muted"></i>
             <h3 class="text-navy mt-3">Short-term Accommodation Not Available</h3>
-            <p class="text-muted">Short-term student accommodation is only available during December and January.</p>
-            <p class="text-muted small">Please check back during the holiday season for available properties.</p>
+            <p class="text-muted">Short-term student accommodation is only available during November to January.</p>
+            <p class="text-muted small">This period covers when students are away for holidays. Please check back during these months for available properties.</p>
+            <div class="mt-3">
+                <small class="text-info">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Current month: ${new Date().toLocaleString('default', { month: 'long' })} (Month ${currentMonth})
+                </small>
+            </div>
         </div>`;
     }
 
+    // Check if there are no properties available for tenants during season
+    if (isTenant && isNovemberToJanuary && this.properties.length === 0) {
+        return `
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-house display-1 text-muted"></i>
+            <h3 class="text-navy mt-3">No Short-term Properties Available</h3>
+            <p class="text-muted">There are currently no properties available for short-term accommodation.</p>
+            <p class="text-muted small">Landlords may not have enabled short-term availability yet. Please check back later.</p>
+            <div class="mt-3">
+                <small class="text-info">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Available season: November to January (Current: ${new Date().toLocaleString('default', { month: 'long' })})
+                </small>
+            </div>
+        </div>`;
+    }
+
+    // Regular no results message for students/non-tenants
     return `
     <div class="col-12 text-center py-5">
         <i class="bi bi-search display-1 text-muted"></i>
