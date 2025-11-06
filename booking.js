@@ -13,7 +13,8 @@ let selectedProperty = null;
 // Store form data as user progresses
 let formData = {
     bookingDateTime: null,
-    bookingNotes: null,
+    studentNotes: null,        // For students
+    tenantNotes: null,         // For tenants
     studentName: null,
     studentEmail: null,
     studentPhone: null,
@@ -33,7 +34,8 @@ function getElement(id) {
 // Store form data when moving between steps
 function storeFormData() {
     formData.bookingDateTime = getElementValue('bookingDateTime');
-    formData.bookingNotes = getElementValue('bookingNotes');
+    formData.studentNotes = getElementValue('studentNotes');
+    formData.tenantNotes = getElementValue('tenantNotes');
     formData.studentName = getElementValue('studentName');
     formData.studentEmail = getElementValue('studentEmail');
     formData.studentPhone = getElementValue('studentPhone');
@@ -59,6 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
     handleURLParameters();
     loadUserInfo();
+    setupRoleSpecificFields(); // NEW: Add this line
     
     console.log('Booking form initialized successfully');
 });
@@ -115,7 +118,7 @@ function setupEventListeners() {
     }
 }
 
-// FIXED: Proper user info fetching like reports page
+// Update the loadUserInfo function to handle notes fields
 async function loadUserInfo() {
     try {
         const token = localStorage.getItem('token');
@@ -134,13 +137,29 @@ async function loadUserInfo() {
             const emailField = document.getElementById('studentEmail');
             const phoneField = document.getElementById('studentPhone');
             const studentNumberField = document.getElementById('studentNumber');
+            const studentNumberContainer = document.getElementById('studentNumberField');
 
             console.log('User data found:', { 
                 fullName, 
                 email: user.email, 
                 phone: user.phone,
-                studentNumber: user.studentNumber 
+                studentNumber: user.studentNumber,
+                role: user.role
             });
+
+            // Show/hide student number field based on role
+            if (studentNumberContainer) {
+                if (user.role === 'student') {
+                    studentNumberContainer.style.display = 'block';
+                    if (studentNumberField) {
+                        studentNumberField.value = user.studentNumber || '';
+                        formData.studentNumber = user.studentNumber || '';
+                    }
+                } else {
+                    studentNumberContainer.style.display = 'none';
+                    formData.studentNumber = null;
+                }
+            }
 
             if (nameField) {
                 nameField.value = fullName || user.username || '';
@@ -154,12 +173,8 @@ async function loadUserInfo() {
                 phoneField.value = user.phone || '';
                 formData.studentPhone = user.phone || '';
             }
-            if (studentNumberField && user.role === 'student') {
-                studentNumberField.value = user.studentNumber || '';
-                formData.studentNumber = user.studentNumber || '';
-            }
             
-            console.log('User info prefilled successfully');
+            console.log('User info prefilled successfully. Role:', user.role);
         } else {
             console.warn('No user token or data found in localStorage');
         }
@@ -168,21 +183,20 @@ async function loadUserInfo() {
     }
 }
 
-// FIXED: Enhanced URL parameter handling to properly fetch property details
-// FIXED: Enhanced URL parameter handling to properly fetch property details
+// FIXED: Enhanced URL parameter handling with better error recovery
 async function handleURLParameters() {
     const urlParams = new URLSearchParams(window.location.search);
     const property = urlParams.get("property");
     const landlord = urlParams.get("landlord");
     const propertyId = urlParams.get("propertyId");
     const landlordId = urlParams.get("landlordId");
-    const bookingType = urlParams.get("bookingType"); // NEW
-    const dailyRate = urlParams.get("dailyRate"); // NEW
-    const minStay = urlParams.get("minStay"); // NEW
+    const bookingType = urlParams.get("bookingType");
+    const dailyRate = urlParams.get("dailyRate");
+    const minStay = urlParams.get("minStay");
 
     console.log('URL parameters:', { 
         property, landlord, propertyId, landlordId, 
-        bookingType, dailyRate, minStay // NEW
+        bookingType, dailyRate, minStay
     });
 
     // Store short-term parameters globally
@@ -197,12 +211,12 @@ async function handleURLParameters() {
     const propertyField = document.getElementById('propertyField');
     const landlordField = document.getElementById('landlordField');
 
-    // FIXED: Check if propertyId exists first, then load property details
-    if (propertyId) {
+    // FIXED: Better property ID validation
+    if (propertyId && propertyId !== 'null' && propertyId !== 'undefined' && propertyId.length > 5) {
         console.log('Loading property details for ID:', propertyId);
         await loadPropertyDetails(propertyId);
         
-        // NEW: Update UI for short-term bookings
+        // Update UI for short-term bookings
         if (bookingType === 'shortterm') {
             updateUIForShortTermBooking();
         }
@@ -214,12 +228,12 @@ async function handleURLParameters() {
         if (propertyField) propertyField.value = decodeURIComponent(property);
         if (landlordField) landlordField.value = decodeURIComponent(landlord);
 
-        // Store IDs for backend - ONLY if they exist and are valid (like reports page)
+        // Store IDs for backend - ONLY if they exist and are valid
         selectedAccommodation = {
             property: decodeURIComponent(property),
             landlord: decodeURIComponent(landlord),
-            propertyId: propertyId && propertyId !== 'null' && propertyId !== 'undefined' ? propertyId : null,
-            landlordId: landlordId && landlordId !== 'null' && landlordId !== 'undefined' ? landlordId : null
+            propertyId: propertyId && propertyId !== 'null' && propertyId !== 'undefined' && propertyId.length > 5 ? propertyId : null,
+            landlordId: landlordId && landlordId !== 'null' && landlordId !== 'undefined' && landlordId.length > 5 ? landlordId : null
         };
         
         console.log('Auto-filled accommodation:', selectedAccommodation);
@@ -228,6 +242,45 @@ async function handleURLParameters() {
         if (autoFillSection) autoFillSection.style.display = 'none';
         if (manualSelectionSection) manualSelectionSection.style.display = 'block';
         await loadAvailableProperties();
+    }
+}
+
+// NEW: Setup role-specific fields
+function setupRoleSpecificFields() {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isStudent = user.role === 'student';
+    const isTenant = user.role === 'tenant';
+    
+    console.log('Setting up role-specific fields. Role:', user.role);
+    
+    // Handle student number field
+    const studentNumberContainer = document.getElementById('studentNumberField');
+    if (studentNumberContainer) {
+        if (isStudent) {
+            studentNumberContainer.style.display = 'block';
+        } else {
+            studentNumberContainer.style.display = 'none';
+        }
+    }
+    
+    // Handle notes sections
+    const studentNotesSection = document.getElementById('studentNotesSection');
+    const tenantNotesSection = document.getElementById('tenantNotesSection');
+    
+    if (studentNotesSection && tenantNotesSection) {
+        if (isStudent) {
+            studentNotesSection.style.display = 'block';
+            tenantNotesSection.style.display = 'none';
+        } else if (isTenant) {
+            studentNotesSection.style.display = 'none';
+            tenantNotesSection.style.display = 'block';
+        }
+    }
+    
+    // Update labels based on role
+    const step3Title = document.querySelector('.booking-step[data-step="3"] h4');
+    if (step3Title && isTenant) {
+        step3Title.textContent = 'Step 3: Tenant Information';
     }
 }
 
@@ -604,6 +657,10 @@ function validateCurrentStep() {
 }
 
 function updateSummary() {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isStudent = user.role === 'student';
+    const isTenant = user.role === 'tenant';
+    
     // Update accommodation details
     if (selectedAccommodation) {
         document.getElementById('summaryProperty').textContent = selectedAccommodation.property;
@@ -617,14 +674,38 @@ function updateSummary() {
     const dateTime = formData.bookingDateTime;
     document.getElementById('summaryDateTime').textContent = formatDateTime(dateTime);
     
-    const notes = formData.bookingNotes;
+    // Update notes based on user role
+    let notes = '';
+    if (isStudent) {
+        notes = formData.studentNotes;
+    } else if (isTenant) {
+        notes = formData.tenantNotes;
+    }
     document.getElementById('summaryNotes').textContent = notes || 'None';
     
     // Update personal information
     document.getElementById('summaryName').textContent = formData.studentName || 'Not provided';
     document.getElementById('summaryEmail').textContent = formData.studentEmail || 'Not provided';
     document.getElementById('summaryPhone').textContent = formData.studentPhone || 'Not provided';
-    document.getElementById('summaryStudentNumber').textContent = formData.studentNumber || 'Not provided';
+    
+    // NEW: Call the dedicated function to handle student number summary
+    updateStudentNumberSummary();
+}
+
+// NEW: Update the student number summary display
+function updateStudentNumberSummary() {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isStudent = user.role === 'student';
+    const studentNumberSummary = document.getElementById('studentNumberSummary');
+    
+    if (studentNumberSummary) {
+        if (isStudent && formData.studentNumber) {
+            studentNumberSummary.style.display = 'block';
+            document.getElementById('summaryStudentNumber').textContent = formData.studentNumber;
+        } else {
+            studentNumberSummary.style.display = 'none';
+        }
+    }
 }
 
 function getBookingTypeText(type) {
@@ -748,7 +829,7 @@ async function handleBookingSubmission(e) {
 
         // Build special requests with booking type and notes
         let specialRequests = `Booking Type: ${bookingTypeText}`;
-        
+
         // NEW: Enhanced short-term information
         if (isShortTermBooking) {
             specialRequests += `\nTenant Booking: Yes`;
@@ -765,6 +846,11 @@ async function handleBookingSubmission(e) {
             // Add tenant-specific notes
             if (formData.tenantNotes) {
                 specialRequests += `\nTenant Requirements: ${formData.tenantNotes}`;
+            }
+        } else {
+            // Add student-specific notes
+            if (formData.studentNotes) {
+                specialRequests += `\nStudent Notes: ${formData.studentNotes}`;
             }
         }
         
