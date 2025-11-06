@@ -543,25 +543,24 @@
                     </div>
                   </div>
 
-                  <!-- Additional Notes -->
-                  <div class="mb-3">
+                  <!-- Additional Notes for Students -->
+                  <div class="mb-3" id="studentNotesSection">
                     <label class="form-label">Additional Notes</label>
-                    <textarea class="form-control" id="bookingNotes" rows="3" placeholder="Any special requirements,You can Specify Room number, ask questions, or additional information..."></textarea>
+                    <textarea class="form-control" id="studentNotes" rows="3" placeholder="Any special requirements, room preferences, questions, or additional information..."></textarea>
+                    <div class="form-text">Specify room number, preferences, or any questions for the landlord.</div>
                   </div>
 
-                  <!-- In Step 3: Personal Details - Add this after the existing notes section -->
+                  <!-- Short Term Stay Notes for Tenants -->
                   <div class="mb-3" id="tenantNotesSection" style="display: none;">
-                      <label class="form-label">Short-term Stay Details</label>
-                      <textarea class="form-control" id="tenantNotes" rows="3" placeholder="Please specify your intended stay duration (e.g., 3 days in December, 2 weeks in January) and any specific requirements..."></textarea>
-                      <div class="form-text">This information helps the landlord understand your short-term stay needs for better pricing negotiation.</div>
+                    <label class="form-label">Short Term Stay Details</label>
+                    <textarea class="form-control" id="tenantNotes" rows="3" placeholder="Please specify your intended stay duration (e.g., 3 days in December, 2 weeks in January) and any specific requirements..."></textarea>
+                    <div class="form-text">This information helps the landlord understand your short-term stay needs for better pricing negotiation.</div>
                   </div>
 
                   <div class="d-flex justify-content-between">
                     <button type="button" class="btn btn-outline-secondary prev-step"><i class="bi bi-arrow-left me-1"></i> Back</button>
                     <button type="button" class="btn btn-navy next-step">Review <i class="bi bi-check-circle ms-1"></i></button>
-                  </div>
-
-                  
+                  </div>         
                 </div>
               </div>
             </div>
@@ -586,12 +585,15 @@
                     <p class="mb-0"><strong>Notes:</strong> <span id="summaryNotes">-</span></p>
                   </div>
 
+                  <!-- In Step 4: Review section -->
                   <div class="summary-item">
-                    <h6><i class="bi bi-person me-2"></i>Your Information</h6>
-                    <p class="mb-1"><strong>Name:</strong> <span id="summaryName">-</span></p>
-                    <p class="mb-1"><strong>Email:</strong> <span id="summaryEmail">-</span></p>
-                    <p class="mb-1"><strong>Phone:</strong> <span id="summaryPhone">-</span></p>
-                    <p class="mb-0"><strong>Student Number:</strong> <span id="summaryStudentNumber">-</span></p>
+                      <h6><i class="bi bi-person me-2"></i>Your Information</h6>
+                      <p class="mb-1"><strong>Name:</strong> <span id="summaryName">-</span></p>
+                      <p class="mb-1"><strong>Email:</strong> <span id="summaryEmail">-</span></p>
+                      <p class="mb-1"><strong>Phone:</strong> <span id="summaryPhone">-</span></p>
+                      <p class="mb-0" id="studentNumberSummary" style="display: none;">
+                          <strong>Student Number:</strong> <span id="summaryStudentNumber">-</span>
+                      </p>
                   </div>
 
                   <div class="alert alert-info">
