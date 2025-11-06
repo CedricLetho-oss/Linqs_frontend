@@ -33,6 +33,7 @@ class ListingsManager {
         };
     }
 
+    // Update the init method to call this
     async init() {
         await this.loadProperties();
         this.setupEventListeners();
@@ -40,7 +41,54 @@ class ListingsManager {
         this.renderProperties();
         this.updateResultsCount();
         this.modifyListingsForUserType();
+        this.updateHeroSectionForUserType(); // ADD THIS LINE
     }
+
+    // Add this method to your ListingsManager class
+    updateHeroSectionForUserType() {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const isTenant = user.role === 'tenant';
+        
+        const heroTitle = document.querySelector('.hero-section h1');
+        const heroSubtitle = document.querySelector('.hero-section .hero-subtitle');
+        const statsCard = document.querySelector('.stats-card h4');
+        const statsText = document.querySelector('.stats-card p');
+        
+        if (isTenant) {
+            // Tenant version
+            if (heroTitle) {
+                heroTitle.innerHTML = 'Your Affordable <span class="gradient-text">Space Awaits</span>';
+            }
+            if (heroSubtitle) {
+                heroSubtitle.textContent = 'Browse verified short-term accommodations available during student holidays.';
+            }
+            if (statsCard) {
+                statsCard.textContent = 'Short-term Listings';
+            }
+            if (statsText) {
+                statsText.textContent = 'Verified accommodations for holidays';
+            }
+            
+            // Also update page title for tenants
+            document.title = 'ResLinQ | Short-term Accommodation - Affordable Holiday Stays in South Africa';
+        } else {
+            // Student version (default)
+            if (heroTitle) {
+                heroTitle.innerHTML = 'Your Ideal Student <span class="gradient-text">Space Awaits</span>';
+            }
+            if (heroSubtitle) {
+                heroSubtitle.textContent = 'Browse through accredited and non-accredited student accommodations with verified reviews and ratings.';
+            }
+            if (statsCard) {
+                statsCard.textContent = '50+ Listings';
+            }
+            if (statsText) {
+                statsText.textContent = 'Verified accommodations near your campus';
+            }
+        }
+    }
+
+
 
     async loadProperties() {
     try {
