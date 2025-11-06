@@ -169,14 +169,28 @@ async function loadUserInfo() {
 }
 
 // FIXED: Enhanced URL parameter handling to properly fetch property details
+// FIXED: Enhanced URL parameter handling to properly fetch property details
 async function handleURLParameters() {
     const urlParams = new URLSearchParams(window.location.search);
     const property = urlParams.get("property");
     const landlord = urlParams.get("landlord");
     const propertyId = urlParams.get("propertyId");
     const landlordId = urlParams.get("landlordId");
+    const bookingType = urlParams.get("bookingType"); // NEW
+    const dailyRate = urlParams.get("dailyRate"); // NEW
+    const minStay = urlParams.get("minStay"); // NEW
 
-    console.log('URL parameters:', { property, landlord, propertyId, landlordId });
+    console.log('URL parameters:', { 
+        property, landlord, propertyId, landlordId, 
+        bookingType, dailyRate, minStay // NEW
+    });
+
+    // Store short-term parameters globally
+    window.shortTermParams = {
+        bookingType: bookingType,
+        dailyRate: dailyRate,
+        minStay: minStay
+    };
 
     const autoFillSection = document.getElementById('autoFillSection');
     const manualSelectionSection = document.getElementById('manualSelectionSection');
@@ -187,6 +201,11 @@ async function handleURLParameters() {
     if (propertyId) {
         console.log('Loading property details for ID:', propertyId);
         await loadPropertyDetails(propertyId);
+        
+        // NEW: Update UI for short-term bookings
+        if (bookingType === 'shortterm') {
+            updateUIForShortTermBooking();
+        }
     } else if (property && landlord) {
         console.log('Showing auto-fill section from URL params');
         if (autoFillSection) autoFillSection.style.display = 'block';
@@ -210,6 +229,113 @@ async function handleURLParameters() {
         if (manualSelectionSection) manualSelectionSection.style.display = 'block';
         await loadAvailableProperties();
     }
+}
+
+// NEW: Update UI for short-term bookings
+function updateUIForShortTermBooking() {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isTenant = user.role === 'tenant';
+    
+    if (!isTenant || !window.shortTermParams || window.shortTermParams.bookingType !== 'shortterm') {
+        return; // Not a short-term booking
+    }
+
+    console.log('Updating UI for short-term booking:', window.shortTermParams);
+
+    // Update page title and headings
+    const pageTitle = document.querySelector('h1');
+    if (pageTitle) {
+        pageTitle.textContent = 'Request Short-term Stay';
+    }
+
+    const pageSubtitle = document.querySelector('p.lead');
+    if (pageSubtitle) {
+        pageSubtitle.textContent = 'Request a short-term stay for this property';
+    }
+
+    // Update booking type cards to show short-term options
+    updateBookingTypeCardsForShortTerm();
+
+    // Show short-term pricing information
+    showShortTermPricingInfo();
+}
+
+// NEW: Update booking types for short-term
+function updateBookingTypeCardsForShortTerm() {
+    const bookingTypeContainer = document.querySelector('.booking-type-cards');
+    if (!bookingTypeContainer) return;
+
+    // You can customize booking types for short-term stays
+    const shortTermBookingTypes = `
+        <div class="col-md-4">
+            <div class="booking-type-card" data-type="short-term-viewing">
+                <div class="card-body text-center">
+                    <i class="bi bi-eye display-4 text-primary mb-3"></i>
+                    <h5>Viewing Only</h5>
+                    <p class="text-muted">Schedule a property viewing</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="booking-type-card" data-type="short-term-stay">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-check display-4 text-success mb-3"></i>
+                    <h5>Short-term Stay</h5>
+                    <p class="text-muted">Request a short-term accommodation</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="booking-type-card" data-type="short-term-inquiry">
+                <div class="card-body text-center">
+                    <i class="bi bi-chat-dots display-4 text-info mb-3"></i>
+                    <h5>Make Inquiry</h5>
+                    <p class="text-muted">Ask about short-term availability</p>
+                </div>
+            </div>
+        </div>
+    `;
+
+    bookingTypeContainer.innerHTML = shortTermBookingTypes;
+    setupBookingTypeCards(); // Re-setup event listeners
+}
+
+// NEW: Show short-term pricing information
+function showShortTermPricingInfo() {
+    const shortTermParams = window.shortTermParams;
+    if (!shortTermParams) return;
+
+    const accommodationInfo = document.getElementById('accommodationInfo');
+    if (!accommodationInfo) return;
+
+    let pricingHTML = '';
+    
+    if (shortTermParams.dailyRate) {
+        pricingHTML += `
+            <div class="alert alert-info mt-3">
+                <i class="bi bi-currency-dollar me-2"></i>
+                <strong>Daily Rate:</strong> R${shortTermParams.dailyRate} per day
+            </div>
+        `;
+    }
+    
+    if (shortTermParams.minStay) {
+        pricingHTML += `
+            <div class="alert alert-warning mt-2">
+                <i class="bi bi-calendar-check me-2"></i>
+                <strong>Minimum Stay:</strong> ${shortTermParams.minStay} days
+            </div>
+        `;
+    }
+
+    pricingHTML += `
+        <div class="alert alert-success mt-2">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Short-term Stay:</strong> Perfect for holiday accommodation during December & January
+        </div>
+    `;
+
+    accommodationInfo.innerHTML += pricingHTML;
 }
 
 // FIXED: Enhanced property details loading to properly update the UI
@@ -545,6 +671,7 @@ function updateProgress() {
 }
 
 // In booking.js - update the handleBookingSubmission function
+// In booking.js - update the handleBookingSubmission function
 async function handleBookingSubmission(e) {
     e.preventDefault();
     
@@ -553,9 +680,11 @@ async function handleBookingSubmission(e) {
     console.log('Selected accommodation:', selectedAccommodation);
     console.log('Selected booking type:', selectedBookingType);
     
-    // Get user role
+    // Get user role and short-term params
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isTenant = user.role === 'tenant';
+    const shortTermParams = window.shortTermParams;
+    const isShortTermBooking = shortTermParams && shortTermParams.bookingType === 'shortterm';
     
     try {
         const token = localStorage.getItem('token');
@@ -595,7 +724,9 @@ async function handleBookingSubmission(e) {
             bookingType: bookingTypeText,
             propertyName,
             selectedAccommodation,
-            userRole: user.role
+            userRole: user.role,
+            isShortTermBooking,
+            shortTermParams
         });
 
         if (!bookingDateTime) {
@@ -604,17 +735,36 @@ async function handleBookingSubmission(e) {
 
         // Prepare booking data - FIXED for both student and tenant
         const bookingDateTimeObj = new Date(bookingDateTime);
-        const checkOutDate = new Date(bookingDateTimeObj.getTime() + 2 * 60 * 60 * 1000); // Add 2 hours for viewing duration
+        
+        // NEW: Different duration for short-term vs student bookings
+        let checkOutDate;
+        if (isShortTermBooking) {
+            // For short-term, use a shorter duration (1 hour) since it's just a viewing/inquiry
+            checkOutDate = new Date(bookingDateTimeObj.getTime() + 1 * 60 * 60 * 1000);
+        } else {
+            // For students, use 2 hours (existing logic)
+            checkOutDate = new Date(bookingDateTimeObj.getTime() + 2 * 60 * 60 * 1000);
+        }
 
         // Build special requests with booking type and notes
         let specialRequests = `Booking Type: ${bookingTypeText}`;
         
-        // Add tenant-specific information if applicable
-        if (isTenant) {
+        // NEW: Enhanced short-term information
+        if (isShortTermBooking) {
             specialRequests += `\nTenant Booking: Yes`;
-            // Add any tenant-specific notes from the form
+            specialRequests += `\nBooking Category: Short-term Stay`;
+            
+            // Add short-term pricing info if available
+            if (shortTermParams.dailyRate) {
+                specialRequests += `\nDaily Rate: R${shortTermParams.dailyRate}`;
+            }
+            if (shortTermParams.minStay) {
+                specialRequests += `\nMinimum Stay: ${shortTermParams.minStay} days`;
+            }
+            
+            // Add tenant-specific notes
             if (formData.tenantNotes) {
-                specialRequests += `\nTenant Notes: ${formData.tenantNotes}`;
+                specialRequests += `\nTenant Requirements: ${formData.tenantNotes}`;
             }
         }
         
@@ -628,7 +778,13 @@ async function handleBookingSubmission(e) {
             checkOut: checkOutDate.toISOString(),
             numberOfGuests: 1,
             specialRequests: specialRequests,
-            bookingType: isTenant ? "short-term" : "student" // NEW: Set booking type
+            bookingType: isShortTermBooking ? "short-term" : "student", // NEW: Set booking type
+            // NEW: Add short-term specific fields
+            ...(isShortTermBooking && {
+                isShortTerm: true,
+                dailyRate: shortTermParams.dailyRate || null,
+                minStay: shortTermParams.minStay || null
+            })
         };
 
         console.log('📤 Booking data:', bookingData);
@@ -661,7 +817,9 @@ async function handleBookingSubmission(e) {
             bookingType: bookingTypeText,
             dateTime: bookingDateTime,
             bookingNotes: bookingNotes,
-            isTenant: isTenant
+            isTenant: isTenant,
+            isShortTermBooking: isShortTermBooking, // NEW
+            shortTermParams: shortTermParams // NEW
         });
 
     } catch (error) {
@@ -677,7 +835,7 @@ async function handleBookingSubmission(e) {
     }
 }
 
-// Update the success message to handle tenants
+// Update the success message to handle short-term bookings
 function showBookingSuccess(booking, formData) {
     const container = document.querySelector('.container .row .col-lg-10');
     if (!container) {
@@ -690,42 +848,52 @@ function showBookingSuccess(booking, formData) {
     const bookingStatus = booking.status || 'pending';
     const propertyName = formData.propertyName || (booking.property && booking.property.title) || 'Unknown Property';
 
-    // Custom message for tenants
-    const tenantMessage = formData.isTenant ? 
+    // Custom message for short-term bookings
+    const shortTermMessage = formData.isShortTermBooking ? 
         `<div class="alert alert-info mt-3">
             <i class="bi bi-info-circle me-2"></i>
-            <strong>Note for Short-term Tenants:</strong> The landlord will contact you to discuss pricing and stay duration. No monthly rent amount is shown as this will be negotiated based on your specific needs.
+            <strong>Short-term Stay Request Submitted!</strong><br>
+            The landlord will contact you to discuss:
+            <ul class="mb-0 mt-2">
+                <li>Exact pricing and duration</li>
+                <li>Available dates during December & January</li>
+                <li>Any special requirements</li>
+            </ul>
+            ${formData.shortTermParams && formData.shortTermParams.dailyRate ? 
+                `<div class="mt-2"><strong>Indicative Daily Rate:</strong> R${formData.shortTermParams.dailyRate}</div>` : ''}
+            ${formData.shortTermParams && formData.shortTermParams.minStay ? 
+                `<div><strong>Minimum Stay:</strong> ${formData.shortTermParams.minStay} days</div>` : ''}
         </div>` : '';
 
     const successHTML = `
         <div class="text-center py-5">
             <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-            <h3 class="text-success mt-3">Booking Confirmed!</h3>
-            <p class="lead">Your ${formData.isTenant ? 'short-term stay inquiry' : 'booking'} has been submitted successfully.</p>
+            <h3 class="text-success mt-3">${formData.isShortTermBooking ? 'Short-term Stay Request Sent!' : 'Booking Confirmed!'}</h3>
+            <p class="lead">Your ${formData.isShortTermBooking ? 'short-term stay inquiry' : 'booking'} has been submitted successfully.</p>
             
             <div class="card mx-auto mt-4" style="max-width: 500px;">
                 <div class="card-body">
-                    <h5 class="card-title">Booking Details</h5>
+                    <h5 class="card-title">${formData.isShortTermBooking ? 'Request Details' : 'Booking Details'}</h5>
                     <div class="text-start">
                         <p><strong>Reference:</strong> ${bookingId}</p>
                         <p><strong>Property:</strong> ${propertyName}</p>
-                        <p><strong>Booking Type:</strong> ${formData.bookingType || 'N/A'}</p>
+                        <p><strong>Type:</strong> ${formData.bookingType || 'N/A'}</p>
                         <p><strong>Date & Time:</strong> ${formatDateTime(formData.dateTime) || 'N/A'}</p>
                         <p><strong>Status:</strong> <span class="badge bg-warning">${bookingStatus}</span></p>
-                        ${formData.isTenant ? '<p><strong>Tenant Type:</strong> <span class="badge bg-info">Short-term</span></p>' : ''}
+                        ${formData.isShortTermBooking ? '<p><strong>Booking Type:</strong> <span class="badge bg-info">Short-term Stay</span></p>' : ''}
                     </div>
                 </div>
             </div>
             
-            ${tenantMessage}
+            ${shortTermMessage}
             
             <div class="alert alert-info mt-4 mx-auto" style="max-width: 500px;">
                 <i class="bi bi-envelope me-2"></i>
-                <strong>Next Steps:</strong> The landlord will review your ${formData.isTenant ? 'inquiry' : 'booking'} and confirm the appointment.
+                <strong>Next Steps:</strong> The landlord will review your ${formData.isShortTermBooking ? 'inquiry' : 'booking'} and contact you within 24 hours.
             </div>
             
             <div class="mt-4">
-                <a href="my-bookings.html" class="btn btn-navy me-2">View My Bookings</a>
+                <a href="my-bookings.html" class="btn btn-navy me-2">View My ${formData.isShortTermBooking ? 'Requests' : 'Bookings'}</a>
                 <a href="listings.html" class="btn btn-outline-secondary">Browse More Properties</a>
             </div>
         </div>
