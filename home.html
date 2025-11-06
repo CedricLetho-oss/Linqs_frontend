@@ -1205,12 +1205,46 @@
             });
         }
 
+        // NEW: Get price display for property based on user type
+        getPriceDisplay(property) {
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+            const isTenant = user.role === 'tenant';
+            
+            if (isTenant && property.acceptsShortTerm) {
+                if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
+                    return {
+                        price: `R${property.shortTermPrice}`,
+                        label: '/day',
+                        dataPrice: property.shortTermPrice
+                    };
+                } else {
+                    return {
+                        price: 'Price Negotiable',
+                        label: '/day',
+                        dataPrice: 0
+                    };
+                }
+            } else {
+                return {
+                    price: `R${property.price}`,
+                    label: '/month',
+                    dataPrice: property.price
+                };
+            }
+        }
+
         getEnhancedDemoFeatured() {
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+            const isTenant = user.role === 'tenant';
+            
             return [
                 {
                     _id: 'naval_heights',
                     title: 'Naval Heights Residence',
                     price: 3500,
+                    shortTermPrice: 250,
+                    shortTermPricing: 'fixed',
+                    acceptsShortTerm: true,
                     location: { 
                         city: 'Bloemfontein',
                         address: '123 University Road'
@@ -1232,6 +1266,9 @@
                     _id: 'campus_view',
                     title: 'Campus View Apartments',
                     price: 4200,
+                    shortTermPrice: 300,
+                    shortTermPricing: 'fixed',
+                    acceptsShortTerm: true,
                     location: { 
                         city: 'Bloemfontein',
                         address: '67 Academic Avenue'
@@ -1253,6 +1290,9 @@
                     _id: 'van_rooy',
                     title: '8 Van Rooy Residence',
                     price: 4500,
+                    shortTermPrice: 320,
+                    shortTermPricing: 'negotiable',
+                    acceptsShortTerm: true,
                     location: { 
                         city: 'Bloemfontein',
                         address: '8 Van Rooy Street'
@@ -1274,6 +1314,9 @@
                     _id: 'premium_suites',
                     title: 'Premium Student Suites',
                     price: 5500,
+                    shortTermPrice: 400,
+                    shortTermPricing: 'fixed',
+                    acceptsShortTerm: true,
                     location: { 
                         city: 'Johannesburg',
                         address: '89 Education Boulevard'
@@ -1295,6 +1338,9 @@
                     _id: 'joburg_flats',
                     title: 'Joburg Student Flats',
                     price: 5000,
+                    shortTermPrice: 350,
+                    shortTermPricing: 'fixed',
+                    acceptsShortTerm: true,
                     location: { 
                         city: 'Johannesburg',
                         address: '45 Education Street'
@@ -1316,6 +1362,9 @@
                     _id: 'green_residence',
                     title: 'Green Campus Residence',
                     price: 3800,
+                    shortTermPrice: 280,
+                    shortTermPricing: 'fixed',
+                    acceptsShortTerm: true,
                     location: { 
                         city: 'Pretoria',
                         address: '34 Student Lane'
@@ -1337,6 +1386,9 @@
                     _id: 'westwood_digs',
                     title: 'Westwood Student Digs',
                     price: 3800,
+                    shortTermPrice: 270,
+                    shortTermPricing: 'fixed',
+                    acceptsShortTerm: false, // This will be filtered out for tenants
                     location: { 
                         city: 'Bloemfontein',
                         address: '78 Campus View'
@@ -1358,6 +1410,9 @@
                     _id: 'pending_property',
                     title: 'New Student Residence',
                     price: 4000,
+                    shortTermPrice: 290,
+                    shortTermPricing: 'fixed',
+                    acceptsShortTerm: true,
                     location: { 
                         city: 'Pretoria',
                         address: '90 Student Lane'
@@ -1379,6 +1434,9 @@
                     _id: 'basic_apartment',
                     title: 'Basic Student Apartment',
                     price: 3200,
+                    shortTermPrice: 220,
+                    shortTermPricing: 'negotiable',
+                    acceptsShortTerm: true,
                     location: { 
                         city: 'Bloemfontein',
                         address: '12 Simple Street'
@@ -1408,21 +1466,27 @@
                 return;
             }
 
-            container.innerHTML = properties.map(property => `
+            container.innerHTML = properties.map(property => {
+                const priceDisplay = this.getPriceDisplay(property);
+                return `
                 <div class="col-md-6 col-lg-3 listing-card" 
                      data-location="${property.location.city}" 
-                     data-price="${property.price}">
-                    ${this.createEnhancedPropertyCard(property)}
+                     data-price="${priceDisplay.dataPrice}">
+                    ${this.createEnhancedPropertyCard(property, priceDisplay)}
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        createEnhancedPropertyCard(property) {
+        createEnhancedPropertyCard(property, priceDisplay) {
             const accreditation = property.accreditation || 'self';
             const accreditationInfo = this.accreditationConfig[accreditation] || this.accreditationConfig.self;
             
             const genderPreference = property.genderPreference || 'unisex';
             const genderInfo = this.genderConfig[genderPreference] || this.genderConfig.unisex;
+            
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+            const isTenant = user.role === 'tenant';
             
             return `
             <div class="card feature-card h-100">
@@ -1437,19 +1501,21 @@
                         </span>
                     </div>
                     
-                    <!-- Price Tag -->
+                    <!-- Price Tag - UPDATED for tenants/students -->
                     <div class="position-absolute top-0 end-0 m-2">
                         <span class="badge bg-success fs-6">
-                            R${property.price}<small>/month</small>
+                            ${priceDisplay.price}<small>${priceDisplay.label}</small>
                         </span>
                     </div>
                     
-                    <!-- Accreditation Badge -->
+                    <!-- Accreditation Badge - HIDDEN FOR TENANTS -->
+                    ${!isTenant ? `
                     <div class="position-absolute bottom-0 start-0 m-2">
                         <span class="badge bg-${accreditationInfo.class}">
                             <i class="bi ${accreditationInfo.icon} me-1"></i>${accreditationInfo.text}
                         </span>
                     </div>
+                    ` : ''}
                 </div>
 
                 <div class="card-body">
@@ -1543,6 +1609,23 @@
         }
 
         getNoListingsHTML() {
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+            const isTenant = user.role === 'tenant';
+            const currentMonth = new Date().getMonth() + 1;
+            const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
+            
+            if (isTenant && !isNovemberToJanuary) {
+                return `
+                <div class="col-12 text-center py-5">
+                    <div class="no-listings-placeholder">
+                        <i class="bi bi-calendar-x display-1 text-muted"></i>
+                        <h4 class="text-navy mt-3">Short-term Accommodation Not Available</h4>
+                        <p class="text-muted">Short-term student accommodation is only available during November to January.</p>
+                        <p class="text-muted small">This period covers when students are away for holidays. Please check back during these months for available properties.</p>
+                    </div>
+                </div>`;
+            }
+
             return `
             <div class="col-12 text-center py-5">
                 <div class="no-listings-placeholder">
@@ -1569,9 +1652,24 @@
                     show = false;
                 }
                 
-                // Filter by price
-                if (priceFilter && property.price > parseInt(priceFilter)) {
-                    show = false;
+                // Filter by price - UPDATED for tenants/students
+                if (priceFilter) {
+                    const user = JSON.parse(localStorage.getItem("user") || "{}");
+                    const isTenant = user.role === 'tenant';
+                    
+                    let priceToCheck = property.price;
+                    if (isTenant && property.acceptsShortTerm) {
+                        if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
+                            priceToCheck = property.shortTermPrice;
+                        } else {
+                            // For negotiable properties, show them regardless of price filter
+                            priceToCheck = 0;
+                        }
+                    }
+                    
+                    if (priceToCheck > parseInt(priceFilter)) {
+                        show = false;
+                    }
                 }
                 
                 // Only show available and approved properties
@@ -1893,12 +1991,12 @@
         window.featuredManager = featuredManager; // Make it globally available
         featuredManager.loadFeaturedListings();
 
-        // Load user info
-        const user = JSON.parse(localStorage.getItem("user"));
+        // Load user info - FIXED: Proper username display
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
         const welcomeMessage = document.getElementById("welcomeMessage");
         const usernameDisplay = document.getElementById("usernameDisplay");
 
-        if (user) {
+        if (user && user.username) {
             welcomeMessage.style.display = 'block';
             usernameDisplay.textContent = user.username;
             
@@ -1907,10 +2005,10 @@
             const welcomeText = welcomeMessage.querySelector('p');
             
             if (user.role === 'tenant') {
-                welcomeTitle.innerHTML = 'Welcome back, <span id="usernameDisplay"></span>! 👋';
+                welcomeTitle.innerHTML = `Welcome back, <span id="usernameDisplay">${user.username}</span>! 👋`;
                 welcomeText.textContent = 'Find affordable short-term accommodation during student holidays. Browse verified properties available from November to January.';
             } else {
-                welcomeTitle.innerHTML = 'Welcome back, <span id="usernameDisplay"></span>! 👋';
+                welcomeTitle.innerHTML = `Welcome back, <span id="usernameDisplay">${user.username}</span>! 👋`;
                 welcomeText.textContent = 'Make your student accommodation dreams come true with ResLinQ. Browse listings, book viewings, and share your experience.';
             }
         } else {
