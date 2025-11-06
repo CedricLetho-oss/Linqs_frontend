@@ -3254,6 +3254,9 @@ async function updateProperty() {
             final: allImages.length
         });
 
+        // ✅ FIXED: Properly get the checkbox value
+        const acceptsShortTerm = document.getElementById('editAcceptsShortTerm').checked;
+
         const updatedData = {
             title: document.getElementById('editPropertyTitle').value,
             description: document.getElementById('editPropertyDescription').value,
@@ -3268,7 +3271,7 @@ async function updateProperty() {
             bedrooms: parseInt(document.getElementById('editPropertyBedrooms').value),
             bathrooms: parseInt(document.getElementById('editPropertyBathrooms').value),
             amenities: getSelectedEditAmenities(),
-            acceptsShortTerm: document.getElementById('editAcceptsShortTerm').checked,
+            acceptsShortTerm: acceptsShortTerm, // ✅ FIXED: Now properly sending the boolean value
             shortTermDescription: document.getElementById('editShortTermDescription').value || '',
             shortTermPricing: document.getElementById('editShortTermPricing').value,
             shortTermPrice: document.getElementById('editShortTermPrice').value ? parseInt(document.getElementById('editShortTermPrice').value) : null,
@@ -3278,6 +3281,8 @@ async function updateProperty() {
             availability: document.getElementById('editPropertyAvailability').value,
             images: allImages
         };
+
+        console.log('Sending update data:', updatedData); // Debug log
 
         const response = await fetch(`${API_BASE_URL}/properties/${propertyId}`, {
             method: 'PUT',
