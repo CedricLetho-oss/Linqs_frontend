@@ -1501,6 +1501,42 @@ function modifyForShortTermTenant() {
     }
 }
 
+// Add this function to property-details.html script
+function modifyDisplayForUserType() {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isTenant = user.role === 'tenant';
+    
+    if (isTenant) {
+        // Remove gender preference and accreditation for tenants
+        const genderSection = document.querySelector('.room-feature:has(i.bi-people)');
+        const accreditationSection = document.querySelector('.room-feature:has(i.bi-award)');
+        
+        if (genderSection) genderSection.style.display = 'none';
+        if (accreditationSection) accreditationSection.style.display = 'none';
+        
+        // Hide gender and accreditation badges
+        document.getElementById('propertyGenderBadge').style.display = 'none';
+        document.getElementById('propertyAccreditationBadge').style.display = 'none';
+        
+        // Update price display for tenants
+        if (currentProperty && currentProperty.acceptsShortTerm) {
+            if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
+                document.getElementById('propertyPrice').textContent = `R${currentProperty.shortTermPrice}`;
+                document.querySelector('.price-tag + small').textContent = 'per day';
+                
+                // Add minimum stay info
+                const minStayInfo = document.createElement('div');
+                minStayInfo.className = 'text-light small mt-1';
+                minStayInfo.innerHTML = `<i class="bi bi-calendar-check me-1"></i>Minimum stay: ${currentProperty.shortTermMinStay || 1} days`;
+                document.querySelector('.price-tag').parentNode.appendChild(minStayInfo);
+            } else {
+                document.getElementById('propertyPrice').textContent = 'Negotiable';
+                document.querySelector('.price-tag + small').textContent = 'Contact for daily rates';
+            }
+        }
+    }
+}
+
 function enhanceForShortTermContext() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isShortTermTenant = user.role === 'tenant';
@@ -1597,6 +1633,7 @@ function enhanceForShortTermContext() {
         
         await loadPropertyReviews(propertyId);
         updatePropertyDisplay();
+        modifyDisplayForUserType();
         await loadPropertyRooms();
         checkUserCanReview();
         await checkFavoriteStatus();
