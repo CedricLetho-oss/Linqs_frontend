@@ -43,36 +43,43 @@ class ListingsManager {
     }
 
     async loadProperties() {
-        try {
-            this.showLoadingState(true);
-            
-            const token = localStorage.getItem("token");
-            const response = await fetch(`${this.API_BASE_URL}/properties`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch properties: ${response.status}`);
+    try {
+        this.showLoadingState(true);
+        
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${this.API_BASE_URL}/properties`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
+        });
 
-            const data = await response.json();
-            this.properties = data.properties || data || [];
-            this.filteredProperties = [...this.properties];
-            
-            this.applySorting();
-            this.renderProperties();
-            this.updateResultsCount();
-            
-        } catch (error) {
-            console.error('Error loading properties:', error);
-            this.showError('Failed to load properties. Please try again.');
-        } finally {
-            this.showLoadingState(false);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch properties: ${response.status}`);
         }
+
+        const data = await response.json();
+        this.properties = data.properties || data || [];
+        
+        // Apply tenant filtering
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (user.role === 'tenant') {
+            this.properties = this.filterPropertiesForTenants();
+        }
+        
+        this.filteredProperties = [...this.properties];
+        
+        this.applySorting();
+        this.renderProperties();
+        this.updateResultsCount();
+        
+    } catch (error) {
+        console.error('Error loading properties:', error);
+        this.showError('Failed to load properties. Please try again.');
+    } finally {
+        this.showLoadingState(false);
     }
+}
 
     // Add this method to ListingsManager class in listings.js
 modifyListingsForUserType() {
@@ -161,10 +168,15 @@ modifyListingsForUserType() {
             priceDisplay = `R${property.shortTermPrice}`;
             priceLabel = '/day';
             dataPrice = property.shortTermPrice;
+            
+            // Add min stay info for tenants
+            if (property.shortTermMinStay > 1) {
+                priceLabel = `/day (min ${property.shortTermMinStay} days)`;
+            }
         } else {
-            priceDisplay = 'Negotiable';
-            priceLabel = '';
-            dataPrice = 0; // Set to 0 for negotiable so filtering works
+            priceDisplay = 'Price Negotiable';
+            priceLabel = '/day';
+            dataPrice = 0;
         }
     } else {
         priceDisplay = `R${property.price}`;
@@ -382,10 +394,54 @@ modifyListingsForUserType() {
         return amenityMap[amenity] || amenity;
     }
 
+    // Add this method to your ListingsManager class
+filterPropertiesForTenants() {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isTenant = user.role === 'tenant';
+    
+    if (!isTenant) {
+        return this.properties; // Return all properties for non-tenants
+    }
+
+    const currentMonth = new Date().getMonth() + 1; // 1-12 (Jan = 1, Dec = 12)
+    const isDecemberOrJanuary = currentMonth === 12 || currentMonth === 1;
+    
+    return this.properties.filter(property => {
+        // For tenants, only show properties that:
+        // 1. Accept short-term tenants
+        // 2. Are available during December/January
+        // 3. Are approved by admin
+        // 4. Are marked as available by landlord
+        
+        const acceptsShortTerm = property.acceptsShortTerm === true;
+        const isApproved = this.getAdminStatus(property) === 'approved';
+        const isAvailable = this.getPropertyStatus(property) === 'available';
+        
+        if (!isDecemberOrJanuary) {
+            // Outside Dec/Jan, don't show any properties to tenants
+            return false;
+        }
+        
+        return acceptsShortTerm && isApproved && isAvailable;
+    });
+}
+
     applyFilters() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isTenant = user.role === 'tenant';
     
+    const currentMonth = new Date().getMonth() + 1;
+    const isDecemberOrJanuary = currentMonth === 12 || currentMonth === 1;
+    
+    // For tenants outside Dec/Jan, show empty state
+    if (isTenant && !isDecemberOrJanuary) {
+        this.filteredProperties = [];
+        this.renderProperties();
+        this.updateResultsCount();
+        return;
+    }
+
+    // Rest of your existing filter logic...
     const accFilter = document.getElementById('filterAccreditation').value;
     const priceFilterRaw = document.getElementById('filterPrice').value;
     const priceFilter = priceFilterRaw === '' ? null : Number(priceFilterRaw);
@@ -402,6 +458,18 @@ modifyListingsForUserType() {
     };
 
     this.filteredProperties = this.properties.filter(property => {
+        // For tenants, we've already filtered in loadProperties, but add additional safety
+        if (isTenant) {
+            const acceptsShortTerm = property.acceptsShortTerm === true;
+            const propertyStatus = this.getPropertyStatus(property);
+            const adminStatus = this.getAdminStatus(property);
+            
+            if (!acceptsShortTerm || propertyStatus !== 'available' || adminStatus !== 'approved') {
+                return false;
+            }
+        }
+
+        // Rest of your existing filter logic...
         const accreditation = property.accreditation || 'self';
         const location = property.location.city.toLowerCase();
         const title = property.title.toLowerCase();
@@ -460,6 +528,33 @@ modifyListingsForUserType() {
     this.applySorting();
     this.renderProperties();
     this.updateResultsCount();
+}
+
+getNoResultsHTML() {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isTenant = user.role === 'tenant';
+    const currentMonth = new Date().getMonth() + 1;
+    const isDecemberOrJanuary = currentMonth === 12 || currentMonth === 1;
+    
+    if (isTenant && !isDecemberOrJanuary) {
+        return `
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-calendar-x display-1 text-muted"></i>
+            <h3 class="text-navy mt-3">Short-term Accommodation Not Available</h3>
+            <p class="text-muted">Short-term student accommodation is only available during December and January.</p>
+            <p class="text-muted small">Please check back during the holiday season for available properties.</p>
+        </div>`;
+    }
+
+    return `
+    <div class="col-12 text-center py-5">
+        <i class="bi bi-search display-1 text-muted"></i>
+        <h3 class="text-navy mt-3">No properties found</h3>
+        <p class="text-muted">Try adjusting your filters or search terms</p>
+        <button class="btn btn-navy" onclick="listingsManager.clearAllFilters()">
+            Clear All Filters
+        </button>
+    </div>`;
 }
 
     applySorting() {
