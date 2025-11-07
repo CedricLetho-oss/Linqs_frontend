@@ -84,22 +84,49 @@ class ReportForm {
         console.log('Event listeners setup complete');
     }
 
-    prefillUserData() {
-        console.log('Prefilling user data...');
-        // Prefill user data from localStorage
-        if (this.user) {
-            const fullName = `${this.user.firstName || ''} ${this.user.surname || ''}`.trim();
-            document.getElementById('fullName').value = fullName;
-            document.getElementById('email').value = this.user.email || '';
-            document.getElementById('phone').value = this.user.phone || '';
-            
-            if (this.user.role === 'student') {
-                document.getElementById('studentNumber').value = this.user.studentNumber || '';
-            }
-            
-            console.log('User data prefilled:', { fullName, email: this.user.email });
-        }
+    // Add this method to update the ID field label based on user type
+updateIdFieldLabel() {
+    const idLabel = document.getElementById('idLabel');
+    const idHelpText = document.getElementById('idHelpText');
+    
+    if (this.user.role === 'student') {
+        idLabel.textContent = 'Student Number';
+        idHelpText.textContent = 'Your university student number (optional)';
+        document.getElementById('studentNumber').placeholder = 'e.g., 12345678';
+    } else if (this.user.role === 'tenant') {
+        idLabel.textContent = 'ID Number';
+        idHelpText.textContent = 'Your ID number for verification (optional)';
+        document.getElementById('studentNumber').placeholder = 'e.g., 8501015000089';
     }
+}
+
+// Call this in prefillUserData method
+prefillUserData() {
+    console.log('Prefilling user data...');
+    
+    // Update ID field label first
+    this.updateIdFieldLabel();
+    
+    // Prefill user data from localStorage
+    if (this.user) {
+        const fullName = `${this.user.firstName || ''} ${this.user.surname || ''}`.trim();
+        document.getElementById('fullName').value = fullName;
+        document.getElementById('email').value = this.user.email || '';
+        document.getElementById('phone').value = this.user.phone || '';
+        
+        if (this.user.role === 'student') {
+            document.getElementById('studentNumber').value = this.user.studentNumber || '';
+        } else if (this.user.role === 'tenant') {
+            document.getElementById('studentNumber').value = this.user.idNumber || '';
+        }
+        
+        console.log('User data prefilled:', { 
+            fullName, 
+            email: this.user.email,
+            role: this.user.role 
+        });
+    }
+}
 
     toggleAnonymousFields(isAnonymous) {
         console.log('Toggling anonymous fields:', isAnonymous);
@@ -377,40 +404,59 @@ class ReportForm {
     }
 
     updateSummary() {
-        console.log('Updating summary...');
-        const property = document.getElementById('autoFillSection').style.display !== 'none' 
-            ? document.getElementById('propertyField').value 
-            : document.getElementById('manualProperty').value;
-        const landlord = document.getElementById('autoFillSection').style.display !== 'none'
-            ? document.getElementById('landlordField').value
-            : document.getElementById('manualLandlord').value;
+    console.log('Updating summary...');
+    const property = document.getElementById('autoFillSection').style.display !== 'none' 
+        ? document.getElementById('propertyField').value 
+        : document.getElementById('manualProperty').value;
+    const landlord = document.getElementById('autoFillSection').style.display !== 'none'
+        ? document.getElementById('landlordField').value
+        : document.getElementById('manualLandlord').value;
+    
+    document.getElementById('summaryProperty').textContent = property || 'Not provided';
+    document.getElementById('summaryLandlord').textContent = landlord || 'Not provided';
+    document.getElementById('summaryCategory').textContent = document.getElementById('category').value || 'Not provided';
+    document.getElementById('summaryDescription').textContent = document.getElementById('description').value || 'Not provided';
+    document.getElementById('summaryDate').textContent = this.formatDate(document.getElementById('issueDate').value) || 'Not provided';
+    document.getElementById('summaryFrequency').textContent = document.getElementById('issueFrequency').options[document.getElementById('issueFrequency').selectedIndex].text;
+    
+    const isAnonymous = document.getElementById('anonymous').checked;
+    if (isAnonymous) {
+        document.getElementById('summaryName').textContent = 'Anonymous Submission';
+        document.getElementById('summaryEmail').textContent = 'Hidden for privacy';
+        document.getElementById('summaryPhone').textContent = 'Hidden for privacy';
         
-        document.getElementById('summaryProperty').textContent = property || 'Not provided';
-        document.getElementById('summaryLandlord').textContent = landlord || 'Not provided';
-        document.getElementById('summaryCategory').textContent = document.getElementById('category').value || 'Not provided';
-        document.getElementById('summaryDescription').textContent = document.getElementById('description').value || 'Not provided';
-        document.getElementById('summaryDate').textContent = this.formatDate(document.getElementById('issueDate').value) || 'Not provided';
-        document.getElementById('summaryFrequency').textContent = document.getElementById('issueFrequency').options[document.getElementById('issueFrequency').selectedIndex].text;
-        
-        const isAnonymous = document.getElementById('anonymous').checked;
-        if (isAnonymous) {
-            document.getElementById('summaryName').textContent = 'Anonymous';
-            document.getElementById('summaryEmail').textContent = 'Hidden';
-            document.getElementById('summaryPhone').textContent = 'Hidden';
-            document.getElementById('summaryStudentNumber').textContent = 'Hidden';
-        } else {
-            document.getElementById('summaryName').textContent = document.getElementById('fullName').value || 'Not provided';
-            document.getElementById('summaryEmail').textContent = document.getElementById('email').value || 'Not provided';
-            document.getElementById('summaryPhone').textContent = document.getElementById('phone').value || 'Not provided';
-            document.getElementById('summaryStudentNumber').textContent = document.getElementById('studentNumber').value || 'Not provided';
+        // Update ID field label in summary based on user type
+        const idLabel = this.user.role === 'student' ? 'Student Number' : 'ID Number';
+        document.getElementById('summaryStudentNumber').textContent = 'Hidden for privacy';
+        // Update the label text if you have a separate element for it
+        const idLabelElement = document.querySelector('[for="summaryStudentNumber"]');
+        if (idLabelElement) {
+            idLabelElement.textContent = idLabel + ':';
         }
+    } else {
+        document.getElementById('summaryName').textContent = document.getElementById('fullName').value || 'Not provided';
+        document.getElementById('summaryEmail').textContent = document.getElementById('email').value || 'Not provided';
+        document.getElementById('summaryPhone').textContent = document.getElementById('phone').value || 'Not provided';
         
-        console.log('Summary updated with data:', {
-            property,
-            landlord,
-            isAnonymous
-        });
+        // Show appropriate ID based on user type
+        const idValue = document.getElementById('studentNumber').value || 'Not provided';
+        const idLabel = this.user.role === 'student' ? 'Student Number' : 'ID Number';
+        document.getElementById('summaryStudentNumber').textContent = idValue;
+        
+        // Update the label text
+        const idLabelElement = document.querySelector('[for="summaryStudentNumber"]');
+        if (idLabelElement) {
+            idLabelElement.textContent = idLabel + ':';
+        }
     }
+    
+    console.log('Summary updated with data:', {
+        property,
+        landlord,
+        isAnonymous,
+        userType: this.user.role
+    });
+}
 
     formatDate(dateString) {
         if (!dateString) return '';
@@ -445,59 +491,80 @@ class ReportForm {
         console.log('Progress updated:', { percent, currentStep: this.currentStep });
     }
 
-    async handleFormSubmission(e) {
-        e.preventDefault();
-        console.log('Handling form submission...');
+    // In handleFormSubmission method, update the form data preparation:
+async handleFormSubmission(e) {
+    e.preventDefault();
+    console.log('Handling form submission...');
+    
+    try {
+        const isAnonymous = document.getElementById('anonymous').checked;
         
-        try {
-            // Prepare form data for submission - ONLY include valid values
-            const formData = {
-                reportType: this.mapCategoryToReportType(document.getElementById('category').value),
-                title: `Complaint: ${document.getElementById('category').value}`,
-                description: document.getElementById('description').value,
-            };
+        // Prepare form data for submission - ONLY include valid values
+        const formData = {
+            reportType: this.mapCategoryToReportType(document.getElementById('category').value),
+            title: `Complaint: ${document.getElementById('category').value}`,
+            description: document.getElementById('description').value,
+            isAnonymous: isAnonymous // Add this flag
+        };
 
-            // Only add IDs if they are valid strings
-            if (this.formData.reportedUserId && this.formData.reportedUserId !== 'null' && this.formData.reportedUserId !== 'undefined') {
-                formData.reportedUserId = this.formData.reportedUserId;
-            }
-            
-            if (this.formData.reportedPropertyId && this.formData.reportedPropertyId !== 'null' && this.formData.reportedPropertyId !== 'undefined') {
-                formData.reportedPropertyId = this.formData.reportedPropertyId;
-            }
-
-            console.log('Submitting form data:', formData);
-
-            // Validate final form data - at least one ID must be provided
-            if (!formData.reportedUserId && !formData.reportedPropertyId) {
-                alert('Please provide either a landlord or property to report. Use the manual entry fields if needed.');
-                return;
-            }
-
-            // FIXED: Changed from '/my-reports' to '/reports'
-            const response = await fetch(`${API_BASE_URL}/reports`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${this.token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                console.log('Report submitted successfully:', result);
-                this.showSuccessScreen(result.report._id);
-            } else {
-                const error = await response.json();
-                console.error('Server error:', error);
-                alert('Error submitting report: ' + error.error);
-            }
-        } catch (error) {
-            console.error('Error submitting report:', error);
-            alert('Failed to submit report. Please try again.');
+        // Only add IDs if they are valid strings
+        if (this.formData.reportedUserId && this.formData.reportedUserId !== 'null' && this.formData.reportedUserId !== 'undefined') {
+            formData.reportedUserId = this.formData.reportedUserId;
         }
+        
+        if (this.formData.reportedPropertyId && this.formData.reportedPropertyId !== 'null' && this.formData.reportedPropertyId !== 'undefined') {
+            formData.reportedPropertyId = this.formData.reportedPropertyId;
+        }
+
+        // Add user type information
+        formData.reporterType = this.user.role; // 'student' or 'tenant'
+        
+        // For anonymous submissions, don't include personal info
+        if (!isAnonymous) {
+            formData.fullName = document.getElementById('fullName').value;
+            formData.email = document.getElementById('email').value;
+            formData.phone = document.getElementById('phone').value;
+            
+            // Only include student number for students
+            if (this.user.role === 'student') {
+                formData.studentNumber = document.getElementById('studentNumber').value;
+            } else if (this.user.role === 'tenant') {
+                formData.idNumber = document.getElementById('studentNumber').value; // Reuse field for tenants
+            }
+        }
+
+        console.log('Submitting form data:', formData);
+
+        // Validate final form data - at least one ID must be provided
+        if (!formData.reportedUserId && !formData.reportedPropertyId) {
+            alert('Please provide either a landlord or property to report. Use the manual entry fields if needed.');
+            return;
+        }
+
+        // Submit to backend
+        const response = await fetch(`${API_BASE_URL}/reports`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${this.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Report submitted successfully:', result);
+            this.showSuccessScreen(result.report._id);
+        } else {
+            const error = await response.json();
+            console.error('Server error:', error);
+            alert('Error submitting report: ' + error.error);
+        }
+    } catch (error) {
+        console.error('Error submitting report:', error);
+        alert('Failed to submit report. Please try again.');
     }
+}
 
     mapCategoryToReportType(category) {
         const categoryMap = {
@@ -544,6 +611,8 @@ class ReportForm {
         this.formData.reportedPropertyId = null;
     }
 }
+
+
 
 // Global function for manual entry toggle
 function toggleManualEntry() {
