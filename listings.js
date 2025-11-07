@@ -178,27 +178,51 @@ modifyListingsForUserType() {
         ).join('');
     }
 
-// In the createPropertyCard method, replace the price display section with this:
+    // UPDATED: Consistent status handling with manage-properties.html
+    getPropertyStatus(property) {
+        // Priority 1: Use availability field (landlord-controlled - what students see)
+        if (property.availability) {
+            return property.availability; // available, occupied, maintenance
+        }
+        // Priority 2: Use status field (admin approval status)
+        if (property.status) {
+            // Only show approved properties to students, others are effectively unavailable
+            return property.status === 'approved' ? 'available' : 'occupied';
+        }
+        // Priority 3: Fallback to legacy isAvailable field
+        if (property.isAvailable !== undefined) {
+            return property.isAvailable ? 'available' : 'occupied';
+        }
+        // Default: treat as available
+        return 'available';
+    }
 
-createPropertyCard(property) {
+    // UPDATED: Get admin approval status (for internal use)
+    getAdminStatus(property) {
+        if (property.status) {
+            return property.status; // pending, approved, rejected
+        }
+        return 'approved'; // Default to approved if no status field
+    }
+
+    createPropertyCard(property) {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isTenant = user.role === 'tenant';
     
     // Determine price display for tenants vs students
-    let priceDisplay, priceLabel, dataPrice, minStayInfo = '';
+    let priceDisplay, priceLabel, dataPrice;
     if (isTenant && property.acceptsShortTerm) {
         if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
             priceDisplay = `R${property.shortTermPrice}`;
             priceLabel = '/day';
             dataPrice = property.shortTermPrice;
             
-            // Add min stay info for tenants - but we'll handle this differently
+            // Add min stay info for tenants
             if (property.shortTermMinStay > 1) {
-                minStayInfo = `min ${property.shortTermMinStay} days`;
-                priceLabel = '/day';
+                priceLabel = `/day (min ${property.shortTermMinStay} days)`;
             }
         } else {
-            priceDisplay = 'Negotiable';
+            priceDisplay = 'Price Negotiable';
             priceLabel = '/day';
             dataPrice = 0;
         }
@@ -272,16 +296,13 @@ createPropertyCard(property) {
          data-admin-status="${adminStatus}">
     <div class="card listing-card h-100 ${propertyStatus !== 'available' ? propertyStatus : ''}">
 
-        <!-- Updated Price Tag with better layout for desktop -->
+        <!-- Updated Price Tag for tenants/students -->
         <div class="price-tag">
-            <div class="d-flex flex-column align-items-end">
-                <div class="price-main">${priceDisplay}<small>${priceLabel}</small></div>
-                ${minStayInfo ? `<div class="price-min-stay small">${minStayInfo}</div>` : ''}
-            </div>
+            ${priceDisplay}<small>${priceLabel}</small>
         </div>
         
         <!-- Location Badge -->
-        <div class="location-badge" style="top: ${minStayInfo ? '4.5rem' : '3.5rem'};">
+        <div class="location-badge" style="top: 3.5rem;">
             <i class="bi bi-geo-alt me-1"></i>${property.location.city}
         </div>
         
@@ -292,7 +313,7 @@ createPropertyCard(property) {
         
         <!-- Admin Approval Badge (only show if not approved) -->
         ${adminStatus !== 'approved' ? `
-            <div class="status-badge bg-${adminInfo.class}" style="top: ${minStayInfo ? '7rem' : '6rem'};">
+            <div class="status-badge bg-${adminInfo.class}" style="top: 6rem;">
                 <i class="bi ${adminInfo.icon} me-1"></i>${adminInfo.text}
             </div>
         ` : ''}
