@@ -68,134 +68,14 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     
-
-
-/* Enhanced Hero Section Styles */
-.property-hero {
-  background: linear-gradient(135deg, var(--primary) 0%, #7c6ee3 50%, var(--primary-light) 100%);
-  color: white;
-  padding: 2rem 0;
-  border-radius: 0 0 2rem 2rem;
-  margin-bottom: 2rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.property-hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-  border-radius: 50%;
-}
-
-/* CHANGED: Use hero-price-section to avoid conflicts */
-.hero-price-section {
-  text-align: center;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 1rem;
-  backdrop-filter: blur(10px);
-}
-
-.hero-price-period {
-  font-size: 1rem;
-  opacity: 0.9;
-  margin-bottom: 0.5rem;
-}
-
-.hero-minimum-stay {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  display: inline-block;
-}
-
-.property-location {
-  font-size: 1.1rem;
-  margin-top: 0.5rem;
-}
-
-/* Keep the existing room modal price-section unchanged */
-.price-section {
-  border-bottom: 2px solid #e9ecef;
-  padding-bottom: 1rem;
-}
-
-/* Enhanced Detail Items */
-.detail-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.detail-item:last-child {
-  border-bottom: none;
-}
-
-.detail-item i {
-  font-size: 1.25rem;
-  width: 24px;
-  text-align: center;
-}
-
-.detail-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.detail-label {
-  font-size: 0.875rem;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.detail-value {
-  font-weight: 600;
-  color: #1e293b;
-}
-
-/* Responsive improvements */
-@media (max-width: 768px) {
-  .property-hero {
-    padding: 1.5rem 0;
-    border-radius: 0 0 1.5rem 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .price-section {
-    margin-top: 1rem;
-    padding: 0.75rem;
-  }
-  
-  .detail-item {
-    padding: 0.5rem 0;
-  }
-}
-
-/* Breadcrumb improvements */
-.breadcrumb {
-  background: transparent;
-  padding: 0;
-}
-
-.breadcrumb-item a {
-  color: rgba(255, 255, 255, 0.8) !important;
-  text-decoration: none;
-}
-
-.breadcrumb-item a:hover {
-  color: white !important;
-}
-
-.breadcrumb-item.active {
-  color: white;
-}
+    .property-hero {
+        background: linear-gradient(135deg, var(--primary) 0%, #9983e7 50%, var(--primary-light) 100%);
+        color: white;
+        padding: 1.5rem 0;
+        border-radius: 0 0 1.5rem 1.5rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
     
     .main-image {
       width: 100%;
@@ -812,42 +692,6 @@
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
 }
-
-/* Mobile-specific hero improvements */
-@media (max-width: 576px) {
-  .property-hero {
-    padding: 1.25rem 0;
-    border-radius: 0 0 1rem 1rem;
-  }
-  
-  .property-hero h1 {
-    font-size: 1.5rem;
-  }
-  
-  .price-tag {
-    font-size: 1.75rem;
-  }
-  
-  .detail-item {
-    gap: 0.75rem;
-    padding: 0.5rem 0;
-  }
-  
-  .breadcrumb {
-    font-size: 0.875rem;
-  }
-}
-
-/* Ensure proper spacing on mobile */
-@media (max-width: 768px) {
-  .property-hero .row {
-    text-align: center;
-  }
-  
-  .property-hero .col-md-4 {
-    margin-top: 1rem;
-  }
-}
   </style>
 </head>
 <body>
@@ -903,43 +747,31 @@
     </div>
   </nav>
 
- <!-- Updated Hero Section -->
-<section class="property-hero">
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-md-8">
-        <nav aria-label="breadcrumb">
-          <ol class="breadcrumb mb-2">
-            <li class="breadcrumb-item"><a href="listings.html" class="text-light">Properties</a></li>
-            <li class="breadcrumb-item active text-light" id="propertyBreadcrumb">Loading...</li>
-          </ol>
-        </nav>
-        <h1 class="display-6 fw-bold mb-2" id="propertyTitle">Loading Property...</h1>
-        <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-          <span class="badge bg-light text-navy" id="propertyTypeBadge">Loading...</span>
-          <span class="badge bg-success" id="propertyStatusBadge">Available</span>
-          <span class="badge bg-info" id="propertyGenderBadge">Unisex</span>
-          <span class="badge bg-warning" id="propertyAccreditationBadge">Self-paying</span>
-        </div>
-        <div class="property-location d-flex align-items-center text-light">
-          <i class="bi bi-geo-alt me-2"></i>
-          <span id="propertyLocationShort">Loading location...</span>
-        </div>
-      </div>
-      <div class="col-md-4 text-md-end">
-        <!-- CHANGED: Use hero-price-section instead of price-section -->
-        <div class="hero-price-section">
-          <div class="price-tag" id="propertyPrice">R0</div>
-          <div class="hero-price-period" id="pricePeriod">per month</div>
-          <!-- Single minimum stay display -->
-          <div class="hero-minimum-stay text-light small mt-1" id="minimumStayInfo" style="display: none;">
-            <i class="bi bi-calendar-check me-1"></i>Minimum stay: <span id="minStayDays">2</span> days
+  <!-- Property Hero Section -->
+  <section class="property-hero">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+              <li class="breadcrumb-item active text-light" id="propertyBreadcrumb">Property Details</li> 
+            </ol>
+          </nav>
+          <h1 class="display-6 fw-bold mb-2" id="propertyTitle">Loading Property...</h1>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <span class="badge bg-light text-navy" id="propertyTypeBadge">Loading...</span>
+            <span class="badge bg-success" id="propertyStatusBadge">Available</span>
+            <span class="badge bg-info" id="propertyGenderBadge">Unisex</span>
+            <span class="badge bg-warning" id="propertyAccreditationBadge">Self-paying</span>
           </div>
+        </div>
+        <div class="col-md-4 text-md-end">
+          <div class="price-tag" id="propertyPrice">R0</div>
+          <small class="text-light">per month</small>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
   <main class="container">
     <div class="row">
@@ -955,54 +787,36 @@
           </div>
         </div>
 
-        <!-- Updated Property Details Section -->
+        <!-- Property Details -->
         <div class="property-card">
-          <h3 class="section-title">Property Overview</h3>
+          <h3 class="section-title">Property Details</h3>
           <div class="row">
             <div class="col-md-6">
-              <div class="detail-item">
-                <i class="bi bi-door-closed text-primary"></i>
-                <div class="detail-content">
-                  <span class="detail-label">Bedrooms</span>
-                  <span class="detail-value" id="bedroomsCount">0</span>
-                </div>
+              <div class="room-feature">
+                <i class="bi bi-door-closed"></i>
+                <span><strong id="bedroomsCount">0</strong> Bedrooms</span>
               </div>
-              <div class="detail-item">
-                <i class="bi bi-droplet text-primary"></i>
-                <div class="detail-content">
-                  <span class="detail-label">Bathrooms</span>
-                  <span class="detail-value" id="bathroomsCount">0</span>
-                </div>
+              <div class="room-feature">
+                <i class="bi bi-droplet"></i>
+                <span><strong id="bathroomsCount">0</strong> Bathrooms</span>
               </div>
-              <div class="detail-item">
-                <i class="bi bi-geo-alt text-primary"></i>
-                <div class="detail-content">
-                  <span class="detail-label">Location</span>
-                  <span class="detail-value" id="propertyLocation">Loading...</span>
-                </div>
+              <div class="room-feature">
+                <i class="bi bi-geo-alt"></i>
+                <span id="propertyLocation">Loading location...</span>
               </div>
             </div>
             <div class="col-md-6">
-              <div class="detail-item">
-                <i class="bi bi-building text-primary"></i>
-                <div class="detail-content">
-                  <span class="detail-label">Property Type</span>
-                  <span class="detail-value" id="propertyType">Loading...</span>
-                </div>
+              <div class="room-feature">
+                <i class="bi bi-building"></i>
+                <span id="propertyType">Loading type...</span>
               </div>
-              <div class="detail-item">
-                <i class="bi bi-people text-primary"></i>
-                <div class="detail-content">
-                  <span class="detail-label">Gender Preference</span>
-                  <span class="detail-value" id="propertyGender">Loading...</span>
-                </div>
+              <div class="room-feature">
+                <i class="bi bi-people"></i>
+                <span id="propertyGender">Loading gender preference...</span>
               </div>
-              <div class="detail-item">
-                <i class="bi bi-award text-primary"></i>
-                <div class="detail-content">
-                  <span class="detail-label">Accreditation</span>
-                  <span class="detail-value" id="propertyAccreditation">Loading...</span>
-                </div>
+              <div class="room-feature">
+                <i class="bi bi-award"></i>
+                <span id="propertyAccreditation">Loading accreditation...</span>
               </div>
             </div>
           </div>
@@ -1934,102 +1748,55 @@ function enhanceForShortTermContext() {
 
     // ============ UI UPDATES ============
 
-    // Enhanced property display function
-function updatePropertyDisplay() {
-    if (!currentProperty) return;
+    function updatePropertyDisplay() {
+        if (!currentProperty) return;
 
-    const propertyStatus = getPropertyStatus(currentProperty);
-    const statusInfo = statusConfig[propertyStatus] || statusConfig.available;
-    const genderInfo = genderConfig[currentProperty.genderPreference] || genderConfig.unisex;
-    const accreditationInfo = accreditationConfig[currentProperty.accreditation] || accreditationConfig.self;
+        const propertyStatus = getPropertyStatus(currentProperty);
+        const statusInfo = statusConfig[propertyStatus] || statusConfig.available;
+        const genderInfo = genderConfig[currentProperty.genderPreference] || genderConfig.unisex;
+        const accreditationInfo = accreditationConfig[currentProperty.accreditation] || accreditationConfig.self;
 
-    // Update main title and breadcrumb (avoid duplicates)
-    const propertyTitle = currentProperty.title;
-    document.getElementById('propertyTitle').textContent = propertyTitle;
-    document.getElementById('propertyBreadcrumb').textContent = propertyTitle.length > 30 ? 
-        propertyTitle.substring(0, 30) + '...' : propertyTitle;
+        document.getElementById('propertyTitle').textContent = currentProperty.title;
+        document.getElementById('propertyBreadcrumb').textContent = currentProperty.title;
+        document.getElementById('propertyPrice').textContent = `R${currentProperty.price}`;
+        document.getElementById('propertyDescription').textContent = currentProperty.description;
+        
+        document.getElementById('propertyLocation').textContent = `${currentProperty.location.city}, ${currentProperty.location.state}`;
+        document.getElementById('propertyFullAddress').textContent = `${currentProperty.location.address}, ${currentProperty.location.city}, ${currentProperty.location.state} ${currentProperty.location.zipCode}`;
+        
+        document.getElementById('bedroomsCount').textContent = currentProperty.bedrooms;
+        document.getElementById('bathroomsCount').textContent = currentProperty.bathrooms;
+        
+        document.getElementById('propertyTypeBadge').textContent = currentProperty.propertyType;
+        document.getElementById('propertyType').textContent = currentProperty.propertyType;
+        
+        const statusBadge = document.getElementById('propertyStatusBadge');
+        statusBadge.textContent = statusInfo.text;
+        statusBadge.className = `badge bg-${statusInfo.class}`;
+        
+        const genderBadge = document.getElementById('propertyGenderBadge');
+        genderBadge.textContent = genderInfo.text;
+        genderBadge.className = `badge bg-${genderInfo.class}`;
+        document.getElementById('propertyGender').textContent = genderInfo.text === 'Unisex' ? 'Any Gender' : genderInfo.text + ' Only';
+        
+        const accreditationBadge = document.getElementById('propertyAccreditationBadge');
+        accreditationBadge.textContent = accreditationInfo.text;
+        accreditationBadge.className = `badge bg-${accreditationInfo.class}`;
+        document.getElementById('propertyAccreditation').textContent = accreditationInfo.text === 'Accredited' ? 'University Accredited' : 'Private Accommodation';
+        
+        updateImageGallery();
+        updateAmenitiesDisplay();
+        updateLandlordDisplay();
+        updateReviewsDisplay();
+        updateBookingButton(propertyStatus);
+        updateLocationMap();
 
-    // Handle pricing display
-    updatePricingDisplay();
-
-    // Update location
-    document.getElementById('propertyLocation').textContent = 
-        `${currentProperty.location.city}, ${currentProperty.location.state}`;
-    document.getElementById('propertyLocationShort').textContent = 
-        `${currentProperty.location.city}, ${currentProperty.location.state}`;
-    
-    document.getElementById('propertyFullAddress').textContent = 
-        `${currentProperty.location.address}, ${currentProperty.location.city}, ${currentProperty.location.state} ${currentProperty.location.zipCode}`;
-    
-    // Update counts
-    document.getElementById('bedroomsCount').textContent = currentProperty.bedrooms;
-    document.getElementById('bathroomsCount').textContent = currentProperty.bathrooms;
-    
-    // Update badges and details
-    document.getElementById('propertyTypeBadge').textContent = currentProperty.propertyType;
-    document.getElementById('propertyType').textContent = currentProperty.propertyType;
-    
-    const statusBadge = document.getElementById('propertyStatusBadge');
-    statusBadge.textContent = statusInfo.text;
-    statusBadge.className = `badge bg-${statusInfo.class}`;
-    
-    const genderBadge = document.getElementById('propertyGenderBadge');
-    genderBadge.textContent = genderInfo.text;
-    genderBadge.className = `badge bg-${genderInfo.class}`;
-    document.getElementById('propertyGender').textContent = genderInfo.text === 'Unisex' ? 'Any Gender' : genderInfo.text + ' Only';
-    
-    const accreditationBadge = document.getElementById('propertyAccreditationBadge');
-    accreditationBadge.textContent = accreditationInfo.text;
-    accreditationBadge.className = `badge bg-${accreditationInfo.class}`;
-    document.getElementById('propertyAccreditation').textContent = accreditationInfo.text === 'Accredited' ? 'University Accredited' : 'Private Accommodation';
-    
-    updateImageGallery();
-    updateAmenitiesDisplay();
-    updateLandlordDisplay();
-    updateReviewsDisplay();
-    updateBookingButton(propertyStatus);
-    updateLocationMap();
-    
-    // Handle short-term tenant display
-    detectUserTypeAndModifyDisplay();
-    
+         // === ADD THIS LINE HERE ===
     setTimeout(() => {
         updateVisibleReviewsCount();
     }, 500);
-}
-
-// Pricing display function
-function updatePricingDisplay() {
-    const priceElement = document.getElementById('propertyPrice');
-    const periodElement = document.getElementById('pricePeriod');
-    const minStayElement = document.getElementById('minimumStayInfo');
-    const minStayDaysElement = document.getElementById('minStayDays');
-    
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const isShortTermTenant = user.role === 'tenant';
-    
-    if (isShortTermTenant && currentProperty && currentProperty.acceptsShortTerm) {
-        // Short-term pricing
-        if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
-            priceElement.textContent = `R${currentProperty.shortTermPrice}`;
-            periodElement.textContent = 'per day';
-            
-            // Show minimum stay
-            const minStay = currentProperty.shortTermMinStay || 1;
-            minStayDaysElement.textContent = minStay;
-            if (minStayElement) minStayElement.style.display = 'block';
-        } else {
-            priceElement.textContent = 'Negotiable';
-            periodElement.textContent = 'Contact for pricing';
-            if (minStayElement) minStayElement.style.display = 'none';
-        }
-    } else {
-        // Regular pricing
-        priceElement.textContent = `R${currentProperty.price}`;
-        periodElement.textContent = 'per month';
-        if (minStayElement) minStayElement.style.display = 'none';
+    // ==========================
     }
-}
 
     function updateLocationMap() {
         const mapContainer = document.getElementById('propertyMap');
