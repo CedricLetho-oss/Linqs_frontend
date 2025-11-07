@@ -972,26 +972,32 @@
         });
       }
 
-      // NEW: Role-based price display
+      // FIXED: Role-based price display
       getRoleBasedPriceDisplay(property) {
-        if (this.userRole === 'tenant' && property.acceptsShortTerm) {
-          if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
-            return {
-              text: `R${property.shortTermPrice}/day`,
-              className: 'text-success'
-            };
+          if (this.userRole === 'tenant' && property.acceptsShortTerm) {
+              if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
+                  return {
+                      text: `R${property.shortTermPrice}/day`,
+                      className: 'text-success'
+                  };
+              } else if (property.shortTermPricing === 'negotiable') {
+                  return {
+                      text: 'Price negotiable (short-term)',
+                      className: 'text-success'
+                  };
+              } else {
+                  // Fallback to monthly pricing if short-term details are incomplete
+                  return {
+                      text: `R${property.price}/month`,
+                      className: 'text-primary'
+                  };
+              }
           } else {
-            return {
-              text: 'Price negotiable (short-term)',
-              className: 'text-success'
-            };
+              return {
+                  text: `R${property.price}/month`,
+                  className: 'text-primary'
+              };
           }
-        } else {
-          return {
-            text: `R${property.price}/month`,
-            className: 'text-primary'
-          };
-        }
       }
 
       // NEW: Role-based features display
@@ -1230,249 +1236,318 @@
         });
       }
 
-      // NEW: Role-based comparison features
-      getRoleBasedComparisonFeatures() {
-        const baseFeatures = [
-          {
+      // FIXED: Role-based comparison features with proper negotiable handling
+getRoleBasedComparisonFeatures() {
+    const baseFeatures = [
+        {
             name: 'Price',
             getValue: (prop) => {
-              if (this.userRole === 'tenant' && prop.acceptsShortTerm && prop.shortTermPricing === 'fixed' && prop.shortTermPrice > 0) {
-                return `R${prop.shortTermPrice}/day`;
-              }
-              return `R${prop.price}/month`;
+                if (this.userRole === 'tenant' && prop.acceptsShortTerm) {
+                    if (prop.shortTermPricing === 'fixed' && prop.shortTermPrice > 0) {
+                        return `R${prop.shortTermPrice}/day`;
+                    } else if (prop.shortTermPricing === 'negotiable') {
+                        return 'Price negotiable';
+                    }
+                }
+                return `R${prop.price}/month`;
             },
-            type: 'numeric',
-            better: 'lower'
-          },
-          {
+            type: 'text' // Changed to text since we have mixed types
+        },
+        {
             name: 'Bedrooms',
             getValue: (prop) => this.getSafeNumber(prop.bedrooms),
             type: 'numeric',
             better: 'higher'
-          },
-          {
+        },
+        {
             name: 'Bathrooms',
             getValue: (prop) => this.getSafeNumber(prop.bathrooms),
             type: 'numeric',
             better: 'higher'
-          },
-          {
+        },
+        {
             name: 'Amenities Count',
             getValue: (prop) => prop.amenities ? prop.amenities.length : 0,
             type: 'numeric',
             better: 'higher'
-          },
-          {
+        },
+        {
             name: 'Property Type',
             getValue: (prop) => prop.propertyType ? prop.propertyType.charAt(0).toUpperCase() + prop.propertyType.slice(1) : 'Not specified',
             type: 'text'
-          },
-          {
+        },
+        {
             name: 'Location',
             getValue: (prop) => prop.location?.address || 'Not specified',
             type: 'text'
-          }
-        ];
+        }
+    ];
 
-        // Add role-specific features
-        if (this.userRole === 'tenant') {
-          baseFeatures.push({
+    // Add role-specific features
+    if (this.userRole === 'tenant') {
+        baseFeatures.push({
             name: 'Short-term Available',
             getValue: (prop) => prop.acceptsShortTerm ? 'Yes' : 'No',
             type: 'text'
-          });
-          if (this.selectedProperties.some(p => p.acceptsShortTerm && p.shortTermMinStay)) {
+        });
+        
+        if (this.selectedProperties.some(p => p.acceptsShortTerm && p.shortTermMinStay)) {
             baseFeatures.push({
-              name: 'Minimum Stay',
-              getValue: (prop) => prop.acceptsShortTerm && prop.shortTermMinStay ? `${prop.shortTermMinStay} days` : 'N/A',
-              type: 'numeric',
-              better: 'lower'
+                name: 'Minimum Stay',
+                getValue: (prop) => prop.acceptsShortTerm && prop.shortTermMinStay ? `${prop.shortTermMinStay} days` : 'N/A',
+                type: 'numeric',
+                better: 'lower'
             });
-          }
-        } else {
-          // Student-specific features
-          baseFeatures.push(
+        }
+        
+        // Add pricing type for tenants
+        baseFeatures.push({
+            name: 'Pricing Type',
+            getValue: (prop) => {
+                if (prop.acceptsShortTerm) {
+                    return prop.shortTermPricing === 'fixed' ? 'Fixed daily rate' : 
+                           prop.shortTermPricing === 'negotiable' ? 'Negotiable' : 'Monthly only';
+                }
+                return 'Monthly only';
+            },
+            type: 'text'
+        });
+    } else {
+        // Student-specific features
+        baseFeatures.push(
             {
-              name: 'Gender Preference',
-              getValue: (prop) => this.getGenderText(prop.genderPreference),
-              type: 'text'
+                name: 'Gender Preference',
+                getValue: (prop) => this.getGenderText(prop.genderPreference),
+                type: 'text'
             },
             {
-              name: 'Accreditation',
-              getValue: (prop) => this.getAccreditationText(prop.accreditation),
-              type: 'text'
+                name: 'Accreditation',
+                getValue: (prop) => this.getAccreditationText(prop.accreditation),
+                type: 'text'
             }
-          );
-        }
-
-        baseFeatures.push({
-          name: 'All Amenities',
-          getValue: (prop) => prop.amenities ? prop.amenities.join(', ') : 'None',
-          type: 'text'
-        });
-
-        return baseFeatures;
-      }
-
-      // IMPROVED: Enhanced summary generation with role-based insights
-      generateSummary() {
-        const insightsContainer = document.getElementById('key-insights');
-        const summaryContainer = document.getElementById('comparison-summary');
-        
-        if (this.selectedProperties.length < 2) return;
-
-        // Calculate key metrics
-        const cheapest = this.getCheapestProperty();
-        const mostBedrooms = this.selectedProperties.reduce((prev, current) => {
-          const prevBedrooms = parseInt(prev.bedrooms) || 0;
-          const currentBedrooms = parseInt(current.bedrooms) || 0;
-          return prevBedrooms > currentBedrooms ? prev : current;
-        });
-        
-        const mostBathrooms = this.selectedProperties.reduce((prev, current) => {
-          const prevBathrooms = parseInt(prev.bathrooms) || 0;
-          const currentBathrooms = parseInt(current.bathrooms) || 0;
-          return prevBathrooms > currentBathrooms ? prev : current;
-        });
-        
-        const mostAmenities = this.selectedProperties.reduce((prev, current) => {
-          const prevAmenities = prev.amenities ? prev.amenities.length : 0;
-          const currentAmenities = current.amenities ? current.amenities.length : 0;
-          return prevAmenities > currentAmenities ? prev : current;
-        });
-
-        const accreditedProperties = this.selectedProperties.filter(p => p.accreditation === 'accredited');
-        const shortTermProperties = this.selectedProperties.filter(p => p.acceptsShortTerm);
-        const maleOnlyProperties = this.selectedProperties.filter(p => p.genderPreference === 'male');
-        const femaleOnlyProperties = this.selectedProperties.filter(p => p.genderPreference === 'female');
-        const unisexProperties = this.selectedProperties.filter(p => !p.genderPreference || p.genderPreference === 'unisex');
-
-        // Calculate price range
-        const prices = this.selectedProperties.map(p => p.price);
-        const priceRange = Math.max(...prices) - Math.min(...prices);
-        const hasSignificantPriceDifference = priceRange > 1000;
-
-        // Generate role-based key insights
-        insightsContainer.innerHTML = this.generateRoleBasedInsights(
-          cheapest, mostAmenities, mostBedrooms, accreditedProperties, shortTermProperties
         );
+    }
 
-        // Generate detailed summary
-        const recommendation = this.generateRoleBasedRecommendation(
-          cheapest, mostAmenities, hasSignificantPriceDifference, priceRange,
-          accreditedProperties, shortTermProperties
-        );
+    baseFeatures.push({
+        name: 'All Amenities',
+        getValue: (prop) => prop.amenities ? prop.amenities.join(', ') : 'None',
+        type: 'text'
+    });
 
-        summaryContainer.innerHTML = this.generateRoleBasedSummary(
-          recommendation, prices, unisexProperties, maleOnlyProperties, 
-          femaleOnlyProperties, accreditedProperties, shortTermProperties,
-          cheapest
-        );
-      }
+    return baseFeatures;
+}
 
-      // NEW: Get cheapest property based on user role
-      getCheapestProperty() {
-        if (this.userRole === 'tenant') {
-          // For tenants, consider short-term pricing if available
-          const propertiesWithShortTerm = this.selectedProperties.filter(p => 
-            p.acceptsShortTerm && p.shortTermPricing === 'fixed' && p.shortTermPrice > 0
-          );
-          
-          if (propertiesWithShortTerm.length > 0) {
-            return propertiesWithShortTerm.reduce((prev, current) => 
-              prev.shortTermPrice < current.shortTermPrice ? prev : current
-            );
-          }
-        }
+
+     // FIXED: Enhanced summary generation with proper price range calculation
+generateSummary() {
+    const insightsContainer = document.getElementById('key-insights');
+    const summaryContainer = document.getElementById('comparison-summary');
+    
+    if (this.selectedProperties.length < 2) return;
+
+    // Calculate key metrics with negotiable handling
+    const cheapest = this.getCheapestProperty();
+    const mostBedrooms = this.selectedProperties.reduce((prev, current) => {
+        const prevBedrooms = parseInt(prev.bedrooms) || 0;
+        const currentBedrooms = parseInt(current.bedrooms) || 0;
+        return prevBedrooms > currentBedrooms ? prev : current;
+    });
+    
+    const mostBathrooms = this.selectedProperties.reduce((prev, current) => {
+        const prevBathrooms = parseInt(prev.bathrooms) || 0;
+        const currentBathrooms = parseInt(current.bathrooms) || 0;
+        return prevBathrooms > currentBathrooms ? prev : current;
+    });
+    
+    const mostAmenities = this.selectedProperties.reduce((prev, current) => {
+        const prevAmenities = prev.amenities ? prev.amenities.length : 0;
+        const currentAmenities = current.amenities ? current.amenities.length : 0;
+        return prevAmenities > currentAmenities ? prev : current;
+    });
+
+    const accreditedProperties = this.selectedProperties.filter(p => p.accreditation === 'accredited');
+    const shortTermProperties = this.selectedProperties.filter(p => p.acceptsShortTerm);
+    const negotiableProperties = this.selectedProperties.filter(p => 
+        p.acceptsShortTerm && p.shortTermPricing === 'negotiable'
+    );
+    const fixedPriceProperties = this.selectedProperties.filter(p => 
+        p.acceptsShortTerm && p.shortTermPricing === 'fixed' && p.shortTermPrice > 0
+    );
+    const maleOnlyProperties = this.selectedProperties.filter(p => p.genderPreference === 'male');
+    const femaleOnlyProperties = this.selectedProperties.filter(p => p.genderPreference === 'female');
+    const unisexProperties = this.selectedProperties.filter(p => !p.genderPreference || p.genderPreference === 'unisex');
+
+    // FIXED: Calculate price range excluding negotiable properties
+    const pricesForRange = this.selectedProperties
+        .filter(p => !(this.userRole === 'tenant' && p.acceptsShortTerm && p.shortTermPricing === 'negotiable'))
+        .map(p => this.getPropertyPrice(p));
+    
+    let priceRangeText = 'Varied (some negotiable)';
+    if (pricesForRange.length > 0) {
+        const minPrice = Math.min(...pricesForRange);
+        const maxPrice = Math.max(...pricesForRange);
         
-        // Default to monthly pricing for students or if no short-term pricing available
-        return this.selectedProperties.reduce((prev, current) => 
-          prev.price < current.price ? prev : current
-        );
-      }
-
-      // NEW: Role-based insights generation
-      generateRoleBasedInsights(cheapest, mostAmenities, mostBedrooms, accreditedProperties, shortTermProperties) {
-        const insights = [];
-        
-        // Always show best value insight
-        insights.push(`
-          <div class="col-md-6 mb-3">
-            <div class="comparison-insight d-flex align-items-center">
-              <div class="insight-icon bg-success">
-                <i class="bi bi-currency-dollar text-white"></i>
-              </div>
-              <div>
-                <h6 class="mb-1">Best Value</h6>
-                <p class="mb-0 text-muted">${cheapest.title} at ${this.getRoleBasedPriceDisplay(cheapest).text}</p>
-              </div>
-            </div>
-          </div>
-        `);
-
-        // Most amenities insight
-        insights.push(`
-          <div class="col-md-6 mb-3">
-            <div class="comparison-insight d-flex align-items-center">
-              <div class="insight-icon bg-primary">
-                <i class="bi bi-grid-3x3 text-white"></i>
-              </div>
-              <div>
-                <h6 class="mb-1">Most Amenities</h6>
-                <p class="mb-0 text-muted">${mostAmenities.title} with ${mostAmenities.amenities ? mostAmenities.amenities.length : 0} features</p>
-              </div>
-            </div>
-          </div>
-        `);
-
-        // Most spacious insight
-        insights.push(`
-          <div class="col-md-6 mb-3">
-            <div class="comparison-insight d-flex align-items-center">
-              <div class="insight-icon bg-info">
-                <i class="bi bi-door-closed text-white"></i>
-              </div>
-              <div>
-                <h6 class="mb-1">Most Spacious</h6>
-                <p class="mb-0 text-muted">${mostBedrooms.title} with ${this.getSafeNumber(mostBedrooms.bedrooms)} bedrooms</p>
-              </div>
-            </div>
-          </div>
-        `);
-
-        // Role-specific insights
-        if (this.userRole === 'tenant') {
-          insights.push(`
-            <div class="col-md-6 mb-3">
-              <div class="comparison-insight d-flex align-items-center">
-                <div class="insight-icon bg-warning">
-                  <i class="bi bi-calendar-range text-white"></i>
-                </div>
-                <div>
-                  <h6 class="mb-1">Short-term Options</h6>
-                  <p class="mb-0 text-muted">${shortTermProperties.length} properties available for short-term stay</p>
-                </div>
-              </div>
-            </div>
-          `);
+        if (this.userRole === 'tenant' && fixedPriceProperties.length > 0) {
+            priceRangeText = `R${minPrice} - R${maxPrice}/day`;
         } else {
-          insights.push(`
-            <div class="col-md-6 mb-3">
-              <div class="comparison-insight d-flex align-items-center">
-                <div class="insight-icon bg-warning">
-                  <i class="bi bi-award text-white"></i>
+            priceRangeText = `R${minPrice} - R${maxPrice}/month`;
+        }
+    }
+
+    const hasNegotiablePrices = negotiableProperties.length > 0;
+    const hasSignificantPriceDifference = pricesForRange.length > 0 ? 
+        (Math.max(...pricesForRange) - Math.min(...pricesForRange)) > 1000 : false;
+
+    // Generate role-based key insights
+    insightsContainer.innerHTML = this.generateRoleBasedInsights(
+        cheapest, mostAmenities, mostBedrooms, accreditedProperties, 
+        shortTermProperties, negotiableProperties, fixedPriceProperties
+    );
+
+    // Generate detailed summary
+    const recommendation = this.generateRoleBasedRecommendation(
+        cheapest, mostAmenities, hasSignificantPriceDifference, 
+        accreditedProperties, shortTermProperties, negotiableProperties,
+        hasNegotiablePrices
+    );
+
+    summaryContainer.innerHTML = this.generateRoleBasedSummary(
+        recommendation, priceRangeText, unisexProperties, maleOnlyProperties, 
+        femaleOnlyProperties, accreditedProperties, shortTermProperties,
+        negotiableProperties, fixedPriceProperties, cheapest
+    );
+}
+
+      // FIXED: Get cheapest property with negotiable handling
+getCheapestProperty() {
+    if (this.userRole === 'tenant') {
+        // For tenants, consider short-term pricing if available and fixed
+        const propertiesWithFixedShortTerm = this.selectedProperties.filter(p => 
+            p.acceptsShortTerm && p.shortTermPricing === 'fixed' && p.shortTermPrice > 0
+        );
+        
+        if (propertiesWithFixedShortTerm.length > 0) {
+            return propertiesWithFixedShortTerm.reduce((prev, current) => 
+                prev.shortTermPrice < current.shortTermPrice ? prev : current
+            );
+        }
+    }
+    
+    // Default to monthly pricing for students or if no fixed short-term pricing available
+    // Filter out properties with negotiable pricing for price comparison
+    const propertiesWithMonthlyPricing = this.selectedProperties.filter(p => 
+        !(this.userRole === 'tenant' && p.acceptsShortTerm && p.shortTermPricing === 'negotiable')
+    );
+    
+    if (propertiesWithMonthlyPricing.length > 0) {
+        return propertiesWithMonthlyPricing.reduce((prev, current) => 
+            prev.price < current.price ? prev : current
+        );
+    }
+    
+    // Fallback: return first property if all are negotiable
+    return this.selectedProperties[0];
+}
+
+      // FIXED: Enhanced role-based insights with negotiable info
+generateRoleBasedInsights(cheapest, mostAmenities, mostBedrooms, accreditedProperties, shortTermProperties, negotiableProperties, fixedPriceProperties) {
+    const insights = [];
+    
+    // Always show best value insight
+    const cheapestPriceDisplay = this.getRoleBasedPriceDisplay(cheapest);
+    insights.push(`
+        <div class="col-md-6 mb-3">
+            <div class="comparison-insight d-flex align-items-center">
+                <div class="insight-icon bg-success">
+                    <i class="bi bi-currency-dollar text-white"></i>
                 </div>
                 <div>
-                  <h6 class="mb-1">Accredited Options</h6>
-                  <p class="mb-0 text-muted">${accreditedProperties.length} university accredited properties</p>
+                    <h6 class="mb-1">Best Value</h6>
+                    <p class="mb-0 text-muted">${cheapest.title} at ${cheapestPriceDisplay.text}</p>
                 </div>
-              </div>
             </div>
-          `);
-        }
+        </div>
+    `);
 
-        return insights.join('');
-      }
+    // Most amenities insight
+    insights.push(`
+        <div class="col-md-6 mb-3">
+            <div class="comparison-insight d-flex align-items-center">
+                <div class="insight-icon bg-primary">
+                    <i class="bi bi-grid-3x3 text-white"></i>
+                </div>
+                <div>
+                    <h6 class="mb-1">Most Amenities</h6>
+                    <p class="mb-0 text-muted">${mostAmenities.title} with ${mostAmenities.amenities ? mostAmenities.amenities.length : 0} features</p>
+                </div>
+            </div>
+        </div>
+    `);
+
+    // Most spacious insight
+    insights.push(`
+        <div class="col-md-6 mb-3">
+            <div class="comparison-insight d-flex align-items-center">
+                <div class="insight-icon bg-info">
+                    <i class="bi bi-door-closed text-white"></i>
+                </div>
+                <div>
+                    <h6 class="mb-1">Most Spacious</h6>
+                    <p class="mb-0 text-muted">${mostBedrooms.title} with ${this.getSafeNumber(mostBedrooms.bedrooms)} bedrooms</p>
+                </div>
+            </div>
+        </div>
+    `);
+
+    // Role-specific insights
+    if (this.userRole === 'tenant') {
+        if (negotiableProperties.length > 0) {
+            insights.push(`
+                <div class="col-md-6 mb-3">
+                    <div class="comparison-insight d-flex align-items-center">
+                        <div class="insight-icon bg-warning">
+                            <i class="bi bi-chat-dots text-white"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Negotiable Prices</h6>
+                            <p class="mb-0 text-muted">${negotiableProperties.length} properties with negotiable rates</p>
+                        </div>
+                    </div>
+                </div>
+            `);
+        } else if (shortTermProperties.length > 0) {
+            insights.push(`
+                <div class="col-md-6 mb-3">
+                    <div class="comparison-insight d-flex align-items-center">
+                        <div class="insight-icon bg-warning">
+                            <i class="bi bi-calendar-range text-white"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Short-term Options</h6>
+                            <p class="mb-0 text-muted">${shortTermProperties.length} properties available</p>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+    } else {
+        insights.push(`
+            <div class="col-md-6 mb-3">
+                <div class="comparison-insight d-flex align-items-center">
+                    <div class="insight-icon bg-warning">
+                        <i class="bi bi-award text-white"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Accredited Options</h6>
+                        <p class="mb-0 text-muted">${accreditedProperties.length} university accredited</p>
+                    </div>
+                </div>
+            </div>
+        `);
+    }
+
+    return insights.join('');
+}
 
       // NEW: Role-based recommendation generation
       generateRoleBasedRecommendation(cheapest, mostAmenities, hasSignificantPriceDifference, priceRange, accreditedProperties, shortTermProperties) {
@@ -1500,60 +1575,65 @@
         return recommendation;
       }
 
-      // NEW: Role-based summary generation
-      generateRoleBasedSummary(recommendation, prices, unisexProperties, maleOnlyProperties, femaleOnlyProperties, accreditedProperties, shortTermProperties, cheapest) {
-        return `
-          <div class="summary-highlight">
+      // FIXED: Enhanced role-based summary with negotiable handling
+generateRoleBasedSummary(recommendation, priceRangeText, unisexProperties, maleOnlyProperties, femaleOnlyProperties, accreditedProperties, shortTermProperties, negotiableProperties, fixedPriceProperties, cheapest) {
+    return `
+        <div class="summary-highlight">
             <h5 class="text-navy mb-3">🏆 Top Recommendation</h5>
             <p class="mb-0">${recommendation}</p>
-          </div>
-          
-          <div class="row mt-4">
+        </div>
+        
+        <div class="row mt-4">
             <div class="col-md-6">
-              <h6 class="text-navy mb-3">📊 Quick Stats</h6>
-              <ul class="list-unstyled">
-                <li class="mb-2"><i class="bi bi-currency-dollar text-success me-2"></i>Price Range: R${Math.min(...prices)} - R${Math.max(...prices)}</li>
-                <li class="mb-2"><i class="bi bi-grid-3x3 text-primary me-2"></i>Average Amenities: ${Math.round(this.selectedProperties.reduce((sum, p) => sum + (p.amenities ? p.amenities.length : 0), 0) / this.selectedProperties.length)}</li>
-                ${this.userRole === 'student' ? `
-                  <li class="mb-2"><i class="bi bi-people text-info me-2"></i>Gender Options: ${unisexProperties.length} Unisex, ${maleOnlyProperties.length} Male-only, ${femaleOnlyProperties.length} Female-only</li>
-                  <li><i class="bi bi-award text-warning me-2"></i>Accredited: ${accreditedProperties.length} of ${this.selectedProperties.length}</li>
-                ` : `
-                  <li><i class="bi bi-calendar-range text-warning me-2"></i>Short-term: ${shortTermProperties.length} of ${this.selectedProperties.length} available</li>
-                `}
-              </ul>
+                <h6 class="text-navy mb-3">📊 Quick Stats</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="bi bi-currency-dollar text-success me-2"></i>Price Range: ${priceRangeText}</li>
+                    <li class="mb-2"><i class="bi bi-grid-3x3 text-primary me-2"></i>Average Amenities: ${Math.round(this.selectedProperties.reduce((sum, p) => sum + (p.amenities ? p.amenities.length : 0), 0) / this.selectedProperties.length)}</li>
+                    ${this.userRole === 'student' ? `
+                        <li class="mb-2"><i class="bi bi-people text-info me-2"></i>Gender Options: ${unisexProperties.length} Unisex, ${maleOnlyProperties.length} Male-only, ${femaleOnlyProperties.length} Female-only</li>
+                        <li><i class="bi bi-award text-warning me-2"></i>Accredited: ${accreditedProperties.length} of ${this.selectedProperties.length}</li>
+                    ` : `
+                        <li class="mb-2"><i class="bi bi-calendar-range text-warning me-2"></i>Short-term: ${shortTermProperties.length} of ${this.selectedProperties.length}</li>
+                        ${negotiableProperties.length > 0 ? `<li><i class="bi bi-chat-dots text-info me-2"></i>Negotiable: ${negotiableProperties.length} properties</li>` : ''}
+                    `}
+                </ul>
             </div>
             <div class="col-md-6">
-              <h6 class="text-navy mb-3">💡 Decision Tips</h6>
-              <ul class="list-unstyled">
-                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Consider your budget and essential amenities</li>
-                ${this.userRole === 'student' ? `
-                  <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Check proximity to your campus</li>
-                  <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Verify accreditation for bursary eligibility</li>
-                ` : `
-                  <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Confirm short-term availability and minimum stay</li>
-                  <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Review flexible booking options</li>
-                `}
-                <li><i class="bi bi-check-circle text-success me-2"></i>Review amenities that matter most to you</li>
-              </ul>
+                <h6 class="text-navy mb-3">💡 Decision Tips</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Consider your budget and essential amenities</li>
+                    ${this.userRole === 'student' ? `
+                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Check proximity to your campus</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Verify accreditation for bursary eligibility</li>
+                    ` : `
+                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Confirm short-term availability and minimum stay</li>
+                        ${negotiableProperties.length > 0 ? `<li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Contact owners for negotiable rates</li>` : ''}
+                    `}
+                    <li><i class="bi bi-check-circle text-success me-2"></i>Review amenities that matter most to you</li>
+                </ul>
             </div>
-          </div>
-          
-          <div class="mt-4 p-3 bg-light rounded">
+        </div>
+        
+        <div class="mt-4 p-3 bg-light rounded">
             <h6 class="text-navy mb-2">Next Steps</h6>
             <p class="mb-0">
-              Ready to make a decision? <a href="property-details.html?id=${cheapest._id}" class="text-primary">View details for ${cheapest.title}</a> or 
-              <a href="my-favorites.html" class="text-primary">review all your favorites</a> before booking a viewing.
+                Ready to make a decision? <a href="property-details.html?id=${cheapest._id}" class="text-primary">View details for ${cheapest.title}</a> or 
+                <a href="my-favorites.html" class="text-primary">review all your favorites</a> before booking a viewing.
             </p>
-          </div>
-        `;
-      }
+        </div>
+    `;
+}
 
-      // NEW: Helper to get property price based on role
+      // FIXED: Helper to get property price with negotiable handling
       getPropertyPrice(property) {
-        if (this.userRole === 'tenant' && property.acceptsShortTerm && property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
-          return property.shortTermPrice;
-        }
-        return property.price;
+          if (this.userRole === 'tenant' && property.acceptsShortTerm) {
+              if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
+                  return property.shortTermPrice;
+              }
+              // Return a high number for negotiable properties so they're not considered "cheapest"
+              return 999999;
+          }
+          return property.price;
       }
 
       removeFromComparison(propertyId) {
