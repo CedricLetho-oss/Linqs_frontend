@@ -1152,130 +1152,200 @@
     }
 
     renderFavorites() {
-        const grid = document.getElementById('favorites-grid');
-        const emptyState = document.getElementById('empty-state');
-        const template = document.getElementById('favorite-template');
+    const grid = document.getElementById('favorites-grid');
+    const emptyState = document.getElementById('empty-state');
+    const template = document.getElementById('favorite-template');
 
-        grid.innerHTML = '';
+    grid.innerHTML = '';
 
-        if (this.favorites.length === 0) {
-            emptyState.classList.remove('d-none');
-            
-            // Show appropriate empty state message based on filter
-            const emptyTitle = emptyState.querySelector('h3');
-            const emptyText = emptyState.querySelector('p');
-            
-            if (this.priorityFilter !== 'all') {
-                emptyTitle.textContent = `No ${this.priorityFilter} priority favorites`;
-                emptyText.textContent = `You don't have any properties marked as ${this.priorityFilter} priority. Try changing your filter or update some favorites to ${this.priorityFilter} priority.`;
-            } else {
-                emptyTitle.textContent = 'No favorites yet';
-                emptyText.textContent = 'Start exploring properties and save your favorites to compare them later.';
-            }
-            
-            return;
+    if (this.favorites.length === 0) {
+        emptyState.classList.remove('d-none');
+        
+        // Show appropriate empty state message based on filter
+        const emptyTitle = emptyState.querySelector('h3');
+        const emptyText = emptyState.querySelector('p');
+        
+        if (this.priorityFilter !== 'all') {
+            emptyTitle.textContent = `No ${this.priorityFilter} priority favorites`;
+            emptyText.textContent = `You don't have any properties marked as ${this.priorityFilter} priority. Try changing your filter or update some favorites to ${this.priorityFilter} priority.`;
+        } else {
+            emptyTitle.textContent = 'No favorites yet';
+            emptyText.textContent = 'Start exploring properties and save your favorites to compare them later.';
+        }
+        
+        return;
+    }
+
+    emptyState.classList.add('d-none');
+
+    // Get current user role
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const userRole = currentUser.role || 'student';
+
+    this.favorites.forEach((favorite, index) => {
+        const clone = template.content.cloneNode(true);
+        const card = clone.querySelector('.favorite-card');
+        const property = favorite.property;
+
+        if (!property) {
+            console.warn('Favorite has no property data:', favorite);
+            return; // Skip favorites without property data
         }
 
-        emptyState.classList.add('d-none');
+        // Set priority class and badge
+        const priorityClass = `priority-${favorite.priority}`;
+        card.classList.add(priorityClass);
+        
+        const priorityBadge = card.querySelector('.priority-badge');
+        priorityBadge.textContent = favorite.priority.charAt(0).toUpperCase() + favorite.priority.slice(1);
+        priorityBadge.className = `badge priority-badge bg-${this.getPriorityColor(favorite.priority)}`;
 
-        this.favorites.forEach((favorite, index) => {
-            const clone = template.content.cloneNode(true);
-            const card = clone.querySelector('.favorite-card');
-            const property = favorite.property;
+        // CALL THE NEW METHOD: Set property details based on user role
+        this.setPropertyDetails(card, property, userRole, favorite);
 
-            // Set priority class and badge
-            const priorityClass = `priority-${favorite.priority}`;
-            card.classList.add(priorityClass);
-            
-            const priorityBadge = card.querySelector('.priority-badge');
-            priorityBadge.textContent = favorite.priority.charAt(0).toUpperCase() + favorite.priority.slice(1);
-            priorityBadge.className = `badge priority-badge bg-${this.getPriorityColor(favorite.priority)}`;
+        // Add recent badge if applicable
+        if (this.isRecent(favorite.createdAt)) {
+            const recentBadge = document.createElement('span');
+            recentBadge.className = 'badge recent-badge';
+            recentBadge.innerHTML = '<i class="bi bi-star-fill me-1"></i>Recent';
+            card.querySelector('.favorite-badge').after(recentBadge);
+        }
 
-            // Set property details
-            const imageContainer = card.querySelector('.image-container');
-            const img = card.querySelector('.favorite-image');
-
-            // FIX: Better image handling with fallbacks
-            if (property && property.images && property.images.length > 0) {
-                img.src = property.images[0];
-                img.alt = property.title || 'Property image';
-            } else {
-                // Use placeholder image if no image available
-                img.src = 'https://via.placeholder.com/400x300?text=No+Image+Available';
-                img.alt = 'No image available';
-                img.style.backgroundColor = '#f8f9fa';
-            }
-
-            card.querySelector('.property-title').textContent = property.title;
-            card.querySelector('.location-text').textContent = property.location?.address || 'Location not specified';
-            card.querySelector('.property-price').textContent = `R${property.price}/month`;
-            card.querySelector('.added-date').textContent = `Added ${new Date(favorite.createdAt).toLocaleDateString()}`;
-
-            // Set property features
-            card.querySelector('.bedrooms-count').textContent = property.bedrooms || 'N/A';
-            card.querySelector('.bathrooms-count').textContent = property.bathrooms || 'N/A';
-            card.querySelector('.gender-preference').textContent = this.getGenderText(property.genderPreference);
-
-            // Add recent badge if applicable
-            if (this.isRecent(favorite.createdAt)) {
-                const recentBadge = document.createElement('span');
-                recentBadge.className = 'badge recent-badge';
-                recentBadge.innerHTML = '<i class="bi bi-star-fill me-1"></i>Recent';
-                card.querySelector('.favorite-badge').after(recentBadge);
-            }
-
-            // Render amenities
-            const amenitiesContainer = card.querySelector('.property-amenities');
-            if (property.amenities && property.amenities.length > 0) {
-                property.amenities.slice(0, 3).forEach(amenity => {
-                    const span = document.createElement('span');
-                    span.className = 'badge bg-light text-dark me-1 mb-1';
-                    span.textContent = amenity;
-                    amenitiesContainer.appendChild(span);
-                });
-            }
-
-            // Render tags
-            const tagsContainer = card.querySelector('.tags-section');
-            if (favorite.tags && favorite.tags.length > 0) {
-                favorite.tags.forEach(tag => {
-                    const tagElement = document.createElement('span');
-                    tagElement.className = 'tag';
-                    tagElement.innerHTML = `<i class="bi bi-tag me-1"></i>${tag}`;
-                    tagsContainer.appendChild(tagElement);
-                });
-            } else {
-                tagsContainer.classList.add('d-none');
-            }
-
-            // Render notes
-            if (favorite.notes) {
-                const notesSection = card.querySelector('.notes-section');
-                notesSection.classList.remove('d-none');
-                card.querySelector('.notes-text').textContent = favorite.notes;
-            }
-
-            // Add event listeners
-            card.querySelector('.view-property').addEventListener('click', () => {
-                window.location.href = `property-details.html?id=${property._id}`;
+        // Render amenities
+        const amenitiesContainer = card.querySelector('.property-amenities');
+        if (property.amenities && property.amenities.length > 0) {
+            property.amenities.slice(0, 3).forEach(amenity => {
+                const span = document.createElement('span');
+                span.className = 'badge bg-light text-dark me-1 mb-1';
+                span.textContent = amenity;
+                amenitiesContainer.appendChild(span);
             });
+        }
 
-            card.querySelector('.edit-favorite').addEventListener('click', () => {
-                this.editFavorite(favorite);
+        // Render tags
+        const tagsContainer = card.querySelector('.tags-section');
+        if (favorite.tags && favorite.tags.length > 0) {
+            favorite.tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.innerHTML = `<i class="bi bi-tag me-1"></i>${tag}`;
+                tagsContainer.appendChild(tagElement);
             });
+        } else {
+            tagsContainer.classList.add('d-none');
+        }
 
-            card.querySelector('.remove-favorite').addEventListener('click', () => {
-                this.removeFavorite(favorite._id);
-            });
+        // Render notes
+        if (favorite.notes) {
+            const notesSection = card.querySelector('.notes-section');
+            notesSection.classList.remove('d-none');
+            card.querySelector('.notes-text').textContent = favorite.notes;
+        }
 
-            // Add animation delay for staggered effect
-            card.style.animationDelay = `${index * 0.1}s`;
-            
-            grid.appendChild(clone);
+        // Add event listeners
+        card.querySelector('.view-property').addEventListener('click', () => {
+            window.location.href = `property-details.html?id=${property._id}`;
         });
 
-        this.hideLoading();
+        card.querySelector('.edit-favorite').addEventListener('click', () => {
+            this.editFavorite(favorite);
+        });
+
+        card.querySelector('.remove-favorite').addEventListener('click', () => {
+            this.removeFavorite(favorite._id);
+        });
+
+        // Add animation delay for staggered effect
+        card.style.animationDelay = `${index * 0.1}s`;
+        
+        grid.appendChild(clone);
+    });
+
+    this.hideLoading();
+}
+
+// UPDATED: Set property details based on user role
+setPropertyDetails(card, property, userRole, favorite) {
+    const imageContainer = card.querySelector('.image-container');
+    const img = card.querySelector('.favorite-image');
+
+    // Image handling
+    if (property && property.images && property.images.length > 0) {
+        img.src = property.images[0];
+        img.alt = property.title || 'Property image';
+    } else {
+        img.src = 'https://via.placeholder.com/400x300?text=No+Image+Available';
+        img.alt = 'No image available';
+        img.style.backgroundColor = '#f8f9fa';
     }
+
+    card.querySelector('.property-title').textContent = property.title;
+    card.querySelector('.location-text').textContent = property.location?.address || 'Location not specified';
+    
+    // ROLE-BASED PRICING DISPLAY
+    const priceElement = card.querySelector('.property-price');
+    if (userRole === 'tenant' && property.acceptsShortTerm) {
+        if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
+            priceElement.textContent = `R${property.shortTermPrice}/day`;
+            priceElement.className = 'property-price fw-bold text-warning mb-3';
+            
+            // Add minimum stay info
+            const minStayInfo = document.createElement('small');
+            minStayInfo.className = 'text-muted d-block';
+            minStayInfo.textContent = `Minimum ${property.shortTermMinStay || 1} days`;
+            priceElement.parentNode.appendChild(minStayInfo);
+        } else {
+            priceElement.textContent = 'Price negotiable (short-term)';
+            priceElement.className = 'property-price fw-bold text-info mb-3';
+        }
+        
+        // Add short-term badge
+        const shortTermBadge = document.createElement('span');
+        shortTermBadge.className = 'badge bg-warning ms-2';
+        shortTermBadge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term';
+        card.querySelector('.property-title').parentNode.appendChild(shortTermBadge);
+    } else {
+        // Student pricing (original behavior)
+        priceElement.textContent = `R${property.price}/month`;
+        priceElement.className = 'property-price fw-bold text-primary mb-3';
+    }
+
+    // Set property features (hide gender and accreditation for tenants)
+    const bedroomsCount = card.querySelector('.bedrooms-count');
+    const bathroomsCount = card.querySelector('.bathrooms-count');
+    const genderPreference = card.querySelector('.gender-preference');
+    
+    bedroomsCount.textContent = property.bedrooms || 'N/A';
+    bathroomsCount.textContent = property.bathrooms || 'N/A';
+    
+    if (userRole === 'tenant') {
+        // Hide gender preference and show short-term info for tenants
+        genderPreference.style.display = 'none';
+        // Modify the features section for tenants
+        card.querySelector('.property-features').innerHTML = `
+            <small class="text-muted">
+                <i class="bi bi-door-closed me-1"></i>${property.bedrooms || 'N/A'} beds • 
+                <i class="bi bi-badge-wc me-1"></i>${property.bathrooms || 'N/A'} baths •
+                <i class="bi bi-calendar me-1"></i>Short-term available
+            </small>
+        `;
+    } else {
+        // Student view (original)
+        genderPreference.textContent = this.getGenderText(property.genderPreference);
+        genderPreference.style.display = 'inline';
+    }
+
+    // Set added date
+    card.querySelector('.added-date').textContent = `Added ${new Date(favorite.createdAt).toLocaleDateString()}`;
+
+    // Add recent badge if applicable
+    if (this.isRecent(favorite.createdAt)) {
+        const recentBadge = document.createElement('span');
+        recentBadge.className = 'badge recent-badge';
+        recentBadge.innerHTML = '<i class="bi bi-star-fill me-1"></i>Recent';
+        card.querySelector('.favorite-badge').after(recentBadge);
+    }
+}
 
     // Helper function to format gender text
     getGenderText(genderPreference) {
