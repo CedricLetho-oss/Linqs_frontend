@@ -793,6 +793,8 @@
         this.favorites = [];
         this.selectedProperties = [];
         this.maxSelection = 4;
+        this.currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+        this.userRole = this.currentUser.role || 'student';
         
         this.init();
       }
@@ -815,78 +817,78 @@
       }
 
       async loadFavorites() {
-    this.showLoading();
-    
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = 'authorization.html';
-            return;
-        }
-
-        // Get property IDs from URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const propertyIds = urlParams.getAll('id');
+        this.showLoading();
         
-        // Fetch all favorites
-        let url = `${API_BASE_URL}/favorites?limit=50`;
-        
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'authorization.html';
+                return;
             }
-        });
 
-        if (response.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = 'authorization.html';
-            return;
-        }
+            // Get property IDs from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const propertyIds = urlParams.getAll('id');
+            
+            // Fetch all favorites
+            let url = `${API_BASE_URL}/favorites?limit=50`;
+            
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch favorites: ${response.status}`);
-        }
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = 'authorization.html';
+                return;
+            }
 
-        const data = await response.json();
-        
-        if (data.success) {
-            let favorites = data.data || data.favorites || [];
-            console.log('Favorites data:', favorites);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch favorites: ${response.status}`);
+            }
+
+            const data = await response.json();
             
-            // FIX: Filter out favorites with null properties and ensure property has _id
-            favorites = favorites.filter(favorite => 
-                favorite && 
-                favorite.property && 
-                favorite.property._id && 
-                typeof favorite.property._id === 'string'
-            );
-            
-            console.log('Filtered favorites:', favorites);
-            
-            // Filter to matching IDs if provided in URL
-            if (propertyIds.length > 0) {
+            if (data.success) {
+                let favorites = data.data || data.favorites || [];
+                console.log('Favorites data:', favorites);
+                
+                // FIX: Filter out favorites with null properties and ensure property has _id
                 favorites = favorites.filter(favorite => 
-                    propertyIds.includes(favorite.property._id)
+                    favorite && 
+                    favorite.property && 
+                    favorite.property._id && 
+                    typeof favorite.property._id === 'string'
                 );
+                
+                console.log('Filtered favorites:', favorites);
+                
+                // Filter to matching IDs if provided in URL
+                if (propertyIds.length > 0) {
+                    favorites = favorites.filter(favorite => 
+                        propertyIds.includes(favorite.property._id)
+                    );
+                }
+                
+                this.favorites = favorites;
+                this.renderSelection();
+                
+                // Auto-select properties from URL if provided
+                if (propertyIds.length > 0 && favorites.length > 0) {
+                    this.autoSelectProperties(propertyIds);
+                }
+            } else {
+                throw new Error(data.message || 'Unknown error occurred');
             }
-            
-            this.favorites = favorites;
-            this.renderSelection();
-            
-            // Auto-select properties from URL if provided
-            if (propertyIds.length > 0 && favorites.length > 0) {
-                this.autoSelectProperties(propertyIds);
-            }
-        } else {
-            throw new Error(data.message || 'Unknown error occurred');
+        } catch (error) {
+            console.error('Error loading favorites:', error);
+            this.showError('Failed to load favorites. Please try again.');
         }
-    } catch (error) {
-        console.error('Error loading favorites:', error);
-        this.showError('Failed to load favorites. Please try again.');
     }
-}
 
       autoSelectProperties(propertyIds) {
         const idsToSelect = propertyIds.slice(0, this.maxSelection);
@@ -933,6 +935,9 @@
           const col = document.createElement('div');
           col.className = 'col-md-6 col-lg-3 mb-4';
           
+          // Get role-based price display
+          const priceDisplay = this.getRoleBasedPriceDisplay(property);
+          
           col.innerHTML = `
             <div class="selection-card ${isSelected ? 'selected' : ''}" data-property-id="${property._id}">
               <!-- FIXED: Consistent image container -->
@@ -944,13 +949,10 @@
               <p class="property-location text-muted small mb-2">
                 <i class="bi bi-geo-alt"></i> ${property.location?.address || 'Location not specified'}
               </p>
-              <p class="property-price fw-bold text-primary mb-3">R${property.price}/month</p>
+              <p class="property-price fw-bold ${priceDisplay.className} mb-3">${priceDisplay.text}</p>
               <div class="property-features mb-3">
                 <small class="text-muted">
-                  <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds • 
-                  <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths •
-                  <i class="bi bi-people me-1"></i>${this.getGenderText(property.genderPreference)} •
-                  <i class="bi bi-award me-1"></i>${this.getAccreditationText(property.accreditation)}
+                  ${this.getRoleBasedFeatures(property)}
                 </small>
               </div>
               <div class="selection-indicator">
@@ -968,6 +970,48 @@
           
           container.appendChild(col);
         });
+      }
+
+      // NEW: Role-based price display
+      getRoleBasedPriceDisplay(property) {
+        if (this.userRole === 'tenant' && property.acceptsShortTerm) {
+          if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
+            return {
+              text: `R${property.shortTermPrice}/day`,
+              className: 'text-success'
+            };
+          } else {
+            return {
+              text: 'Price negotiable (short-term)',
+              className: 'text-success'
+            };
+          }
+        } else {
+          return {
+            text: `R${property.price}/month`,
+            className: 'text-primary'
+          };
+        }
+      }
+
+      // NEW: Role-based features display
+      getRoleBasedFeatures(property) {
+        if (this.userRole === 'tenant') {
+          // Tenant view - focus on short-term availability
+          return `
+            <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds • 
+            <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths •
+            <i class="bi bi-calendar me-1"></i>Short-term available
+          `;
+        } else {
+          // Student view - include gender and accreditation
+          return `
+            <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds • 
+            <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths •
+            <i class="bi bi-people me-1"></i>${this.getGenderText(property.genderPreference)} •
+            <i class="bi bi-award me-1"></i>${this.getAccreditationText(property.accreditation)}
+          `;
+        }
       }
 
       getSafeNumber(value) {
@@ -1037,81 +1081,90 @@
       }
 
       renderPropertyCards() {
-  const container = document.getElementById('property-cards');
-  container.innerHTML = '';
-  
-  this.selectedProperties.forEach((property, index) => {
-    const col = document.createElement('div');
-    col.className = `col-md-6 ${this.selectedProperties.length > 2 ? 'col-lg-3' : 'col-lg-6'} mb-4`;
-    
-    const genderText = this.getGenderText(property.genderPreference);
-    const accreditationText = this.getAccreditationText(property.accreditation);
-    const amenitiesCount = property.amenities ? property.amenities.length : 0;
-    
-    col.innerHTML = `
-      <div class="comparison-card">
-        <!-- FIXED: Consistent image container -->
-        <div class="property-image-container mb-3">
-          <img src="${property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/300x200/1e3a8a/ffffff?text=Property+Image'}" 
-              alt="${property.title}" class="property-image">
-        </div>
-        <h5 class="property-title">${property.title}</h5>
-        <p class="property-location text-muted small mb-2">
-          <i class="bi bi-geo-alt"></i> ${property.location?.address || 'Location not specified'}
-        </p>
-        <p class="property-price fw-bold text-primary mb-3">R${property.price}/month</p>
+        const container = document.getElementById('property-cards');
+        container.innerHTML = '';
         
-        <div class="property-features mb-3">
-          <div class="d-flex flex-wrap gap-2">
-            <span class="badge bg-light text-dark">
-              <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds
-            </span>
-            <span class="badge bg-light text-dark">
-              <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths
-            </span>
-            <span class="badge bg-light text-dark">
-              <i class="bi bi-people me-1"></i>${genderText}
-            </span>
-            <span class="badge bg-light text-dark">
-              <i class="bi bi-award me-1"></i>${accreditationText}
-            </span>
-            <span class="badge amenity-count-badge">
-              <i class="bi bi-grid-3x3 me-1"></i>${amenitiesCount} amenities
-            </span>
-          </div>
-        </div>
-        
-        <div class="property-amenities mb-3">
-          <h6 class="text-navy mb-2"> Amenities</h6>
-          <div class="d-flex flex-wrap gap-1">
-            ${property.amenities && property.amenities.length > 0 ? 
-              property.amenities.map(amenity => `
-                <span class="badge bg-primary">${amenity}</span>
-              `).join('') : 
-              '<small class="text-muted">No amenities listed</small>'
-            }
-          </div>
-        </div>
-        
-        <div class="text-center mt-3">
-          <a href="property-details.html?id=${property._id}" class="btn btn-outline-primary btn-sm me-2">
-            <i class="bi bi-eye me-1"></i>View Details
-          </a>
-          <button class="btn btn-outline-danger btn-sm remove-from-comparison" data-property-id="${property._id}">
-            <i class="bi bi-x me-1"></i>Remove
-          </button>
-        </div>
-      </div>
-    `;
-    
-    col.querySelector('.remove-from-comparison').addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.removeFromComparison(property._id);
-    });
-    
-    container.appendChild(col);
-  });
-}
+        this.selectedProperties.forEach((property, index) => {
+          const col = document.createElement('div');
+          col.className = `col-md-6 ${this.selectedProperties.length > 2 ? 'col-lg-3' : 'col-lg-6'} mb-4`;
+          
+          const priceDisplay = this.getRoleBasedPriceDisplay(property);
+          const genderText = this.getGenderText(property.genderPreference);
+          const accreditationText = this.getAccreditationText(property.accreditation);
+          const amenitiesCount = property.amenities ? property.amenities.length : 0;
+          
+          col.innerHTML = `
+            <div class="comparison-card">
+              <!-- FIXED: Consistent image container -->
+              <div class="property-image-container mb-3">
+                <img src="${property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/300x200/1e3a8a/ffffff?text=Property+Image'}" 
+                    alt="${property.title}" class="property-image">
+              </div>
+              <h5 class="property-title">${property.title}</h5>
+              <p class="property-location text-muted small mb-2">
+                <i class="bi bi-geo-alt"></i> ${property.location?.address || 'Location not specified'}
+              </p>
+              <p class="property-price fw-bold ${priceDisplay.className} mb-3">${priceDisplay.text}</p>
+              
+              <!-- Add short-term badge for tenants if applicable -->
+              ${this.userRole === 'tenant' && property.acceptsShortTerm ? 
+                '<span class="badge bg-success mb-2"><i class="bi bi-calendar-range me-1"></i>Short-term Available</span>' : 
+                ''
+              }
+              
+              <div class="property-features mb-3">
+                <div class="d-flex flex-wrap gap-2">
+                  <span class="badge bg-light text-dark">
+                    <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds
+                  </span>
+                  <span class="badge bg-light text-dark">
+                    <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths
+                  </span>
+                  ${this.userRole !== 'tenant' ? `
+                    <span class="badge bg-light text-dark">
+                      <i class="bi bi-people me-1"></i>${genderText}
+                    </span>
+                    <span class="badge bg-light text-dark">
+                      <i class="bi bi-award me-1"></i>${accreditationText}
+                    </span>
+                  ` : ''}
+                  <span class="badge amenity-count-badge">
+                    <i class="bi bi-grid-3x3 me-1"></i>${amenitiesCount} amenities
+                  </span>
+                </div>
+              </div>
+              
+              <div class="property-amenities mb-3">
+                <h6 class="text-navy mb-2"> Amenities</h6>
+                <div class="d-flex flex-wrap gap-1">
+                  ${property.amenities && property.amenities.length > 0 ? 
+                    property.amenities.map(amenity => `
+                      <span class="badge bg-primary">${amenity}</span>
+                    `).join('') : 
+                    '<small class="text-muted">No amenities listed</small>'
+                  }
+                </div>
+              </div>
+              
+              <div class="text-center mt-3">
+                <a href="property-details.html?id=${property._id}" class="btn btn-outline-primary btn-sm me-2">
+                  <i class="bi bi-eye me-1"></i>View Details
+                </a>
+                <button class="btn btn-outline-danger btn-sm remove-from-comparison" data-property-id="${property._id}">
+                  <i class="bi bi-x me-1"></i>Remove
+                </button>
+              </div>
+            </div>
+          `;
+          
+          col.querySelector('.remove-from-comparison').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.removeFromComparison(property._id);
+          });
+          
+          container.appendChild(col);
+        });
+      }
 
       renderComparisonTable() {
         this.selectedProperties.forEach((property, index) => {
@@ -1131,57 +1184,8 @@
         const tableBody = document.getElementById('comparison-table-body');
         tableBody.innerHTML = '';
         
-        const features = [
-          {
-            name: 'Price',
-            getValue: (prop) => `R${prop.price}/month`,
-            type: 'numeric',
-            better: 'lower'
-          },
-          {
-            name: 'Bedrooms',
-            getValue: (prop) => this.getSafeNumber(prop.bedrooms),
-            type: 'numeric',
-            better: 'higher'
-          },
-          {
-            name: 'Bathrooms',
-            getValue: (prop) => this.getSafeNumber(prop.bathrooms),
-            type: 'numeric',
-            better: 'higher'
-          },
-          {
-            name: 'Amenities Count',
-            getValue: (prop) => prop.amenities ? prop.amenities.length : 0,
-            type: 'numeric',
-            better: 'higher'
-          },
-          {
-            name: 'Property Type',
-            getValue: (prop) => prop.propertyType ? prop.propertyType.charAt(0).toUpperCase() + prop.propertyType.slice(1) : 'Not specified',
-            type: 'text'
-          },
-          {
-            name: 'Location',
-            getValue: (prop) => prop.location?.address || 'Not specified',
-            type: 'text'
-          },
-          {
-            name: 'Gender Preference',
-            getValue: (prop) => this.getGenderText(prop.genderPreference),
-            type: 'text'
-          },
-          {
-            name: 'Accreditation',
-            getValue: (prop) => this.getAccreditationText(prop.accreditation),
-            type: 'text'
-          },
-          {
-            name: 'All Amenities',
-            getValue: (prop) => prop.amenities ? prop.amenities.join(', ') : 'None',
-            type: 'text'
-          },
-        ];
+        // Role-based comparison features
+        const features = this.getRoleBasedComparisonFeatures();
         
         features.forEach(feature => {
           const row = document.createElement('tr');
@@ -1226,7 +1230,91 @@
         });
       }
 
-      // IMPROVED: Enhanced summary generation
+      // NEW: Role-based comparison features
+      getRoleBasedComparisonFeatures() {
+        const baseFeatures = [
+          {
+            name: 'Price',
+            getValue: (prop) => {
+              if (this.userRole === 'tenant' && prop.acceptsShortTerm && prop.shortTermPricing === 'fixed' && prop.shortTermPrice > 0) {
+                return `R${prop.shortTermPrice}/day`;
+              }
+              return `R${prop.price}/month`;
+            },
+            type: 'numeric',
+            better: 'lower'
+          },
+          {
+            name: 'Bedrooms',
+            getValue: (prop) => this.getSafeNumber(prop.bedrooms),
+            type: 'numeric',
+            better: 'higher'
+          },
+          {
+            name: 'Bathrooms',
+            getValue: (prop) => this.getSafeNumber(prop.bathrooms),
+            type: 'numeric',
+            better: 'higher'
+          },
+          {
+            name: 'Amenities Count',
+            getValue: (prop) => prop.amenities ? prop.amenities.length : 0,
+            type: 'numeric',
+            better: 'higher'
+          },
+          {
+            name: 'Property Type',
+            getValue: (prop) => prop.propertyType ? prop.propertyType.charAt(0).toUpperCase() + prop.propertyType.slice(1) : 'Not specified',
+            type: 'text'
+          },
+          {
+            name: 'Location',
+            getValue: (prop) => prop.location?.address || 'Not specified',
+            type: 'text'
+          }
+        ];
+
+        // Add role-specific features
+        if (this.userRole === 'tenant') {
+          baseFeatures.push({
+            name: 'Short-term Available',
+            getValue: (prop) => prop.acceptsShortTerm ? 'Yes' : 'No',
+            type: 'text'
+          });
+          if (this.selectedProperties.some(p => p.acceptsShortTerm && p.shortTermMinStay)) {
+            baseFeatures.push({
+              name: 'Minimum Stay',
+              getValue: (prop) => prop.acceptsShortTerm && prop.shortTermMinStay ? `${prop.shortTermMinStay} days` : 'N/A',
+              type: 'numeric',
+              better: 'lower'
+            });
+          }
+        } else {
+          // Student-specific features
+          baseFeatures.push(
+            {
+              name: 'Gender Preference',
+              getValue: (prop) => this.getGenderText(prop.genderPreference),
+              type: 'text'
+            },
+            {
+              name: 'Accreditation',
+              getValue: (prop) => this.getAccreditationText(prop.accreditation),
+              type: 'text'
+            }
+          );
+        }
+
+        baseFeatures.push({
+          name: 'All Amenities',
+          getValue: (prop) => prop.amenities ? prop.amenities.join(', ') : 'None',
+          type: 'text'
+        });
+
+        return baseFeatures;
+      }
+
+      // IMPROVED: Enhanced summary generation with role-based insights
       generateSummary() {
         const insightsContainer = document.getElementById('key-insights');
         const summaryContainer = document.getElementById('comparison-summary');
@@ -1234,10 +1322,7 @@
         if (this.selectedProperties.length < 2) return;
 
         // Calculate key metrics
-        const cheapest = this.selectedProperties.reduce((prev, current) => 
-          prev.price < current.price ? prev : current
-        );
-        
+        const cheapest = this.getCheapestProperty();
         const mostBedrooms = this.selectedProperties.reduce((prev, current) => {
           const prevBedrooms = parseInt(prev.bedrooms) || 0;
           const currentBedrooms = parseInt(current.bedrooms) || 0;
@@ -1257,6 +1342,7 @@
         });
 
         const accreditedProperties = this.selectedProperties.filter(p => p.accreditation === 'accredited');
+        const shortTermProperties = this.selectedProperties.filter(p => p.acceptsShortTerm);
         const maleOnlyProperties = this.selectedProperties.filter(p => p.genderPreference === 'male');
         const femaleOnlyProperties = this.selectedProperties.filter(p => p.genderPreference === 'female');
         const unisexProperties = this.selectedProperties.filter(p => !p.genderPreference || p.genderPreference === 'unisex');
@@ -1266,8 +1352,51 @@
         const priceRange = Math.max(...prices) - Math.min(...prices);
         const hasSignificantPriceDifference = priceRange > 1000;
 
-        // Generate key insights
-        insightsContainer.innerHTML = `
+        // Generate role-based key insights
+        insightsContainer.innerHTML = this.generateRoleBasedInsights(
+          cheapest, mostAmenities, mostBedrooms, accreditedProperties, shortTermProperties
+        );
+
+        // Generate detailed summary
+        const recommendation = this.generateRoleBasedRecommendation(
+          cheapest, mostAmenities, hasSignificantPriceDifference, priceRange,
+          accreditedProperties, shortTermProperties
+        );
+
+        summaryContainer.innerHTML = this.generateRoleBasedSummary(
+          recommendation, prices, unisexProperties, maleOnlyProperties, 
+          femaleOnlyProperties, accreditedProperties, shortTermProperties,
+          cheapest
+        );
+      }
+
+      // NEW: Get cheapest property based on user role
+      getCheapestProperty() {
+        if (this.userRole === 'tenant') {
+          // For tenants, consider short-term pricing if available
+          const propertiesWithShortTerm = this.selectedProperties.filter(p => 
+            p.acceptsShortTerm && p.shortTermPricing === 'fixed' && p.shortTermPrice > 0
+          );
+          
+          if (propertiesWithShortTerm.length > 0) {
+            return propertiesWithShortTerm.reduce((prev, current) => 
+              prev.shortTermPrice < current.shortTermPrice ? prev : current
+            );
+          }
+        }
+        
+        // Default to monthly pricing for students or if no short-term pricing available
+        return this.selectedProperties.reduce((prev, current) => 
+          prev.price < current.price ? prev : current
+        );
+      }
+
+      // NEW: Role-based insights generation
+      generateRoleBasedInsights(cheapest, mostAmenities, mostBedrooms, accreditedProperties, shortTermProperties) {
+        const insights = [];
+        
+        // Always show best value insight
+        insights.push(`
           <div class="col-md-6 mb-3">
             <div class="comparison-insight d-flex align-items-center">
               <div class="insight-icon bg-success">
@@ -1275,10 +1404,14 @@
               </div>
               <div>
                 <h6 class="mb-1">Best Value</h6>
-                <p class="mb-0 text-muted">${cheapest.title} at R${cheapest.price}/month</p>
+                <p class="mb-0 text-muted">${cheapest.title} at ${this.getRoleBasedPriceDisplay(cheapest).text}</p>
               </div>
             </div>
           </div>
+        `);
+
+        // Most amenities insight
+        insights.push(`
           <div class="col-md-6 mb-3">
             <div class="comparison-insight d-flex align-items-center">
               <div class="insight-icon bg-primary">
@@ -1290,6 +1423,10 @@
               </div>
             </div>
           </div>
+        `);
+
+        // Most spacious insight
+        insights.push(`
           <div class="col-md-6 mb-3">
             <div class="comparison-insight d-flex align-items-center">
               <div class="insight-icon bg-info">
@@ -1301,20 +1438,44 @@
               </div>
             </div>
           </div>
-          <div class="col-md-6 mb-3">
-            <div class="comparison-insight d-flex align-items-center">
-              <div class="insight-icon bg-warning">
-                <i class="bi bi-award text-white"></i>
-              </div>
-              <div>
-                <h6 class="mb-1">Accredited Options</h6>
-                <p class="mb-0 text-muted">${accreditedProperties.length} university accredited properties</p>
+        `);
+
+        // Role-specific insights
+        if (this.userRole === 'tenant') {
+          insights.push(`
+            <div class="col-md-6 mb-3">
+              <div class="comparison-insight d-flex align-items-center">
+                <div class="insight-icon bg-warning">
+                  <i class="bi bi-calendar-range text-white"></i>
+                </div>
+                <div>
+                  <h6 class="mb-1">Short-term Options</h6>
+                  <p class="mb-0 text-muted">${shortTermProperties.length} properties available for short-term stay</p>
+                </div>
               </div>
             </div>
-          </div>
-        `;
+          `);
+        } else {
+          insights.push(`
+            <div class="col-md-6 mb-3">
+              <div class="comparison-insight d-flex align-items-center">
+                <div class="insight-icon bg-warning">
+                  <i class="bi bi-award text-white"></i>
+                </div>
+                <div>
+                  <h6 class="mb-1">Accredited Options</h6>
+                  <p class="mb-0 text-muted">${accreditedProperties.length} university accredited properties</p>
+                </div>
+              </div>
+            </div>
+          `);
+        }
 
-        // Generate detailed summary
+        return insights.join('');
+      }
+
+      // NEW: Role-based recommendation generation
+      generateRoleBasedRecommendation(cheapest, mostAmenities, hasSignificantPriceDifference, priceRange, accreditedProperties, shortTermProperties) {
         let recommendation = '';
         
         if (hasSignificantPriceDifference) {
@@ -1322,18 +1483,26 @@
         }
         
         if (cheapest === mostAmenities) {
-          recommendation += `<strong>${cheapest.title}</strong> stands out as the best overall choice, offering both the lowest price and the most amenities.`;
-        } else if (cheapest.price < mostAmenities.price - 500) {
+          recommendation += `<strong>${cheapest.title}</strong> stands out as the best overall choice, offering both the best value and the most amenities.`;
+        } else if (this.getPropertyPrice(cheapest) < this.getPropertyPrice(mostAmenities) - 500) {
           recommendation += `While <strong>${mostAmenities.title}</strong> has more amenities, <strong>${cheapest.title}</strong> offers better value for money with significant savings.`;
         } else {
-          recommendation += `<strong>${cheapest.title}</strong> offers the best value at R${cheapest.price}/month, while <strong>${mostAmenities.title}</strong> provides the most comprehensive amenities.`;
+          recommendation += `<strong>${cheapest.title}</strong> offers the best value at ${this.getRoleBasedPriceDisplay(cheapest).text}, while <strong>${mostAmenities.title}</strong> provides the most comprehensive amenities.`;
         }
 
-        if (accreditedProperties.length > 0) {
+        // Role-specific recommendations
+        if (this.userRole === 'student' && accreditedProperties.length > 0) {
           recommendation += ` Consider ${accreditedProperties.map(p => p.title).join(', ')} for university-accredited options that may qualify for bursary funding.`;
+        } else if (this.userRole === 'tenant' && shortTermProperties.length > 0) {
+          recommendation += ` ${shortTermProperties.length} properties offer flexible short-term stays, perfect for temporary accommodation needs.`;
         }
 
-        summaryContainer.innerHTML = `
+        return recommendation;
+      }
+
+      // NEW: Role-based summary generation
+      generateRoleBasedSummary(recommendation, prices, unisexProperties, maleOnlyProperties, femaleOnlyProperties, accreditedProperties, shortTermProperties, cheapest) {
+        return `
           <div class="summary-highlight">
             <h5 class="text-navy mb-3">🏆 Top Recommendation</h5>
             <p class="mb-0">${recommendation}</p>
@@ -1345,16 +1514,25 @@
               <ul class="list-unstyled">
                 <li class="mb-2"><i class="bi bi-currency-dollar text-success me-2"></i>Price Range: R${Math.min(...prices)} - R${Math.max(...prices)}</li>
                 <li class="mb-2"><i class="bi bi-grid-3x3 text-primary me-2"></i>Average Amenities: ${Math.round(this.selectedProperties.reduce((sum, p) => sum + (p.amenities ? p.amenities.length : 0), 0) / this.selectedProperties.length)}</li>
-                <li class="mb-2"><i class="bi bi-people text-info me-2"></i>Gender Options: ${unisexProperties.length} Unisex, ${maleOnlyProperties.length} Male-only, ${femaleOnlyProperties.length} Female-only</li>
-                <li><i class="bi bi-award text-warning me-2"></i>Accredited: ${accreditedProperties.length} of ${this.selectedProperties.length}</li>
+                ${this.userRole === 'student' ? `
+                  <li class="mb-2"><i class="bi bi-people text-info me-2"></i>Gender Options: ${unisexProperties.length} Unisex, ${maleOnlyProperties.length} Male-only, ${femaleOnlyProperties.length} Female-only</li>
+                  <li><i class="bi bi-award text-warning me-2"></i>Accredited: ${accreditedProperties.length} of ${this.selectedProperties.length}</li>
+                ` : `
+                  <li><i class="bi bi-calendar-range text-warning me-2"></i>Short-term: ${shortTermProperties.length} of ${this.selectedProperties.length} available</li>
+                `}
               </ul>
             </div>
             <div class="col-md-6">
               <h6 class="text-navy mb-3">💡 Decision Tips</h6>
               <ul class="list-unstyled">
                 <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Consider your budget and essential amenities</li>
-                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Check proximity to your campus</li>
-                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Verify accreditation for bursary eligibility</li>
+                ${this.userRole === 'student' ? `
+                  <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Check proximity to your campus</li>
+                  <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Verify accreditation for bursary eligibility</li>
+                ` : `
+                  <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Confirm short-term availability and minimum stay</li>
+                  <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Review flexible booking options</li>
+                `}
                 <li><i class="bi bi-check-circle text-success me-2"></i>Review amenities that matter most to you</li>
               </ul>
             </div>
@@ -1368,6 +1546,14 @@
             </p>
           </div>
         `;
+      }
+
+      // NEW: Helper to get property price based on role
+      getPropertyPrice(property) {
+        if (this.userRole === 'tenant' && property.acceptsShortTerm && property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
+          return property.shortTermPrice;
+        }
+        return property.price;
       }
 
       removeFromComparison(propertyId) {
