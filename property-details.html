@@ -1810,7 +1810,6 @@ function enhanceForShortTermContext() {
 }
 
     // ============ PROPERTY DATA LOADING ============
-
     async function loadPropertyDetails() {
     const propertyId = getPropertyIdFromURL();
     
@@ -1840,14 +1839,28 @@ function enhanceForShortTermContext() {
         
         console.log('Loaded property:', currentProperty);
         
-        // FIX: Only check admin status for students, not tenants
+        // FIXED: Only check admin status for students, not tenants
+        // For tenants, we should check if the property accepts short-term stays instead
         const adminStatus = getAdminStatus(currentProperty);
-        if (user.role === 'student' && adminStatus !== 'approved') {
-            showToast('This property is not available for viewing.', 'error');
-            setTimeout(() => {
-                window.location.href = 'listings.html';
-            }, 2000);
-            return;
+        
+        if (user.role === 'student') {
+            // For students, check if property is approved
+            if (adminStatus !== 'approved') {
+                showToast('This property is not available for viewing.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'listings.html';
+                }, 2000);
+                return;
+            }
+        } else if (user.role === 'tenant') {
+            // For tenants, check if property accepts short-term stays
+            if (!currentProperty.acceptsShortTerm) {
+                showToast('This property does not accept short-term stays.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'listings.html';
+                }, 2000);
+                return;
+            }
         }
         
         const landlordId = String(currentProperty.landlord?._id || currentProperty.landlord);
@@ -1869,7 +1882,6 @@ function enhanceForShortTermContext() {
         checkUserCanReview();
         await checkFavoriteStatus();
         
-        // ADD THIS LINE: Detect user type and modify display
         detectUserTypeAndModifyDisplay();
         
     } catch (error) {
@@ -2436,11 +2448,25 @@ function updateVisibleReviewsCount() {
     }
 
     function getAdminStatus(property) {
-        if (property.status) {
-            return property.status;
-        }
-        return 'approved';
+    if (!property) return 'unknown';
+    
+    // Check various possible status fields
+    if (property.status) {
+        return property.status;
     }
+    if (property.adminStatus) {
+        return property.adminStatus;
+    }
+    if (property.approvalStatus) {
+        return property.approvalStatus;
+    }
+    if (property.isApproved !== undefined) {
+        return property.isApproved ? 'approved' : 'pending';
+    }
+    
+    // Default to approved if no status found
+    return 'approved';
+}
 
     function showToast(message, type = 'info') {
         const toastContainer = document.querySelector('.toast-container');
