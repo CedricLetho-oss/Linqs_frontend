@@ -68,13 +68,95 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     
+    /* Enhanced Hero Section */
     .property-hero {
-        background: linear-gradient(135deg, var(--primary) 0%, #9983e7 50%, var(--primary-light) 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, #7c69d4 30%, var(--primary-light) 100%);
         color: white;
-        padding: 1.5rem 0;
-        border-radius: 0 0 1.5rem 1.5rem;
-        margin-bottom: 1.5rem;
+        padding: 2rem 0;
+        border-radius: 0 0 2rem 2rem;
+        margin-bottom: 2rem;
         position: relative;
+        overflow: hidden;
+    }
+    
+    .property-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="%23ffffff" opacity="0.05"><path d="M0 50 Q 250 30 500 50 T 1000 50 L1000 100 L0 100 Z"/></svg>');
+        background-size: cover;
+        background-position: bottom;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .breadcrumb-custom {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 1rem;
+        padding: 0.5rem 1rem;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+    
+    .breadcrumb-custom .breadcrumb-item {
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .breadcrumb-custom .breadcrumb-item.active {
+        color: white;
+        font-weight: 500;
+    }
+    
+    .property-title {
+        font-size: clamp(1.75rem, 4vw, 2.5rem);
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .property-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .hero-price-section {
+        text-align: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .price-tag {
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
+        font-weight: 800;
+        color: white;
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+    
+    .price-period {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .short-term-info {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.9) 0%, rgba(217, 119, 6, 0.9) 100%);
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        margin-top: 0.5rem;
+        font-size: 0.8rem;
     }
     
     .main-image {
@@ -747,27 +829,49 @@
     </div>
   </nav>
 
-  <!-- Property Hero Section -->
+  <!-- Enhanced Property Hero Section -->
   <section class="property-hero">
     <div class="container">
-      <div class="row align-items-center">
-        <div class="col-md-8">
-          <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-2">
-              <li class="breadcrumb-item active text-light" id="propertyBreadcrumb">Property Details</li> 
-            </ol>
-          </nav>
-          <h1 class="display-6 fw-bold mb-2" id="propertyTitle">Loading Property...</h1>
-          <div class="d-flex flex-wrap gap-2 align-items-center">
-            <span class="badge bg-light text-navy" id="propertyTypeBadge">Loading...</span>
-            <span class="badge bg-success" id="propertyStatusBadge">Available</span>
-            <span class="badge bg-info" id="propertyGenderBadge">Unisex</span>
-            <span class="badge bg-warning" id="propertyAccreditationBadge">Self-paying</span>
+      <div class="hero-content">
+        <div class="row align-items-center">
+          <div class="col-lg-8">
+            <!-- Simplified Breadcrumb -->
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb breadcrumb-custom mb-3">
+                <li class="breadcrumb-item"><a href="listings.html" class="text-light text-decoration-none">Properties</a></li>
+                <li class="breadcrumb-item active">Property Details</li>
+              </ol>
+            </nav>
+            
+            <!-- Single Property Title -->
+            <h1 class="property-title" id="propertyTitle">Loading Property...</h1>
+            
+            <!-- Property Badges -->
+            <div class="property-badges">
+              <span class="badge bg-light text-navy" id="propertyTypeBadge">Loading...</span>
+              <span class="badge bg-success" id="propertyStatusBadge">
+                <i class="bi bi-check-circle me-1"></i>Available
+              </span>
+              <span class="badge bg-info" id="propertyGenderBadge">
+                <i class="bi bi-people me-1"></i>Unisex
+              </span>
+              <span class="badge bg-warning" id="propertyAccreditationBadge">
+                <i class="bi bi-house me-1"></i>Self-paying
+              </span>
+              <!-- Short-term badge will be added dynamically -->
+            </div>
           </div>
-        </div>
-        <div class="col-md-4 text-md-end">
-          <div class="price-tag" id="propertyPrice">R0</div>
-          <small class="text-light">per month</small>
+          
+          <div class="col-lg-4">
+            <!-- Enhanced Price Section -->
+            <div class="hero-price-section">
+              <div class="price-tag" id="propertyPrice">R0</div>
+              <div class="price-period" id="pricePeriod">per month</div>
+              
+              <!-- Short-term info container (will be populated dynamically) -->
+              <div id="shortTermInfoContainer"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1387,15 +1491,14 @@
     }
 
     // ============ USER TYPE DETECTION ============
-
-function detectUserTypeAndModifyDisplay() {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const isShortTermTenant = user.role === 'tenant'; // Assuming 'tenant' role for short-term
-    
-    if (isShortTermTenant && currentProperty && currentProperty.acceptsShortTerm) {
-        modifyForShortTermTenant();
+    function detectUserTypeAndModifyDisplay() {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const isShortTermTenant = user.role === 'tenant';
+        
+        if (isShortTermTenant && currentProperty && currentProperty.acceptsShortTerm) {
+            modifyForShortTermTenant();
+        }
     }
-}
 
 function isPropertyAvailableForShortTerm() {
     if (!currentProperty || !currentProperty.acceptsShortTerm) return false;
@@ -1404,6 +1507,42 @@ function isPropertyAvailableForShortTerm() {
     // December (12) and January (1) are short-term availability months
     return currentMonth === 12 || currentMonth === 1;
 }
+
+// Enhanced short-term display handler
+    function handleShortTermDisplay() {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const isShortTermTenant = user.role === 'tenant';
+        const shortTermInfoContainer = document.getElementById('shortTermInfoContainer');
+        
+        // Clear previous content
+        shortTermInfoContainer.innerHTML = '';
+        
+        if (isShortTermTenant && currentProperty && currentProperty.acceptsShortTerm) {
+            // Add short-term badge
+            const shortTermBadge = document.createElement('span');
+            shortTermBadge.className = 'badge short-term-badge';
+            shortTermBadge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term Available';
+            document.querySelector('.property-badges').appendChild(shortTermBadge);
+            
+            // Update price display for short-term
+            if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
+                document.getElementById('propertyPrice').textContent = `R${currentProperty.shortTermPrice}`;
+                document.getElementById('pricePeriod').textContent = 'per day';
+                
+                // Add minimum stay info (only once)
+                const minStayInfo = document.createElement('div');
+                minStayInfo.className = 'short-term-info';
+                minStayInfo.innerHTML = `
+                    <i class="bi bi-calendar-check me-1"></i>
+                    Min. stay: ${currentProperty.shortTermMinStay || 1} days
+                `;
+                shortTermInfoContainer.appendChild(minStayInfo);
+            } else {
+                document.getElementById('propertyPrice').textContent = 'Negotiable';
+                document.getElementById('pricePeriod').textContent = 'Contact for rates';
+            }
+        }
+    }
 
 function modifyForShortTermTenant() {
     if (!currentProperty) return;
@@ -1748,6 +1887,7 @@ function enhanceForShortTermContext() {
 
     // ============ UI UPDATES ============
 
+    // Enhanced property display function
     function updatePropertyDisplay() {
         if (!currentProperty) return;
 
@@ -1756,33 +1896,42 @@ function enhanceForShortTermContext() {
         const genderInfo = genderConfig[currentProperty.genderPreference] || genderConfig.unisex;
         const accreditationInfo = accreditationConfig[currentProperty.accreditation] || accreditationConfig.self;
 
+        // Update single title
         document.getElementById('propertyTitle').textContent = currentProperty.title;
-        document.getElementById('propertyBreadcrumb').textContent = currentProperty.title;
-        document.getElementById('propertyPrice').textContent = `R${currentProperty.price}`;
-        document.getElementById('propertyDescription').textContent = currentProperty.description;
         
+        // Update price and period
+        document.getElementById('propertyPrice').textContent = `R${currentProperty.price}`;
+        document.getElementById('pricePeriod').textContent = 'per month';
+        
+        // Update other details
+        document.getElementById('propertyDescription').textContent = currentProperty.description;
         document.getElementById('propertyLocation').textContent = `${currentProperty.location.city}, ${currentProperty.location.state}`;
         document.getElementById('propertyFullAddress').textContent = `${currentProperty.location.address}, ${currentProperty.location.city}, ${currentProperty.location.state} ${currentProperty.location.zipCode}`;
-        
         document.getElementById('bedroomsCount').textContent = currentProperty.bedrooms;
         document.getElementById('bathroomsCount').textContent = currentProperty.bathrooms;
-        
         document.getElementById('propertyTypeBadge').textContent = currentProperty.propertyType;
         document.getElementById('propertyType').textContent = currentProperty.propertyType;
         
+        // Update status badges
         const statusBadge = document.getElementById('propertyStatusBadge');
         statusBadge.textContent = statusInfo.text;
         statusBadge.className = `badge bg-${statusInfo.class}`;
+        statusBadge.innerHTML = `<i class="bi ${statusInfo.icon} me-1"></i>${statusInfo.text}`;
         
         const genderBadge = document.getElementById('propertyGenderBadge');
         genderBadge.textContent = genderInfo.text;
         genderBadge.className = `badge bg-${genderInfo.class}`;
+        genderBadge.innerHTML = `<i class="bi ${genderInfo.icon} me-1"></i>${genderInfo.text}`;
         document.getElementById('propertyGender').textContent = genderInfo.text === 'Unisex' ? 'Any Gender' : genderInfo.text + ' Only';
         
         const accreditationBadge = document.getElementById('propertyAccreditationBadge');
         accreditationBadge.textContent = accreditationInfo.text;
         accreditationBadge.className = `badge bg-${accreditationInfo.class}`;
+        accreditationBadge.innerHTML = `<i class="bi ${accreditationInfo.icon} me-1"></i>${accreditationInfo.text}`;
         document.getElementById('propertyAccreditation').textContent = accreditationInfo.text === 'Accredited' ? 'University Accredited' : 'Private Accommodation';
+        
+        // Handle short-term tenant display
+        handleShortTermDisplay();
         
         updateImageGallery();
         updateAmenitiesDisplay();
@@ -1791,11 +1940,9 @@ function enhanceForShortTermContext() {
         updateBookingButton(propertyStatus);
         updateLocationMap();
 
-         // === ADD THIS LINE HERE ===
-    setTimeout(() => {
-        updateVisibleReviewsCount();
-    }, 500);
-    // ==========================
+        setTimeout(() => {
+            updateVisibleReviewsCount();
+        }, 500);
     }
 
     function updateLocationMap() {
