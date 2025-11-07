@@ -1581,14 +1581,7 @@
     }
 
     // ============ USER TYPE DETECTION ============
-    function detectUserTypeAndModifyDisplay() {
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
-        const isShortTermTenant = user.role === 'tenant';
-        
-        if (isShortTermTenant && currentProperty && currentProperty.acceptsShortTerm) {
-            modifyForShortTermTenant();
-        }
-    }
+    
 
 function isPropertyAvailableForShortTerm() {
     if (!currentProperty || !currentProperty.acceptsShortTerm) return false;
@@ -1598,8 +1591,22 @@ function isPropertyAvailableForShortTerm() {
     return currentMonth === 12 || currentMonth === 1;
 }
 
-// Enhanced short-term display handler
-    function handleShortTermDisplay() {
+// ============ USER TYPE DETECTION ============
+function detectUserTypeAndModifyDisplay() {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isShortTermTenant = user.role === 'tenant';
+    
+    // Just log for debugging, don't block access
+    if (isShortTermTenant) {
+        console.log('Short-term tenant viewing property');
+        if (currentProperty && currentProperty.acceptsShortTerm) {
+            console.log('Property accepts short-term stays');
+        }
+    }
+}
+
+// SIMPLIFIED: Just display info, never block access
+function handleShortTermDisplay() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isShortTermTenant = user.role === 'tenant';
     const shortTermInfoContainer = document.getElementById('shortTermInfoContainer');
@@ -1609,9 +1616,10 @@ function isPropertyAvailableForShortTerm() {
         shortTermInfoContainer.innerHTML = '';
     }
     
-    // Only modify display if property explicitly accepts short-term
+    // Only add visual indicators if property explicitly accepts short-term
+    // But NEVER block access if it doesn't
     if (isShortTermTenant && currentProperty && currentProperty.acceptsShortTerm === true) {
-        // Add short-term badge
+        // Add short-term badge as visual indicator only
         const shortTermBadge = document.createElement('span');
         shortTermBadge.className = 'badge short-term-badge';
         shortTermBadge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term Available';
@@ -1621,7 +1629,7 @@ function isPropertyAvailableForShortTerm() {
             propertyBadges.appendChild(shortTermBadge);
         }
         
-        // Update price display for short-term
+        // Update price display for short-term if available
         if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
             const priceElement = document.getElementById('propertyPrice');
             const periodElement = document.getElementById('pricePeriod');
@@ -1643,6 +1651,70 @@ function isPropertyAvailableForShortTerm() {
     }
 }
 
+// SIMPLIFIED: Modify display without removing critical information
+function modifyDisplayForUserType() {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isTenant = user.role === 'tenant';
+    
+    if (isTenant) {
+        console.log('Tenant viewing property - customizing display');
+        // You can modify display for tenants, but don't remove critical info
+        // For example, you can change labels but don't hide entire sections
+        
+        // Optional: Change booking button text for tenants
+        const bookingBtn = document.querySelector('.btn-primary.action-btn');
+        if (bookingBtn && currentProperty && currentProperty.acceptsShortTerm) {
+            bookingBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request Short-term Stay';
+        }
+    }
+}
+
+// SIMPLIFIED: Only enhance if available, never block
+function enhanceForShortTermContext() {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isShortTermTenant = user.role === 'tenant';
+    
+    // Only add enhancements if property accepts short-term
+    // But don't block access if it doesn't
+    if (!isShortTermTenant || !currentProperty || !currentProperty.acceptsShortTerm) return;
+    
+    // Add seasonal availability information
+    const locationSection = document.querySelector('.location-info');
+    if (locationSection) {
+        const seasonalInfo = document.createElement('div');
+        seasonalInfo.className = 'alert alert-warning mt-3';
+        seasonalInfo.innerHTML = `
+            <i class="bi bi-calendar-event me-2"></i>
+            <strong>Seasonal Availability:</strong> Perfect for holiday stays! Available December - January while students are away.
+        `;
+        locationSection.appendChild(seasonalInfo);
+    }
+    
+    // Modify contact button for short-term inquiries
+    const contactBtn = document.querySelector('button[onclick="contactLandlord()"]');
+    if (contactBtn) {
+        contactBtn.innerHTML = '<i class="bi bi-chat-dots me-1"></i>Inquire About Short-term Stay';
+    }
+    
+    // Add quick booking info to sidebar
+    const bookingCard = document.querySelector('.property-card .d-grid');
+    if (bookingCard) {
+        const quickInfo = document.createElement('div');
+        quickInfo.className = 'short-term-pricing mt-3';
+        quickInfo.innerHTML = `
+            <h6 class="text-navy mb-2"><i class="bi bi-lightning me-2"></i>Short-term Stay</h6>
+            ${currentProperty.shortTermPricing === 'fixed' ? `
+                <div class="daily-rate">R${currentProperty.shortTermPrice}/day</div>
+                <small class="text-muted">Minimum ${currentProperty.shortTermMinStay || 1} days</small>
+            ` : `
+                <div class="negotiable-price">Price Negotiable</div>
+                <small class="text-muted">Contact for custom rates</small>
+            `}
+        `;
+        bookingCard.parentNode.insertBefore(quickInfo, bookingCard);
+    }
+}
+    
 function modifyForShortTermTenant() {
     if (!currentProperty) return;
 
@@ -1739,84 +1811,7 @@ function modifyForShortTermTenant() {
     }
 }
 
-// Add this function to property-details.html script
-function modifyDisplayForUserType() {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const isTenant = user.role === 'tenant';
-    
-    if (isTenant) {
-        // Remove gender preference and accreditation for tenants
-        const genderSection = document.querySelector('.room-feature:has(i.bi-people)');
-        const accreditationSection = document.querySelector('.room-feature:has(i.bi-award)');
-        
-        if (genderSection) genderSection.style.display = 'none';
-        if (accreditationSection) accreditationSection.style.display = 'none';
-        
-        // Hide gender and accreditation badges
-        document.getElementById('propertyGenderBadge').style.display = 'none';
-        document.getElementById('propertyAccreditationBadge').style.display = 'none';
-        
-        // Update price display for tenants
-        if (currentProperty && currentProperty.acceptsShortTerm) {
-            if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
-                document.getElementById('propertyPrice').textContent = `R${currentProperty.shortTermPrice}`;
-                document.querySelector('.price-tag + small').textContent = 'per day';
-                
-                // Add minimum stay info
-                const minStayInfo = document.createElement('div');
-                minStayInfo.className = 'text-light small mt-1';
-                minStayInfo.innerHTML = `<i class="bi bi-calendar-check me-1"></i>Minimum stay: ${currentProperty.shortTermMinStay || 1} days`;
-                document.querySelector('.price-tag').parentNode.appendChild(minStayInfo);
-            } else {
-                document.getElementById('propertyPrice').textContent = 'Negotiable';
-                document.querySelector('.price-tag + small').textContent = 'Contact for daily rates';
-            }
-        }
-    }
-}
 
-function enhanceForShortTermContext() {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const isShortTermTenant = user.role === 'tenant';
-    
-    if (!isShortTermTenant || !currentProperty || !currentProperty.acceptsShortTerm) return;
-    
-    // Add seasonal availability information
-    const locationSection = document.querySelector('.location-info');
-    if (locationSection) {
-        const seasonalInfo = document.createElement('div');
-        seasonalInfo.className = 'alert alert-warning mt-3';
-        seasonalInfo.innerHTML = `
-            <i class="bi bi-calendar-event me-2"></i>
-            <strong>Seasonal Availability:</strong> Perfect for holiday stays! Available December - January while students are away.
-        `;
-        locationSection.appendChild(seasonalInfo);
-    }
-    
-    // Modify contact button for short-term inquiries
-    const contactBtn = document.querySelector('button[onclick="contactLandlord()"]');
-    if (contactBtn) {
-        contactBtn.innerHTML = '<i class="bi bi-chat-dots me-1"></i>Inquire About Short-term Stay';
-    }
-    
-    // Add quick booking info to sidebar
-    const bookingCard = document.querySelector('.property-card .d-grid');
-    if (bookingCard) {
-        const quickInfo = document.createElement('div');
-        quickInfo.className = 'short-term-pricing mt-3';
-        quickInfo.innerHTML = `
-            <h6 class="text-navy mb-2"><i class="bi bi-lightning me-2"></i>Short-term Stay</h6>
-            ${currentProperty.shortTermPricing === 'fixed' ? `
-                <div class="daily-rate">R${currentProperty.shortTermPrice}/day</div>
-                <small class="text-muted">Minimum ${currentProperty.shortTermMinStay || 1} days</small>
-            ` : `
-                <div class="negotiable-price">Price Negotiable</div>
-                <small class="text-muted">Contact for custom rates</small>
-            `}
-        `;
-        bookingCard.parentNode.insertBefore(quickInfo, bookingCard);
-    }
-}
 
     // ============ PROPERTY DATA LOADING ============
    async function loadPropertyDetails() {
@@ -1830,7 +1825,6 @@ function enhanceForShortTermContext() {
 
     try {
         const token = localStorage.getItem("token");
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
         
         const propertyResponse = await fetch(`${API_BASE_URL}/properties/${propertyId}`, {
             headers: {
@@ -1848,27 +1842,14 @@ function enhanceForShortTermContext() {
         
         console.log('Loaded property:', currentProperty);
         
-        // FIXED: More flexible property access logic
+        // SIMPLE APPROACH: Only check admin approval for all users
         const adminStatus = getAdminStatus(currentProperty);
-        
-        if (user.role === 'student') {
-            // For students, check if property is approved
-            if (adminStatus !== 'approved') {
-                showToast('This property is not available for viewing.', 'error');
-                setTimeout(() => {
-                    window.location.href = 'listings.html';
-                }, 2000);
-                return;
-            }
-        } else if (user.role === 'tenant') {
-            // For tenants, allow access but show appropriate messaging
-            // Don't block access if acceptsShortTerm is false/undefined
-            if (currentProperty.acceptsShortTerm) {
-                console.log('Property accepts short-term tenants');
-            } else {
-                console.log('Property does not accept short-term tenants, but allowing view access');
-                // Still allow viewing, just modify the display
-            }
+        if (adminStatus !== 'approved') {
+            showToast('This property is not available for viewing.', 'error');
+            setTimeout(() => {
+                window.location.href = 'listings.html';
+            }, 2000);
+            return;
         }
         
         const landlordId = String(currentProperty.landlord?._id || currentProperty.landlord);
@@ -1889,8 +1870,6 @@ function enhanceForShortTermContext() {
         await loadPropertyRooms();
         checkUserCanReview();
         await checkFavoriteStatus();
-        
-        detectUserTypeAndModifyDisplay();
         
     } catch (error) {
         console.error('Error loading property details:', error);
