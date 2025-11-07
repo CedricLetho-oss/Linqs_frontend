@@ -210,7 +210,7 @@ modifyListingsForUserType() {
     const isTenant = user.role === 'tenant';
     
     // Determine price display for tenants vs students
-    let priceDisplay, priceLabel, dataPrice;
+    let priceDisplay, priceLabel, dataPrice, minStayInfo = '';
     if (isTenant && property.acceptsShortTerm) {
         if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
             priceDisplay = `R${property.shortTermPrice}`;
@@ -219,10 +219,10 @@ modifyListingsForUserType() {
             
             // Add min stay info for tenants
             if (property.shortTermMinStay > 1) {
-                priceLabel = `/day (min ${property.shortTermMinStay} days)`;
+                minStayInfo = `min ${property.shortTermMinStay} days`;
             }
         } else {
-            priceDisplay = 'Price Negotiable';
+            priceDisplay = 'Negotiable';
             priceLabel = '/day';
             dataPrice = 0;
         }
@@ -296,13 +296,16 @@ modifyListingsForUserType() {
          data-admin-status="${adminStatus}">
     <div class="card listing-card h-100 ${propertyStatus !== 'available' ? propertyStatus : ''}">
 
-        <!-- Updated Price Tag for tenants/students -->
+        <!-- Updated Price Tag with SMALLER TEXT -->
         <div class="price-tag">
-            ${priceDisplay}<small>${priceLabel}</small>
+            <div class="d-flex flex-column align-items-center">
+                <div class="price-main">${priceDisplay}<small>${priceLabel}</small></div>
+                ${minStayInfo ? `<div class="price-min-stay">${minStayInfo}</div>` : ''}
+            </div>
         </div>
         
         <!-- Location Badge -->
-        <div class="location-badge" style="top: 3.5rem;">
+        <div class="location-badge" style="top: ${minStayInfo ? '4.2rem' : '3.5rem'};">
             <i class="bi bi-geo-alt me-1"></i>${property.location.city}
         </div>
         
@@ -313,7 +316,7 @@ modifyListingsForUserType() {
         
         <!-- Admin Approval Badge (only show if not approved) -->
         ${adminStatus !== 'approved' ? `
-            <div class="status-badge bg-${adminInfo.class}" style="top: 6rem;">
+            <div class="status-badge bg-${adminInfo.class}" style="top: ${minStayInfo ? '6.7rem' : '6rem'};">
                 <i class="bi ${adminInfo.icon} me-1"></i>${adminInfo.text}
             </div>
         ` : ''}
