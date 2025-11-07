@@ -1981,7 +1981,23 @@ function enhanceForShortTermContext() {
 
     // Enhanced property display function
     function updatePropertyDisplay() {
-        if (!currentProperty) return;
+    if (!currentProperty) return;
+
+    // Apply tenant-specific styling
+    applyTenantHeroStyling();
+    
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isTenant = user.role === 'tenant';
+    
+    // Update breadcrumb based on user type
+    const breadcrumbActive = document.querySelector('.breadcrumb-custom .breadcrumb-item.active');
+    if (breadcrumbActive) {
+        if (isTenant) {
+            breadcrumbActive.textContent = 'Short-term Stay';
+        } else {
+            breadcrumbActive.textContent = 'Student Accommodation';
+        }
+    }
 
         const propertyStatus = getPropertyStatus(currentProperty);
         const statusInfo = statusConfig[propertyStatus] || statusConfig.available;
