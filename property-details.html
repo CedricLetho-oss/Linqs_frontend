@@ -942,10 +942,11 @@
               <span class="badge bg-success" id="propertyStatusBadge">
                 <i class="bi bi-check-circle me-1"></i>Available
               </span>
-              <span class="badge bg-info" id="propertyGenderBadge">
+              <!-- Gender and accreditation badges will be conditionally shown -->
+              <span class="badge bg-info" id="propertyGenderBadge" style="display: none;">
                 <i class="bi bi-people me-1"></i>Unisex
               </span>
-              <span class="badge bg-warning" id="propertyAccreditationBadge">
+              <span class="badge bg-warning" id="propertyAccreditationBadge" style="display: none;">
                 <i class="bi bi-house me-1"></i>Self-paying
               </span>
               <!-- Short-term badge will be added dynamically -->
@@ -1004,11 +1005,12 @@
                 <i class="bi bi-building"></i>
                 <span id="propertyType">Loading type...</span>
               </div>
-              <div class="room-feature">
+              <!-- Gender and accreditation sections will be conditionally shown -->
+              <div class="room-feature" id="genderSection" style="display: none;">
                 <i class="bi bi-people"></i>
                 <span id="propertyGender">Loading gender preference...</span>
               </div>
-              <div class="room-feature">
+              <div class="room-feature" id="accreditationSection" style="display: none;">
                 <i class="bi bi-award"></i>
                 <span id="propertyAccreditation">Loading accreditation...</span>
               </div>
@@ -1099,56 +1101,55 @@
           </div>
         </div>
 
-        <!-- Replace the entire Reviews & Ratings section with this code -->
-<!-- Reviews & Ratings -->
-<div class="property-card">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="section-title mb-0">Reviews & Ratings</h3>
-    <button class="btn review-btn" id="writeReviewBtn" onclick="showReviewForm()">
-      <i class="bi bi-pencil-square me-2"></i>Write Review
-    </button>
-  </div>
-  
-  <!-- Rating Summary -->
-  <div class="row mb-4">
-    <div class="col-md-4 text-center">
-      <div class="display-4 fw-bold text-primary" id="averageRating">0.0</div>
-      <div class="rating-stars mb-2" id="averageRatingStars">
-        <!-- Stars will be populated -->
-      </div>
-      <small class="text-muted" id="reviewCount">0 reviews</small>
-    </div>
-    <div class="col-md-8">
-      <div id="ratingBreakdown">
-        <!-- Rating breakdown will be populated -->
-      </div>
-    </div>
-  </div>
-  
-  <!-- Scrollable Reviews Card -->
-  <div class="reviews-scrollable-card">
-    <div class="reviews-header d-flex justify-content-between align-items-center mb-3">
-      <h6 class="mb-0 text-navy">Recent Reviews</h6>
-      <small class="text-muted" id="reviewsShowing">Showing <span id="visibleReviewsCount">0</span> of <span id="totalReviewsCount">0</span> reviews</small>
-    </div>
-    
-    <div class="reviews-container" id="propertyReviews">
-      <div class="text-center py-4">
-        <i class="bi bi-chat-square-text display-4 text-muted mb-3"></i>
-        <p class="text-muted">No reviews yet</p>
-        <small>Be the first to review this property</small>
-      </div>
-    </div>
-    
-    <!-- Scroll indicator -->
-    <div class="scroll-indicator mt-3 text-center" id="scrollIndicator" style="display: none;">
-      <small class="text-muted">
-        <i class="bi bi-arrow-down me-1"></i>
-        Scroll for more reviews
-      </small>
-    </div>
-  </div>
-</div>
+        <!-- Reviews & Ratings -->
+        <div class="property-card">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="section-title mb-0">Reviews & Ratings</h3>
+            <button class="btn review-btn" id="writeReviewBtn" onclick="showReviewForm()">
+              <i class="bi bi-pencil-square me-2"></i>Write Review
+            </button>
+          </div>
+          
+          <!-- Rating Summary -->
+          <div class="row mb-4">
+            <div class="col-md-4 text-center">
+              <div class="display-4 fw-bold text-primary" id="averageRating">0.0</div>
+              <div class="rating-stars mb-2" id="averageRatingStars">
+                <!-- Stars will be populated -->
+              </div>
+              <small class="text-muted" id="reviewCount">0 reviews</small>
+            </div>
+            <div class="col-md-8">
+              <div id="ratingBreakdown">
+                <!-- Rating breakdown will be populated -->
+              </div>
+            </div>
+          </div>
+          
+          <!-- Scrollable Reviews Card -->
+          <div class="reviews-scrollable-card">
+            <div class="reviews-header d-flex justify-content-between align-items-center mb-3">
+              <h6 class="mb-0 text-navy">Recent Reviews</h6>
+              <small class="text-muted" id="reviewsShowing">Showing <span id="visibleReviewsCount">0</span> of <span id="totalReviewsCount">0</span> reviews</small>
+            </div>
+            
+            <div class="reviews-container" id="propertyReviews">
+              <div class="text-center py-4">
+                <i class="bi bi-chat-square-text display-4 text-muted mb-3"></i>
+                <p class="text-muted">No reviews yet</p>
+                <small>Be the first to review this property</small>
+              </div>
+            </div>
+            
+            <!-- Scroll indicator -->
+            <div class="scroll-indicator mt-3 text-center" id="scrollIndicator" style="display: none;">
+              <small class="text-muted">
+                <i class="bi bi-arrow-down me-1"></i>
+                Scroll for more reviews
+              </small>
+            </div>
+          </div>
+        </div>
 
         <!-- Review Form -->
         <div class="review-form" id="reviewFormSection" style="display: none;">
@@ -1605,7 +1606,7 @@ function detectUserTypeAndModifyDisplay() {
     }
 }
 
-// SIMPLIFIED: Just display info, never block access
+// RESTORED FROM OLD VERSION: Handle short-term display properly
 function handleShortTermDisplay() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isShortTermTenant = user.role === 'tenant';
@@ -1616,60 +1617,113 @@ function handleShortTermDisplay() {
         shortTermInfoContainer.innerHTML = '';
     }
     
-    // Only add visual indicators if property explicitly accepts short-term
-    // But NEVER block access if it doesn't
-    if (isShortTermTenant && currentProperty && currentProperty.acceptsShortTerm === true) {
-        // Add short-term badge as visual indicator only
-        const shortTermBadge = document.createElement('span');
-        shortTermBadge.className = 'badge short-term-badge';
-        shortTermBadge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term Available';
+    // RESTORED FUNCTIONALITY: Show negotiable pricing for tenants
+    if (isShortTermTenant) {
+        // Update price display to show negotiable pricing
+        const priceElement = document.getElementById('propertyPrice');
+        const periodElement = document.getElementById('pricePeriod');
         
-        const propertyBadges = document.querySelector('.property-badges');
-        if (propertyBadges) {
-            propertyBadges.appendChild(shortTermBadge);
-        }
-        
-        // Update price display for short-term if available
-        if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
-            const priceElement = document.getElementById('propertyPrice');
-            const periodElement = document.getElementById('pricePeriod');
+        if (currentProperty && currentProperty.acceptsShortTerm) {
+            if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
+                priceElement.textContent = `R${currentProperty.shortTermPrice}`;
+                periodElement.textContent = 'per day';
+                
+                // Add minimum stay info
+                if (shortTermInfoContainer) {
+                    const minStayInfo = document.createElement('div');
+                    minStayInfo.className = 'short-term-info';
+                    minStayInfo.innerHTML = `
+                        <i class="bi bi-calendar-check me-1"></i>
+                        Min. stay: ${currentProperty.shortTermMinStay || 1} days
+                    `;
+                    shortTermInfoContainer.appendChild(minStayInfo);
+                }
+            } else {
+                // RESTORED: Show negotiable price for tenants
+                priceElement.textContent = 'Negotiable';
+                periodElement.textContent = 'Contact for pricing';
+                
+                if (shortTermInfoContainer) {
+                    const negotiableInfo = document.createElement('div');
+                    negotiableInfo.className = 'short-term-info';
+                    negotiableInfo.innerHTML = `
+                        <i class="bi bi-chat-dots me-1"></i>
+                        Price negotiable based on duration
+                    `;
+                    shortTermInfoContainer.appendChild(negotiableInfo);
+                }
+            }
             
-            if (priceElement) priceElement.textContent = `R${currentProperty.shortTermPrice}`;
-            if (periodElement) periodElement.textContent = 'per day';
+            // Add short-term badge as visual indicator
+            const shortTermBadge = document.createElement('span');
+            shortTermBadge.className = 'badge short-term-badge';
+            shortTermBadge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term Available';
             
-            // Add minimum stay info
-            if (shortTermInfoContainer) {
-                const minStayInfo = document.createElement('div');
-                minStayInfo.className = 'short-term-info';
-                minStayInfo.innerHTML = `
-                    <i class="bi bi-calendar-check me-1"></i>
-                    Min. stay: ${currentProperty.shortTermMinStay || 1} days
-                `;
-                shortTermInfoContainer.appendChild(minStayInfo);
+            const propertyBadges = document.querySelector('.property-badges');
+            if (propertyBadges) {
+                propertyBadges.appendChild(shortTermBadge);
             }
         }
     }
 }
 
-// SIMPLIFIED: Modify display without removing critical information
+// RESTORED FROM OLD VERSION: Modify display for user type
 function modifyDisplayForUserType() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isTenant = user.role === 'tenant';
     
     if (isTenant) {
-        console.log('Tenant viewing property - customizing display');
-        // You can modify display for tenants, but don't remove critical info
-        // For example, you can change labels but don't hide entire sections
+        console.log('Tenant viewing property - removing gender and accreditation info');
         
-        // Optional: Change booking button text for tenants
+        // RESTORED: Remove gender preference and accreditation for tenants
+        const genderSection = document.getElementById('genderSection');
+        const accreditationSection = document.getElementById('accreditationSection');
+        const genderBadge = document.getElementById('propertyGenderBadge');
+        const accreditationBadge = document.getElementById('propertyAccreditationBadge');
+        
+        if (genderSection) genderSection.style.display = 'none';
+        if (accreditationSection) accreditationSection.style.display = 'none';
+        if (genderBadge) genderBadge.style.display = 'none';
+        if (accreditationBadge) accreditationBadge.style.display = 'none';
+        
+        // RESTORED: Update description to show short-term specific info if available
+        if (currentProperty && currentProperty.acceptsShortTerm && currentProperty.shortTermDescription) {
+            const descriptionElement = document.getElementById('propertyDescription');
+            if (descriptionElement) {
+                descriptionElement.textContent = currentProperty.shortTermDescription;
+                
+                // Add short-term availability period info
+                const availabilityInfo = document.createElement('div');
+                availabilityInfo.className = 'alert alert-info mt-3';
+                availabilityInfo.innerHTML = `
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Short-term availability:</strong> This property is available for short-term stays during December & January.
+                    ${currentProperty.shortTermMinStay ? `Minimum stay: ${currentProperty.shortTermMinStay} days.` : ''}
+                `;
+                descriptionElement.parentNode.appendChild(availabilityInfo);
+            }
+        }
+        
+        // Update booking button text for tenants
         const bookingBtn = document.querySelector('.btn-primary.action-btn');
         if (bookingBtn && currentProperty && currentProperty.acceptsShortTerm) {
             bookingBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request Short-term Stay';
         }
+    } else {
+        // For students, show the gender and accreditation info
+        const genderSection = document.getElementById('genderSection');
+        const accreditationSection = document.getElementById('accreditationSection');
+        const genderBadge = document.getElementById('propertyGenderBadge');
+        const accreditationBadge = document.getElementById('propertyAccreditationBadge');
+        
+        if (genderSection) genderSection.style.display = 'flex';
+        if (accreditationSection) accreditationSection.style.display = 'flex';
+        if (genderBadge) genderBadge.style.display = 'inline-block';
+        if (accreditationBadge) accreditationBadge.style.display = 'inline-block';
     }
 }
 
-// SIMPLIFIED: Only enhance if available, never block
+// RESTORED FROM OLD VERSION: Enhance for short-term context
 function enhanceForShortTermContext() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isShortTermTenant = user.role === 'tenant';
@@ -1714,106 +1768,8 @@ function enhanceForShortTermContext() {
         bookingCard.parentNode.insertBefore(quickInfo, bookingCard);
     }
 }
-    
-function modifyForShortTermTenant() {
-    if (!currentProperty) return;
 
-    // ADD THIS SAFETY CHECK:
-    if (!currentProperty.acceptsShortTerm) {
-        console.log('Property does not accept short-term tenants');
-        return; // STOP here to prevent errors
-    }
-    
-    // Update pricing display
-    const priceElement = document.getElementById('propertyPrice');
-    const priceLabel = document.querySelector('.price-tag + small');
-    
-    if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
-        priceElement.textContent = `R${currentProperty.shortTermPrice}`;
-        if (priceLabel) {
-            priceLabel.textContent = 'per day';
-        }
-        
-        // Add minimum stay info
-        const minStayInfo = document.createElement('div');
-        minStayInfo.className = 'text-light small mt-1';
-        minStayInfo.innerHTML = `<i class="bi bi-calendar-check me-1"></i>Minimum stay: ${currentProperty.shortTermMinStay || 1} days`;
-        priceElement.parentNode.appendChild(minStayInfo);
-    } else {
-        priceElement.textContent = 'Negotiable';
-        if (priceLabel) {
-            priceLabel.textContent = 'Contact for pricing';
-        }
-    }
-    
-    // Update description to show short-term specific info
-    const descriptionElement = document.getElementById('propertyDescription');
-    if (descriptionElement && currentProperty.shortTermDescription) {
-        descriptionElement.textContent = currentProperty.shortTermDescription;
-        
-        // Add short-term availability period
-        const availabilityInfo = document.createElement('div');
-        availabilityInfo.className = 'alert alert-info mt-3';
-        availabilityInfo.innerHTML = `
-            <i class="bi bi-info-circle me-2"></i>
-            <strong>Short-term availability:</strong> This property is available for short-term stays during December & January.
-            ${currentProperty.shortTermMinStay ? `Minimum stay: ${currentProperty.shortTermMinStay} days.` : ''}
-        `;
-        descriptionElement.parentNode.appendChild(availabilityInfo);
-    }
-    
-    // Update booking button text
-    const bookingBtn = document.querySelector('.btn-primary.action-btn');
-    if (bookingBtn) {
-        bookingBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request Short-term Stay';
-    }
-    
-    // Add short-term badge to property status
-    const statusContainer = document.querySelector('.d-flex.flex-wrap.gap-2.align-items-center');
-    if (statusContainer) {
-        const shortTermBadge = document.createElement('span');
-        shortTermBadge.className = 'badge short-term-badge';
-        shortTermBadge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term Available';
-        statusContainer.appendChild(shortTermBadge);
-    }
-    
-    // Modify amenities section to highlight short-term benefits
-    const amenitiesSection = document.getElementById('propertyAmenities');
-    if (amenitiesSection) {
-        const shortTermBenefits = document.createElement('div');
-        shortTermBenefits.className = 'mt-3 p-3 bg-light rounded';
-        shortTermBenefits.innerHTML = `
-            <h6 class="text-navy mb-2"><i class="bi bi-stars me-2"></i>Perfect for Short-term Stays</h6>
-            <div class="row small">
-                <div class="col-md-6">
-                    <div class="room-feature">
-                        <i class="bi bi-check-circle text-success"></i>
-                        <span>Flexible booking options</span>
-                    </div>
-                    <div class="room-feature">
-                        <i class="bi bi-check-circle text-success"></i>
-                        <span>Daily housekeeping available</span>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="room-feature">
-                        <i class="bi bi-check-circle text-success"></i>
-                        <span>All utilities included</span>
-                    </div>
-                    <div class="room-feature">
-                        <i class="bi bi-check-circle text-success"></i>
-                        <span>Short-term contract</span>
-                    </div>
-                </div>
-            </div>
-        `;
-        amenitiesSection.parentNode.insertBefore(shortTermBenefits, amenitiesSection.nextSibling);
-    }
-}
-
-
-
-    // ============ PROPERTY DATA LOADING ============
+// ============ PROPERTY DATA LOADING ============
    async function loadPropertyDetails() {
     const propertyId = getPropertyIdFromURL();
     
@@ -1866,7 +1822,10 @@ function modifyForShortTermTenant() {
         
         await loadPropertyReviews(propertyId);
         updatePropertyDisplay();
+        
+        // RESTORED: Call modifyDisplayForUserType to handle tenant-specific display
         modifyDisplayForUserType();
+        
         await loadPropertyRooms();
         checkUserCanReview();
         await checkFavoriteStatus();
@@ -1990,7 +1949,7 @@ function modifyForShortTermTenant() {
         // Update single title
         document.getElementById('propertyTitle').textContent = currentProperty.title;
         
-        // Update price and period
+        // Update price and period (will be overridden for tenants in handleShortTermDisplay)
         document.getElementById('propertyPrice').textContent = `R${currentProperty.price}`;
         document.getElementById('pricePeriod').textContent = 'per month';
         
@@ -2009,19 +1968,21 @@ function modifyForShortTermTenant() {
         statusBadge.className = `badge bg-${statusInfo.class}`;
         statusBadge.innerHTML = `<i class="bi ${statusInfo.icon} me-1"></i>${statusInfo.text}`;
         
+        // Update gender badge and section (visibility handled in modifyDisplayForUserType)
         const genderBadge = document.getElementById('propertyGenderBadge');
         genderBadge.textContent = genderInfo.text;
         genderBadge.className = `badge bg-${genderInfo.class}`;
         genderBadge.innerHTML = `<i class="bi ${genderInfo.icon} me-1"></i>${genderInfo.text}`;
         document.getElementById('propertyGender').textContent = genderInfo.text === 'Unisex' ? 'Any Gender' : genderInfo.text + ' Only';
         
+        // Update accreditation badge and section (visibility handled in modifyDisplayForUserType)
         const accreditationBadge = document.getElementById('propertyAccreditationBadge');
         accreditationBadge.textContent = accreditationInfo.text;
         accreditationBadge.className = `badge bg-${accreditationInfo.class}`;
         accreditationBadge.innerHTML = `<i class="bi ${accreditationInfo.icon} me-1"></i>${accreditationInfo.text}`;
         document.getElementById('propertyAccreditation').textContent = accreditationInfo.text === 'Accredited' ? 'University Accredited' : 'Private Accommodation';
         
-        // Handle short-term tenant display
+        // RESTORED: Handle short-term tenant display with negotiable pricing
         handleShortTermDisplay();
         
         updateImageGallery();
