@@ -1998,35 +1998,58 @@ function enhanceForShortTermContext() {
     }
 
     function updateLocationMap() {
-        const mapContainer = document.getElementById('propertyMap');
-        
-        if (!currentProperty.location) {
-            mapContainer.innerHTML = `
-                <div class="map-error">
-                    <i class="bi bi-exclamation-triangle display-4 mb-2"></i>
-                    <p class="mb-1">Location not available</p>
-                    <small class="text-muted">Address details missing</small>
-                </div>
-            `;
-            return;
-        }
+    const mapContainer = document.getElementById('propertyMap');
+    
+    if (!currentProperty.location) {
+        showMapError('Location data not available');
+        return;
+    }
 
-        const location = currentProperty.location;
-        const address = `${location.address}, ${location.city}, ${location.state}`;
-        
-        // Create a simple static map using Google Maps Static API
-        const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(address)}&zoom=15&size=600x400&markers=color:blue%7C${encodeURIComponent(address)}&key=YOUR_GOOGLE_MAPS_API_KEY`;
-        
-        mapContainer.innerHTML = `
-            <img src="${staticMapUrl}" alt="Property Location" style="width: 100%; height: 100%; object-fit: cover;" 
-                 onclick="openGoogleMaps()" style="cursor: pointer;">
+    const location = currentProperty.location;
+    const address = `${location.address}, ${location.city}, ${location.state}`;
+    
+    // Create interactive map with better styling
+    mapContainer.innerHTML = `
+        <div class="map-interactive" style="width: 100%; height: 100%; position: relative;">
+            <div class="map-placeholder-content" style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 1rem; display: flex; align-items: center; justify-content: center; color: white; flex-direction: column; cursor: pointer;" onclick="openGoogleMaps()">
+                <i class="bi bi-geo-alt-fill" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <h5 style="margin-bottom: 0.5rem;">View Location on Map</h5>
+                <p style="margin-bottom: 0; text-align: center; opacity: 0.9;">${address}</p>
+                <small style="opacity: 0.7; margin-top: 1rem;"><i class="bi bi-arrow-up-right me-1"></i>Click to open in Google Maps</small>
+            </div>
             <div class="map-controls">
                 <button class="btn btn-sm btn-light" onclick="openGoogleMaps()" title="Open in Google Maps">
                     <i class="bi bi-arrow-up-right"></i>
                 </button>
+                <button class="btn btn-sm btn-light mt-1" onclick="copyAddress()" title="Copy Address">
+                    <i class="bi bi-clipboard"></i>
+                </button>
             </div>
-        `;
-    }
+        </div>
+    `;
+}
+
+function copyAddress() {
+    if (!currentProperty.location) return;
+    
+    const location = currentProperty.location;
+    const address = `${location.address}, ${location.city}, ${location.state} ${location.zipCode}`;
+    
+    navigator.clipboard.writeText(address).then(() => {
+        showToast('Address copied to clipboard!', 'success');
+    });
+}
+
+function showMapError(message) {
+    const mapContainer = document.getElementById('propertyMap');
+    mapContainer.innerHTML = `
+        <div class="map-error">
+            <i class="bi bi-exclamation-triangle display-4 mb-2 text-warning"></i>
+            <p class="mb-1">${message}</p>
+            <small class="text-muted">Try refreshing the page or contact support</small>
+        </div>
+    `;
+}
 
     function openGoogleMaps() {
         if (!currentProperty.location) {
