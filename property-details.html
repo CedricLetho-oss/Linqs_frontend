@@ -68,96 +68,186 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     
-    /* Enhanced Hero Section */
+    /* Enhanced Creative Hero Section */
+.property-hero {
+    background: linear-gradient(135deg, var(--primary) 0%, #6d28d9 30%, var(--primary-light) 100%);
+    color: white;
+    padding: 2.5rem 0;
+    border-radius: 0 0 2.5rem 2.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.property-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 50%),
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="%23ffffff" opacity="0.03"><path d="M0 70 Q 250 50 500 70 T 1000 70 L1000 100 L0 100 Z"/></svg>');
+    background-size: cover;
+    background-position: bottom;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.breadcrumb-custom {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(15px);
+    border-radius: 1rem;
+    padding: 0.6rem 1.2rem;
+    display: inline-block;
+    margin-bottom: 1.2rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.breadcrumb-custom .breadcrumb-item {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.breadcrumb-custom .breadcrumb-item.active {
+    color: white;
+    font-weight: 600;
+}
+
+.breadcrumb-custom .breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.breadcrumb-custom .breadcrumb-item a:hover {
+    color: white;
+}
+
+.property-title {
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.property-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1.8rem;
+}
+
+.property-badges .badge {
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-weight: 500;
+    padding: 0.6rem 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.hero-price-section {
+    text-align: center;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(20px);
+    border-radius: 1.2rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-price-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    z-index: 1;
+}
+
+.hero-price-section > * {
+    position: relative;
+    z-index: 2;
+}
+
+.price-tag {
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 800;
+    color: white;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.price-period {
+    font-size: 1rem;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+.short-term-info {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.95) 0%, rgba(217, 119, 6, 0.95) 100%);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Floating animation for hero elements */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+.hero-price-section {
+    animation: float 6s ease-in-out infinite;
+}
+
+/* Enhanced responsive design */
+@media (max-width: 768px) {
     .property-hero {
-        background: linear-gradient(135deg, var(--primary) 0%, #7c69d4 30%, var(--primary-light) 100%);
-        color: white;
         padding: 2rem 0;
-        border-radius: 0 0 2rem 2rem;
-        margin-bottom: 2rem;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .property-hero::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="%23ffffff" opacity="0.05"><path d="M0 50 Q 250 30 500 50 T 1000 50 L1000 100 L0 100 Z"/></svg>');
-        background-size: cover;
-        background-position: bottom;
-    }
-    
-    .hero-content {
-        position: relative;
-        z-index: 2;
+        border-radius: 0 0 1.5rem 1.5rem;
     }
     
     .breadcrumb-custom {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        border-radius: 1rem;
         padding: 0.5rem 1rem;
-        display: inline-block;
         margin-bottom: 1rem;
-    }
-    
-    .breadcrumb-custom .breadcrumb-item {
-        color: rgba(255, 255, 255, 0.9);
-    }
-    
-    .breadcrumb-custom .breadcrumb-item.active {
-        color: white;
-        font-weight: 500;
-    }
-    
-    .property-title {
-        font-size: clamp(1.75rem, 4vw, 2.5rem);
-        font-weight: 800;
-        line-height: 1.2;
-        margin-bottom: 1rem;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .property-badges {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-bottom: 1.5rem;
     }
     
     .hero-price-section {
-        text-align: center;
-        padding: 1rem;
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        border-radius: 1rem;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 1.2rem;
+        margin-top: 1rem;
     }
     
-    .price-tag {
-        font-size: clamp(1.5rem, 4vw, 2.5rem);
-        font-weight: 800;
-        color: white;
-        line-height: 1;
-        margin-bottom: 0.25rem;
+    .property-badges {
+        gap: 0.4rem;
+        margin-bottom: 1.5rem;
     }
     
-    .price-period {
-        font-size: 0.9rem;
-        opacity: 0.9;
-    }
-    
-    .short-term-info {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.9) 0%, rgba(217, 119, 6, 0.9) 100%);
-        border-radius: 0.5rem;
-        padding: 0.5rem 0.75rem;
-        margin-top: 0.5rem;
+    .property-badges .badge {
+        padding: 0.5rem 0.8rem;
         font-size: 0.8rem;
     }
+}
     
     .main-image {
       width: 100%;
@@ -1732,6 +1822,7 @@ function enhanceForShortTermContext() {
 
     try {
         const token = localStorage.getItem("token");
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
         
         const propertyResponse = await fetch(`${API_BASE_URL}/properties/${propertyId}`, {
             headers: {
@@ -1749,8 +1840,9 @@ function enhanceForShortTermContext() {
         
         console.log('Loaded property:', currentProperty);
         
+        // FIX: Only check admin status for students, not tenants
         const adminStatus = getAdminStatus(currentProperty);
-        if (adminStatus !== 'approved') {
+        if (user.role === 'student' && adminStatus !== 'approved') {
             showToast('This property is not available for viewing.', 'error');
             setTimeout(() => {
                 window.location.href = 'listings.html';
