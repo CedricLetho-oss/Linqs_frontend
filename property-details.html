@@ -941,6 +941,30 @@
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
 }
+
+/* Add to your existing CSS */
+.verification-badge {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: white;
+    border-radius: 1rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.review-verified-icon {
+    color: #059669;
+    margin-left: 0.25rem;
+}
+
+/* Make sure the review user info section aligns properly */
+.review-card .d-flex.align-items-center {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
   </style>
 </head>
 <body>
@@ -2517,11 +2541,14 @@ function showMapError(message) {
         scrollIndicator.style.display = 'none';
         return;
     }
-    
-    // Show all reviews in the scrollable container
-    reviewsContainer.innerHTML = propertyReviews.map((review, index) => {
+
+        reviewsContainer.innerHTML = propertyReviews.map((review, index) => {
         const reviewDate = review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Recently';
         const studentName = review.student?.username || review.student?.firstName || 'Anonymous';
+        
+        // ✅ ADDED: Check if reviewer is verified
+        const isVerified = review.student?.isVerified || false;
+        const verificationStatus = review.student?.verificationStatus || '';
         
         const landlordResponse = review.landlordResponse;
         const hasLandlordResponse = landlordResponse && landlordResponse.comment;
@@ -2540,8 +2567,16 @@ function showMapError(message) {
                 <small class="text-muted">${reviewDate}</small>
             </div>
             <p class="mb-2">${review.comment || 'No comment provided'}</p>
-            <div class="d-flex flex-wrap gap-2 small mb-3">
+            <div class="d-flex flex-wrap gap-2 small mb-3 align-items-center">
                 <span class="text-muted">By: ${studentName}</span>
+                
+                <!-- ✅ ADDED: Verification Badge -->
+                ${isVerified ? `
+                    <span class="verification-badge" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+                        <i class="bi bi-patch-check-fill me-1"></i>Verified
+                    </span>
+                ` : ''}
+                
                 ${review.isRecommended ? '<span class="text-success"><i class="bi bi-check-circle me-1"></i>Recommended</span>' : ''}
                 
                 ${review.cleanliness ? `<span class="text-muted"><i class="bi bi-bucket me-1"></i>Cleanliness: ${review.cleanliness}/5</span>` : ''}
