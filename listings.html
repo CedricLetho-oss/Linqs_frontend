@@ -709,6 +709,58 @@
       color: var(--primary) !important;
     }
 
+    /* Fix for price tag layout on desktop */
+.price-tag {
+    background: linear-gradient(45deg, #10b981, #059669);
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 1rem;
+    font-weight: bold;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2;
+    animation: pulse 2s ease-in-out infinite;
+    max-width: 120px;
+    min-width: 80px;
+    text-align: right;
+}
+
+.price-main {
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.price-min-stay {
+    font-size: 0.7rem;
+    opacity: 0.9;
+    margin-top: 0.1rem;
+    line-height: 1.1;
+}
+
+/* Ensure price tag doesn't overlap on desktop */
+@media (min-width: 768px) {
+    .price-tag {
+        max-width: 140px;
+    }
+    
+    .listing-card:hover .price-tag {
+        z-index: 3; /* Ensure price tag stays on top during hover */
+    }
+}
+
+/* Mobile adjustments - keep existing behavior */
+@media (max-width: 767px) {
+    .price-tag {
+        max-width: 110px;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .price-min-stay {
+        font-size: 0.65rem;
+    }
+}
+
   </style>
 </head>
 <body>
