@@ -68,7 +68,9 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     
-    /* Enhanced Hero Section Styles */
+
+
+/* Enhanced Hero Section Styles */
 .property-hero {
   background: linear-gradient(135deg, var(--primary) 0%, #7c6ee3 50%, var(--primary-light) 100%);
   color: white;
@@ -90,7 +92,8 @@
   border-radius: 50%;
 }
 
-.price-section {
+/* CHANGED: Use hero-price-section to avoid conflicts */
+.hero-price-section {
   text-align: center;
   padding: 1rem;
   background: rgba(255, 255, 255, 0.1);
@@ -98,13 +101,13 @@
   backdrop-filter: blur(10px);
 }
 
-.price-period {
+.hero-price-period {
   font-size: 1rem;
   opacity: 0.9;
   margin-bottom: 0.5rem;
 }
 
-.minimum-stay {
+.hero-minimum-stay {
   background: rgba(255, 255, 255, 0.2);
   padding: 0.5rem;
   border-radius: 0.5rem;
@@ -114,6 +117,12 @@
 .property-location {
   font-size: 1.1rem;
   margin-top: 0.5rem;
+}
+
+/* Keep the existing room modal price-section unchanged */
+.price-section {
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 1rem;
 }
 
 /* Enhanced Detail Items */
@@ -894,7 +903,7 @@
     </div>
   </nav>
 
-  <!-- Updated Hero Section -->
+ <!-- Updated Hero Section -->
 <section class="property-hero">
   <div class="container">
     <div class="row align-items-center">
@@ -918,11 +927,12 @@
         </div>
       </div>
       <div class="col-md-4 text-md-end">
-        <div class="price-section">
+        <!-- CHANGED: Use hero-price-section instead of price-section -->
+        <div class="hero-price-section">
           <div class="price-tag" id="propertyPrice">R0</div>
-          <div class="price-period" id="pricePeriod">per month</div>
+          <div class="hero-price-period" id="pricePeriod">per month</div>
           <!-- Single minimum stay display -->
-          <div class="minimum-stay text-light small mt-1" id="minimumStayInfo" style="display: none;">
+          <div class="hero-minimum-stay text-light small mt-1" id="minimumStayInfo" style="display: none;">
             <i class="bi bi-calendar-check me-1"></i>Minimum stay: <span id="minStayDays">2</span> days
           </div>
         </div>
@@ -1988,7 +1998,7 @@ function updatePropertyDisplay() {
     }, 500);
 }
 
-// Enhanced pricing display function
+// Pricing display function
 function updatePricingDisplay() {
     const priceElement = document.getElementById('propertyPrice');
     const periodElement = document.getElementById('pricePeriod');
@@ -2007,17 +2017,17 @@ function updatePricingDisplay() {
             // Show minimum stay
             const minStay = currentProperty.shortTermMinStay || 1;
             minStayDaysElement.textContent = minStay;
-            minStayElement.style.display = 'block';
+            if (minStayElement) minStayElement.style.display = 'block';
         } else {
             priceElement.textContent = 'Negotiable';
             periodElement.textContent = 'Contact for pricing';
-            minStayElement.style.display = 'none';
+            if (minStayElement) minStayElement.style.display = 'none';
         }
     } else {
         // Regular pricing
         priceElement.textContent = `R${currentProperty.price}`;
         periodElement.textContent = 'per month';
-        minStayElement.style.display = 'none';
+        if (minStayElement) minStayElement.style.display = 'none';
     }
 }
 
