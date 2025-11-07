@@ -1458,48 +1458,82 @@ setPropertyDetails(card, property, userRole, favorite) {
     }
     
     async saveFavorite() {
-        if (!this.currentFavorite) return;
+    if (!this.currentFavorite) return;
 
-        const newNotes = document.getElementById('notesTextarea').value;
-        const newTags = document.getElementById('tagsInput').value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
-        const newPriority = document.querySelector('input[name="priority"]:checked').value;
-        
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/favorites/${this.currentFavorite._id}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
+    const newNotes = document.getElementById('notesTextarea').value;
+    const newTags = document.getElementById('tagsInput').value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+    const newPriority = document.querySelector('input[name="priority"]:checked').value;
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/favorites/${this.currentFavorite._id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                notes: newNotes,
+                tags: newTags,
+                priority: newPriority
+            })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            
+            // FIX: Properly handle the API response structure
+            let updatedFavorite;
+            if (result.data) {
+                // If response has data property
+                updatedFavorite = result.data;
+            } else if (result.favorite) {
+                // If response has favorite property  
+                updatedFavorite = result.favorite;
+            } else {
+                // If response is the favorite object directly
+                updatedFavorite = result;
+            }
+
+            // Update the local data immediately
+            const index = this.allFavorites.findIndex(fav => fav._id === this.currentFavorite._id);
+            if (index !== -1) {
+                // Merge the updated fields while preserving the property data
+                this.allFavorites[index] = { 
+                    ...this.allFavorites[index], 
                     notes: newNotes,
                     tags: newTags,
-                    priority: newPriority
-                })
-            });
-
-            if (response.ok) {
-                // Update the local data
-                const updatedFavorite = await response.json();
-                const index = this.allFavorites.findIndex(fav => fav._id === this.currentFavorite._id);
-                if (index !== -1) {
-                    this.allFavorites[index] = { ...this.allFavorites[index], ...updatedFavorite.data };
-                }
-                
-                this.applyFiltersAndSort(); // Re-apply filters with updated data
-                this.showToast('Favorite updated successfully', 'success');
-                bootstrap.Modal.getInstance(document.getElementById('editFavoriteModal')).hide();
-            } else {
-                throw new Error('Failed to update favorite');
+                    priority: newPriority,
+                    // Preserve other important fields
+                    _id: this.allFavorites[index]._id,
+                    property: this.allFavorites[index].property,
+                    createdAt: this.allFavorites[index].createdAt,
+                    updatedAt: new Date().toISOString()
+                };
             }
-        } catch (error) {
-            console.error('Error updating favorite:', error);
-            this.showToast('Failed to update favorite', 'error');
-        }
-    }
 
-    // ... rest of your methods (compareFavorites, showSelectionModal, etc.) remain the same
+            // Also update the filtered favorites
+            const filteredIndex = this.favorites.findIndex(fav => fav._id === this.currentFavorite._id);
+            if (filteredIndex !== -1) {
+                this.favorites[filteredIndex] = { ...this.allFavorites[index] };
+            }
+
+            // Re-render immediately without full reload
+            this.renderFavorites();
+            this.updateCounts();
+            this.showToast('Favorite updated successfully', 'success');
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('editFavoriteModal')).hide();
+        } else {
+            throw new Error('Failed to update favorite');
+        }
+    } catch (error) {
+        console.error('Error updating favorite:', error);
+        this.showToast('Failed to update favorite', 'error');
+    }
+}
+
     compareFavorites() {
         if (this.favorites.length < 2) {
             this.showToast('Please add at least 2 properties to compare.', 'warning');
