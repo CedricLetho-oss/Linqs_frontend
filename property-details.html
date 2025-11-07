@@ -1600,26 +1600,37 @@ function isPropertyAvailableForShortTerm() {
 
 // Enhanced short-term display handler
     function handleShortTermDisplay() {
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
-        const isShortTermTenant = user.role === 'tenant';
-        const shortTermInfoContainer = document.getElementById('shortTermInfoContainer');
-        
-        // Clear previous content
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isShortTermTenant = user.role === 'tenant';
+    const shortTermInfoContainer = document.getElementById('shortTermInfoContainer');
+    
+    // Clear previous content
+    if (shortTermInfoContainer) {
         shortTermInfoContainer.innerHTML = '';
+    }
+    
+    // Only modify display if property explicitly accepts short-term
+    if (isShortTermTenant && currentProperty && currentProperty.acceptsShortTerm === true) {
+        // Add short-term badge
+        const shortTermBadge = document.createElement('span');
+        shortTermBadge.className = 'badge short-term-badge';
+        shortTermBadge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term Available';
         
-        if (isShortTermTenant && currentProperty && currentProperty.acceptsShortTerm) {
-            // Add short-term badge
-            const shortTermBadge = document.createElement('span');
-            shortTermBadge.className = 'badge short-term-badge';
-            shortTermBadge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term Available';
-            document.querySelector('.property-badges').appendChild(shortTermBadge);
+        const propertyBadges = document.querySelector('.property-badges');
+        if (propertyBadges) {
+            propertyBadges.appendChild(shortTermBadge);
+        }
+        
+        // Update price display for short-term
+        if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
+            const priceElement = document.getElementById('propertyPrice');
+            const periodElement = document.getElementById('pricePeriod');
             
-            // Update price display for short-term
-            if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
-                document.getElementById('propertyPrice').textContent = `R${currentProperty.shortTermPrice}`;
-                document.getElementById('pricePeriod').textContent = 'per day';
-                
-                // Add minimum stay info (only once)
+            if (priceElement) priceElement.textContent = `R${currentProperty.shortTermPrice}`;
+            if (periodElement) periodElement.textContent = 'per day';
+            
+            // Add minimum stay info
+            if (shortTermInfoContainer) {
                 const minStayInfo = document.createElement('div');
                 minStayInfo.className = 'short-term-info';
                 minStayInfo.innerHTML = `
@@ -1627,12 +1638,10 @@ function isPropertyAvailableForShortTerm() {
                     Min. stay: ${currentProperty.shortTermMinStay || 1} days
                 `;
                 shortTermInfoContainer.appendChild(minStayInfo);
-            } else {
-                document.getElementById('propertyPrice').textContent = 'Negotiable';
-                document.getElementById('pricePeriod').textContent = 'Contact for rates';
             }
         }
     }
+}
 
 function modifyForShortTermTenant() {
     if (!currentProperty) return;
@@ -1810,7 +1819,7 @@ function enhanceForShortTermContext() {
 }
 
     // ============ PROPERTY DATA LOADING ============
-    async function loadPropertyDetails() {
+   async function loadPropertyDetails() {
     const propertyId = getPropertyIdFromURL();
     
     if (!propertyId) {
@@ -1839,8 +1848,7 @@ function enhanceForShortTermContext() {
         
         console.log('Loaded property:', currentProperty);
         
-        // FIXED: Only check admin status for students, not tenants
-        // For tenants, we should check if the property accepts short-term stays instead
+        // FIXED: More flexible property access logic
         const adminStatus = getAdminStatus(currentProperty);
         
         if (user.role === 'student') {
@@ -1853,13 +1861,13 @@ function enhanceForShortTermContext() {
                 return;
             }
         } else if (user.role === 'tenant') {
-            // For tenants, check if property accepts short-term stays
-            if (!currentProperty.acceptsShortTerm) {
-                showToast('This property does not accept short-term stays.', 'error');
-                setTimeout(() => {
-                    window.location.href = 'listings.html';
-                }, 2000);
-                return;
+            // For tenants, allow access but show appropriate messaging
+            // Don't block access if acceptsShortTerm is false/undefined
+            if (currentProperty.acceptsShortTerm) {
+                console.log('Property accepts short-term tenants');
+            } else {
+                console.log('Property does not accept short-term tenants, but allowing view access');
+                // Still allow viewing, just modify the display
             }
         }
         
