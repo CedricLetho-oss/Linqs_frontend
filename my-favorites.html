@@ -1200,16 +1200,16 @@
         priorityBadge.textContent = favorite.priority.charAt(0).toUpperCase() + favorite.priority.slice(1);
         priorityBadge.className = `badge priority-badge bg-${this.getPriorityColor(favorite.priority)}`;
 
-        // CALL THE NEW METHOD: Set property details based on user role
-        this.setPropertyDetails(card, property, userRole, favorite);
-
-        // Add recent badge if applicable
+        // Add recent badge if applicable - ONLY ONCE HERE
         if (this.isRecent(favorite.createdAt)) {
             const recentBadge = document.createElement('span');
             recentBadge.className = 'badge recent-badge';
             recentBadge.innerHTML = '<i class="bi bi-star-fill me-1"></i>Recent';
             card.querySelector('.favorite-badge').after(recentBadge);
         }
+
+        // CALL THE NEW METHOD: Set property details based on user role
+        this.setPropertyDetails(card, property, userRole, favorite);
 
         // Render amenities
         const amenitiesContainer = card.querySelector('.property-amenities');
@@ -1264,7 +1264,7 @@
     this.hideLoading();
 }
 
-// UPDATED: Set property details based on user role
+// FIXED: Set property details based on user role
 setPropertyDetails(card, property, userRole, favorite) {
     const imageContainer = card.querySelector('.image-container');
     const img = card.querySelector('.favorite-image');
@@ -1284,10 +1284,12 @@ setPropertyDetails(card, property, userRole, favorite) {
     
     // ROLE-BASED PRICING DISPLAY
     const priceElement = card.querySelector('.property-price');
+    
+    // FIX: Make short-term properties green for tenants
     if (userRole === 'tenant' && property.acceptsShortTerm) {
         if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
             priceElement.textContent = `R${property.shortTermPrice}/day`;
-            priceElement.className = 'property-price fw-bold text-warning mb-3';
+            priceElement.className = 'property-price fw-bold text-success mb-3'; // CHANGED to text-success
             
             // Add minimum stay info
             const minStayInfo = document.createElement('small');
@@ -1296,12 +1298,12 @@ setPropertyDetails(card, property, userRole, favorite) {
             priceElement.parentNode.appendChild(minStayInfo);
         } else {
             priceElement.textContent = 'Price negotiable (short-term)';
-            priceElement.className = 'property-price fw-bold text-info mb-3';
+            priceElement.className = 'property-price fw-bold text-success mb-3'; // CHANGED to text-success
         }
         
-        // Add short-term badge
+        // Add short-term badge with green color
         const shortTermBadge = document.createElement('span');
-        shortTermBadge.className = 'badge bg-warning ms-2';
+        shortTermBadge.className = 'badge bg-success ms-2'; // CHANGED to bg-success
         shortTermBadge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term';
         card.querySelector('.property-title').parentNode.appendChild(shortTermBadge);
     } else {
@@ -1337,14 +1339,6 @@ setPropertyDetails(card, property, userRole, favorite) {
 
     // Set added date
     card.querySelector('.added-date').textContent = `Added ${new Date(favorite.createdAt).toLocaleDateString()}`;
-
-    // Add recent badge if applicable
-    if (this.isRecent(favorite.createdAt)) {
-        const recentBadge = document.createElement('span');
-        recentBadge.className = 'badge recent-badge';
-        recentBadge.innerHTML = '<i class="bi bi-star-fill me-1"></i>Recent';
-        card.querySelector('.favorite-badge').after(recentBadge);
-    }
 }
 
     // Helper function to format gender text
