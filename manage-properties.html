@@ -3913,6 +3913,21 @@ function viewPropertyDetails(propertyId) {
                       </div>
                   </div>
 
+                  
+                    <div class="mb-3">
+                        <strong class="small">Amenities:</strong><br>
+                        ${property.amenities && property.amenities.length > 0 ? 
+                            property.amenities.map(amenity => `
+                                <span class="badge bg-light text-dark me-1 small">
+                                    <i class="bi bi-${getAmenityIcon(amenity)}"></i> ${amenity}
+                                </span>
+                            `).join('') : 
+                            '<span class="text-muted small">No amenities specified</span>'
+                        }
+                    </div>
+                </div>
+            </div>
+
                   <!-- ADD THE SHORT-TERM PRICING SECTION HERE -->
                   ${property.acceptsShortTerm ? `
                   <div class="row mt-3">
@@ -3959,19 +3974,6 @@ function viewPropertyDetails(propertyId) {
                   </div>
                   ` : ''}
                     
-                    <div class="mb-3">
-                        <strong class="small">Amenities:</strong><br>
-                        ${property.amenities && property.amenities.length > 0 ? 
-                            property.amenities.map(amenity => `
-                                <span class="badge bg-light text-dark me-1 small">
-                                    <i class="bi bi-${getAmenityIcon(amenity)}"></i> ${amenity}
-                                </span>
-                            `).join('') : 
-                            '<span class="text-muted small">No amenities specified</span>'
-                        }
-                    </div>
-                </div>
-            </div>
             
             ${availabilitySection}
             
