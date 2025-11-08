@@ -916,14 +916,61 @@
     border-left: 4px solid #f59e0b;
 }
 
+/* Fix for negotiable price tag size */
 .negotiable-price {
-    font-size: 1.5rem;
+    font-size: 1.2rem !important;
     font-weight: bold;
     color: #f59e0b;
     background: #fff3cd;
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0.8rem;
     border-radius: 0.5rem;
     display: inline-block;
+    border: 1px solid #fcd34d;
+}
+
+/* Ensure consistent button sizing */
+.room-card .btn {
+    min-width: 80px;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+}
+
+/* Mobile and desktop button layout */
+.room-card .d-flex.justify-content-between.align-items-center {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.room-card .d-flex.justify-content-between.align-items-center > div:last-child {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Mobile-specific button layout */
+@media (max-width: 768px) {
+    .room-card .d-flex.justify-content-between.align-items-center > div:last-child {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+    }
+    
+    .room-card .btn {
+        flex: 1;
+        min-width: auto;
+        text-align: center;
+    }
+}
+
+/* Move short-term details below features */
+.room-info-section .short-term-pricing {
+    order: 3;
+    margin-top: 1rem;
+}
+
+/* Remove additional notes from short-term details */
+.short-term-pricing .mt-2:has(strong:contains("Additional Details")) {
+    display: none;
 }
 
 .daily-rate {
@@ -2398,8 +2445,6 @@ function showMapError(message) {
         }
     }
 
-    // ============ ROOM DISPLAY FUNCTIONS ============
-
 function updateRoomsDisplay() {
     const roomsContainer = document.getElementById('propertyRooms');
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -2426,13 +2471,11 @@ function updateRoomsDisplay() {
                 pricePeriod = 'day';
                 pricePrefix = '';
             } else {
-                // FIXED: Show negotiable for short-term tenants
                 roomPrice = 'Negotiable';
                 pricePeriod = '';
                 pricePrefix = '';
             }
         } else {
-            // For students or when no short-term pricing
             roomPrice = room.price;
             pricePeriod = 'month';
             pricePrefix = '';
@@ -2449,10 +2492,10 @@ function updateRoomsDisplay() {
             </span>
         ` : '';
         
-        // Price display logic
+        // Price display logic - use smaller font for negotiable
         const priceDisplay = roomPrice === 'Negotiable' ? 
-            `<strong class="negotiable-price">${roomPrice}</strong>` :
-            `<strong class="text-primary">${pricePrefix}R${roomPrice}/${pricePeriod}</strong>`;
+            `<div class="negotiable-price">${roomPrice}</div>` :
+            `<div class="text-primary fw-bold">R${roomPrice}/${pricePeriod}</div>`;
         
         return `
             <div class="col-md-6 mb-4">
@@ -2498,12 +2541,12 @@ function updateRoomsDisplay() {
                                             <small class="text-muted d-block">Min. stay: ${room.shortTermMinStay} days</small>
                                         ` : ''}
                                     </div>
-                                    <div>
+                                    <div class="d-flex gap-2">
                                         <button class="btn btn-outline-primary btn-sm" onclick="viewRoomDetails('${room._id}')">
                                             <i class="bi bi-eye me-1"></i>Details
                                         </button>
                                         ${room.isAvailable ? `
-                                            <button class="btn btn-primary btn-sm ms-1" onclick="bookSpecificRoom('${room._id}')">
+                                            <button class="btn btn-primary btn-sm" onclick="bookSpecificRoom('${room._id}')">
                                                 <i class="bi bi-calendar-check me-1"></i>Book
                                             </button>
                                         ` : ''}
@@ -3056,7 +3099,7 @@ function updateVisibleReviewsCount() {
     }
 
     function viewRoomDetails(roomId) {
-    console.log('Opening room details for:', roomId); // Debug log
+    console.log('Opening room details for:', roomId);
     const room = propertyRooms.find(r => r._id === roomId);
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isShortTermTenant = user.role === 'tenant';
@@ -3089,7 +3132,7 @@ function updateVisibleReviewsCount() {
     const roomDescription = isShortTermTenant && room.shortTermDescription ? 
         room.shortTermDescription : room.description;
 
-    // Short-term pricing section for tenants
+    // Short-term pricing section for tenants (without additional notes)
     const shortTermSection = isShortTermTenant && room.shortTermPricing ? `
         <div class="short-term-pricing mt-3 p-3 bg-light rounded">
             <h6 class="text-navy mb-2"><i class="bi bi-calendar-range me-2"></i>Short-term Stay Details</h6>
@@ -3104,12 +3147,6 @@ function updateVisibleReviewsCount() {
                     <strong>Minimum Stay:</strong> ${room.shortTermMinStay || 1} days
                 </div>
             </div>
-            ${room.shortTermDescription ? `
-                <div class="mt-2">
-                    <strong>Additional Details:</strong>
-                    <p class="mb-0 small">${room.shortTermDescription}</p>
-                </div>
-            ` : ''}
         </div>
     ` : '';
 
@@ -3170,14 +3207,15 @@ function updateVisibleReviewsCount() {
         </span>
     `).join('');
     
-    // Add short-term section to modal
-    const descriptionSection = document.querySelector('.description-section');
+    // Add short-term section AFTER features section (moved from before)
+    const featuresSection = document.querySelector('.features-section');
     const existingShortTermSection = document.querySelector('.short-term-pricing');
     if (existingShortTermSection) {
         existingShortTermSection.remove();
     }
     if (isShortTermTenant && room.shortTermPricing) {
-        descriptionSection.insertAdjacentHTML('afterend', shortTermSection);
+        // Insert short-term section after features section
+        featuresSection.insertAdjacentHTML('afterend', shortTermSection);
     }
     
     // Update carousel
