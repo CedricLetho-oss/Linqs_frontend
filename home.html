@@ -1479,117 +1479,128 @@
         }
 
         createEnhancedPropertyCard(property, priceDisplay) {
-            const accreditation = property.accreditation || 'self';
-            const accreditationInfo = this.accreditationConfig[accreditation] || this.accreditationConfig.self;
+    const accreditation = property.accreditation || 'self';
+    const accreditationInfo = this.accreditationConfig[accreditation] || this.accreditationConfig.self;
+    
+    const genderPreference = property.genderPreference || 'unisex';
+    const genderInfo = this.genderConfig[genderPreference] || this.genderConfig.unisex;
+    
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isTenant = user.role === 'tenant';
+    
+    // NEW: Determine description based on user type
+    let propertyDescription = property.description; // Default for students
+    
+    if (isTenant && property.acceptsShortTerm && property.shortTermDescription) {
+        // Use short-term description for tenants
+        propertyDescription = property.shortTermDescription;
+    } else if (isTenant && property.acceptsShortTerm) {
+        // Fallback for tenants if no short-term description exists
+        propertyDescription = "Short-term accommodation available during student holidays. Perfect for temporary stays.";
+    }
+    
+    return `
+    <div class="card feature-card h-100">
+        <div class="position-relative">
+            <img src="${property.images[0]}" class="card-img-top" alt="${property.title}" 
+                 style="height: 200px; object-fit: cover; width: 100%;">
             
-            const genderPreference = property.genderPreference || 'unisex';
-            const genderInfo = this.genderConfig[genderPreference] || this.genderConfig.unisex;
+            <!-- Status Badge - Always Available since we filtered -->
+            <div class="position-absolute top-0 start-0 m-2">
+                <span class="badge bg-success">
+                    <i class="bi bi-check-circle-fill me-1"></i>Available
+                </span>
+            </div>
             
-            const user = JSON.parse(localStorage.getItem("user") || "{}");
-            const isTenant = user.role === 'tenant';
+            <!-- Price Tag - UPDATED for tenants/students -->
+            <div class="position-absolute top-0 end-0 m-2">
+                <span class="badge bg-success fs-6">
+                    ${priceDisplay.price}<small>${priceDisplay.label}</small>
+                </span>
+            </div>
             
-            return `
-            <div class="card feature-card h-100">
-                <div class="position-relative">
-                    <img src="${property.images[0]}" class="card-img-top" alt="${property.title}" 
-                         style="height: 200px; object-fit: cover; width: 100%;">
-                    
-                    <!-- Status Badge - Always Available since we filtered -->
-                    <div class="position-absolute top-0 start-0 m-2">
-                        <span class="badge bg-success">
-                            <i class="bi bi-check-circle-fill me-1"></i>Available
-                        </span>
+            <!-- Accreditation Badge - HIDDEN FOR TENANTS -->
+            ${!isTenant ? `
+            <div class="position-absolute bottom-0 start-0 m-2">
+                <span class="badge bg-${accreditationInfo.class}">
+                    <i class="bi ${accreditationInfo.icon} me-1"></i>${accreditationInfo.text}
+                </span>
+            </div>
+            ` : ''}
+        </div>
+
+        <div class="card-body">
+            <!-- Property Title & Location -->
+            <div class="mb-2">
+                <h6 class="card-title text-navy fw-bold mb-1">${property.title}</h6>
+                <div class="d-flex align-items-center text-muted small">
+                    <i class="bi bi-geo-alt-fill me-1"></i>
+                    <span>${property.location.city}</span>
+                </div>
+            </div>
+
+            <!-- UPDATED: Property Description based on user type -->
+            <p class="card-text text-muted small mb-3">
+                ${propertyDescription.substring(0, 80)}...
+            </p>
+
+            <!-- Property Details -->
+            <div class="row text-center mb-3">
+                <div class="col-4">
+                    <div class="text-primary">
+                        <i class="bi bi-door-closed-fill fs-5"></i>
+                        <div class="small">${property.bedrooms} Bed</div>
                     </div>
-                    
-                    <!-- Price Tag - UPDATED for tenants/students -->
-                    <div class="position-absolute top-0 end-0 m-2">
-                        <span class="badge bg-success fs-6">
-                            ${priceDisplay.price}<small>${priceDisplay.label}</small>
-                        </span>
+                </div>
+                <div class="col-4">
+                    <div class="text-info">
+                        <i class="bi bi-droplet-fill fs-5"></i>
+                        <div class="small">${property.bathrooms} Bath</div>
                     </div>
-                    
-                    <!-- Accreditation Badge - HIDDEN FOR TENANTS -->
-                    ${!isTenant ? `
-                    <div class="position-absolute bottom-0 start-0 m-2">
-                        <span class="badge bg-${accreditationInfo.class}">
-                            <i class="bi ${accreditationInfo.icon} me-1"></i>${accreditationInfo.text}
-                        </span>
+                </div>
+                <div class="col-4">
+                    <div class="text-warning">
+                        <i class="bi ${genderInfo.icon} fs-5"></i>
+                        <div class="small">${property.genderPreference}</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Amenities with Icons -->
+            <div class="mb-3">
+                <div class="amenities-grid">
+                    ${property.amenities.slice(0, 4).map(amenity => `
+                        <div class="amenity-item">
+                            <i class="bi ${this.amenityIcons[amenity.toLowerCase()] || 'bi-check-circle'} text-primary"></i>
+                            <span class="small">${amenity}</span>
+                        </div>
+                    `).join('')}
+                    ${property.amenities.length > 4 ? `
+                        <div class="amenity-item bg-primary text-white">
+                            <i class="bi bi-plus-circle"></i>
+                            <span class="small">+${property.amenities.length - 4} more</span>
+                        </div>
                     ` : ''}
                 </div>
+            </div>
 
-                <div class="card-body">
-                    <!-- Property Title & Location -->
-                    <div class="mb-2">
-                        <h6 class="card-title text-navy fw-bold mb-1">${property.title}</h6>
-                        <div class="d-flex align-items-center text-muted small">
-                            <i class="bi bi-geo-alt-fill me-1"></i>
-                            <span>${property.location.city}</span>
-                        </div>
-                    </div>
-
-                    <!-- Property Description -->
-                    <p class="card-text text-muted small mb-3">
-                        ${property.description.substring(0, 80)}...
-                    </p>
-
-                    <!-- Property Details -->
-                    <div class="row text-center mb-3">
-                        <div class="col-4">
-                            <div class="text-primary">
-                                <i class="bi bi-door-closed-fill fs-5"></i>
-                                <div class="small">${property.bedrooms} Bed</div>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="text-info">
-                                <i class="bi bi-droplet-fill fs-5"></i>
-                                <div class="small">${property.bathrooms} Bath</div>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="text-warning">
-                                <i class="bi ${genderInfo.icon} fs-5"></i>
-                                <div class="small">${property.genderPreference}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Enhanced Amenities with Icons -->
-                    <div class="mb-3">
-                        <div class="amenities-grid">
-                            ${property.amenities.slice(0, 4).map(amenity => `
-                                <div class="amenity-item">
-                                    <i class="bi ${this.amenityIcons[amenity.toLowerCase()] || 'bi-check-circle'} text-primary"></i>
-                                    <span class="small">${amenity}</span>
-                                </div>
-                            `).join('')}
-                            ${property.amenities.length > 4 ? `
-                                <div class="amenity-item bg-primary text-white">
-                                    <i class="bi bi-plus-circle"></i>
-                                    <span class="small">+${property.amenities.length - 4} more</span>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-
-                    <!-- Rating -->
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="rating">
-                            ${this.generateStarRating(property.averageRating || 0)}
-                            <small class="text-muted ms-1">(${property.reviewCount || 0})</small>
-                        </div>
-                    </div>
-
-                    <!-- Action Button -->
-                    <div class="d-grid">
-                        <a href="property-details.html?id=${property._id}" class="btn btn-primary btn-sm">
-                            <i class="bi bi-eye me-1"></i>View Details
-                        </a>
-                    </div>
+            <!-- Rating -->
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="rating">
+                    ${this.generateStarRating(property.averageRating || 0)}
+                    <small class="text-muted ms-1">(${property.reviewCount || 0})</small>
                 </div>
-            </div>`;
-        }
+            </div>
+
+            <!-- Action Button -->
+            <div class="d-grid">
+                <a href="property-details.html?id=${property._id}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-eye me-1"></i>View Details
+                </a>
+            </div>
+        </div>
+    </div>`;
+}
 
         generateStarRating(rating) {
             let stars = '';
@@ -1609,35 +1620,50 @@
         }
 
         getNoListingsHTML() {
-            const user = JSON.parse(localStorage.getItem("user") || "{}");
-            const isTenant = user.role === 'tenant';
-            const currentMonth = new Date().getMonth() + 1;
-            const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
-            
-            if (isTenant && !isNovemberToJanuary) {
-                return `
-                <div class="col-12 text-center py-5">
-                    <div class="no-listings-placeholder">
-                        <i class="bi bi-calendar-x display-1 text-muted"></i>
-                        <h4 class="text-navy mt-3">Short-term Accommodation Not Available</h4>
-                        <p class="text-muted">Short-term student accommodation is only available during November to January.</p>
-                        <p class="text-muted small">This period covers when students are away for holidays. Please check back during these months for available properties.</p>
-                    </div>
-                </div>`;
-            }
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isTenant = user.role === 'tenant';
+    const currentMonth = new Date().getMonth() + 1;
+    const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
+    
+    if (isTenant && !isNovemberToJanuary) {
+        return `
+        <div class="col-12 text-center py-5">
+            <div class="no-listings-placeholder">
+                <i class="bi bi-calendar-x display-1 text-muted"></i>
+                <h4 class="text-navy mt-3">Short-term Accommodation Not Available</h4>
+                <p class="text-muted">Short-term student accommodation is only available during November to January.</p>
+                <p class="text-muted small">This period covers when students are away for holidays. Please check back during these months for available properties.</p>
+            </div>
+        </div>`;
+    }
 
-            return `
-            <div class="col-12 text-center py-5">
-                <div class="no-listings-placeholder">
-                    <i class="bi bi-house-heart display-1 text-muted"></i>
-                    <h4 class="text-navy mt-3">No Available Listings</h4>
-                    <p class="text-muted">All our featured accommodations are currently occupied or pending approval</p>
-                    <a href="listings.html" class="btn btn-gradient">
-                        <i class="bi bi-building me-1"></i>Browse All Listings
-                    </a>
-                </div>
-            </div>`;
-        }
+    if (isTenant && isNovemberToJanuary) {
+        return `
+        <div class="col-12 text-center py-5">
+            <div class="no-listings-placeholder">
+                <i class="bi bi-house-heart display-1 text-muted"></i>
+                <h4 class="text-navy mt-3">No Short-term Listings Available</h4>
+                <p class="text-muted">No short-term accommodations are currently available for the holiday season.</p>
+                <p class="text-muted small">Check back later or contact landlords directly for short-term availability.</p>
+                <a href="listings.html" class="btn btn-gradient mt-3">
+                    <i class="bi bi-building me-1"></i>Browse All Listings
+                </a>
+            </div>
+        </div>`;
+    }
+
+    return `
+    <div class="col-12 text-center py-5">
+        <div class="no-listings-placeholder">
+            <i class="bi bi-house-heart display-1 text-muted"></i>
+            <h4 class="text-navy mt-3">No Available Listings</h4>
+            <p class="text-muted">All our featured accommodations are currently occupied or pending approval</p>
+            <a href="listings.html" class="btn btn-gradient">
+                <i class="bi bi-building me-1"></i>Browse All Listings
+            </a>
+        </div>
+    </div>`;
+}
         
         // UPDATED: Filter from ALL properties, not just featured ones
         filterProperties(locationFilter, priceFilter) {
