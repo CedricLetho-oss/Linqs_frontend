@@ -205,7 +205,7 @@ modifyListingsForUserType() {
         return 'approved'; // Default to approved if no status field
     }
 
-    createPropertyCard(property) {
+   createPropertyCard(property) {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isTenant = user.role === 'tenant';
     
@@ -230,6 +230,17 @@ modifyListingsForUserType() {
         priceDisplay = `R${property.price}`;
         priceLabel = '/month';
         dataPrice = property.price;
+    }
+    
+    // NEW: Determine description based on user type
+    let propertyDescription = property.description; // Default for students
+    
+    if (isTenant && property.acceptsShortTerm && property.shortTermDescription) {
+        // Use short-term description for tenants
+        propertyDescription = property.shortTermDescription;
+    } else if (isTenant && property.acceptsShortTerm) {
+        // Fallback for tenants if no short-term description exists
+        propertyDescription = "Short-term accommodation available during student holidays. Perfect for temporary stays.";
     }
     
     const accreditation = property.accreditation || 'self';
@@ -334,9 +345,9 @@ modifyListingsForUserType() {
                 ${property.title}
             </h5>
             
-            <!-- Property Description -->
+            <!-- UPDATED: Property Description based on user type -->
             <p class="card-text text-muted small mb-3">
-                ${property.description.substring(0, 100)}...
+                ${propertyDescription.substring(0, 100)}...
             </p>
             
             <!-- Property Details - KEEPING ORIGINAL STYLE -->
