@@ -2137,6 +2137,61 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- Add this section to your room management modal, after the room features section -->
+                <div class="row mb-4" id="roomShortTermSection" style="display: none;">
+                  <div class="col-12">
+                    <h6 class="text-warning mb-3 border-bottom pb-2">
+                      <i class="bi bi-calendar-range me-2"></i>Short-term Room Pricing (December & January)
+                    </h6>
+                    
+                    <div class="alert alert-warning">
+                      <i class="bi bi-info-circle me-2"></i>
+                      <strong>Short-term availability:</strong> Since this property accepts short-term tenants, you can set special pricing for December & January stays.
+                    </div>
+                    
+                    <div class="row">
+                      <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Short-term Pricing Type *</label>
+                        <select class="form-select" name="roomShortTermPricing" id="roomShortTermPricing" required onchange="toggleRoomShortTermPriceField()">
+                          <option value="negotiable">Negotiable (Contact for Price)</option>
+                          <option value="fixed">Fixed Daily Rate</option>
+                        </select>
+                        <small class="text-muted">Choose how you want to price short-term stays</small>
+                      </div>
+                      
+                      <div class="col-md-6 mb-3" id="roomShortTermPriceField" style="display: none;">
+                        <label class="form-label fw-semibold">Daily Rate (ZAR) *</label>
+                        <div class="input-group">
+                          <span class="input-group-text bg-light">R</span>
+                          <input type="number" class="form-control" name="roomShortTermPrice" id="roomShortTermPrice" min="0" placeholder="250">
+                          <span class="input-group-text bg-light">/day</span>
+                        </div>
+                        <small class="text-muted">Set your daily rate for short-term stays</small>
+                      </div>
+                    </div>
+                    
+                    <div class="row">
+                      <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Minimum Stay (Days)</label>
+                        <div class="input-group">
+                          <input type="number" class="form-control" name="roomShortTermMinStay" id="roomShortTermMinStay" min="1" value="1">
+                          <span class="input-group-text bg-light">days</span>
+                        </div>
+                        <small class="text-muted">Minimum number of days for short-term bookings</small>
+                      </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Short-term Stay Details (Optional)</label>
+                      <textarea class="form-control" name="roomShortTermDescription" id="roomShortTermDescription" rows="2" 
+                                placeholder="Describe any special arrangements, included amenities, or holiday-specific details for short-term tenants..."></textarea>
+                      <small class="text-muted">
+                        This information will be shown specifically to short-term tenants interested in December/January stays
+                      </small>
+                    </div>
+                  </div>
+                </div>
                 
                 <div class="mt-3">
                   <button type="button" class="btn btn-primary" onclick="addRoom()" id="roomActionButton">Add Room</button>
@@ -4362,332 +4417,61 @@ function closeStatsAndOpenRooms(propertyId) {
 
     // ============ ROOM MANAGEMENT FUNCTIONS ============
 
-    // Open room management modal
-    function manageRooms(propertyId) {
-        const property = allProperties.find(p => p._id === propertyId);
-        if (!property) return;
-        
-        document.getElementById('roomPropertyId').value = propertyId;
-        document.getElementById('roomManagementTitle').textContent = `Manage Rooms - ${property.title}`;
-        document.getElementById('propertyRoomsTitle').textContent = `Rooms for ${property.title}`;
-        
-        // Reset room image data
-        resetRoomImageData();
-        
-        // Load rooms for this property
-        loadPropertyRooms(propertyId);
-        
-        // Show modal
-        new bootstrap.Modal(document.getElementById('roomManagementModal')).show();
-    }
+    // ============ ROOM SHORT-TERM PRICING FUNCTIONS ============
 
-    // Load property rooms from backend
-    async function loadPropertyRooms(propertyId) {
-        try {
-            const token = localStorage.getItem("token");
-            const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                currentPropertyRooms = data.rooms || [];
-                renderRoomsList();
-            } else {
-                throw new Error('Failed to load rooms');
-            }
-        } catch (error) {
-            console.error('Error loading rooms:', error);
-            currentPropertyRooms = [];
-            renderRoomsList();
-        }
-    }
-
-    // Render rooms list
-    function renderRoomsList() {
-        const container = document.getElementById('roomsListContainer');
-        
-        if (currentPropertyRooms.length === 0) {
-            container.innerHTML = `
-                <div class="text-center py-4">
-                    <i class="bi bi-door-closed display-4 text-muted mb-3"></i>
-                    <p class="text-muted">No rooms added yet</p>
-                    <small>Add rooms to start receiving bookings for individual rooms</small>
-                </div>
-            `;
-            return;
-        }
-        
-        container.innerHTML = currentPropertyRooms.map(room => `
-            <div class="card mb-3 room-card ${room.isAvailable ? 'border-success' : 'border-warning'}">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <img src="${room.images && room.images.length > 0 ? room.images[0] : 'https://via.placeholder.com/200x150?text=Room+Image'}" 
-                                class="img-fluid rounded" alt="${room.roomNumber || room.roomType}" style="height: 120px; object-fit: cover; width: 100%;">
-                        </div>
-                        <div class="col-md-6">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6 class="card-title mb-1">
-                                        ${room.roomNumber ? room.roomNumber + ' - ' : ''}${roomTypeConfig[room.roomType]?.text || room.roomType}
-                                    </h6>
-                                    <span class="badge bg-${roomTypeConfig[room.roomType]?.class || 'secondary'} mb-2">
-                                        <i class="${roomTypeConfig[room.roomType]?.icon || 'bi-door-closed'} me-1"></i>
-                                        ${roomTypeConfig[room.roomType]?.text || room.roomType}
-                                    </span>
-                                    <span class="badge bg-${room.isAvailable ? 'success' : 'warning'} ms-1">
-                                        <i class="bi ${room.isAvailable ? 'bi-check-circle' : 'bi-person-check'} me-1"></i>
-                                        ${room.isAvailable ? 'Available' : 'Occupied'}
-                                    </span>
-                                </div>
-                            </div>
-                            <p class="card-text small text-muted mb-2">${room.description || 'No description provided'}</p>
-                            <div class="mb-2">
-                                ${room.features && room.features.slice(0, 4).map(feature => `
-                                    <span class="badge bg-light text-dark me-1 small">${feature}</span>
-                                `).join('')}
-                                ${room.features && room.features.length > 4 ? `<span class="badge bg-light text-dark small">+${room.features.length - 4}</span>` : ''}
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span class="text-muted small me-3"><i class="bi bi-arrows-fullscreen me-1"></i>${room.size || 'Size not specified'}</span>
-                                </div>
-                                <div>
-                                    <strong class="text-primary">R${room.price}/month</strong>
-                                </div>
-                            </div>
-                            ${!room.isAvailable && room.occupant ? `
-                                <div class="mt-2 p-2 bg-light rounded small">
-                                    <strong>Occupied by:</strong> ${room.occupant.name || 'Unknown'} 
-                                    ${room.occupant.moveInDate ? `since ${new Date(room.occupant.moveInDate).toLocaleDateString()}` : ''}
-                                </div>
-                            ` : ''}
-                        </div>
-                        <div class="col-md-3">
-                            <div class="d-flex flex-column gap-2">
-                                <button class="btn btn-outline-warning btn-sm" onclick="editExistingRoom('${room._id}')">
-                                    <i class="bi bi-pencil me-1"></i>Edit
-                                </button>
-                                <button class="btn btn-outline-info btn-sm" onclick="viewRoomDetails('${room._id}')">
-                                    <i class="bi bi-eye me-1"></i>View
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm" onclick="deleteRoom('${room._id}')">
-                                    <i class="bi bi-trash me-1"></i>Delete
-                                </button>
-                                <button class="btn btn-${room.isAvailable ? 'warning' : 'success'} btn-sm" onclick="toggleRoomAvailability('${room._id}')">
-                                    <i class="bi ${room.isAvailable ? 'bi-person-check' : 'bi-check-circle'} me-1"></i>
-                                    ${room.isAvailable ? 'Mark Occupied' : 'Mark Available'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // Show add room form
-    function showAddRoomForm() {
-        document.getElementById('addRoomForm').style.display = 'block';
-        document.getElementById('addRoomFormFields').reset();
-        currentEditingRoomId = null;
-        
-        // Reset room image data for add form
-        resetRoomImageData();
-        
-        // Update form title and button text
-        document.getElementById('roomFormTitle').textContent = 'Add New Room';
-        document.getElementById('roomActionButton').textContent = 'Add Room';
-        
-        // Reset occupant info display
-        document.getElementById('occupantInfo').style.display = 'none';
-        
-        // Scroll to the form
-        document.getElementById('addRoomForm').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    // Hide add room form
-    function hideAddRoomForm() {
-        document.getElementById('addRoomForm').style.display = 'none';
-        currentEditingRoomId = null;
-    }
-
-    // Toggle occupant info based on availability
-    function toggleOccupantInfo() {
-        const isOccupied = document.getElementById('roomAvailability').value === 'false';
-        document.getElementById('occupantInfo').style.display = isOccupied ? 'block' : 'none';
-    }
-
-    // Add or update room
-    async function addRoom() {
-        const propertyId = document.getElementById('roomPropertyId').value;
-        
-        if (currentEditingRoomId) {
-            await updateRoom();
-        } else {
-            await addNewRoom();
-        }
-    }
-
-    // Add new room - FIXED to use batch upload
-async function addNewRoom() {
+// Check if property accepts short-term and show/hide room short-term section
+function checkPropertyShortTermAndToggleRoomSection() {
     const propertyId = document.getElementById('roomPropertyId').value;
-    const roomData = {
-        roomType: document.getElementById('roomType').value,
-        roomNumber: document.getElementById('roomNumber').value,
-        price: parseInt(document.getElementById('roomPrice').value),
-        size: document.getElementById('roomSize').value,
-        description: document.getElementById('roomDescription').value,
-        isAvailable: document.getElementById('roomAvailability').value === 'true',
-        images: [],
-        features: getSelectedRoomFeatures()
-    };
-
-    // Add occupant info if room is occupied
-    if (!roomData.isAvailable) {
-        roomData.occupant = {
-            name: document.getElementById('occupantName').value,
-            moveInDate: document.getElementById('moveInDate').value
-        };
-    }
-
-    // ✅ FIXED: Use batch upload for room images
-    const filesToUpload = roomImages.add.files.map(fileData => fileData.file);
+    const property = allProperties.find(p => p._id === propertyId);
+    const roomShortTermSection = document.getElementById('roomShortTermSection');
     
-    if (filesToUpload.length > 0) {
-        const uploadedUrls = await uploadMultipleToCloudinary(filesToUpload);
-        roomData.images.push(...uploadedUrls);
-    }
-    
-    // Add URL images (these are already external URLs)
-    roomData.images.push(...roomImages.add.urls);
-
-    console.log('Creating room with images:', roomData.images);
-
-    try {
-        const token = localStorage.getItem("token");
-        const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(roomData)
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to add room');
-        }
-
-        alert('Room added successfully!');
-        hideAddRoomForm();
-        await loadPropertyRooms(propertyId);
-        
-        // Reset room image data after successful add
-        resetRoomImageData();
-    } catch (error) {
-        console.error('Error adding room:', error);
-        alert('Failed to add room: ' + error.message);
-    }
-}
-    
-// Update room - FIXED to use consistent Cloudinary handling
-async function updateRoom() {
-    if (!currentEditingRoomId) return;
-
-    const propertyId = document.getElementById('roomPropertyId').value;
-    const existingRoom = currentPropertyRooms.find(r => r._id === currentEditingRoomId);
-    
-    if (!existingRoom) {
-        alert('Room not found!');
-        return;
-    }
-
-    // Get existing images from the room (these are the ones that remain after deletions)
-    const existingImages = roomImages.add.urls;
-    
-    // Upload new files to Cloudinary
-    const filesToUpload = roomImages.add.files.map(fileData => fileData.file);
-    const newUploadedUrls = await uploadMultipleToCloudinary(filesToUpload);
-    
-    // Combine existing images with new images
-    const allImages = [
-        ...existingImages,           // Existing Cloudinary URLs (after any deletions)
-        ...newUploadedUrls,          // Newly uploaded Cloudinary URLs  
-    ];
-
-    const roomData = {
-        roomType: document.getElementById('roomType').value,
-        roomNumber: document.getElementById('roomNumber').value,
-        price: parseInt(document.getElementById('roomPrice').value),
-        size: document.getElementById('roomSize').value,
-        description: document.getElementById('roomDescription').value,
-        isAvailable: document.getElementById('roomAvailability').value === 'true',
-        images: allImages,
-        features: getSelectedRoomFeatures()
-    };
-
-    // Add occupant info if room is occupied
-    if (!roomData.isAvailable) {
-        roomData.occupant = {
-            name: document.getElementById('occupantName').value,
-            moveInDate: document.getElementById('moveInDate').value
-        };
+    if (property && property.acceptsShortTerm) {
+        roomShortTermSection.style.display = 'block';
+        // Initialize the pricing field visibility
+        toggleRoomShortTermPriceField();
     } else {
-        roomData.occupant = null;
-    }
-
-    try {
-        const token = localStorage.getItem("token");
-        const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms/${currentEditingRoomId}`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(roomData)
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to update room');
-        }
-
-        alert('Room updated successfully!');
-        hideAddRoomForm();
-        await loadPropertyRooms(propertyId);
-        currentEditingRoomId = null;
-        
-        // Reset room image data after successful update
-        resetRoomImageData();
-    } catch (error) {
-        console.error('Error updating room:', error);
-        alert('Failed to update room: ' + error.message);
+        roomShortTermSection.style.display = 'none';
     }
 }
 
-    // Get selected room features
-    function getSelectedRoomFeatures() {
-        const features = [];
-        const checkboxes = [
-            'featureSingleBed', 'featureDoubleBed', 'featureDesk', 'featureWardrobe',
-            'featurePrivateBathroom', 'featureAC', 'featureHeating', 'featureBalcony'
-        ];
-        
-        checkboxes.forEach(id => {
-            if (document.getElementById(id).checked) {
-                features.push(document.getElementById(id).value);
-            }
-        });
-        
-        return features;
+// Toggle room short-term price field based on pricing type
+function toggleRoomShortTermPriceField() {
+    const pricingType = document.getElementById('roomShortTermPricing').value;
+    const priceField = document.getElementById('roomShortTermPriceField');
+    
+    if (pricingType === 'fixed') {
+        priceField.style.display = 'block';
+        document.getElementById('roomShortTermPrice').required = true;
+    } else {
+        priceField.style.display = 'none';
+        document.getElementById('roomShortTermPrice').required = false;
     }
+}
 
-    // Edit existing room - FIXED to show existing images properly
-    // Update the editExistingRoom function to handle Cloudinary URLs properly
+// Update the showAddRoomForm function to check for short-term availability
+function showAddRoomForm() {
+    document.getElementById('addRoomForm').style.display = 'block';
+    document.getElementById('addRoomFormFields').reset();
+    currentEditingRoomId = null;
+    
+    // Reset room image data for add form
+    resetRoomImageData();
+    
+    // Update form title and button text
+    document.getElementById('roomFormTitle').textContent = 'Add New Room';
+    document.getElementById('roomActionButton').textContent = 'Add Room';
+    
+    // Reset occupant info display
+    document.getElementById('occupantInfo').style.display = 'none';
+    
+    // Check if property accepts short-term and show/hide room short-term section
+    checkPropertyShortTermAndToggleRoomSection();
+    
+    // Scroll to the form
+    document.getElementById('addRoomForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Update the editExistingRoom function to populate short-term pricing
 function editExistingRoom(roomId) {
     const room = currentPropertyRooms.find(r => r._id === roomId);
     if (!room) return;
@@ -4707,6 +4491,14 @@ function editExistingRoom(roomId) {
     document.getElementById('roomSize').value = room.size || '';
     document.getElementById('roomDescription').value = room.description || '';
     document.getElementById('roomAvailability').value = room.isAvailable ? 'true' : 'false';
+    
+    // Populate short-term pricing fields if they exist
+    if (room.shortTermPricing) {
+        document.getElementById('roomShortTermPricing').value = room.shortTermPricing;
+        document.getElementById('roomShortTermPrice').value = room.shortTermPrice || '';
+        document.getElementById('roomShortTermMinStay').value = room.shortTermMinStay || 1;
+        document.getElementById('roomShortTermDescription').value = room.shortTermDescription || '';
+    }
     
     // Handle existing images - all should be Cloudinary URLs now
     if (room.images && room.images.length > 0) {
@@ -4770,17 +4562,412 @@ function editExistingRoom(roomId) {
     document.getElementById('roomFormTitle').textContent = 'Edit Room';
     document.getElementById('roomActionButton').textContent = 'Update Room';
 
+    // Check if property accepts short-term and show/hide room short-term section
+    checkPropertyShortTermAndToggleRoomSection();
+    
+    // Initialize the pricing field visibility
+    toggleRoomShortTermPriceField();
+
     // Scroll to the form
     document.getElementById('addRoomForm').scrollIntoView({ behavior: 'smooth' });
 }
 
-    // View room details
-    // View room details - FIXED with proper modal management
+// Update the addNewRoom function to include short-term pricing
+async function addNewRoom() {
+    const propertyId = document.getElementById('roomPropertyId').value;
+    const property = allProperties.find(p => p._id === propertyId);
+    
+    const roomData = {
+        roomType: document.getElementById('roomType').value,
+        roomNumber: document.getElementById('roomNumber').value,
+        price: parseInt(document.getElementById('roomPrice').value),
+        size: document.getElementById('roomSize').value,
+        description: document.getElementById('roomDescription').value,
+        isAvailable: document.getElementById('roomAvailability').value === 'true',
+        images: [],
+        features: getSelectedRoomFeatures()
+    };
+
+    // Add short-term pricing if property accepts short-term
+    if (property && property.acceptsShortTerm) {
+        roomData.shortTermPricing = document.getElementById('roomShortTermPricing').value;
+        roomData.shortTermMinStay = parseInt(document.getElementById('roomShortTermMinStay').value) || 1;
+        roomData.shortTermDescription = document.getElementById('roomShortTermDescription').value || '';
+        
+        if (roomData.shortTermPricing === 'fixed') {
+            roomData.shortTermPrice = parseInt(document.getElementById('roomShortTermPrice').value) || 0;
+        } else {
+            roomData.shortTermPrice = 0;
+        }
+    }
+
+    // Add occupant info if room is occupied
+    if (!roomData.isAvailable) {
+        roomData.occupant = {
+            name: document.getElementById('occupantName').value,
+            moveInDate: document.getElementById('moveInDate').value
+        };
+    }
+
+    // ✅ FIXED: Use batch upload for room images
+    const filesToUpload = roomImages.add.files.map(fileData => fileData.file);
+    
+    if (filesToUpload.length > 0) {
+        const uploadedUrls = await uploadMultipleToCloudinary(filesToUpload);
+        roomData.images.push(...uploadedUrls);
+    }
+    
+    // Add URL images (these are already external URLs)
+    roomData.images.push(...roomImages.add.urls);
+
+    console.log('Creating room with short-term data:', roomData);
+
+    try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(roomData)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to add room');
+        }
+
+        alert('Room added successfully!');
+        hideAddRoomForm();
+        await loadPropertyRooms(propertyId);
+        
+        // Reset room image data after successful add
+        resetRoomImageData();
+    } catch (error) {
+        console.error('Error adding room:', error);
+        alert('Failed to add room: ' + error.message);
+    }
+}
+
+// Update the updateRoom function to include short-term pricing
+async function updateRoom() {
+    if (!currentEditingRoomId) return;
+
+    const propertyId = document.getElementById('roomPropertyId').value;
+    const property = allProperties.find(p => p._id === propertyId);
+    const existingRoom = currentPropertyRooms.find(r => r._id === currentEditingRoomId);
+    
+    if (!existingRoom) {
+        alert('Room not found!');
+        return;
+    }
+
+    // Get existing images from the room (these are the ones that remain after deletions)
+    const existingImages = roomImages.add.urls;
+    
+    // Upload new files to Cloudinary
+    const filesToUpload = roomImages.add.files.map(fileData => fileData.file);
+    const newUploadedUrls = await uploadMultipleToCloudinary(filesToUpload);
+    
+    // Combine existing images with new images
+    const allImages = [
+        ...existingImages,           // Existing Cloudinary URLs (after any deletions)
+        ...newUploadedUrls,          // Newly uploaded Cloudinary URLs  
+    ];
+
+    const roomData = {
+        roomType: document.getElementById('roomType').value,
+        roomNumber: document.getElementById('roomNumber').value,
+        price: parseInt(document.getElementById('roomPrice').value),
+        size: document.getElementById('roomSize').value,
+        description: document.getElementById('roomDescription').value,
+        isAvailable: document.getElementById('roomAvailability').value === 'true',
+        images: allImages,
+        features: getSelectedRoomFeatures()
+    };
+
+    // Add short-term pricing if property accepts short-term
+    if (property && property.acceptsShortTerm) {
+        roomData.shortTermPricing = document.getElementById('roomShortTermPricing').value;
+        roomData.shortTermMinStay = parseInt(document.getElementById('roomShortTermMinStay').value) || 1;
+        roomData.shortTermDescription = document.getElementById('roomShortTermDescription').value || '';
+        
+        if (roomData.shortTermPricing === 'fixed') {
+            roomData.shortTermPrice = parseInt(document.getElementById('roomShortTermPrice').value) || 0;
+        } else {
+            roomData.shortTermPrice = 0;
+        }
+    }
+
+    // Add occupant info if room is occupied
+    if (!roomData.isAvailable) {
+        roomData.occupant = {
+            name: document.getElementById('occupantName').value,
+            moveInDate: document.getElementById('moveInDate').value
+        };
+    } else {
+        roomData.occupant = null;
+    }
+
+    try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms/${currentEditingRoomId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(roomData)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update room');
+        }
+
+        alert('Room updated successfully!');
+        hideAddRoomForm();
+        await loadPropertyRooms(propertyId);
+        currentEditingRoomId = null;
+        
+        // Reset room image data after successful update
+        resetRoomImageData();
+    } catch (error) {
+        console.error('Error updating room:', error);
+        alert('Failed to update room: ' + error.message);
+    }
+}
+
+// Update the manageRooms function to check for short-term availability
+function manageRooms(propertyId) {
+    const property = allProperties.find(p => p._id === propertyId);
+    if (!property) return;
+    
+    document.getElementById('roomPropertyId').value = propertyId;
+    document.getElementById('roomManagementTitle').textContent = `Manage Rooms - ${property.title}`;
+    document.getElementById('propertyRoomsTitle').textContent = `Rooms for ${property.title}`;
+    
+    // Reset room image data
+    resetRoomImageData();
+    
+    // Load rooms for this property
+    loadPropertyRooms(propertyId);
+    
+    // Show modal
+    new bootstrap.Modal(document.getElementById('roomManagementModal')).show();
+}
+
+    // Load property rooms from backend
+    async function loadPropertyRooms(propertyId) {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                currentPropertyRooms = data.rooms || [];
+                renderRoomsList();
+            } else {
+                throw new Error('Failed to load rooms');
+            }
+        } catch (error) {
+            console.error('Error loading rooms:', error);
+            currentPropertyRooms = [];
+            renderRoomsList();
+        }
+    }
+
+    // Update the renderRoomsList function to show short-term pricing badges
+function renderRoomsList() {
+    const container = document.getElementById('roomsListContainer');
+    const propertyId = document.getElementById('roomPropertyId').value;
+    const property = allProperties.find(p => p._id === propertyId);
+    
+    if (currentPropertyRooms.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-4">
+                <i class="bi bi-door-closed display-4 text-muted mb-3"></i>
+                <p class="text-muted">No rooms added yet</p>
+                <small>Add rooms to start receiving bookings for individual rooms</small>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = currentPropertyRooms.map(room => `
+        <div class="card mb-3 room-card ${room.isAvailable ? 'border-success' : 'border-warning'}">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <img src="${room.images && room.images.length > 0 ? room.images[0] : 'https://via.placeholder.com/200x150?text=Room+Image'}" 
+                            class="img-fluid rounded" alt="${room.roomNumber || room.roomType}" style="height: 120px; object-fit: cover; width: 100%;">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="card-title mb-1">
+                                    ${room.roomNumber ? room.roomNumber + ' - ' : ''}${roomTypeConfig[room.roomType]?.text || room.roomType}
+                                </h6>
+                                <span class="badge bg-${roomTypeConfig[room.roomType]?.class || 'secondary'} mb-2">
+                                    <i class="${roomTypeConfig[room.roomType]?.icon || 'bi-door-closed'} me-1"></i>
+                                    ${roomTypeConfig[room.roomType]?.text || room.roomType}
+                                </span>
+                                <span class="badge bg-${room.isAvailable ? 'success' : 'warning'} ms-1">
+                                    <i class="bi ${room.isAvailable ? 'bi-check-circle' : 'bi-person-check'} me-1"></i>
+                                    ${room.isAvailable ? 'Available' : 'Occupied'}
+                                </span>
+                                ${property && property.acceptsShortTerm && room.shortTermPricing ? `
+                                    <span class="badge bg-warning ms-1">
+                                        <i class="bi bi-calendar-range me-1"></i>
+                                        ${room.shortTermPricing === 'fixed' ? `R${room.shortTermPrice}/day` : 'Negotiable'}
+                                    </span>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <p class="card-text small text-muted mb-2">${room.description || 'No description provided'}</p>
+                        ${property && property.acceptsShortTerm && room.shortTermPricing ? `
+                            <div class="mb-2">
+                                <small class="text-warning">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Short-term: ${room.shortTermPricing === 'fixed' ? 
+                                        `R${room.shortTermPrice}/day (min ${room.shortTermMinStay} days)` : 
+                                        'Price negotiable'}
+                                </small>
+                            </div>
+                        ` : ''}
+                        <div class="mb-2">
+                            ${room.features && room.features.slice(0, 4).map(feature => `
+                                <span class="badge bg-light text-dark me-1 small">${feature}</span>
+                            `).join('')}
+                            ${room.features && room.features.length > 4 ? `<span class="badge bg-light text-dark small">+${room.features.length - 4}</span>` : ''}
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted small me-3"><i class="bi bi-arrows-fullscreen me-1"></i>${room.size || 'Size not specified'}</span>
+                            </div>
+                            <div>
+                                <strong class="text-primary">R${room.price}/month</strong>
+                            </div>
+                        </div>
+                        ${!room.isAvailable && room.occupant ? `
+                            <div class="mt-2 p-2 bg-light rounded small">
+                                <strong>Occupied by:</strong> ${room.occupant.name || 'Unknown'} 
+                                ${room.occupant.moveInDate ? `since ${new Date(room.occupant.moveInDate).toLocaleDateString()}` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex flex-column gap-2">
+                            <button class="btn btn-outline-warning btn-sm" onclick="editExistingRoom('${room._id}')">
+                                <i class="bi bi-pencil me-1"></i>Edit
+                            </button>
+                            <button class="btn btn-outline-info btn-sm" onclick="viewRoomDetails('${room._id}')">
+                                <i class="bi bi-eye me-1"></i>View
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteRoom('${room._id}')">
+                                <i class="bi bi-trash me-1"></i>Delete
+                            </button>
+                            <button class="btn btn-${room.isAvailable ? 'warning' : 'success'} btn-sm" onclick="toggleRoomAvailability('${room._id}')">
+                                <i class="bi ${room.isAvailable ? 'bi-person-check' : 'bi-check-circle'} me-1"></i>
+                                ${room.isAvailable ? 'Mark Occupied' : 'Mark Available'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+    // Hide add room form
+    function hideAddRoomForm() {
+        document.getElementById('addRoomForm').style.display = 'none';
+        currentEditingRoomId = null;
+    }
+
+    // Toggle occupant info based on availability
+    function toggleOccupantInfo() {
+        const isOccupied = document.getElementById('roomAvailability').value === 'false';
+        document.getElementById('occupantInfo').style.display = isOccupied ? 'block' : 'none';
+    }
+
+    // Add or update room
+    async function addRoom() {
+        const propertyId = document.getElementById('roomPropertyId').value;
+        
+        if (currentEditingRoomId) {
+            await updateRoom();
+        } else {
+            await addNewRoom();
+        }
+    }
+
+
+    // Get selected room features
+    function getSelectedRoomFeatures() {
+        const features = [];
+        const checkboxes = [
+            'featureSingleBed', 'featureDoubleBed', 'featureDesk', 'featureWardrobe',
+            'featurePrivateBathroom', 'featureAC', 'featureHeating', 'featureBalcony'
+        ];
+        
+        checkboxes.forEach(id => {
+            if (document.getElementById(id).checked) {
+                features.push(document.getElementById(id).value);
+            }
+        });
+        
+        return features;
+    }
+
+// Update the viewRoomDetails function to show short-term pricing
 function viewRoomDetails(roomId) {
     const room = currentPropertyRooms.find(r => r._id === roomId);
+    const propertyId = document.getElementById('roomPropertyId').value;
+    const property = allProperties.find(p => p._id === propertyId);
+    
     if (!room) return;
 
     const roomType = roomTypeConfig[room.roomType] || { text: room.roomType, icon: 'bi-door-closed', class: 'secondary' };
+    
+    // Create short-term pricing section if available
+    const shortTermSection = property && property.acceptsShortTerm && room.shortTermPricing ? `
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6 class="text-warning">
+                    <i class="bi bi-calendar-range me-2"></i>Short-term Stay Pricing (December & January)
+                </h6>
+                <div class="card border-warning">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Pricing Type:</strong> ${room.shortTermPricing === 'fixed' ? 'Fixed Daily Rate' : 'Negotiable'}
+                            </div>
+                            ${room.shortTermPricing === 'fixed' ? `
+                                <div class="col-md-6">
+                                    <strong>Daily Rate:</strong> R${room.shortTermPrice}/day
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <strong>Minimum Stay:</strong> ${room.shortTermMinStay} days
+                            </div>
+                        </div>
+                        ${room.shortTermDescription ? `
+                            <div class="mt-2">
+                                <strong>Details:</strong> ${room.shortTermDescription}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+    ` : '';
     
     // Create image carousel if multiple images exist
     let imagesHtml = '';
