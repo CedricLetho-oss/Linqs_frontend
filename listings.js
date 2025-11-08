@@ -760,12 +760,22 @@ getNoResultsHTML() {
     }
 
     updateResultsCount() {
-        const resultsCount = document.getElementById('resultsCount');
-        if (resultsCount) {
-            const count = this.filteredProperties.length;
-            resultsCount.textContent = `${count} listing${count === 1 ? '' : 's'} found`;
-        }
+    const resultsCount = document.getElementById('resultsCount');
+    const mobileResultsCount = document.getElementById('mobileResultsCount');
+    
+    const count = this.filteredProperties.length;
+    const resultsText = `${count} listing${count === 1 ? '' : 's'} found`;
+    
+    // Update desktop results count
+    if (resultsCount) {
+        resultsCount.textContent = resultsText;
     }
+    
+    // Update mobile results count
+    if (mobileResultsCount) {
+        mobileResultsCount.textContent = resultsText;
+    }
+}
 
     setupEventListeners() {
         // Set up event listeners for filters
