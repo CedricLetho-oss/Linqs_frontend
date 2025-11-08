@@ -1043,65 +1043,120 @@
     color: #0d9488 !important;
 }
 
-/* Enhanced Photography Modal for Mobile */
+/* Photography Modal - Elegant Desktop with Mobile Responsiveness */
 #photographyPromptModal .modal-dialog {
-  max-width: 95%;
-  margin: 1rem auto;
+  max-width: 500px;
 }
 
 #photographyPromptModal .modal-content {
   border-radius: 1rem;
   overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#photographyPromptModal .modal-header {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border-bottom: none;
+  padding: 1.5rem;
 }
 
 #photographyPromptModal .modal-body {
+  padding: 2rem;
+}
+
+#photographyPromptModal .modal-footer {
+  border-top: 1px solid #e9ecef;
   padding: 1.5rem;
+}
+
+/* Desktop-specific styling (default) */
+#photographyPromptModal .photography-content {
+  text-align: center;
+}
+
+#photographyPromptModal .camera-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+#photographyPromptModal .contact-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+#photographyPromptModal .contact-buttons .btn {
+  flex: 1;
+  max-width: 120px;
 }
 
 /* Mobile-specific adjustments */
 @media (max-width: 576px) {
   #photographyPromptModal .modal-dialog {
-    margin: 0.5rem auto;
-    max-width: 92%;
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
   }
   
   #photographyPromptModal .modal-body {
-    padding: 1rem;
+    padding: 1.5rem;
   }
   
-  #photographyPromptModal .display-4 {
+  #photographyPromptModal .modal-header {
+    padding: 1.25rem;
+  }
+  
+  #photographyPromptModal .modal-footer {
+    padding: 1.25rem;
+  }
+  
+  #photographyPromptModal .camera-icon {
     font-size: 2.5rem;
+    margin-bottom: 0.75rem;
   }
   
-  #photographyPromptModal .btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
+  #photographyPromptModal h5 {
+    font-size: 1.1rem;
   }
   
-  #photographyPromptModal .d-flex.gap-3 {
+  #photographyPromptModal .contact-buttons {
     flex-direction: column;
-    gap: 0.5rem !important;
+    gap: 0.5rem;
+    margin: 1rem 0;
   }
   
-  #photographyPromptModal .d-flex.gap-3 .btn {
+  #photographyPromptModal .contact-buttons .btn {
+    max-width: none;
     width: 100%;
-    margin: 0.1rem 0;
+  }
+  
+  #photographyPromptModal .modal-footer .btn {
+    padding: 0.6rem 1rem;
   }
 }
 
 /* Extra small devices */
 @media (max-width: 380px) {
   #photographyPromptModal .modal-dialog {
-    margin: 0.25rem auto;
-    max-width: 90%;
+    margin: 0.5rem;
+    max-width: calc(100% - 1rem);
   }
   
   #photographyPromptModal .modal-body {
-    padding: 0.75rem;
+    padding: 1.25rem;
+  }
+  
+  #photographyPromptModal .modal-header,
+  #photographyPromptModal .modal-footer {
+    padding: 1rem;
+  }
+  
+  #photographyPromptModal .camera-icon {
+    font-size: 2rem;
   }
   
   #photographyPromptModal h5 {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
   
   #photographyPromptModal p {
@@ -1318,65 +1373,54 @@
 
   </main>
 
- <!-- Updated Photography Prompt Modal -->
+<!-- Elegant Photography Prompt Modal -->
 <div class="modal fade" id="photographyPromptModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-header bg-warning text-dark py-3">
-        <h5 class="modal-title h6">
-          <i class="bi bi-camera me-2"></i>Better Photos = More Bookings
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body text-center p-3">
-        <div class="mb-3">
-          <i class="bi bi-camera-fill text-warning mb-2" style="font-size: 2.5rem;"></i>
-          <h6 class="fw-bold">Get Professional Property Photos</h6>
-          <p class="text-muted small mb-2">
-            Listings with professional photos get <strong class="text-dark">3x more views</strong> and <strong class="text-dark">book faster</strong>!
-          </p>
+      <div class="modal-header text-center text-white">
+        <div class="w-100">
+          <i class="bi bi-camera-fill camera-icon d-block"></i>
+          <h5 class="modal-title mb-0">Professional Photos = Better Results</h5>
         </div>
+        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body photography-content">
+        <p class="text-muted mb-4">
+          Listings with professional photos get <strong class="text-dark">3x more views</strong> and 
+          <strong class="text-dark">book 47% faster</strong>!
+        </p>
         
-        <div class="bg-light p-3 rounded mb-3">
-          <h6 class="text-navy small fw-bold">Harmse Photography (Pty) Ltd</h6>
-          <p class="small mb-2 text-muted">Specialized in student accommodation photography</p>
-          <div class="row g-2">
-            <div class="col-4">
-              <a href="https://wa.me/27813332265" class="btn btn-success btn-sm w-100">
-                <i class="bi bi-whatsapp me-1"></i>WhatsApp
-              </a>
-            </div>
-            <div class="col-4">
-              <a href="tel:+27813332265" class="btn btn-primary btn-sm w-100">
-                <i class="bi bi-telephone me-1"></i>Call
-              </a>
-            </div>
-            <div class="col-4">
-              <a href="https://harmsephotography.co.za/" target="_blank" class="btn btn-info btn-sm w-100">
-                <i class="bi bi-globe me-1"></i>Website
-              </a>
-            </div>
+        <div class="bg-light rounded p-4 mb-4">
+          <h6 class="text-primary mb-2">Harmse Photography (Pty) Ltd</h6>
+          <p class="text-muted small mb-3">Specialized in student accommodation photography</p>
+          
+          <div class="contact-buttons">
+            <a href="https://wa.me/27813332265" class="btn btn-success">
+              <i class="bi bi-whatsapp me-2"></i>WhatsApp
+            </a>
+            <a href="tel:+27813332265" class="btn btn-primary">
+              <i class="bi bi-telephone me-2"></i>Call Now
+            </a>
+            <a href="https://harmsephotography.co.za/" target="_blank" class="btn btn-info">
+              <i class="bi bi-globe me-2"></i>Website
+            </a>
           </div>
         </div>
         
-        <div class="alert alert-info small text-start mb-0">
-          <i class="bi bi-lightbulb me-1"></i>
-          <strong>Tip:</strong> You can still proceed with your own photos, but professional shots work best.
+        <div class="alert alert-info text-start">
+          <i class="bi bi-lightbulb me-2"></i>
+          <strong>Tip:</strong> You can still proceed with your own photos, but we recommend professional shots for best results.
         </div>
       </div>
-      <div class="modal-footer py-2">
-        <div class="row g-2 w-100">
-          <div class="col-6">
-            <button type="button" class="btn btn-outline-secondary btn-sm w-100" data-bs-dismiss="modal" onclick="proceedToAddProperty()">
-              Use My Photos
-            </button>
-          </div>
-          <div class="col-6">
-            <button type="button" class="btn btn-warning btn-sm w-100" onclick="proceedToAddProperty()">
-              <i class="bi bi-plus-circle me-1"></i>Add Property
-            </button>
-          </div>
-        </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" onclick="proceedToAddProperty()">
+          I'll Use My Own Photos
+        </button>
+        <button type="button" class="btn btn-warning" onclick="proceedToAddProperty()">
+          <i class="bi bi-plus-circle me-2"></i>Add Property Anyway
+        </button>
       </div>
     </div>
   </div>
