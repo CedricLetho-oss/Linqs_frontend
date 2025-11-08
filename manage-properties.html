@@ -989,7 +989,7 @@
   opacity: 0.5 !important;
 }
 
-/* Replace the existing short-term styling with this: */
+/* Short-term tenant styling - COMPREHENSIVE FIX */
 .short-term-badge {
     background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
     color: white;
@@ -1004,10 +1004,43 @@
     border-color: #0d9488;
 }
 
-/* Update the short-term pricing text color */
-.short-term-pricing {
-    color: #0d9488;
+/* Update ALL short-term pricing text colors */
+.short-term-pricing-text {
+    color: #0d9488 !important;
     font-weight: 600;
+}
+
+/* Room short-term badge */
+.room-short-term-badge {
+    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%) !important;
+    color: white;
+}
+
+/* Room short-term pricing text */
+.room-short-term-pricing {
+    color: #0d9488 !important;
+    font-weight: 600;
+}
+
+/* Room short-term section headers */
+.room-short-term-header {
+    color: #0d9488 !important;
+    border-color: #0d9488 !important;
+}
+
+/* Alert colors for short-term */
+.short-term-alert {
+    border-left-color: #0d9488 !important;
+}
+
+/* Border color for cards */
+.border-teal {
+    border-color: #0d9488 !important;
+}
+
+/* Ensure all short-term text uses the teal color */
+.text-short-term {
+    color: #0d9488 !important;
 }
 </style>
 </head>
@@ -2147,14 +2180,15 @@
                 <!-- Add this section to your room management modal, after the room features section -->
                 <div class="row mb-4" id="roomShortTermSection" style="display: none;">
                   <div class="col-12">
-                    <h6 class="text-warning mb-3 border-bottom pb-2">
-                      <i class="bi bi-calendar-range me-2"></i>Short-term Room Pricing (December & January)
-                    </h6>
-                    
-                    <div class="alert alert-warning">
-                      <i class="bi bi-info-circle me-2"></i>
-                      <strong>Short-term availability:</strong> Since this property accepts short-term tenants, you can set special pricing for December & January stays.
-                    </div>
+                      <h6 class="room-short-term-header mb-3 border-bottom pb-2">
+                          <i class="bi bi-calendar-range me-2"></i>Short-term Room Pricing (December & January)
+                      </h6>
+                      
+                      <!-- Update the alert class -->
+                      <div class="alert short-term-alert">
+                          <i class="bi bi-info-circle me-2"></i>
+                          <strong>Short-term availability:</strong> Since this property accepts short-term tenants, you can set special pricing for December & January stays.
+                      </div>
                     
                     <div class="row">
                       <div class="col-md-6 mb-3">
@@ -3476,7 +3510,7 @@ async function uploadMultipleToCloudinary(files) {
                                     <strong class="short-term-pricing-text">R${property.shortTermPrice}/day</strong>
                                     <small class="text-muted"> (min ${property.shortTermMinStay} days)</small>
                                 ` : `
-                                    <strong class="text-warning">Price Negotiable</strong>
+                                    <strong class="short-term-pricing-text">Price Negotiable</strong>
                                 `}
                             </div>
                         ` : ''}
@@ -4827,7 +4861,7 @@ function renderRoomsList() {
                                     ${room.isAvailable ? 'Available' : 'Occupied'}
                                 </span>
                                 ${property && property.acceptsShortTerm && room.shortTermPricing ? `
-                                    <span class="badge bg-warning ms-1">
+                                    <span class="badge room-short-term-badge ms-1">
                                         <i class="bi bi-calendar-range me-1"></i>
                                         ${room.shortTermPricing === 'fixed' ? `R${room.shortTermPrice}/day` : 'Negotiable'}
                                     </span>
@@ -4837,7 +4871,7 @@ function renderRoomsList() {
                         <p class="card-text small text-muted mb-2">${room.description || 'No description provided'}</p>
                         ${property && property.acceptsShortTerm && room.shortTermPricing ? `
                             <div class="mb-2">
-                                <small class="text-warning">
+                                <small class="room-short-term-pricing">
                                     <i class="bi bi-info-circle me-1"></i>
                                     Short-term: ${room.shortTermPricing === 'fixed' ? 
                                         `R${room.shortTermPrice}/day (min ${room.shortTermMinStay} days)` : 
@@ -4941,39 +4975,40 @@ function viewRoomDetails(roomId) {
     const roomType = roomTypeConfig[room.roomType] || { text: room.roomType, icon: 'bi-door-closed', class: 'secondary' };
     
     // Create short-term pricing section if available
-    const shortTermSection = property && property.acceptsShortTerm && room.shortTermPricing ? `
-        <div class="row mt-3">
-            <div class="col-12">
-                <h6 class="text-warning">
-                    <i class="bi bi-calendar-range me-2"></i>Short-term Stay Pricing (December & January)
-                </h6>
-                <div class="card border-warning">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Pricing Type:</strong> ${room.shortTermPricing === 'fixed' ? 'Fixed Daily Rate' : 'Negotiable'}
-                            </div>
-                            ${room.shortTermPricing === 'fixed' ? `
-                                <div class="col-md-6">
-                                    <strong>Daily Rate:</strong> R${room.shortTermPrice}/day
-                                </div>
-                            ` : ''}
+    // In the viewRoomDetails function, update the short-term section:
+const shortTermSection = property && property.acceptsShortTerm && room.shortTermPricing ? `
+    <div class="row mt-3">
+        <div class="col-12">
+            <h6 class="room-short-term-header">
+                <i class="bi bi-calendar-range me-2"></i>Short-term Stay Pricing (December & January)
+            </h6>
+            <div class="card border-teal">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Pricing Type:</strong> ${room.shortTermPricing === 'fixed' ? 'Fixed Daily Rate' : 'Negotiable'}
                         </div>
-                        <div class="row mt-2">
+                        ${room.shortTermPricing === 'fixed' ? `
                             <div class="col-md-6">
-                                <strong>Minimum Stay:</strong> ${room.shortTermMinStay} days
-                            </div>
-                        </div>
-                        ${room.shortTermDescription ? `
-                            <div class="mt-2">
-                                <strong>Details:</strong> ${room.shortTermDescription}
+                                <strong>Daily Rate:</strong> <span class="room-short-term-pricing">R${room.shortTermPrice}/day</span>
                             </div>
                         ` : ''}
                     </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <strong>Minimum Stay:</strong> ${room.shortTermMinStay} days
+                        </div>
+                    </div>
+                    ${room.shortTermDescription ? `
+                        <div class="mt-2">
+                            <strong>Details:</strong> ${room.shortTermDescription}
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         </div>
-    ` : '';
+    </div>
+` : '';
     
     // Create image carousel if multiple images exist
     let imagesHtml = '';
