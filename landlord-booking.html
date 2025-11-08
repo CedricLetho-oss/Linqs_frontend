@@ -1317,6 +1317,21 @@ footer {
 .student-avatar {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
 }
+
+/* Verification Badge Styles */
+.verification-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+}
+
+.bi-patch-check-fill {
+    color: #059669; /* Success green */
+}
+
+.bi-exclamation-triangle {
+    color: #d97706; /* Warning amber */
+}
   </style>
 </head>
 <body>
@@ -1520,20 +1535,22 @@ footer {
 
   </main>
 
-  <!-- Booking Details Modal -->
-  <div class="modal fade" id="bookingDetailsModal" tabindex="-1">
+<!-- Booking Details Modal -->
+<div class="modal fade" id="bookingDetailsModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Booking Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Booking Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="bookingDetailsContent">
+                <!-- Verification Badge will be displayed here -->
+                <div id="verificationBadgeContainer"></div>
+                <!-- Rest of the content will be populated dynamically -->
+            </div>
         </div>
-        <div class="modal-body" id="bookingDetailsContent">
-          <!-- Content will be populated dynamically -->
-        </div>
-      </div>
     </div>
-  </div>
+</div>
 
   <!-- Stats Modal -->
   <div class="modal fade" id="bookingStatsModal" tabindex="-1">
@@ -1623,6 +1640,7 @@ footer {
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="navbar.js"></script>
+  <script src="verification-badge.js"></script>
   <!-- FullCalendar JS -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
   
@@ -1688,87 +1706,96 @@ footer {
     }
 
 // Update generateBookingRow function to include booking type
+// UPDATE generateBookingRow function to include verification badge
 function generateBookingRow(booking) {
-  const status = statusConfig[booking.status];
-  const isUpcoming = booking.status === 'confirmed' && new Date(booking.checkIn) > new Date();
-  const studentName = booking.student?.username || 'Unknown Student';
-  const propertyName = booking.property?.title || 'Unknown Property';
-  const hasRescheduleRequest = hasPendingReschedule(booking);
-  const latestReschedule = getLatestRescheduleRequest(booking);
-  
-  // NEW: Determine booking type and styling
-  const bookingType = booking.bookingType || 'student';
-  const isTenant = bookingType === 'short-term' || bookingType === 'tenant';
-  const typeBadgeClass = isTenant ? 'bg-info' : 'bg-primary';
-  const typeText = isTenant ? 'Short-term' : 'Student';
-  const typeIcon = isTenant ? 'bi-person' : 'bi-person-check';
-  
-  return `
-    <tr class="booking-row" data-booking-id="${booking._id}">
-      <td>
-        <div class="d-flex align-items-center">
-          <div class="student-avatar me-2 ${isTenant ? 'bg-info' : 'bg-primary'}">${getInitials(studentName)}</div>
-          <div>
-            <div class="fw-bold small">${studentName}</div>
-            <small class="text-muted">${booking.student?.email || 'No email'}</small>
-            ${hasRescheduleRequest ? '<small class="text-warning d-block"><i class="bi bi-exclamation-triangle"></i> Reschedule Requested</small>' : ''}
-            ${isTenant && booking.stayDuration ? `<small class="text-info d-block"><i class="bi bi-clock"></i> ${booking.stayDuration}</small>` : ''}
-            ${isTenant && booking.negotiatedPrice > 0 ? `<small class="text-success d-block"><i class="bi bi-currency-dollar"></i> R${booking.negotiatedPrice}</small>` : ''}
-          </div>
-        </div>
-      </td>
-      <td>
-        <div class="fw-bold small">${propertyName}</div>
-        <small class="text-muted">${isTenant ? 'Price negotiated' : `R${booking.property?.price || 0}/month`}</small>
-      </td>
-      <td>
-        <div class="small">${formatDateTime(booking.checkIn)}</div>
-        <small class="text-muted">${booking.numberOfGuests || 1} guest(s)</small>
-        ${isUpcoming ? '<small class="text-info d-block">Upcoming</small>' : ''}
-        ${hasRescheduleRequest && latestReschedule ? `
-          <small class="text-warning d-block">
-            <i class="bi bi-arrow-clockwise"></i> Requested: ${formatDateTime(latestReschedule.newCheckIn)}
-          </small>
-        ` : ''}
-      </td>
-      <td>
-        <span class="badge ${typeBadgeClass} status-badge">
-          <i class="${typeIcon} me-1"></i>${typeText}
-        </span>
-      </td>
-      <td>
-        <span class="badge bg-${status.class} status-badge">
-          <i class="${status.icon} me-1"></i>${status.text}
-        </span>
-        ${hasRescheduleRequest ? '<span class="badge bg-info status-badge ms-1"><i class="bi bi-calendar-week"></i> Reschedule</span>' : ''}
-      </td>
-      <td>
-        <div class="action-buttons d-flex gap-1">
-          <button class="btn btn-sm btn-outline-primary" onclick="viewBookingDetails('${booking._id}')" title="View Details">
-            <i class="bi bi-eye"></i>
-          </button>
-          ${booking.status === 'pending' ? `
-            <button class="btn btn-sm btn-outline-success" onclick="updateBookingStatus('${booking._id}', 'confirmed')" title="Confirm">
-              <i class="bi bi-check-lg"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-danger" onclick="updateBookingStatus('${booking._id}', 'cancelled')" title="Cancel">
-              <i class="bi bi-x-lg"></i>
-            </button>
-          ` : ''}
-          ${booking.status === 'confirmed' ? `
-            <button class="btn btn-sm btn-outline-secondary" onclick="updateBookingStatus('${booking._id}', 'completed')" title="Mark Completed">
-              <i class="bi bi-check2-all"></i>
-            </button>
-          ` : ''}
-          ${hasRescheduleRequest ? `
-            <button class="btn btn-sm btn-outline-info" onclick="viewRescheduleRequest('${booking._id}')" title="Review Reschedule">
-              <i class="bi bi-calendar-week"></i>
-            </button>
-          ` : ''}
-        </div>
-      </td>
-    </tr>
-  `;
+    const status = statusConfig[booking.status];
+    const isUpcoming = booking.status === 'confirmed' && new Date(booking.checkIn) > new Date();
+    const studentName = booking.student?.username || 'Unknown Student';
+    const propertyName = booking.property?.title || 'Unknown Property';
+    const hasRescheduleRequest = hasPendingReschedule(booking);
+    const latestReschedule = getLatestRescheduleRequest(booking);
+    
+    // NEW: Verification status
+    const isVerified = booking.safetyFlags?.isVerified || booking.studentVerificationStatus === 'verified';
+    const verificationType = booking.verificationLevel || 'none';
+    
+    // Determine booking type and styling
+    const bookingType = booking.bookingType || 'student';
+    const isTenant = bookingType === 'short-term' || bookingType === 'tenant';
+    const typeBadgeClass = isTenant ? 'bg-info' : 'bg-primary';
+    const typeText = isTenant ? 'Short-term' : 'Student';
+    const typeIcon = isTenant ? 'bi-person' : 'bi-person-check';
+    
+    return `
+        <tr class="booking-row" data-booking-id="${booking._id}">
+            <td>
+                <div class="d-flex align-items-center">
+                    <div class="student-avatar me-2 ${isTenant ? 'bg-info' : 'bg-primary'}">${getInitials(studentName)}</div>
+                    <div>
+                        <div class="fw-bold small">${studentName}</div>
+                        <small class="text-muted">${booking.student?.email || 'No email'}</small>
+                        ${isVerified ? 
+                            `<small class="text-success d-block"><i class="bi bi-patch-check-fill"></i> Verified ${verificationType}</small>` : 
+                            `<small class="text-warning d-block"><i class="bi bi-exclamation-triangle"></i> Unverified</small>`
+                        }
+                        ${hasRescheduleRequest ? '<small class="text-warning d-block"><i class="bi bi-exclamation-triangle"></i> Reschedule Requested</small>' : ''}
+                        ${isTenant && booking.stayDuration ? `<small class="text-info d-block"><i class="bi bi-clock"></i> ${booking.stayDuration}</small>` : ''}
+                        ${isTenant && booking.negotiatedPrice > 0 ? `<small class="text-success d-block"><i class="bi bi-currency-dollar"></i> R${booking.negotiatedPrice}</small>` : ''}
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="fw-bold small">${propertyName}</div>
+                <small class="text-muted">${isTenant ? 'Price negotiated' : `R${booking.property?.price || 0}/month`}</small>
+            </td>
+            <td>
+                <div class="small">${formatDateTime(booking.checkIn)}</div>
+                <small class="text-muted">${booking.numberOfGuests || 1} guest(s)</small>
+                ${isUpcoming ? '<small class="text-info d-block">Upcoming</small>' : ''}
+                ${hasRescheduleRequest && latestReschedule ? `
+                    <small class="text-warning d-block">
+                        <i class="bi bi-arrow-clockwise"></i> Requested: ${formatDateTime(latestReschedule.newCheckIn)}
+                    </small>
+                ` : ''}
+            </td>
+            <td>
+                <span class="badge ${typeBadgeClass} status-badge">
+                    <i class="${typeIcon} me-1"></i>${typeText}
+                </span>
+            </td>
+            <td>
+                <span class="badge bg-${status.class} status-badge">
+                    <i class="${status.icon} me-1"></i>${status.text}
+                </span>
+                ${hasRescheduleRequest ? '<span class="badge bg-info status-badge ms-1"><i class="bi bi-calendar-week"></i> Reschedule</span>' : ''}
+            </td>
+            <td>
+                <div class="action-buttons d-flex gap-1">
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewBookingDetails('${booking._id}')" title="View Details">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    ${booking.status === 'pending' ? `
+                        <button class="btn btn-sm btn-outline-success" onclick="updateBookingStatus('${booking._id}', 'confirmed')" title="Confirm">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="updateBookingStatus('${booking._id}', 'cancelled')" title="Cancel">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    ` : ''}
+                    ${booking.status === 'confirmed' ? `
+                        <button class="btn btn-sm btn-outline-secondary" onclick="updateBookingStatus('${booking._id}', 'completed')" title="Mark Completed">
+                            <i class="bi bi-check2-all"></i>
+                        </button>
+                    ` : ''}
+                    ${hasRescheduleRequest ? `
+                        <button class="btn btn-sm btn-outline-info" onclick="viewRescheduleRequest('${booking._id}')" title="Review Reschedule">
+                            <i class="bi bi-calendar-week"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            </td>
+        </tr>
+    `;
 }
 
 // NEW: View and respond to reschedule request
@@ -2544,171 +2571,183 @@ function updateCalendar() {
     }
 
 // Update viewBookingDetails function
+// UPDATE viewBookingDetails function
 async function viewBookingDetails(bookingId) {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      throw new Error('No authentication token found');
-    }
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
 
-    const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
+        const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch booking details');
-    }
+        if (!response.ok) {
+            throw new Error('Failed to fetch booking details');
+        }
 
-    const data = await response.json();
-    const booking = data.booking;
-    const hasRescheduleRequests = booking.rescheduleRequests && booking.rescheduleRequests.length > 0;
+        const data = await response.json();
+        const booking = data.booking;
+        const hasRescheduleRequests = booking.rescheduleRequests && booking.rescheduleRequests.length > 0;
 
-    // NEW: Determine booking type
-    const bookingType = booking.bookingType || 'student';
-    const isTenant = bookingType === 'short-term' || bookingType === 'tenant';
-    const typeBadgeClass = isTenant ? 'bg-info' : 'bg-primary';
-    const typeText = isTenant ? 'Short-term Tenant' : 'Student';
-    const typeIcon = isTenant ? 'bi-person' : 'bi-person-check';
+        // NEW: Display verification badge
+        VerificationBadge.displayBadge(booking, 'verificationBadgeContainer');
 
-    let rescheduleHistory = '';
-    if (hasRescheduleRequests) {
-      rescheduleHistory = `
-        <div class="row mt-3">
-          <div class="col-12">
-            <h6>Reschedule History</h6>
-            <div class="list-group">
-              ${booking.rescheduleRequests.map((req, index) => `
-                <div class="list-group-item">
-                  <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                      <small class="text-muted">Request ${index + 1}</small>
-                      <div><strong>From:</strong> ${formatDateTime(req.originalCheckIn)}</div>
-                      <div><strong>To:</strong> ${formatDateTime(req.newCheckIn)}</div>
-                      ${req.reason ? `<div><strong>Reason:</strong> ${req.reason}</div>` : ''}
-                      <div><strong>Status:</strong> 
-                        <span class="badge bg-${req.status === 'approved' ? 'success' : req.status === 'rejected' ? 'danger' : 'warning'}">
-                          ${req.status}
-                        </span>
-                      </div>
+        // Determine booking type
+        const bookingType = booking.bookingType || 'student';
+        const isTenant = bookingType === 'short-term' || bookingType === 'tenant';
+        const typeBadgeClass = isTenant ? 'bg-info' : 'bg-primary';
+        const typeText = isTenant ? 'Short-term Tenant' : 'Student';
+        const typeIcon = isTenant ? 'bi-person' : 'bi-person-check';
+
+        let rescheduleHistory = '';
+        if (hasRescheduleRequests) {
+            rescheduleHistory = `
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>Reschedule History</h6>
+                        <div class="list-group">
+                            ${booking.rescheduleRequests.map((req, index) => `
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <small class="text-muted">Request ${index + 1}</small>
+                                            <div><strong>From:</strong> ${formatDateTime(req.originalCheckIn)}</div>
+                                            <div><strong>To:</strong> ${formatDateTime(req.newCheckIn)}</div>
+                                            ${req.reason ? `<div><strong>Reason:</strong> ${req.reason}</div>` : ''}
+                                            <div><strong>Status:</strong> 
+                                                <span class="badge bg-${req.status === 'approved' ? 'success' : req.status === 'rejected' ? 'danger' : 'warning'}">
+                                                    ${req.status}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">${formatDateTime(req.requestedAt)}</small>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
                     </div>
-                    <small class="text-muted">${formatDateTime(req.requestedAt)}</small>
-                  </div>
                 </div>
-              `).join('')}
+            `;
+        }
+
+        // Tenant-specific information section
+        const tenantInfo = isTenant ? `
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-info-circle me-2"></i>Short-term Tenant Information</h6>
+                        ${booking.stayDuration ? `<p><strong>Requested Stay Duration:</strong> ${booking.stayDuration}</p>` : ''}
+                        ${booking.negotiatedPrice > 0 ? `<p><strong>Negotiated Price:</strong> R${booking.negotiatedPrice}</p>` : '<p><strong>Pricing:</strong> To be negotiated</p>'}
+                        <p class="mb-0"><small>This is a short-term stay inquiry. Please contact the tenant to discuss pricing and stay details.</small></p>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-      `;
+        ` : '';
+
+        const modalContent = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>${isTenant ? 'Tenant' : 'Student'} Information</h6>
+                    <p><strong>Name:</strong> ${booking.student?.username || 'Unknown'}</p>
+                    <p><strong>Email:</strong> ${booking.student?.email || 'No email'}</p>
+                    <p><strong>Phone:</strong> ${booking.student?.phone || 'No phone'}</p>
+                    <p><strong>Type:</strong> <span class="badge ${typeBadgeClass}"><i class="${typeIcon} me-1"></i>${typeText}</span></p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Booking Details</h6>
+                    <p><strong>Property:</strong> ${booking.property?.title || 'Unknown'}</p>
+                    <p><strong>Check-in:</strong> ${formatDateTime(booking.checkIn)}</p>
+                    <p><strong>Check-out:</strong> ${formatDateTime(booking.checkOut)}</p>
+                    <p><strong>Guests:</strong> ${booking.numberOfGuests || 1}</p>
+                    ${!isTenant ? `<p><strong>Total Price:</strong> R${booking.totalPrice || 0}</p>` : ''}
+                    <p><strong>Status:</strong> <span class="badge bg-${statusConfig[booking.status].class}">${statusConfig[booking.status].text}</span></p>
+                    ${hasPendingReschedule(booking) ? `
+                        <p><strong>Reschedule:</strong> <span class="badge bg-info">Pending Request</span></p>
+                    ` : ''}
+                </div>
+            </div>
+            
+            ${tenantInfo}
+            
+            ${booking.specialRequests ? `
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h6>Special Requests</h6>
+                    <div class="alert alert-light">${booking.specialRequests}</div>
+                </div>
+            </div>
+            ` : ''}
+            
+            ${booking.cancellationReason ? `
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h6>Cancellation Reason</h6>
+                    <div class="alert alert-warning">${booking.cancellationReason}</div>
+                </div>
+            </div>
+            ` : ''}
+            
+            ${rescheduleHistory}
+            
+            <div class="timeline mt-3">
+                <div class="timeline-item completed">
+                    <small class="text-muted">Booking Requested</small>
+                    <div>${formatDateTime(booking.createdAt)}</div>
+                </div>
+                <div class="timeline-item ${['confirmed', 'completed'].includes(booking.status) ? 'completed' : booking.status === 'pending' ? 'active' : ''}">
+                    <small class="text-muted">Scheduled Viewing</small>
+                    <div>${formatDateTime(booking.checkIn)}</div>
+                </div>
+                <div class="timeline-item ${booking.status === 'completed' ? 'completed' : ''}">
+                    <small class="text-muted">Viewing Completed</small>
+                    <div>${booking.status === 'completed' ? 'Completed' : 'Pending'}</div>
+                </div>
+            </div>
+            
+            ${hasPendingReschedule(booking) ? `
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="d-grid">
+                        <button class="btn btn-info" onclick="viewRescheduleRequest('${booking._id}')">
+                            <i class="bi bi-calendar-week me-1"></i>Review Reschedule Request
+                        </button>
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+            
+            ${isTenant ? `
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Action Required:</strong> Contact this short-term tenant to discuss pricing and stay duration details.
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+        `;
+        
+        // Add the modal content after the verification badge
+        document.getElementById('bookingDetailsContent').innerHTML = `
+            <div id="verificationBadgeContainer"></div>
+            ${modalContent}
+        `;
+        
+        // Display the verification badge
+        VerificationBadge.displayBadge(booking, 'verificationBadgeContainer');
+        
+        new bootstrap.Modal(document.getElementById('bookingDetailsModal')).show();
+        
+    } catch (error) {
+        console.error('Error loading booking details:', error);
+        alert('Failed to load booking details: ' + error.message);
     }
-
-    // NEW: Tenant-specific information section
-    const tenantInfo = isTenant ? `
-      <div class="row mt-3">
-        <div class="col-12">
-          <div class="alert alert-info">
-            <h6><i class="bi bi-info-circle me-2"></i>Short-term Tenant Information</h6>
-            ${booking.stayDuration ? `<p><strong>Requested Stay Duration:</strong> ${booking.stayDuration}</p>` : ''}
-            ${booking.negotiatedPrice > 0 ? `<p><strong>Negotiated Price:</strong> R${booking.negotiatedPrice}</p>` : '<p><strong>Pricing:</strong> To be negotiated</p>'}
-            <p class="mb-0"><small>This is a short-term stay inquiry. Please contact the tenant to discuss pricing and stay details.</small></p>
-          </div>
-        </div>
-      </div>
-    ` : '';
-
-    const modalContent = `
-      <div class="row">
-        <div class="col-md-6">
-          <h6>${isTenant ? 'Tenant' : 'Student'} Information</h6>
-          <p><strong>Name:</strong> ${booking.student?.username || 'Unknown'}</p>
-          <p><strong>Email:</strong> ${booking.student?.email || 'No email'}</p>
-          <p><strong>Phone:</strong> ${booking.student?.phone || 'No phone'}</p>
-          <p><strong>Type:</strong> <span class="badge ${typeBadgeClass}"><i class="${typeIcon} me-1"></i>${typeText}</span></p>
-        </div>
-        <div class="col-md-6">
-          <h6>Booking Details</h6>
-          <p><strong>Property:</strong> ${booking.property?.title || 'Unknown'}</p>
-          <p><strong>Check-in:</strong> ${formatDateTime(booking.checkIn)}</p>
-          <p><strong>Check-out:</strong> ${formatDateTime(booking.checkOut)}</p>
-          <p><strong>Guests:</strong> ${booking.numberOfGuests || 1}</p>
-          ${!isTenant ? `<p><strong>Total Price:</strong> R${booking.totalPrice || 0}</p>` : ''}
-          <p><strong>Status:</strong> <span class="badge bg-${statusConfig[booking.status].class}">${statusConfig[booking.status].text}</span></p>
-          ${hasPendingReschedule(booking) ? `
-            <p><strong>Reschedule:</strong> <span class="badge bg-info">Pending Request</span></p>
-          ` : ''}
-        </div>
-      </div>
-      
-      ${tenantInfo}
-      
-      ${booking.specialRequests ? `
-      <div class="row mt-3">
-        <div class="col-12">
-          <h6>Special Requests</h6>
-          <div class="alert alert-light">${booking.specialRequests}</div>
-        </div>
-      </div>
-      ` : ''}
-      
-      ${booking.cancellationReason ? `
-      <div class="row mt-3">
-        <div class="col-12">
-          <h6>Cancellation Reason</h6>
-          <div class="alert alert-warning">${booking.cancellationReason}</div>
-        </div>
-      </div>
-      ` : ''}
-      
-      ${rescheduleHistory}
-      
-      <div class="timeline mt-3">
-        <div class="timeline-item completed">
-          <small class="text-muted">Booking Requested</small>
-          <div>${formatDateTime(booking.createdAt)}</div>
-        </div>
-        <div class="timeline-item ${['confirmed', 'completed'].includes(booking.status) ? 'completed' : booking.status === 'pending' ? 'active' : ''}">
-          <small class="text-muted">Scheduled Viewing</small>
-          <div>${formatDateTime(booking.checkIn)}</div>
-        </div>
-        <div class="timeline-item ${booking.status === 'completed' ? 'completed' : ''}">
-          <small class="text-muted">Viewing Completed</small>
-          <div>${booking.status === 'completed' ? 'Completed' : 'Pending'}</div>
-        </div>
-      </div>
-      
-      ${hasPendingReschedule(booking) ? `
-      <div class="row mt-4">
-        <div class="col-12">
-          <div class="d-grid">
-            <button class="btn btn-info" onclick="viewRescheduleRequest('${booking._id}')">
-              <i class="bi bi-calendar-week me-1"></i>Review Reschedule Request
-            </button>
-          </div>
-        </div>
-      </div>
-      ` : ''}
-      
-      ${isTenant ? `
-      <div class="row mt-3">
-        <div class="col-12">
-          <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle me-2"></i>
-            <strong>Action Required:</strong> Contact this short-term tenant to discuss pricing and stay duration details.
-          </div>
-        </div>
-      </div>
-      ` : ''}
-    `;
-    
-    document.getElementById('bookingDetailsContent').innerHTML = modalContent;
-    new bootstrap.Modal(document.getElementById('bookingDetailsModal')).show();
-    
-  } catch (error) {
-    console.error('Error loading booking details:', error);
-    alert('Failed to load booking details: ' + error.message);
-  }
 }
 
     // View booking statistics
