@@ -34,7 +34,7 @@ class VerificationBadge {
                             <strong class="d-block">Unverified User</strong>
                             <small class="text-muted">
                                 <i class="bi bi-shield-exclamation me-1"></i>
-                                Exercise caution - User not identity verified
+                                Exercise caution during Viewing - User identity not verified
                             </small>
                         </div>
                     </div>
