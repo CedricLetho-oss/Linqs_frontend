@@ -1042,6 +1042,72 @@
 .text-short-term {
     color: #0d9488 !important;
 }
+
+/* Enhanced Photography Modal for Mobile */
+#photographyPromptModal .modal-dialog {
+  max-width: 95%;
+  margin: 1rem auto;
+}
+
+#photographyPromptModal .modal-content {
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+#photographyPromptModal .modal-body {
+  padding: 1.5rem;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 576px) {
+  #photographyPromptModal .modal-dialog {
+    margin: 0.5rem auto;
+    max-width: 92%;
+  }
+  
+  #photographyPromptModal .modal-body {
+    padding: 1rem;
+  }
+  
+  #photographyPromptModal .display-4 {
+    font-size: 2.5rem;
+  }
+  
+  #photographyPromptModal .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  #photographyPromptModal .d-flex.gap-3 {
+    flex-direction: column;
+    gap: 0.5rem !important;
+  }
+  
+  #photographyPromptModal .d-flex.gap-3 .btn {
+    width: 100%;
+    margin: 0.1rem 0;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 380px) {
+  #photographyPromptModal .modal-dialog {
+    margin: 0.25rem auto;
+    max-width: 90%;
+  }
+  
+  #photographyPromptModal .modal-body {
+    padding: 0.75rem;
+  }
+  
+  #photographyPromptModal h5 {
+    font-size: 1.1rem;
+  }
+  
+  #photographyPromptModal p {
+    font-size: 0.9rem;
+  }
+}
 </style>
 </head>
 <body>
