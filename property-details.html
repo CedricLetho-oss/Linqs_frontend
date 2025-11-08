@@ -965,6 +965,24 @@
     flex-wrap: wrap;
     gap: 0.5rem;
 }
+
+/* Add to your existing CSS */
+.negotiable-price {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #f59e0b;
+    background: #fff3cd;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+
+/* Ensure the price section in modal looks good */
+.price-section .negotiable-price {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
   </style>
 </head>
 <body>
@@ -2412,11 +2430,25 @@ function updateRoomsDisplay() {
     
     roomsContainer.innerHTML = propertyRooms.map(room => {
         // Determine pricing and description based on user type
-        const roomPrice = isShortTermTenant && room.shortTermPricing === 'fixed' && room.shortTermPrice ? 
-            room.shortTermPrice : room.price;
+        let roomPrice, pricePeriod, pricePrefix;
         
-        const pricePeriod = isShortTermTenant ? 'day' : 'month';
-        const pricePrefix = isShortTermTenant && room.shortTermPricing === 'negotiable' ? 'From ' : '';
+        if (isShortTermTenant && room.shortTermPricing) {
+            if (room.shortTermPricing === 'fixed' && room.shortTermPrice) {
+                roomPrice = room.shortTermPrice;
+                pricePeriod = 'day';
+                pricePrefix = '';
+            } else {
+                // FIXED: Show negotiable for short-term tenants
+                roomPrice = 'Negotiable';
+                pricePeriod = '';
+                pricePrefix = '';
+            }
+        } else {
+            // For students or when no short-term pricing
+            roomPrice = room.price;
+            pricePeriod = 'month';
+            pricePrefix = '';
+        }
         
         const roomDescription = isShortTermTenant && room.shortTermDescription ? 
             room.shortTermDescription : room.description;
@@ -2425,9 +2457,14 @@ function updateRoomsDisplay() {
         const shortTermBadge = isShortTermTenant && room.shortTermPricing ? `
             <span class="badge short-term-badge ms-1">
                 <i class="bi bi-calendar-range me-1"></i>
-                ${room.shortTermPricing === 'fixed' ? `R${room.shortTermPrice}/day` : 'Negotiable'}
+                ${room.shortTermPricing === 'fixed' ? `R${room.shortTermPrice}/day` : 'Price Negotiable'}
             </span>
         ` : '';
+        
+        // Price display logic
+        const priceDisplay = roomPrice === 'Negotiable' ? 
+            `<strong class="negotiable-price">${roomPrice}</strong>` :
+            `<strong class="text-primary">${pricePrefix}R${roomPrice}/${pricePeriod}</strong>`;
         
         return `
             <div class="col-md-6 mb-4">
@@ -2468,8 +2505,8 @@ function updateRoomsDisplay() {
                                 
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <strong class="text-primary">${pricePrefix}R${roomPrice}/${pricePeriod}</strong>
-                                        ${isShortTermTenant && room.shortTermMinStay ? `
+                                        ${priceDisplay}
+                                        ${isShortTermTenant && room.shortTermMinStay && roomPrice !== 'Negotiable' ? `
                                             <small class="text-muted d-block">Min. stay: ${room.shortTermMinStay} days</small>
                                         ` : ''}
                                     </div>
@@ -3031,18 +3068,35 @@ function updateVisibleReviewsCount() {
     }
 
     function viewRoomDetails(roomId) {
+    console.log('Opening room details for:', roomId); // Debug log
     const room = propertyRooms.find(r => r._id === roomId);
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isShortTermTenant = user.role === 'tenant';
     
-    if (!room) return;
+    if (!room) {
+        console.error('Room not found:', roomId);
+        showToast('Room details not available', 'error');
+        return;
+    }
 
     // Determine pricing and description based on user type
-    const roomPrice = isShortTermTenant && room.shortTermPricing === 'fixed' && room.shortTermPrice ? 
-        room.shortTermPrice : room.price;
+    let roomPrice, pricePeriod, priceLabel;
     
-    const pricePeriod = isShortTermTenant ? 'day' : 'month';
-    const priceLabel = isShortTermTenant ? 'Daily Rate' : 'Monthly Rent';
+    if (isShortTermTenant && room.shortTermPricing) {
+        if (room.shortTermPricing === 'fixed' && room.shortTermPrice) {
+            roomPrice = room.shortTermPrice;
+            pricePeriod = 'day';
+            priceLabel = 'Daily Rate';
+        } else {
+            roomPrice = 'Negotiable';
+            pricePeriod = '';
+            priceLabel = 'Daily Rate';
+        }
+    } else {
+        roomPrice = room.price;
+        pricePeriod = 'month';
+        priceLabel = 'Monthly Rent';
+    }
     
     const roomDescription = isShortTermTenant && room.shortTermDescription ? 
         room.shortTermDescription : room.description;
@@ -3071,6 +3125,7 @@ function updateVisibleReviewsCount() {
         </div>
     ` : '';
 
+    // Update modal content
     document.getElementById('roomDetailsModalLabel').textContent = 
         room.roomNumber ? `${room.roomNumber} Details` : 'Room Details';
     
@@ -3090,9 +3145,28 @@ function updateVisibleReviewsCount() {
     const typeBadge = document.getElementById('roomDetailsType');
     typeBadge.textContent = roomTypeConfig[room.roomType]?.text || room.roomType;
     
-    document.getElementById('roomDetailsPrice').textContent = `R${roomPrice}`;
-    document.getElementById('roomDetailsPrice').nextElementSibling.textContent = `per ${pricePeriod}`;
-    document.querySelector('.price-section h6').textContent = priceLabel;
+    // Update price display
+    const priceElement = document.getElementById('roomDetailsPrice');
+    const periodElement = priceElement.nextElementSibling;
+    
+    if (roomPrice === 'Negotiable') {
+        priceElement.textContent = 'Negotiable';
+        priceElement.className = 'negotiable-price mb-1';
+        periodElement.textContent = 'Contact for pricing';
+    } else {
+        priceElement.textContent = `R${roomPrice}`;
+        priceElement.className = 'text-success mb-1';
+        periodElement.textContent = `per ${pricePeriod}`;
+    }
+    
+    // Update the price label
+    const priceSection = document.querySelector('.price-section');
+    const priceLabelElement = priceSection.querySelector('h6') || document.createElement('h6');
+    if (!priceSection.querySelector('h6')) {
+        priceLabelElement.className = 'text-navy mb-2';
+        priceSection.insertBefore(priceLabelElement, priceSection.firstChild);
+    }
+    priceLabelElement.textContent = priceLabel;
     
     document.getElementById('roomDetailsSize').textContent = room.size || 'Standard size';
     document.getElementById('roomDetailsRoomType').textContent = 
@@ -3110,10 +3184,15 @@ function updateVisibleReviewsCount() {
     
     // Add short-term section to modal
     const descriptionSection = document.querySelector('.description-section');
+    const existingShortTermSection = document.querySelector('.short-term-pricing');
+    if (existingShortTermSection) {
+        existingShortTermSection.remove();
+    }
     if (isShortTermTenant && room.shortTermPricing) {
         descriptionSection.insertAdjacentHTML('afterend', shortTermSection);
     }
     
+    // Update carousel
     const carouselInner = document.getElementById('roomDetailsCarouselInner');
     const images = room.images && room.images.length > 0 
         ? room.images 
@@ -3121,10 +3200,11 @@ function updateVisibleReviewsCount() {
     
     carouselInner.innerHTML = images.map((image, index) => `
         <div class="carousel-item ${index === 0 ? 'active' : ''}">
-            <img src="${image}" class="d-block w-100" alt="Room image ${index + 1}">
+            <img src="${image}" class="d-block w-100" alt="Room image ${index + 1}" style="height: 300px; object-fit: cover;">
         </div>
     `).join('');
     
+    // Update occupant info
     const occupantInfo = document.getElementById('roomOccupantInfo');
     const occupantDetails = document.getElementById('roomOccupantDetails');
     
@@ -3137,18 +3217,26 @@ function updateVisibleReviewsCount() {
         occupantInfo.style.display = 'none';
     }
     
+    // Update booking button
     const bookBtn = document.getElementById('roomDetailsBookBtn');
     if (room.isAvailable) {
         bookBtn.style.display = 'block';
-        bookBtn.onclick = () => bookFromRoomDetails(room._id);
+        bookBtn.onclick = () => {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('roomDetailsModal'));
+            modal.hide();
+            setTimeout(() => bookFromRoomDetails(room._id), 300);
+        };
         // Update button text for tenants
         if (isShortTermTenant) {
             bookBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request Short-term Stay';
+        } else {
+            bookBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Book This Room';
         }
     } else {
         bookBtn.style.display = 'none';
     }
     
+    // Show the modal
     const roomDetailsModal = new bootstrap.Modal(document.getElementById('roomDetailsModal'));
     roomDetailsModal.show();
 }
