@@ -5090,7 +5090,7 @@ function renderRoomsList() {
         return features;
     }
 
-// Update the viewRoomDetails function to show short-term pricing
+// Enhanced View Room Details with Short-term Pricing
 function viewRoomDetails(roomId) {
     const room = currentPropertyRooms.find(r => r._id === roomId);
     const propertyId = document.getElementById('roomPropertyId').value;
@@ -5100,41 +5100,69 @@ function viewRoomDetails(roomId) {
 
     const roomType = roomTypeConfig[room.roomType] || { text: room.roomType, icon: 'bi-door-closed', class: 'secondary' };
     
-    // Create short-term pricing section if available
-    // In the viewRoomDetails function, update the short-term section:
-const shortTermSection = property && property.acceptsShortTerm && room.shortTermPricing ? `
-    <div class="row mt-3">
-        <div class="col-12">
-            <h6 class="room-short-term-header">
-                <i class="bi bi-calendar-range me-2"></i>Short-term Stay Pricing (December & January)
-            </h6>
-            <div class="card border-teal">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <strong>Pricing Type:</strong> ${room.shortTermPricing === 'fixed' ? 'Fixed Daily Rate' : 'Negotiable'}
-                        </div>
-                        ${room.shortTermPricing === 'fixed' ? `
-                            <div class="col-md-6">
-                                <strong>Daily Rate:</strong> <span class="room-short-term-pricing">R${room.shortTermPrice}/day</span>
+    // Enhanced short-term pricing section
+    const shortTermSection = property && property.acceptsShortTerm && room.shortTermPricing ? `
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark py-2">
+                        <h6 class="mb-0 small fw-bold">
+                            <i class="bi bi-calendar-range me-2"></i>Short-term Stay Pricing (December & January)
+                        </h6>
+                    </div>
+                    <div class="card-body py-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="mb-2">
+                                    <strong class="small">Pricing Type:</strong> 
+                                    <span class="ms-2 badge ${room.shortTermPricing === 'fixed' ? 'bg-success' : 'bg-info'}">
+                                        ${room.shortTermPricing === 'fixed' ? 'Fixed Daily Rate' : 'Price Negotiable'}
+                                    </span>
+                                </div>
+                                ${room.shortTermPricing === 'fixed' ? `
+                                    <div class="mb-2">
+                                        <strong class="small">Daily Rate:</strong> 
+                                        <span class="ms-2 h6 text-success mb-0">R${room.shortTermPrice}/day</span>
+                                    </div>
+                                ` : `
+                                    <div class="mb-2">
+                                        <strong class="small">Daily Rate:</strong> 
+                                        <span class="ms-2 h6 text-info mb-0">Contact for Pricing</span>
+                                    </div>
+                                `}
+                                <div class="mb-2">
+                                    <strong class="small">Minimum Stay:</strong> 
+                                    <span class="ms-2">${room.shortTermMinStay || 1} days</span>
+                                </div>
+                                ${room.shortTermDescription ? `
+                                    <div class="mt-2 pt-2 border-top">
+                                        <strong class="small">Additional Details:</strong>
+                                        <p class="mb-0 small text-muted">${room.shortTermDescription}</p>
+                                    </div>
+                                ` : ''}
                             </div>
-                        ` : ''}
-                    </div>
-                    <div class="row mt-2">
-                        <div class="col-md-6">
-                            <strong>Minimum Stay:</strong> ${room.shortTermMinStay} days
+                            <div class="col-md-4 text-center">
+                                <div class="bg-light rounded p-2">
+                                    <i class="bi bi-calendar-check text-warning" style="font-size: 2rem;"></i>
+                                    <div class="small text-muted mt-1">Holiday Stays</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    ${room.shortTermDescription ? `
-                        <div class="mt-2">
-                            <strong>Details:</strong> ${room.shortTermDescription}
-                        </div>
-                    ` : ''}
                 </div>
             </div>
         </div>
-    </div>
-` : '';
+    ` : property && property.acceptsShortTerm ? `
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="alert alert-info py-2">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong class="small">Short-term Available:</strong> 
+                    <span class="small">This property accepts short-term stays, but no specific pricing set for this room.</span>
+                </div>
+            </div>
+        </div>
+    ` : '';
     
     // Create image carousel if multiple images exist
     let imagesHtml = '';
@@ -5149,7 +5177,7 @@ const shortTermSection = property && property.acceptsShortTerm && room.shortTerm
                 <div class="carousel-inner">
                     ${room.images.map((image, index) => `
                         <div class="carousel-item ${index === 0 ? 'active' : ''}">
-                            <img src="${image}" class="d-block w-100" style="height: 250px; object-fit: cover;" alt="${room.roomNumber || room.roomType} - Image ${index + 1}">
+                            <img src="${image}" class="d-block w-100" style="height: 200px; object-fit: cover;" alt="${room.roomNumber || room.roomType} - Image ${index + 1}">
                         </div>
                     `).join('')}
                 </div>
@@ -5165,7 +5193,7 @@ const shortTermSection = property && property.acceptsShortTerm && room.shortTerm
         `;
     } else {
         const imageUrl = room.images && room.images.length > 0 ? room.images[0] : 'https://via.placeholder.com/400x300?text=Room+Image';
-        imagesHtml = `<img src="${imageUrl}" class="img-fluid rounded" alt="${room.roomNumber || room.roomType}" style="width: 100%; height: 250px; object-fit: cover;">`;
+        imagesHtml = `<img src="${imageUrl}" class="img-fluid rounded" alt="${room.roomNumber || room.roomType}" style="width: 100%; height: 200px; object-fit: cover;">`;
     }
     
     const modalContent = `
@@ -5174,13 +5202,13 @@ const shortTermSection = property && property.acceptsShortTerm && room.shortTerm
                 ${imagesHtml}
             </div>
             <div class="col-md-6">
-                <h5>${room.roomNumber ? room.roomNumber + ' - ' : ''}${roomType.text}</h5>
+                <h6 class="fw-bold">${room.roomNumber ? room.roomNumber + ' - ' : ''}${roomType.text}</h6>
                 
                 <div class="mb-3">
-                    <span class="badge bg-${roomType.class} me-2">
+                    <span class="badge bg-${roomType.class} me-2 small">
                         <i class="${roomType.icon} me-1"></i>${roomType.text}
                     </span>
-                    <span class="badge bg-${room.isAvailable ? 'success' : 'warning'}">
+                    <span class="badge bg-${room.isAvailable ? 'success' : 'warning'} small">
                         <i class="bi ${room.isAvailable ? 'bi-check-circle' : 'bi-person-check'} me-1"></i>
                         ${room.isAvailable ? 'Available' : 'Occupied'}
                     </span>
@@ -5188,20 +5216,19 @@ const shortTermSection = property && property.acceptsShortTerm && room.shortTerm
                 
                 <div class="row mb-3">
                     <div class="col-6">
-                        <strong>Monthly Rent:</strong><br>
-                        <h6 class="text-primary">R${room.price}</h6>
+                        <strong class="small">Monthly Rent:</strong><br>
+                        <span class="h6 text-primary">R${room.price}</span>
                     </div>
                     <div class="col-6">
-                        <strong>Room Size:</strong><br>
-                        <h6>${room.size || 'Not specified'}</h6>
+                        <strong class="small">Room Size:</strong><br>
+                        <span class="h6">${room.size || 'Not specified'}</span>
                     </div>
                 </div>
                 
                 ${!room.isAvailable && room.occupant ? `
-                    <div class="mb-3 p-3 bg-light rounded">
-                        <h6>Current Occupant</h6>
-                        <p class="mb-1"><strong>Name:</strong> ${room.occupant.name || 'Not specified'}</p>
-                        ${room.occupant.moveInDate ? `<p class="mb-0"><strong>Move-in Date:</strong> ${new Date(room.occupant.moveInDate).toLocaleDateString()}</p>` : ''}
+                    <div class="mb-3 p-2 bg-light rounded small">
+                        <strong>Current Occupant:</strong> ${room.occupant.name || 'Not specified'}<br>
+                        ${room.occupant.moveInDate ? `<strong>Move-in Date:</strong> ${new Date(room.occupant.moveInDate).toLocaleDateString()}` : ''}
                     </div>
                 ` : ''}
             </div>
@@ -5209,26 +5236,28 @@ const shortTermSection = property && property.acceptsShortTerm && room.shortTerm
         
         <div class="row mt-3">
             <div class="col-12">
-                <h6>Description</h6>
-                <p class="text-muted">${room.description || 'No description provided.'}</p>
+                <h6 class="small fw-bold">Description</h6>
+                <p class="small text-muted mb-0">${room.description || 'No description provided.'}</p>
             </div>
         </div>
         
         <div class="row mt-3">
             <div class="col-12">
-                <h6>Room Features</h6>
+                <h6 class="small fw-bold">Room Features</h6>
                 <div class="room-features-list">
                     ${room.features && room.features.length > 0 ? 
                         room.features.map(feature => `
-                            <span class="room-feature-badge">
+                            <span class="room-feature-badge small">
                                 <i class="bi bi-check-circle me-1"></i>${feature.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                             </span>
                         `).join('') : 
-                        '<p class="text-muted">No features specified.</p>'
+                        '<p class="text-muted small">No features specified.</p>'
                     }
                 </div>
             </div>
         </div>
+        
+        ${shortTermSection}
         
         <div class="row mt-4">
             <div class="col-12">
@@ -5257,8 +5286,8 @@ const shortTermSection = property && property.acceptsShortTerm && room.shortTerm
     modalDiv.innerHTML = `
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Room Details</h5>
+                <div class="modal-header py-2">
+                    <h5 class="modal-title h6">Room Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
