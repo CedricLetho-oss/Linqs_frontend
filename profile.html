@@ -1432,9 +1432,16 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="navbar.js"></script>
   
+    <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="navbar.js"></script>
+  
   <script>
     // API base URL
     const API_BASE_URL = window.API_BASE_URL || 'https://linqs-backend.onrender.com/api';
+    
+    // Verification toast tracking
+    const VERIFICATION_TOAST_SHOWN_KEY = 'verificationToastShown';
 
     // Current user data
     let currentUser = null;
@@ -1479,26 +1486,26 @@
     }
 
     // Password visibility toggle functionality
-function initializePasswordToggles() {
-  document.addEventListener('click', function(e) {
-    if (e.target.closest('.toggle-password')) {
-      const button = e.target.closest('.toggle-password');
-      const targetId = button.getAttribute('data-target');
-      const passwordInput = document.getElementById(targetId);
-      const icon = button.querySelector('i');
-      
-      if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        icon.className = 'bi bi-eye-slash';
-        button.setAttribute('aria-label', 'Hide password');
-      } else {
-        passwordInput.type = 'password';
-        icon.className = 'bi bi-eye';
-        button.setAttribute('aria-label', 'Show password');
-      }
+    function initializePasswordToggles() {
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.toggle-password')) {
+          const button = e.target.closest('.toggle-password');
+          const targetId = button.getAttribute('data-target');
+          const passwordInput = document.getElementById(targetId);
+          const icon = button.querySelector('i');
+          
+          if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.className = 'bi bi-eye-slash';
+            button.setAttribute('aria-label', 'Hide password');
+          } else {
+            passwordInput.type = 'password';
+            icon.className = 'bi bi-eye';
+            button.setAttribute('aria-label', 'Show password');
+          }
+        }
+      });
     }
-  });
-}
 
     // Load admin statistics
     async function loadAdminStats() {
@@ -1654,36 +1661,36 @@ function initializePasswordToggles() {
 
     // Get default stats based on role
     function getDefaultStats(role) {
-    if (role === 'landlord') {
-        return {
-            totalProperties: 0,
-            occupiedProperties: 0,
-            monthlyRevenue: 0,
-            tenantReviews: 0
-        };
-    } else if (role === 'admin') {
-        return {
-            totalUsers: 0,
-            totalPropertiesAdmin: 0,
-            activeBookingsAdmin: 0,
-            pendingVerifications: 0
-        };
-    } else if (role === 'tenant') {
-        return {
-            shortTermBookings: 0,
-            upcomingStays: 0,
-            tenantReviews: 0,
-            savedShortTerm: 0
-        };
-    } else {
-        return {
-            totalBookings: 0,
-            activeBookings: 0,
-            reviewsCount: 0,
-            savedProperties: 0
-        };
+        if (role === 'landlord') {
+            return {
+                totalProperties: 0,
+                occupiedProperties: 0,
+                monthlyRevenue: 0,
+                tenantReviews: 0
+            };
+        } else if (role === 'admin') {
+            return {
+                totalUsers: 0,
+                totalPropertiesAdmin: 0,
+                activeBookingsAdmin: 0,
+                pendingVerifications: 0
+            };
+        } else if (role === 'tenant') {
+            return {
+                shortTermBookings: 0,
+                upcomingStays: 0,
+                tenantReviews: 0,
+                savedShortTerm: 0
+            };
+        } else {
+            return {
+                totalBookings: 0,
+                activeBookings: 0,
+                reviewsCount: 0,
+                savedProperties: 0
+            };
+        }
     }
-}
 
     // Property stats helper functions
     async function countOccupiedProperties() {
@@ -1769,247 +1776,247 @@ function initializePasswordToggles() {
 
     // Load user statistics from API
     async function loadUserStats() {
-    if (!currentUser) return;
+        if (!currentUser) return;
 
-    try {
-        const token = localStorage.getItem("token");
-        
-        if (currentUser.role === 'admin') {
-            await loadAdminStats();
-            return;
-        }
-        
-        if (currentUser.role === 'landlord') {
-            const propertiesResponse = await fetch(`${API_BASE_URL}/properties/user/my-properties`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (propertiesResponse.ok) {
-                const propertiesData = await propertiesResponse.json();
-                const properties = propertiesData.properties || [];
-                
-                const totalProperties = properties.length;
-                const occupiedProperties = await countOccupiedProperties();
-                const monthlyRevenue = await calculateMonthlyRevenue();
-                const tenantReviews = await countTenantReviews();
-
-                currentUser.stats = {
-                    ...currentUser.stats,
-                    totalProperties,
-                    occupiedProperties,
-                    monthlyRevenue,
-                    tenantReviews
-                };
-            }
-        } else if (currentUser.role === 'tenant') {
-            // TENANT-SPECIFIC STATS
-            const statsResponse = await fetch(`${API_BASE_URL}/users/stats`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (statsResponse.ok) {
-                const statsData = await statsResponse.json();
-                
-                if (!statsData.tenantReviews) {
-                    statsData.tenantReviews = await countUserReviews();
-                }
-                
-                const shortTermBookingsCount = await countShortTermBookings();
-                const upcomingStaysCount = await countUpcomingStays();
-                const savedShortTermCount = await countSavedShortTerm();
-                
-                currentUser.stats = {
-                    ...statsData,
-                    shortTermBookings: shortTermBookingsCount,
-                    upcomingStays: upcomingStaysCount,
-                    savedShortTerm: savedShortTermCount
-                };
-            } else {
-                const tenantReviews = await countUserReviews();
-                const shortTermBookingsCount = await countShortTermBookings();
-                const upcomingStaysCount = await countUpcomingStays();
-                const savedShortTermCount = await countSavedShortTerm();
-                
-                currentUser.stats = {
-                    ...currentUser.stats,
-                    tenantReviews: tenantReviews,
-                    shortTermBookings: shortTermBookingsCount,
-                    upcomingStays: upcomingStaysCount,
-                    savedShortTerm: savedShortTermCount
-                };
-            }
-        } else {
-            // STUDENT STATS (original logic)
-            const statsResponse = await fetch(`${API_BASE_URL}/users/stats`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (statsResponse.ok) {
-                const statsData = await statsResponse.json();
-                
-                if (!statsData.reviewsCount) {
-                    statsData.reviewsCount = await countUserReviews();
-                }
-                
-                const activeBookingsCount = await countActiveBookings();
-                const savedPropertiesCount = await countSavedProperties();
-                
-                currentUser.stats = {
-                    ...statsData,
-                    activeBookings: activeBookingsCount,
-                    savedProperties: savedPropertiesCount
-                };
-            } else {
-                const reviewsCount = await countUserReviews();
-                const activeBookingsCount = await countActiveBookings();
-                const savedPropertiesCount = await countSavedProperties();
-                
-                currentUser.stats = {
-                    ...currentUser.stats,
-                    reviewsCount: reviewsCount,
-                    activeBookings: activeBookingsCount,
-                    savedProperties: savedPropertiesCount
-                };
-            }
-        }
-        
-        updateLocalStorage();
-    } catch (error) {
         try {
+            const token = localStorage.getItem("token");
+            
+            if (currentUser.role === 'admin') {
+                await loadAdminStats();
+                return;
+            }
+            
             if (currentUser.role === 'landlord') {
-                const tenantReviews = await countTenantReviews();
-                currentUser.stats.tenantReviews = tenantReviews;
+                const propertiesResponse = await fetch(`${API_BASE_URL}/properties/user/my-properties`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (propertiesResponse.ok) {
+                    const propertiesData = await propertiesResponse.json();
+                    const properties = propertiesData.properties || [];
+                    
+                    const totalProperties = properties.length;
+                    const occupiedProperties = await countOccupiedProperties();
+                    const monthlyRevenue = await calculateMonthlyRevenue();
+                    const tenantReviews = await countTenantReviews();
+
+                    currentUser.stats = {
+                        ...currentUser.stats,
+                        totalProperties,
+                        occupiedProperties,
+                        monthlyRevenue,
+                        tenantReviews
+                    };
+                }
             } else if (currentUser.role === 'tenant') {
-                // TENANT ERROR FALLBACK
-                const tenantReviews = await countUserReviews();
-                const shortTermBookingsCount = await countShortTermBookings();
-                const upcomingStaysCount = await countUpcomingStays();
-                const savedShortTermCount = await countSavedShortTerm();
-                
-                currentUser.stats.tenantReviews = tenantReviews;
-                currentUser.stats.shortTermBookings = shortTermBookingsCount;
-                currentUser.stats.upcomingStays = upcomingStaysCount;
-                currentUser.stats.savedShortTerm = savedShortTermCount;
-            } else if (currentUser.role !== 'admin') {
-                // STUDENT ERROR FALLBACK
-                const reviewsCount = await countUserReviews();
-                const activeBookingsCount = await countActiveBookings();
-                const savedPropertiesCount = await countSavedProperties();
-                
-                currentUser.stats.reviewsCount = reviewsCount;
-                currentUser.stats.activeBookings = activeBookingsCount;
-                currentUser.stats.savedProperties = savedPropertiesCount;
+                // TENANT-SPECIFIC STATS
+                const statsResponse = await fetch(`${API_BASE_URL}/users/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (statsResponse.ok) {
+                    const statsData = await statsResponse.json();
+                    
+                    if (!statsData.tenantReviews) {
+                        statsData.tenantReviews = await countUserReviews();
+                    }
+                    
+                    const shortTermBookingsCount = await countShortTermBookings();
+                    const upcomingStaysCount = await countUpcomingStays();
+                    const savedShortTermCount = await countSavedShortTerm();
+                    
+                    currentUser.stats = {
+                        ...statsData,
+                        shortTermBookings: shortTermBookingsCount,
+                        upcomingStays: upcomingStaysCount,
+                        savedShortTerm: savedShortTermCount
+                    };
+                } else {
+                    const tenantReviews = await countUserReviews();
+                    const shortTermBookingsCount = await countShortTermBookings();
+                    const upcomingStaysCount = await countUpcomingStays();
+                    const savedShortTermCount = await countSavedShortTerm();
+                    
+                    currentUser.stats = {
+                        ...currentUser.stats,
+                        tenantReviews: tenantReviews,
+                        shortTermBookings: shortTermBookingsCount,
+                        upcomingStays: upcomingStaysCount,
+                        savedShortTerm: savedShortTermCount
+                    };
+                }
+            } else {
+                // STUDENT STATS (original logic)
+                const statsResponse = await fetch(`${API_BASE_URL}/users/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (statsResponse.ok) {
+                    const statsData = await statsResponse.json();
+                    
+                    if (!statsData.reviewsCount) {
+                        statsData.reviewsCount = await countUserReviews();
+                    }
+                    
+                    const activeBookingsCount = await countActiveBookings();
+                    const savedPropertiesCount = await countSavedProperties();
+                    
+                    currentUser.stats = {
+                        ...statsData,
+                        activeBookings: activeBookingsCount,
+                        savedProperties: savedPropertiesCount
+                    };
+                } else {
+                    const reviewsCount = await countUserReviews();
+                    const activeBookingsCount = await countActiveBookings();
+                    const savedPropertiesCount = await countSavedProperties();
+                    
+                    currentUser.stats = {
+                        ...currentUser.stats,
+                        reviewsCount: reviewsCount,
+                        activeBookings: activeBookingsCount,
+                        savedProperties: savedPropertiesCount
+                    };
+                }
             }
+            
             updateLocalStorage();
-        } catch (reviewError) {
-            console.error('Error loading reviews count:', reviewError);
+        } catch (error) {
+            try {
+                if (currentUser.role === 'landlord') {
+                    const tenantReviews = await countTenantReviews();
+                    currentUser.stats.tenantReviews = tenantReviews;
+                } else if (currentUser.role === 'tenant') {
+                    // TENANT ERROR FALLBACK
+                    const tenantReviews = await countUserReviews();
+                    const shortTermBookingsCount = await countShortTermBookings();
+                    const upcomingStaysCount = await countUpcomingStays();
+                    const savedShortTermCount = await countSavedShortTerm();
+                    
+                    currentUser.stats.tenantReviews = tenantReviews;
+                    currentUser.stats.shortTermBookings = shortTermBookingsCount;
+                    currentUser.stats.upcomingStays = upcomingStaysCount;
+                    currentUser.stats.savedShortTerm = savedShortTermCount;
+                } else if (currentUser.role !== 'admin') {
+                    // STUDENT ERROR FALLBACK
+                    const reviewsCount = await countUserReviews();
+                    const activeBookingsCount = await countActiveBookings();
+                    const savedPropertiesCount = await countSavedProperties();
+                    
+                    currentUser.stats.reviewsCount = reviewsCount;
+                    currentUser.stats.activeBookings = activeBookingsCount;
+                    currentUser.stats.savedProperties = savedPropertiesCount;
+                }
+                updateLocalStorage();
+            } catch (reviewError) {
+                console.error('Error loading reviews count:', reviewError);
+            }
         }
+
+        updateStatsDisplay();
     }
 
-    updateStatsDisplay();
-}
+    // Add these helper functions for tenant stats
+    async function countShortTermBookings() {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return 0;
 
-// Add these helper functions for tenant stats
-async function countShortTermBookings() {
-    try {
-        const token = localStorage.getItem("token");
-        if (!token) return 0;
-
-        const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            const bookings = data.bookings || [];
-            
-            // Filter for short-term stays (less than 3 months)
-            const shortTermBookings = bookings.filter(booking => {
-                if (!booking.checkIn || !booking.checkOut) return false;
-                
-                const checkIn = new Date(booking.checkIn);
-                const checkOut = new Date(booking.checkOut);
-                const durationMonths = (checkOut - checkIn) / (1000 * 60 * 60 * 24 * 30);
-                return durationMonths <= 3;
+            const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
             });
-            
-            return shortTermBookings.length;
-        }
-        return 0;
-    } catch (error) {
-        console.error('Error counting short-term bookings:', error);
-        return 0;
-    }
-}
 
-async function countUpcomingStays() {
-    try {
-        const token = localStorage.getItem("token");
-        if (!token) return 0;
-
-        const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            const bookings = data.bookings || [];
-            
-            const upcomingStays = bookings.filter(booking => 
-                booking.status === 'confirmed' && 
-                booking.checkIn && 
-                new Date(booking.checkIn) > new Date()
-            );
-            
-            return upcomingStays.length;
-        }
-        return 0;
-    } catch (error) {
-        console.error('Error counting upcoming stays:', error);
-        return 0;
-    }
-}
-
-async function countSavedShortTerm() {
-    try {
-        const token = localStorage.getItem("token");
-        if (!token) return 0;
-
-        const response = await fetch(`${API_BASE_URL}/favorites`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-                return data.data.length;
+            if (response.ok) {
+                const data = await response.json();
+                const bookings = data.bookings || [];
+                
+                // Filter for short-term stays (less than 3 months)
+                const shortTermBookings = bookings.filter(booking => {
+                    if (!booking.checkIn || !booking.checkOut) return false;
+                    
+                    const checkIn = new Date(booking.checkIn);
+                    const checkOut = new Date(booking.checkOut);
+                    const durationMonths = (checkOut - checkIn) / (1000 * 60 * 60 * 24 * 30);
+                    return durationMonths <= 3;
+                });
+                
+                return shortTermBookings.length;
             }
             return 0;
+        } catch (error) {
+            console.error('Error counting short-term bookings:', error);
+            return 0;
         }
-        return 0;
-    } catch (error) {
-        console.error('Error counting saved properties:', error);
-        return 0;
     }
-}
+
+    async function countUpcomingStays() {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return 0;
+
+            const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const bookings = data.bookings || [];
+                
+                const upcomingStays = bookings.filter(booking => 
+                    booking.status === 'confirmed' && 
+                    booking.checkIn && 
+                    new Date(booking.checkIn) > new Date()
+                );
+                
+                return upcomingStays.length;
+            }
+            return 0;
+        } catch (error) {
+            console.error('Error counting upcoming stays:', error);
+            return 0;
+        }
+    }
+
+    async function countSavedShortTerm() {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return 0;
+
+            const response = await fetch(`${API_BASE_URL}/favorites`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    return data.data.length;
+                }
+                return 0;
+            }
+            return 0;
+        } catch (error) {
+            console.error('Error counting saved properties:', error);
+            return 0;
+        }
+    }
 
     // Helper functions for counting various items
     async function countActiveBookings() {
@@ -2435,45 +2442,45 @@ async function countSavedShortTerm() {
         }
     }
 
-      function updateProfileDisplay() {
-    if (!currentUser) return;
+    function updateProfileDisplay() {
+        if (!currentUser) return;
 
-    document.getElementById('profileName').textContent = `${currentUser.firstName} ${currentUser.lastName}`.trim() || 'User Name';
-    
-    if (currentUser.role === 'admin') {
-        document.getElementById('profileRole').textContent = 'System Administrator';
-        document.getElementById('roleDisplay').value = 'Administrator';
-    } else if (currentUser.role === 'tenant') {
-        document.getElementById('profileRole').textContent = 'Short-term Tenant';
-        document.getElementById('roleDisplay').value = 'Tenant';
-    } else {
-        document.getElementById('profileRole').textContent = currentUser.role === 'landlord' ? 'Property Landlord' : 'Student Tenant';
-        document.getElementById('roleDisplay').value = currentUser.role === 'landlord' ? 'Landlord' : 'Student';
-    }
-    
-    document.getElementById('profileEmail').textContent = currentUser.email || 'No email';
-    document.getElementById('profilePhone').textContent = currentUser.phone || 'No phone';
-    document.getElementById('profileAvatar').src = currentUser.avatar;
-    
-    updateVerificationStatus();
-    
-    const memberSince = new Date(currentUser.memberSince).getFullYear();
-    document.getElementById('memberSince').textContent = `Member since ${memberSince}`;
-    document.getElementById('memberSinceDisplay').textContent = new Date(currentUser.memberSince).toLocaleDateString();
+        document.getElementById('profileName').textContent = `${currentUser.firstName} ${currentUser.lastName}`.trim() || 'User Name';
+        
+        if (currentUser.role === 'admin') {
+            document.getElementById('profileRole').textContent = 'System Administrator';
+            document.getElementById('roleDisplay').value = 'Administrator';
+        } else if (currentUser.role === 'tenant') {
+            document.getElementById('profileRole').textContent = 'Short-term Tenant';
+            document.getElementById('roleDisplay').value = 'Tenant';
+        } else {
+            document.getElementById('profileRole').textContent = currentUser.role === 'landlord' ? 'Property Landlord' : 'Student Tenant';
+            document.getElementById('roleDisplay').value = currentUser.role === 'landlord' ? 'Landlord' : 'Student';
+        }
+        
+        document.getElementById('profileEmail').textContent = currentUser.email || 'No email';
+        document.getElementById('profilePhone').textContent = currentUser.phone || 'No phone';
+        document.getElementById('profileAvatar').src = currentUser.avatar;
+        
+        updateVerificationStatus();
+        
+        const memberSince = new Date(currentUser.memberSince).getFullYear();
+        document.getElementById('memberSince').textContent = `Member since ${memberSince}`;
+        document.getElementById('memberSinceDisplay').textContent = new Date(currentUser.memberSince).toLocaleDateString();
 
-    // FIXED: Proper account type display for tenant
-    if (currentUser.role === 'admin') {
-        document.getElementById('accountTypeDisplay').textContent = 'Administrator Account';
-    } else if (currentUser.role === 'tenant') {
-        document.getElementById('accountTypeDisplay').textContent = 'Short-term Tenant Account';
-    } else {
-        document.getElementById('accountTypeDisplay').textContent = currentUser.role === 'landlord' ? 'Landlord Account' : 'Student Account';
+        // FIXED: Proper account type display for tenant
+        if (currentUser.role === 'admin') {
+            document.getElementById('accountTypeDisplay').textContent = 'Administrator Account';
+        } else if (currentUser.role === 'tenant') {
+            document.getElementById('accountTypeDisplay').textContent = 'Short-term Tenant Account';
+        } else {
+            document.getElementById('accountTypeDisplay').textContent = currentUser.role === 'landlord' ? 'Landlord Account' : 'Student Account';
+        }
+        
+        updateRoleSpecificSections();
+        updateFormFields();
+        updateStatsDisplay();
     }
-    
-    updateRoleSpecificSections();
-    updateFormFields();
-    updateStatsDisplay();
-}
 
     function updateVerificationStatus() {
         const verificationBadge = document.getElementById('verificationStatus');
@@ -2509,64 +2516,64 @@ async function countSavedShortTerm() {
     }
 
     function updateRoleSpecificSections() {
-    const isLandlord = currentUser.role === 'landlord';
-    const isAdmin = currentUser.role === 'admin';
-    const isTenant = currentUser.role === 'tenant';
-    
-    if (isAdmin) {
-        document.getElementById('landlordStats').style.display = 'none';
-        document.getElementById('userStats').style.display = 'none';
-        document.getElementById('tenantStats').style.display = 'none';
-        document.getElementById('adminStats').style.display = 'flex';
-        document.getElementById('landlordInfoSection').style.display = 'none';
-        document.getElementById('studentInfoSection').style.display = 'none';
-        document.getElementById('tenantInfoSection').style.display = 'none';
-        document.getElementById('switchToLandlordBtn').style.display = 'none';
-    } else if (isTenant) {
-        // FIXED: Show tenant stats and hide others
-        document.getElementById('landlordStats').style.display = 'none';
-        document.getElementById('userStats').style.display = 'none';
-        document.getElementById('tenantStats').style.display = 'flex';
-        document.getElementById('adminStats').style.display = 'none';
-        document.getElementById('landlordInfoSection').style.display = 'none';
-        document.getElementById('studentInfoSection').style.display = 'none';
-        document.getElementById('tenantInfoSection').style.display = 'block';
-        document.getElementById('switchToLandlordBtn').style.display = 'block';
-    } else {
-        document.getElementById('landlordStats').style.display = isLandlord ? 'flex' : 'none';
-        document.getElementById('userStats').style.display = isLandlord ? 'none' : 'flex';
-        document.getElementById('tenantStats').style.display = 'none';
-        document.getElementById('adminStats').style.display = 'none';
-        document.getElementById('landlordInfoSection').style.display = isLandlord ? 'block' : 'none';
-        document.getElementById('studentInfoSection').style.display = isLandlord ? 'none' : 'block';
-        document.getElementById('tenantInfoSection').style.display = 'none';
-        document.getElementById('switchToLandlordBtn').style.display = isLandlord ? 'none' : 'block';
+        const isLandlord = currentUser.role === 'landlord';
+        const isAdmin = currentUser.role === 'admin';
+        const isTenant = currentUser.role === 'tenant';
+        
+        if (isAdmin) {
+            document.getElementById('landlordStats').style.display = 'none';
+            document.getElementById('userStats').style.display = 'none';
+            document.getElementById('tenantStats').style.display = 'none';
+            document.getElementById('adminStats').style.display = 'flex';
+            document.getElementById('landlordInfoSection').style.display = 'none';
+            document.getElementById('studentInfoSection').style.display = 'none';
+            document.getElementById('tenantInfoSection').style.display = 'none';
+            document.getElementById('switchToLandlordBtn').style.display = 'none';
+        } else if (isTenant) {
+            // FIXED: Show tenant stats and hide others
+            document.getElementById('landlordStats').style.display = 'none';
+            document.getElementById('userStats').style.display = 'none';
+            document.getElementById('tenantStats').style.display = 'flex';
+            document.getElementById('adminStats').style.display = 'none';
+            document.getElementById('landlordInfoSection').style.display = 'none';
+            document.getElementById('studentInfoSection').style.display = 'none';
+            document.getElementById('tenantInfoSection').style.display = 'block';
+            document.getElementById('switchToLandlordBtn').style.display = 'block';
+        } else {
+            document.getElementById('landlordStats').style.display = isLandlord ? 'flex' : 'none';
+            document.getElementById('userStats').style.display = isLandlord ? 'none' : 'flex';
+            document.getElementById('tenantStats').style.display = 'none';
+            document.getElementById('adminStats').style.display = 'none';
+            document.getElementById('landlordInfoSection').style.display = isLandlord ? 'block' : 'none';
+            document.getElementById('studentInfoSection').style.display = isLandlord ? 'none' : 'block';
+            document.getElementById('tenantInfoSection').style.display = 'none';
+            document.getElementById('switchToLandlordBtn').style.display = isLandlord ? 'none' : 'block';
+        }
     }
-}
 
     function updateStatsDisplay() {
-    if (!currentUser) return;
+        if (!currentUser) return;
 
-    if (currentUser.role === 'landlord') {
-        setElementText('totalProperties', currentUser.stats.totalProperties || 0);
-        setElementText('occupiedProperties', currentUser.stats.occupiedProperties || 0);
-        setElementText('monthlyRevenue', `R${currentUser.stats.monthlyRevenue || 0}`);
-        setElementText('tenantReviews', currentUser.stats.tenantReviews || 0);
-    } else if (currentUser.role === 'admin') {
-        // Admin stats are handled separately in loadAdminStats()
-    } else if (currentUser.role === 'tenant') {
-        // FIXED: Show tenant-specific stats
-        setElementText('shortTermBookings', currentUser.stats.shortTermBookings || 0);
-        setElementText('upcomingStays', currentUser.stats.upcomingStays || 0);
-        setElementText('tenantReviews', currentUser.stats.tenantReviews || 0);
-        setElementText('savedShortTerm', currentUser.stats.savedShortTerm || 0);
-    } else {
-        setElementText('totalBookings', currentUser.stats.totalBookings || 0);
-        setElementText('activeBookings', currentUser.stats.activeBookings || 0);
-        setElementText('reviewsCount', currentUser.stats.reviewsCount || 0);
-        setElementText('savedProperties', currentUser.stats.savedProperties || 0);
+        if (currentUser.role === 'landlord') {
+            setElementText('totalProperties', currentUser.stats.totalProperties || 0);
+            setElementText('occupiedProperties', currentUser.stats.occupiedProperties || 0);
+            setElementText('monthlyRevenue', `R${currentUser.stats.monthlyRevenue || 0}`);
+            setElementText('tenantReviews', currentUser.stats.tenantReviews || 0);
+        } else if (currentUser.role === 'admin') {
+            // Admin stats are handled separately in loadAdminStats()
+        } else if (currentUser.role === 'tenant') {
+            // FIXED: Show tenant-specific stats
+            setElementText('shortTermBookings', currentUser.stats.shortTermBookings || 0);
+            setElementText('upcomingStays', currentUser.stats.upcomingStays || 0);
+            setElementText('tenantReviews', currentUser.stats.tenantReviews || 0);
+            setElementText('savedShortTerm', currentUser.stats.savedShortTerm || 0);
+        } else {
+            setElementText('totalBookings', currentUser.stats.totalBookings || 0);
+            setElementText('activeBookings', currentUser.stats.activeBookings || 0);
+            setElementText('reviewsCount', currentUser.stats.reviewsCount || 0);
+            setElementText('savedProperties', currentUser.stats.savedProperties || 0);
+        }
     }
-}
 
     function setElementText(elementId, text) {
         const element = document.getElementById(elementId);
@@ -2574,42 +2581,42 @@ async function countSavedShortTerm() {
     }
 
     function updateFormFields() {
-    const setValue = (id, value) => {
-        const element = document.getElementById(id);
-        if (element) element.value = value || '';
-    };
+        const setValue = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) element.value = value || '';
+        };
 
-    setValue('username', currentUser.username);
-    setValue('firstName', currentUser.firstName);
-    setValue('lastName', currentUser.lastName);
-    setValue('email', currentUser.email);
-    setValue('phone', currentUser.phone);
-    setValue('bio', currentUser.bio);
-    
-    // FIXED: Proper role display for tenant
-    if (currentUser.role === 'admin') {
-        setValue('roleDisplay', 'Administrator');
-    } else if (currentUser.role === 'tenant') {
-        setValue('roleDisplay', 'Tenant');
-    } else {
-        setValue('roleDisplay', currentUser.role === 'landlord' ? 'Landlord' : 'Student');
+        setValue('username', currentUser.username);
+        setValue('firstName', currentUser.firstName);
+        setValue('lastName', currentUser.lastName);
+        setValue('email', currentUser.email);
+        setValue('phone', currentUser.phone);
+        setValue('bio', currentUser.bio);
+        
+        // FIXED: Proper role display for tenant
+        if (currentUser.role === 'admin') {
+            setValue('roleDisplay', 'Administrator');
+        } else if (currentUser.role === 'tenant') {
+            setValue('roleDisplay', 'Tenant');
+        } else {
+            setValue('roleDisplay', currentUser.role === 'landlord' ? 'Landlord' : 'Student');
+        }
+        
+        setValue('streetAddress', currentUser.streetAddress);
+        setValue('city', currentUser.city);
+        setValue('province', currentUser.province);
+        setValue('postalCode', currentUser.postalCode);
+        setValue('university', currentUser.university);
+        setValue('course', currentUser.course);
+        setValue('faculty', currentUser.faculty);
+        setValue('courseDuration', currentUser.courseDuration);
+        setValue('propertyName', currentUser.propertyName);
+        setValue('propertyAddress', currentUser.propertyAddress);
+        setValue('roomCount', currentUser.roomCount);
+        setValue('occupation', currentUser.occupation);
+        setValue('reasonForStay', currentUser.reasonForStay);
+        setValue('tenantNotes', currentUser.tenantNotes);
     }
-    
-    setValue('streetAddress', currentUser.streetAddress);
-    setValue('city', currentUser.city);
-    setValue('province', currentUser.province);
-    setValue('postalCode', currentUser.postalCode);
-    setValue('university', currentUser.university);
-    setValue('course', currentUser.course);
-    setValue('faculty', currentUser.faculty);
-    setValue('courseDuration', currentUser.courseDuration);
-    setValue('propertyName', currentUser.propertyName);
-    setValue('propertyAddress', currentUser.propertyAddress);
-    setValue('roomCount', currentUser.roomCount);
-    setValue('occupation', currentUser.occupation);
-    setValue('reasonForStay', currentUser.reasonForStay);
-    setValue('tenantNotes', currentUser.tenantNotes);
-}
 
     function loadPreferences() {
         if (!currentUser) return;
@@ -2778,37 +2785,37 @@ async function countSavedShortTerm() {
     }
 
     async function updateTenantInfo() {
-    const updatedData = {
-        occupation: document.getElementById('occupation').value,
-        reasonForStay: document.getElementById('reasonForStay').value,
-        tenantNotes: document.getElementById('tenantNotes').value
-    };
+        const updatedData = {
+            occupation: document.getElementById('occupation').value,
+            reasonForStay: document.getElementById('reasonForStay').value,
+            tenantNotes: document.getElementById('tenantNotes').value
+        };
 
-    try {
-        const token = localStorage.getItem("token");
-        const response = await fetch(`${API_BASE_URL}/users/profile`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(updatedData)
-        });
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/users/profile`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedData)
+            });
 
-        if (response.ok) {
-            const data = await response.json();
-            Object.assign(currentUser, data.user);
-            updateLocalStorage();
-            await addActivity('profile', 'Tenant Information Updated', 'You updated your tenant details');
-            showToast('Tenant information updated successfully!');
-        } else {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to update tenant info');
+            if (response.ok) {
+                const data = await response.json();
+                Object.assign(currentUser, data.user);
+                updateLocalStorage();
+                await addActivity('profile', 'Tenant Information Updated', 'You updated your tenant details');
+                showToast('Tenant information updated successfully!');
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to update tenant info');
+            }
+        } catch (error) {
+            showToast('Failed to update tenant information: ' + error.message);
         }
-    } catch (error) {
-        showToast('Failed to update tenant information: ' + error.message);
     }
-}
 
     async function updateNotifications() {
         const updatedPreferences = {
@@ -2954,575 +2961,553 @@ async function countSavedShortTerm() {
         }
     }
 
-    // SIMPLIFIED document upload modal - removing the complex broken function
-
+    // FIXED VERIFICATION FUNCTION - Only shows toast once for verified/pending users
     async function verifyAccount() {
-    if (confirm('Start account verification process? You will need to upload verification documents.')) {
-        try {
-            // FIXED: Handle tenant verification type - only ID card required
-            let verificationType;
-            let requiredFields = [];
+        if (confirm('Start account verification process? You will need to upload verification documents.')) {
+            // Reset the toast shown flag when user starts a new verification
+            localStorage.removeItem(VERIFICATION_TOAST_SHOWN_KEY);
             
-            if (currentUser.role === 'landlord') {
-                verificationType = 'landlord';
-                requiredFields = ['idCard', 'proofOfOwnership', 'businessLicense'];
-            } else if (currentUser.role === 'tenant') {
-                verificationType = 'tenant';
-                requiredFields = ['idCard']; // Only ID card required for tenants
-            } else {
-                verificationType = 'student';
-                requiredFields = ['idCard', 'proofOfEnrollment'];
-            }
-            
-            console.log('Starting verification for:', verificationType);
-            console.log('Required fields:', requiredFields);
-            
-            const uploadedDocuments = await showEnhancedDocumentUploadModal(verificationType, requiredFields);
-            
-            if (!uploadedDocuments) {
-                showToast('Document upload cancelled', 'warning');
-                return;
-            }
-
-            console.log('Uploaded documents:', uploadedDocuments);
-
-            const token = localStorage.getItem("token");
-            
-            // Check if we have the required documents
-            let hasRequiredDocs = true;
-            let missingFields = [];
-            
-            for (const field of requiredFields) {
-                if (!uploadedDocuments[field] || uploadedDocuments[field].length === 0) {
-                    missingFields.push(field);
-                    hasRequiredDocs = false;
-                }
-            }
-            
-            if (!hasRequiredDocs) {
-                const fieldNames = missingFields.map(field => {
-                    switch(field) {
-                        case 'idCard': return 'ID Card';
-                        case 'proofOfEnrollment': return 'Proof of Enrollment';
-                        case 'proofOfOwnership': return 'Proof of Ownership';
-                        case 'businessLicense': return 'Business License';
-                        default: return field;
-                    }
-                }).join(', ');
+            try {
+                // FIXED: Handle tenant verification type - only ID card required
+                let verificationType;
+                let requiredFields = [];
                 
-                showToast(`Missing required documents: ${fieldNames}`, 'error');
-                return;
+                if (currentUser.role === 'landlord') {
+                    verificationType = 'landlord';
+                    requiredFields = ['idCard', 'proofOfOwnership', 'businessLicense'];
+                } else if (currentUser.role === 'tenant') {
+                    verificationType = 'tenant';
+                    requiredFields = ['idCard']; // Only ID card required for tenants
+                } else {
+                    verificationType = 'student';
+                    requiredFields = ['idCard', 'proofOfEnrollment'];
+                }
+                
+                console.log('Starting verification for:', verificationType);
+                console.log('Required fields:', requiredFields);
+                
+                const uploadedDocuments = await showEnhancedDocumentUploadModal(verificationType, requiredFields);
+                
+                if (!uploadedDocuments) {
+                    showToast('Document upload cancelled', 'warning');
+                    return;
+                }
+
+                console.log('Uploaded documents:', uploadedDocuments);
+
+                const token = localStorage.getItem("token");
+                
+                // Check if we have the required documents
+                let hasRequiredDocs = true;
+                let missingFields = [];
+                
+                for (const field of requiredFields) {
+                    if (!uploadedDocuments[field] || uploadedDocuments[field].length === 0) {
+                        missingFields.push(field);
+                        hasRequiredDocs = false;
+                    }
+                }
+                
+                if (!hasRequiredDocs) {
+                    const fieldNames = missingFields.map(field => {
+                        switch(field) {
+                            case 'idCard': return 'ID Card';
+                            case 'proofOfEnrollment': return 'Proof of Enrollment';
+                            case 'proofOfOwnership': return 'Proof of Ownership';
+                            case 'businessLicense': return 'Business License';
+                            default: return field;
+                        }
+                    }).join(', ');
+                    
+                    showToast(`Missing required documents: ${fieldNames}`, 'error');
+                    return;
+                }
+
+                console.log('Sending verification request with documents:', uploadedDocuments);
+
+                const response = await fetch(`${API_BASE_URL}/users/verify`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: verificationType,
+                        documents: uploadedDocuments
+                    })
+                });
+
+                console.log('Verification response status:', response.status);
+                
+                let data;
+                try {
+                    data = await response.json();
+                } catch (parseError) {
+                    console.error('Failed to parse response as JSON:', parseError);
+                    throw new Error('Server returned invalid response');
+                }
+                
+                if (response.ok && data.success) {
+                    currentUser.verificationStatus = 'pending';
+                    currentUser.isVerified = false;
+                    
+                    updateLocalStorage();
+                    updateVerificationStatus();
+                    
+                    await addActivity('verification', 'Verification Started', 'You submitted verification documents for review');
+                    
+                    localStorage.removeItem('verificationStatus');
+                    
+                    showToast('✅ Verification request submitted! Your documents are under review.', 'success');
+                    
+                    setTimeout(() => {
+                        checkVerificationStatus();
+                    }, 2000);
+                    
+                } else {
+                    throw new Error(data.message || data.error || 'Failed to submit verification');
+                }
+            } catch (error) {
+                console.error('Error starting verification:', error);
+                showToast(`Failed to start verification: ${error.message}`, 'error');
             }
+        }
+    }
 
-            console.log('Sending verification request with documents:', uploadedDocuments);
-
-            const response = await fetch(`${API_BASE_URL}/users/verify`, {
-                method: 'POST',
+    // FIXED VERIFICATION STATUS CHECK - Only shows toast once
+    async function checkVerificationStatus() {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/users/verify/status`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    type: verificationType,
-                    documents: uploadedDocuments
-                })
+                }
             });
 
-            console.log('Verification response status:', response.status);
-            
-            let data;
-            try {
-                data = await response.json();
-            } catch (parseError) {
-                console.error('Failed to parse response as JSON:', parseError);
-                throw new Error('Server returned invalid response');
-            }
-            
-            if (response.ok && data.success) {
-                currentUser.verificationStatus = 'pending';
-                currentUser.isVerified = false;
-                
-                updateLocalStorage();
-                updateVerificationStatus();
-                
-                await addActivity('verification', 'Verification Started', 'You submitted verification documents for review');
-                
-                localStorage.removeItem('verificationStatus');
-                
-                showToast('✅ Verification request submitted! Your documents are under review.', 'success');
-                
-                setTimeout(() => {
-                    checkVerificationStatus();
-                }, 2000);
-                
-            } else {
-                throw new Error(data.message || data.error || 'Failed to submit verification');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.data) {
+                    const verificationStatus = data.data.status;
+                    const isVerified = data.data.isVerified;
+                    
+                    currentUser.verificationStatus = verificationStatus;
+                    currentUser.isVerified = isVerified;
+                    
+                    updateLocalStorage();
+                    updateVerificationStatus();
+                    
+                    // Check if we should show the verification toast
+                    const verificationToastShown = localStorage.getItem(VERIFICATION_TOAST_SHOWN_KEY);
+                    
+                    if (isVerified && !verificationToastShown) {
+                        showToast('🎉 Your account has been verified!', 'success');
+                        localStorage.setItem(VERIFICATION_TOAST_SHOWN_KEY, 'true');
+                    } else if (verificationStatus === 'pending' && !verificationToastShown) {
+                        showToast('⏳ Your verification is still under review', 'info');
+                        localStorage.setItem(VERIFICATION_TOAST_SHOWN_KEY, 'true');
+                    }
+                    // For unverified users, don't set the flag so the reminder shows every time
+                }
             }
         } catch (error) {
-            console.error('Error starting verification:', error);
-            showToast(`Failed to start verification: ${error.message}`, 'error');
+            console.error('Error checking verification status:', error);
         }
     }
-}
 
-  // FIXED: Accept requiredFields parameter
-async function showEnhancedDocumentUploadModal(verificationType, requiredFields = []) {
-    return new Promise((resolve) => {
-        // Determine modal title and description based on verification type
-        let modalTitle = 'Upload Verification Documents';
-        let modalDescription = '';
-        
-        if (verificationType === 'tenant') {
-            modalTitle = 'Tenant Verification - ID Card Required';
-            modalDescription = 'As a short-term tenant, you only need to verify your identity with an ID card.';
-        } else if (verificationType === 'student') {
-            modalTitle = 'Student Verification';
-            modalDescription = 'Please upload your student ID and proof of enrollment.';
-        } else if (verificationType === 'landlord') {
-            modalTitle = 'Landlord Verification';
-            modalDescription = 'Please upload your business documents for verification.';
-        }
+    // Function to clear verification toast flag (optional)
+    function clearVerificationToastFlag() {
+        localStorage.removeItem(VERIFICATION_TOAST_SHOWN_KEY);
+    }
 
-        const modalHtml = `
-            <div class="modal fade" id="documentUploadModal" tabindex="-1">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">${modalTitle}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            ${modalDescription ? `<div class="alert alert-info mb-4">${modalDescription}</div>` : ''}
-                            
-                            <form id="documentUploadForm">
-                                <input type="hidden" name="type" value="${verificationType}">
+    // SIMPLIFIED document upload modal - removing the complex broken function
+    async function showEnhancedDocumentUploadModal(verificationType, requiredFields = []) {
+        return new Promise((resolve) => {
+            // Determine modal title and description based on verification type
+            let modalTitle = 'Upload Verification Documents';
+            let modalDescription = '';
+            
+            if (verificationType === 'tenant') {
+                modalTitle = 'Tenant Verification - ID Card Required';
+                modalDescription = 'As a short-term tenant, you only need to verify your identity with an ID card.';
+            } else if (verificationType === 'student') {
+                modalTitle = 'Student Verification';
+                modalDescription = 'Please upload your student ID and proof of enrollment.';
+            } else if (verificationType === 'landlord') {
+                modalTitle = 'Landlord Verification';
+                modalDescription = 'Please upload your business documents for verification.';
+            }
+
+            const modalHtml = `
+                <div class="modal fade" id="documentUploadModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">${modalTitle}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                ${modalDescription ? `<div class="alert alert-info mb-4">${modalDescription}</div>` : ''}
                                 
-                                ${verificationType === 'student' ? `
-                                    <!-- Student fields remain the same -->
-                                    <div class="mb-4">
-                                        <h6><i class="bi bi-person-badge me-2"></i>Student ID Card *</h6>
-                                        <p class="text-muted small">Upload clear photos of your student ID card (front and back)</p>
-                                        <input type="file" class="form-control document-file" name="idCard" multiple accept="image/*,.pdf" required>
-                                        <div class="form-text">Max 3 files. Supported: JPG, PNG, PDF</div>
-                                        <div id="idCardPreview" class="file-preview-container mt-2"></div>
-                                    </div>
+                                <form id="documentUploadForm">
+                                    <input type="hidden" name="type" value="${verificationType}">
                                     
-                                    <div class="mb-4">
-                                        <h6><i class="bi bi-mortarboard me-2"></i>Proof of Enrollment/Academic Transcript *</h6>
-                                        <p class="text-muted small">Upload proof of current enrollment or academic transcript</p>
-                                        <input type="file" class="form-control document-file" name="proofOfEnrollment" multiple accept="image/*,.pdf" required>
-                                        <div class="form-text">Max 5 files. Supported: JPG, PNG, PDF</div>
-                                        <div id="proofOfEnrollmentPreview" class="file-preview-container mt-2"></div>
-                                    </div>
-                                ` : verificationType === 'tenant' ? `
-                                    <!-- TENANT: Only ID Card Required -->
-                                    <div class="mb-4">
-                                        <h6><i class="bi bi-person-badge me-2"></i>ID Card *</h6>
-                                        <p class="text-muted small">Upload clear photos of your ID card (front and back) for identity verification</p>
-                                        <input type="file" class="form-control document-file" name="idCard" multiple accept="image/*,.pdf" required>
-                                        <div class="form-text">Max 3 files. Supported: JPG, PNG, PDF</div>
-                                        <div id="idCardPreview" class="file-preview-container mt-2"></div>
-                                    </div>
+                                    ${verificationType === 'student' ? `
+                                        <!-- Student fields remain the same -->
+                                        <div class="mb-4">
+                                            <h6><i class="bi bi-person-badge me-2"></i>Student ID Card *</h6>
+                                            <p class="text-muted small">Upload clear photos of your student ID card (front and back)</p>
+                                            <input type="file" class="form-control document-file" name="idCard" multiple accept="image/*,.pdf" required>
+                                            <div class="form-text">Max 3 files. Supported: JPG, PNG, PDF</div>
+                                            <div id="idCardPreview" class="file-preview-container mt-2"></div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <h6><i class="bi bi-mortarboard me-2"></i>Proof of Enrollment/Academic Transcript *</h6>
+                                            <p class="text-muted small">Upload proof of current enrollment or academic transcript</p>
+                                            <input type="file" class="form-control document-file" name="proofOfEnrollment" multiple accept="image/*,.pdf" required>
+                                            <div class="form-text">Max 5 files. Supported: JPG, PNG, PDF</div>
+                                            <div id="proofOfEnrollmentPreview" class="file-preview-container mt-2"></div>
+                                        </div>
+                                    ` : verificationType === 'tenant' ? `
+                                        <!-- TENANT: Only ID Card Required -->
+                                        <div class="mb-4">
+                                            <h6><i class="bi bi-person-badge me-2"></i>ID Card *</h6>
+                                            <p class="text-muted small">Upload clear photos of your ID card (front and back) for identity verification</p>
+                                            <input type="file" class="form-control document-file" name="idCard" multiple accept="image/*,.pdf" required>
+                                            <div class="form-text">Max 3 files. Supported: JPG, PNG, PDF</div>
+                                            <div id="idCardPreview" class="file-preview-container mt-2"></div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <h6><i class="bi bi-file-earmark-text me-2"></i>Additional Documents (Optional)</h6>
+                                            <p class="text-muted small">Any additional identification or supporting documents</p>
+                                            <input type="file" class="form-control document-file" name="additionalDocuments" multiple accept="image/*,.pdf">
+                                            <div class="form-text">Max 5 files. Supported: JPG, PNG, PDF</div>
+                                            <div id="additionalDocumentsPreview" class="file-preview-container mt-2"></div>
+                                        </div>
+                                    ` : `
+                                        <!-- Landlord fields remain the same -->
+                                        <div class="mb-4">
+                                            <h6><i class="bi bi-person-badge me-2"></i>ID Card *</h6>
+                                            <p class="text-muted small">Upload clear photos of your ID card (front and back)</p>
+                                            <input type="file" class="form-control document-file" name="idCard" multiple accept="image/*,.pdf" required>
+                                            <div class="form-text">Max 3 files. Supported: JPG, PNG, PDF</div>
+                                            <div id="idCardPreview" class="file-preview-container mt-2"></div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <h6><i class="bi bi-house-check me-2"></i>Proof of Ownership *</h6>
+                                            <p class="text-muted small">Upload property ownership documents, titles, or rental agreements</p>
+                                            <input type="file" class="form-control document-file" name="proofOfOwnership" multiple accept="image/*,.pdf" required>
+                                            <div class="form-text">Max 10 files. Supported: JPG, PNG, PDF</div>
+                                            <div id="proofOfOwnershipPreview" class="file-preview-container mt-2"></div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <h6><i class="bi bi-building me-2"></i>Business License *</h6>
+                                            <p class="text-muted small">Upload business registration and license documents</p>
+                                            <input type="file" class="form-control document-file" name="businessLicense" multiple accept="image/*,.pdf" required>
+                                            <div class="form-text">Max 5 files. Supported: JPG, PNG, PDF</div>
+                                            <div id="businessLicensePreview" class="file-preview-container mt-2"></div>
+                                        </div>
+                                    `}
                                     
-                                    <div class="mb-4">
-                                        <h6><i class="bi bi-file-earmark-text me-2"></i>Additional Documents (Optional)</h6>
-                                        <p class="text-muted small">Any additional identification or supporting documents</p>
-                                        <input type="file" class="form-control document-file" name="additionalDocuments" multiple accept="image/*,.pdf">
-                                        <div class="form-text">Max 5 files. Supported: JPG, PNG, PDF</div>
-                                        <div id="additionalDocumentsPreview" class="file-preview-container mt-2"></div>
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <strong>Document Requirements:</strong>
+                                        <ul class="mb-0 mt-2">
+                                            <li>Maximum file size: 10MB per file</li>
+                                            <li>Supported formats: JPG, PNG, PDF</li>
+                                            <li>Ensure documents are clear and readable</li>
+                                            <li>All required documents must be uploaded</li>
+                                            <li>Documents will be securely stored in Cloudinary</li>
+                                        </ul>
                                     </div>
-                                ` : `
-                                    <!-- Landlord fields remain the same -->
-                                    <div class="mb-4">
-                                        <h6><i class="bi bi-person-badge me-2"></i>ID Card *</h6>
-                                        <p class="text-muted small">Upload clear photos of your ID card (front and back)</p>
-                                        <input type="file" class="form-control document-file" name="idCard" multiple accept="image/*,.pdf" required>
-                                        <div class="form-text">Max 3 files. Supported: JPG, PNG, PDF</div>
-                                        <div id="idCardPreview" class="file-preview-container mt-2"></div>
-                                    </div>
-                                    
-                                    <div class="mb-4">
-                                        <h6><i class="bi bi-house-check me-2"></i>Proof of Ownership *</h6>
-                                        <p class="text-muted small">Upload property ownership documents, titles, or rental agreements</p>
-                                        <input type="file" class="form-control document-file" name="proofOfOwnership" multiple accept="image/*,.pdf" required>
-                                        <div class="form-text">Max 10 files. Supported: JPG, PNG, PDF</div>
-                                        <div id="proofOfOwnershipPreview" class="file-preview-container mt-2"></div>
-                                    </div>
-                                    
-                                    <div class="mb-4">
-                                        <h6><i class="bi bi-building me-2"></i>Business License *</h6>
-                                        <p class="text-muted small">Upload business registration and license documents</p>
-                                        <input type="file" class="form-control document-file" name="businessLicense" multiple accept="image/*,.pdf" required>
-                                        <div class="form-text">Max 5 files. Supported: JPG, PNG, PDF</div>
-                                        <div id="businessLicensePreview" class="file-preview-container mt-2"></div>
-                                    </div>
-                                `}
-                                
-                                <div class="alert alert-info">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    <strong>Document Requirements:</strong>
-                                    <ul class="mb-0 mt-2">
-                                        <li>Maximum file size: 10MB per file</li>
-                                        <li>Supported formats: JPG, PNG, PDF</li>
-                                        <li>Ensure documents are clear and readable</li>
-                                        <li>All required documents must be uploaded</li>
-                                        <li>Documents will be securely stored in Cloudinary</li>
-                                    </ul>
-                                </div>
 
-                                <div class="upload-progress" id="uploadProgress" style="display: none;">
-                                    <div class="progress mb-3">
-                                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                    <div class="upload-progress" id="uploadProgress" style="display: none;">
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <p class="text-center mb-0" id="uploadStatus">Preparing upload...</p>
                                     </div>
-                                    <p class="text-center mb-0" id="uploadStatus">Preparing upload...</p>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-primary" id="submitDocuments">Submit Verification</button>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="submitDocuments">Submit Verification</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <style>
-                .file-preview-container {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 10px;
-                }
-                .file-preview-item {
-                    position: relative;
-                    width: 100px;
-                    height: 100px;
-                    border: 1px solid #ddd;
-                    border-radius: 8px;
-                    overflow: hidden;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .file-preview-item img {
-                    max-width: 100%;
-                    max-height: 100%;
-                    object-fit: cover;
-                }
-                .file-preview-item .file-icon {
-                    font-size: 2rem;
-                    color: #6c757d;
-                }
-                .file-preview-item .remove-file {
-                    position: absolute;
-                    top: 2px;
-                    right: 2px;
-                    background: rgba(255,255,255,0.8);
-                    border: none;
-                    border-radius: 50%;
-                    width: 20px;
-                    height: 20px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 12px;
-                    cursor: pointer;
-                }
-                .pdf-icon { color: #dc3545; }
-                .image-icon { color: #198754; }
-            </style>
-        `;
-        
-        // Rest of the modal code remains the same...
-        // [Previous modal implementation continues...]
-        
-        // Add modal to DOM
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
-        const modal = new bootstrap.Modal(document.getElementById('documentUploadModal'));
-        const submitBtn = document.getElementById('submitDocuments');
-        const form = document.getElementById('documentUploadForm');
-        
-        // Store file data
-        const fileData = new Map();
-        
-        // Initialize file preview functionality
-        initializeFilePreviews(fileData, form);
-        
-        submitBtn.onclick = async () => {
-          console.log('Submit button clicked, checking file data:', fileData);
-          console.log('Required fields for validation:', requiredFields);
-          
-          // Validate required files - USE THE PASSED requiredFields PARAMETER
-          let isValid = true;
-          let missingFields = [];
-          
-          for (const field of requiredFields) {
-              const files = fileData.get(field) || [];
-              console.log(`Field ${field} has ${files.length} files:`, files.map(f => f.name));
+                <style>
+                    .file-preview-container {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 10px;
+                    }
+                    .file-preview-item {
+                        position: relative;
+                        width: 100px;
+                        height: 100px;
+                        border: 1px solid #ddd;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .file-preview-item img {
+                        max-width: 100%;
+                        max-height: 100%;
+                        object-fit: cover;
+                    }
+                    .file-preview-item .file-icon {
+                        font-size: 2rem;
+                        color: #6c757d;
+                    }
+                    .file-preview-item .remove-file {
+                        position: absolute;
+                        top: 2px;
+                        right: 2px;
+                        background: rgba(255,255,255,0.8);
+                        border: none;
+                        border-radius: 50%;
+                        width: 20px;
+                        height: 20px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 12px;
+                        cursor: pointer;
+                    }
+                    .pdf-icon { color: #dc3545; }
+                    .image-icon { color: #198754; }
+                </style>
+            `;
+            
+            // Add modal to DOM
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            const modal = new bootstrap.Modal(document.getElementById('documentUploadModal'));
+            const submitBtn = document.getElementById('submitDocuments');
+            const form = document.getElementById('documentUploadForm');
+            
+            // Store file data
+            const fileData = new Map();
+            
+            // Initialize file preview functionality
+            initializeFilePreviews(fileData, form);
+            
+            submitBtn.onclick = async () => {
+              console.log('Submit button clicked, checking file data:', fileData);
+              console.log('Required fields for validation:', requiredFields);
               
-              if (files.length === 0) {
-                  const fieldName = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                  missingFields.push(fieldName);
-                  isValid = false;
+              // Validate required files - USE THE PASSED requiredFields PARAMETER
+              let isValid = true;
+              let missingFields = [];
+              
+              for (const field of requiredFields) {
+                  const files = fileData.get(field) || [];
+                  console.log(`Field ${field} has ${files.length} files:`, files.map(f => f.name));
+                  
+                  if (files.length === 0) {
+                      const fieldName = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                      missingFields.push(fieldName);
+                      isValid = false;
+                  }
               }
-          }
-          
-          if (!isValid) {
-              showToast(`Please upload the following required documents:\n• ${missingFields.join('\n• ')}`);
-              return;
-          }
-            
-            // Validate file sizes and types
-            let hasInvalidFiles = false;
-            let invalidFiles = [];
-            
-            for (const [fieldName, files] of fileData.entries()) {
-                for (const file of files) {
-                    if (file.size > 10 * 1024 * 1024) {
-                        hasInvalidFiles = true;
-                        invalidFiles.push(`${file.name} (too large)`);
-                    }
-                    
-                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-                    if (!allowedTypes.includes(file.type)) {
-                        hasInvalidFiles = true;
-                        invalidFiles.push(`${file.name} (invalid type)`);
-                    }
-                }
-            }
-            
-            if (hasInvalidFiles) {
-                showToast(`The following files are invalid:\n• ${invalidFiles.join('\n• ')}\n\nPlease ensure files are under 10MB and are JPG, PNG, or PDF format.`);
-                return;
-            }
-            
-            // Show loading state
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
-            
-            try {
-                // Show upload progress
-                document.getElementById('uploadProgress').style.display = 'block';
-                const progressBar = document.querySelector('.progress-bar');
-                const uploadStatus = document.getElementById('uploadStatus');
+              
+              if (!isValid) {
+                  showToast(`Please upload the following required documents:\n• ${missingFields.join('\n• ')}`);
+                  return;
+              }
                 
-                // Upload all files to Cloudinary and get URLs
-                const uploadedDocuments = {};
-                const allFiles = [];
+                // Validate file sizes and types
+                let hasInvalidFiles = false;
+                let invalidFiles = [];
                 
-                // Collect all files
                 for (const [fieldName, files] of fileData.entries()) {
-                    if (files && files.length > 0) {
-                        allFiles.push(...files.map(file => ({ fieldName, file })));
-                    }
-                }
-                
-                console.log('Total files to upload:', allFiles.length);
-                
-                let processedFiles = 0;
-                const totalFiles = allFiles.length;
-                
-                if (totalFiles === 0) {
-                    throw new Error('No files selected for upload');
-                }
-                
-                // Upload files with better error handling
-                for (const { fieldName, file } of allFiles) {
-                    uploadStatus.textContent = `Uploading ${file.name}...`;
-                    console.log(`Uploading ${file.name} for field ${fieldName}`);
-                    
-                    try {
-                        const cloudinaryUrl = await uploadToCloudinary(file);
-                        if (cloudinaryUrl) {
-                            if (!uploadedDocuments[fieldName]) {
-                                uploadedDocuments[fieldName] = [];
-                            }
-                            uploadedDocuments[fieldName].push(cloudinaryUrl);
-                            console.log(`✅ Successfully uploaded ${file.name}: ${cloudinaryUrl}`);
-                        } else {
-                            console.error(`❌ Failed to get URL for ${file.name}`);
-                            throw new Error(`Failed to upload ${file.name}`);
-                        }
-                    } catch (uploadError) {
-                        console.error(`Failed to upload ${file.name}:`, uploadError);
-                        throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
-                    }
-                    
-                    processedFiles++;
-                    const progress = (processedFiles / totalFiles) * 100;
-                    progressBar.style.width = `${progress}%`;
-                }
-                
-                uploadStatus.textContent = 'Finalizing upload...';
-                
-                console.log('Final uploaded documents:', uploadedDocuments);
-                
-                // Verify all required documents were uploaded
-                for (const field of requiredFields) {
-                    if (!uploadedDocuments[field] || uploadedDocuments[field].length === 0) {
-                        throw new Error(`Required document ${field} was not uploaded successfully`);
-                    }
-                }
-                
-                if (Object.keys(uploadedDocuments).length > 0) {
-                    modal.hide();
-                    resolve(uploadedDocuments);
-                } else {
-                    throw new Error('No files were successfully uploaded to Cloudinary');
-                }
-                
-            } catch (error) {
-                console.error('Error processing form:', error);
-                showToast('Error uploading documents: ' + error.message);
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Submit Verification';
-                document.getElementById('uploadProgress').style.display = 'none';
-            }
-        };
-        
-        modal.show();
-        
-        // Clean up modal after hide
-        modal._element.addEventListener('hidden.bs.modal', () => {
-            document.getElementById('documentUploadModal').remove();
-            resolve(null);
-        });
-
-        // Helper function for file previews
-        function initializeFilePreviews(fileData, form) {
-            const fileInputs = form.querySelectorAll('.document-file');
-            
-            fileInputs.forEach(input => {
-                const fieldName = input.name;
-                console.log(`Initializing file input for: ${fieldName}`);
-                fileData.set(fieldName, []);
-                
-                input.addEventListener('change', function(e) {
-                    const previewContainerId = `${fieldName}Preview`;
-                    const previewContainer = document.getElementById(previewContainerId);
-                    
-                    if (!previewContainer) {
-                        console.error(`Preview container not found for: ${fieldName}, looking for ID: ${previewContainerId}`);
-                        console.log('Available preview containers:', 
-                            Array.from(document.querySelectorAll('[id$="Preview"]')).map(el => el.id)
-                        );
-                        return;
-                    }
-                    
-                    previewContainer.innerHTML = '';
-                    const files = Array.from(this.files);
-                    console.log(`Files selected for ${fieldName}:`, files.map(f => f.name));
-                    
-                    // Validate files before storing
-                    const validFiles = files.filter(file => {
+                    for (const file of files) {
                         if (file.size > 10 * 1024 * 1024) {
-                            showToast(`File ${file.name} is too large. Maximum size is 10MB.`);
-                            return false;
+                            hasInvalidFiles = true;
+                            invalidFiles.push(`${file.name} (too large)`);
                         }
                         
                         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
                         if (!allowedTypes.includes(file.type)) {
-                            showToast(`File ${file.name} is not a supported format. Please use JPG, PNG, or PDF.`);
-                            return false;
+                            hasInvalidFiles = true;
+                            invalidFiles.push(`${file.name} (invalid type)`);
                         }
-                        
-                        return true;
-                    });
-                    
-                    // Store only valid files
-                    fileData.set(fieldName, validFiles);
-                    console.log(`Valid files stored for ${fieldName}:`, validFiles.map(f => f.name));
-                    
-                    // Update the input with only valid files
-                    const dt = new DataTransfer();
-                    validFiles.forEach(file => dt.items.add(file));
-                    this.files = dt.files;
-                    
-                    // Create previews for valid files
-                    validFiles.forEach((file, index) => {
-                        const previewItem = document.createElement('div');
-                        previewItem.className = 'file-preview-item';
-                        previewItem.dataset.index = index;
-                        
-                        if (file.type.startsWith('image/')) {
-                            const reader = new FileReader();
-                            reader.onload = function(e) {
-                                previewItem.innerHTML = `
-                                    <img src="${e.target.result}" alt="${file.name}">
-                                    <button type="button" class="remove-file" data-field="${fieldName}" data-index="${index}">×</button>
-                                `;
-                                previewContainer.appendChild(previewItem);
-                                
-                                // Add remove event listener for this specific button
-                                previewItem.querySelector('.remove-file').addEventListener('click', function() {
-                                    removeFile(fieldName, index, fileData, form);
-                                });
-                            };
-                            reader.readAsDataURL(file);
-                        } else {
-                            const fileExtension = file.name.split('.').pop().toLowerCase();
-                            let iconClass = 'file-icon';
-                            if (fileExtension === 'pdf') iconClass += ' pdf-icon';
-                            else iconClass += ' image-icon';
-                            
-                            previewItem.innerHTML = `
-                                <div class="${iconClass}">
-                                    <i class="bi bi-file-earmark"></i>
-                                </div>
-                                <button type="button" class="remove-file" data-field="${fieldName}" data-index="${index}">×</button>
-                                <small class="position-absolute bottom-0 start-0 end-0 text-center bg-light">${fileExtension}</small>
-                            `;
-                            previewContainer.appendChild(previewItem);
-                            
-                            // Add remove event listener for this specific button
-                            previewItem.querySelector('.remove-file').addEventListener('click', function() {
-                                removeFile(fieldName, index, fileData, form);
-                            });
-                        }
-                    });
-                    
-                    console.log('Current fileData state:', Array.from(fileData.entries()).map(([key, value]) => 
-                        `${key}: ${value.length} files`
-                    ));
-                });
-            });
-            
-            function removeFile(fieldName, index, fileData, form) {
-                console.log(`Removing file from ${fieldName} at index ${index}`);
+                    }
+                }
                 
-                const files = fileData.get(fieldName) || [];
-                if (index >= 0 && index < files.length) {
-                    files.splice(index, 1);
-                    fileData.set(fieldName, files);
+                if (hasInvalidFiles) {
+                    showToast(`The following files are invalid:\n• ${invalidFiles.join('\n• ')}\n\nPlease ensure files are under 10MB and are JPG, PNG, or PDF format.`);
+                    return;
+                }
+                
+                // Show loading state
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
+                
+                try {
+                    // Show upload progress
+                    document.getElementById('uploadProgress').style.display = 'block';
+                    const progressBar = document.querySelector('.progress-bar');
+                    const uploadStatus = document.getElementById('uploadStatus');
                     
-                    // Update the actual file input
-                    const fileInput = form.querySelector(`input[name="${fieldName}"]`);
-                    const dt = new DataTransfer();
-                    files.forEach(file => dt.items.add(file));
-                    fileInput.files = dt.files;
+                    // Upload all files to Cloudinary and get URLs
+                    const uploadedDocuments = {};
+                    const allFiles = [];
                     
-                    // Re-render preview
-                    const previewContainerId = `${fieldName}Preview`;
-                    const previewContainer = document.getElementById(previewContainerId);
-                    if (previewContainer) {
+                    // Collect all files
+                    for (const [fieldName, files] of fileData.entries()) {
+                        if (files && files.length > 0) {
+                            allFiles.push(...files.map(file => ({ fieldName, file })));
+                        }
+                    }
+                    
+                    console.log('Total files to upload:', allFiles.length);
+                    
+                    let processedFiles = 0;
+                    const totalFiles = allFiles.length;
+                    
+                    if (totalFiles === 0) {
+                        throw new Error('No files selected for upload');
+                    }
+                    
+                    // Upload files with better error handling
+                    for (const { fieldName, file } of allFiles) {
+                        uploadStatus.textContent = `Uploading ${file.name}...`;
+                        console.log(`Uploading ${file.name} for field ${fieldName}`);
+                        
+                        try {
+                            const cloudinaryUrl = await uploadToCloudinary(file);
+                            if (cloudinaryUrl) {
+                                if (!uploadedDocuments[fieldName]) {
+                                    uploadedDocuments[fieldName] = [];
+                                }
+                                uploadedDocuments[fieldName].push(cloudinaryUrl);
+                                console.log(`✅ Successfully uploaded ${file.name}: ${cloudinaryUrl}`);
+                            } else {
+                                console.error(`❌ Failed to get URL for ${file.name}`);
+                                throw new Error(`Failed to upload ${file.name}`);
+                            }
+                        } catch (uploadError) {
+                            console.error(`Failed to upload ${file.name}:`, uploadError);
+                            throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+                        }
+                        
+                        processedFiles++;
+                        const progress = (processedFiles / totalFiles) * 100;
+                        progressBar.style.width = `${progress}%`;
+                    }
+                    
+                    uploadStatus.textContent = 'Finalizing upload...';
+                    
+                    console.log('Final uploaded documents:', uploadedDocuments);
+                    
+                    // Verify all required documents were uploaded
+                    for (const field of requiredFields) {
+                        if (!uploadedDocuments[field] || uploadedDocuments[field].length === 0) {
+                            throw new Error(`Required document ${field} was not uploaded successfully`);
+                        }
+                    }
+                    
+                    if (Object.keys(uploadedDocuments).length > 0) {
+                        modal.hide();
+                        resolve(uploadedDocuments);
+                    } else {
+                        throw new Error('No files were successfully uploaded to Cloudinary');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error processing form:', error);
+                    showToast('Error uploading documents: ' + error.message);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Submit Verification';
+                    document.getElementById('uploadProgress').style.display = 'none';
+                }
+            };
+            
+            modal.show();
+            
+            // Clean up modal after hide
+            modal._element.addEventListener('hidden.bs.modal', () => {
+                document.getElementById('documentUploadModal').remove();
+                resolve(null);
+            });
+
+            // Helper function for file previews
+            function initializeFilePreviews(fileData, form) {
+                const fileInputs = form.querySelectorAll('.document-file');
+                
+                fileInputs.forEach(input => {
+                    const fieldName = input.name;
+                    console.log(`Initializing file input for: ${fieldName}`);
+                    fileData.set(fieldName, []);
+                    
+                    input.addEventListener('change', function(e) {
+                        const previewContainerId = `${fieldName}Preview`;
+                        const previewContainer = document.getElementById(previewContainerId);
+                        
+                        if (!previewContainer) {
+                            console.error(`Preview container not found for: ${fieldName}, looking for ID: ${previewContainerId}`);
+                            console.log('Available preview containers:', 
+                                Array.from(document.querySelectorAll('[id$="Preview"]')).map(el => el.id)
+                            );
+                            return;
+                        }
+                        
                         previewContainer.innerHTML = '';
-                        files.forEach((file, newIndex) => {
+                        const files = Array.from(this.files);
+                        console.log(`Files selected for ${fieldName}:`, files.map(f => f.name));
+                        
+                        // Validate files before storing
+                        const validFiles = files.filter(file => {
+                            if (file.size > 10 * 1024 * 1024) {
+                                showToast(`File ${file.name} is too large. Maximum size is 10MB.`);
+                                return false;
+                            }
+                            
+                            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                            if (!allowedTypes.includes(file.type)) {
+                                showToast(`File ${file.name} is not a supported format. Please use JPG, PNG, or PDF.`);
+                                return false;
+                            }
+                            
+                            return true;
+                        });
+                        
+                        // Store only valid files
+                        fileData.set(fieldName, validFiles);
+                        console.log(`Valid files stored for ${fieldName}:`, validFiles.map(f => f.name));
+                        
+                        // Update the input with only valid files
+                        const dt = new DataTransfer();
+                        validFiles.forEach(file => dt.items.add(file));
+                        this.files = dt.files;
+                        
+                        // Create previews for valid files
+                        validFiles.forEach((file, index) => {
                             const previewItem = document.createElement('div');
                             previewItem.className = 'file-preview-item';
-                            previewItem.dataset.index = newIndex;
+                            previewItem.dataset.index = index;
                             
                             if (file.type.startsWith('image/')) {
                                 const reader = new FileReader();
                                 reader.onload = function(e) {
                                     previewItem.innerHTML = `
                                         <img src="${e.target.result}" alt="${file.name}">
-                                        <button type="button" class="remove-file" data-field="${fieldName}" data-index="${newIndex}">×</button>
+                                        <button type="button" class="remove-file" data-field="${fieldName}" data-index="${index}">×</button>
                                     `;
                                     previewContainer.appendChild(previewItem);
                                     
-                                    // Re-add event listener
+                                    // Add remove event listener for this specific button
                                     previewItem.querySelector('.remove-file').addEventListener('click', function() {
-                                        removeFile(fieldName, newIndex, fileData, form);
+                                        removeFile(fieldName, index, fileData, form);
                                     });
                                 };
                                 reader.readAsDataURL(file);
@@ -3536,60 +3521,94 @@ async function showEnhancedDocumentUploadModal(verificationType, requiredFields 
                                     <div class="${iconClass}">
                                         <i class="bi bi-file-earmark"></i>
                                     </div>
-                                    <button type="button" class="remove-file" data-field="${fieldName}" data-index="${newIndex}">×</button>
+                                    <button type="button" class="remove-file" data-field="${fieldName}" data-index="${index}">×</button>
                                     <small class="position-absolute bottom-0 start-0 end-0 text-center bg-light">${fileExtension}</small>
                                 `;
                                 previewContainer.appendChild(previewItem);
                                 
-                                // Re-add event listener
+                                // Add remove event listener for this specific button
                                 previewItem.querySelector('.remove-file').addEventListener('click', function() {
-                                    removeFile(fieldName, newIndex, fileData, form);
+                                    removeFile(fieldName, index, fileData, form);
                                 });
                             }
                         });
-                    }
-                }
+                        
+                        console.log('Current fileData state:', Array.from(fileData.entries()).map(([key, value]) => 
+                            `${key}: ${value.length} files`
+                        ));
+                    });
+                });
                 
-                console.log('Updated fileData state after removal:', Array.from(fileData.entries()).map(([key, value]) => 
-                    `${key}: ${value.length} files`
-                ));
-            }
-        }
-    });
-}
-    async function checkVerificationStatus() {
-    try {
-        const token = localStorage.getItem("token");
-        const response = await fetch(`${API_BASE_URL}/users/verify/status`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                function removeFile(fieldName, index, fileData, form) {
+                    console.log(`Removing file from ${fieldName} at index ${index}`);
+                    
+                    const files = fileData.get(fieldName) || [];
+                    if (index >= 0 && index < files.length) {
+                        files.splice(index, 1);
+                        fileData.set(fieldName, files);
+                        
+                        // Update the actual file input
+                        const fileInput = form.querySelector(`input[name="${fieldName}"]`);
+                        const dt = new DataTransfer();
+                        files.forEach(file => dt.items.add(file));
+                        fileInput.files = dt.files;
+                        
+                        // Re-render preview
+                        const previewContainerId = `${fieldName}Preview`;
+                        const previewContainer = document.getElementById(previewContainerId);
+                        if (previewContainer) {
+                            previewContainer.innerHTML = '';
+                            files.forEach((file, newIndex) => {
+                                const previewItem = document.createElement('div');
+                                previewItem.className = 'file-preview-item';
+                                previewItem.dataset.index = newIndex;
+                                
+                                if (file.type.startsWith('image/')) {
+                                    const reader = new FileReader();
+                                    reader.onload = function(e) {
+                                        previewItem.innerHTML = `
+                                            <img src="${e.target.result}" alt="${file.name}">
+                                            <button type="button" class="remove-file" data-field="${fieldName}" data-index="${newIndex}">×</button>
+                                        `;
+                                        previewContainer.appendChild(previewItem);
+                                        
+                                        // Re-add event listener
+                                        previewItem.querySelector('.remove-file').addEventListener('click', function() {
+                                            removeFile(fieldName, newIndex, fileData, form);
+                                        });
+                                    };
+                                    reader.readAsDataURL(file);
+                                } else {
+                                    const fileExtension = file.name.split('.').pop().toLowerCase();
+                                    let iconClass = 'file-icon';
+                                    if (fileExtension === 'pdf') iconClass += ' pdf-icon';
+                                    else iconClass += ' image-icon';
+                                    
+                                    previewItem.innerHTML = `
+                                        <div class="${iconClass}">
+                                            <i class="bi bi-file-earmark"></i>
+                                        </div>
+                                        <button type="button" class="remove-file" data-field="${fieldName}" data-index="${newIndex}">×</button>
+                                        <small class="position-absolute bottom-0 start-0 end-0 text-center bg-light">${fileExtension}</small>
+                                    `;
+                                    previewContainer.appendChild(previewItem);
+                                    
+                                    // Re-add event listener
+                                    previewItem.querySelector('.remove-file').addEventListener('click', function() {
+                                        removeFile(fieldName, newIndex, fileData, form);
+                                    });
+                                }
+                            });
+                        }
+                    }
+                    
+                    console.log('Updated fileData state after removal:', Array.from(fileData.entries()).map(([key, value]) => 
+                        `${key}: ${value.length} files`
+                    ));
+                }
             }
         });
-
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.data) {
-                const verificationStatus = data.data.status;
-                const isVerified = data.data.isVerified;
-                
-                currentUser.verificationStatus = verificationStatus;
-                currentUser.isVerified = isVerified;
-                
-                updateLocalStorage();
-                updateVerificationStatus();
-                
-                if (isVerified) {
-                    showToast('🎉 Your account has been verified!', 'success');
-                } else if (verificationStatus === 'pending') {
-                    showToast('⏳ Your verification is still under review', 'info');
-                }
-            }
-        }
-    } catch (error) {
-        console.error('Error checking verification status:', error);
     }
-}
 
     function updateLocalStorage() {
         localStorage.setItem("user", JSON.stringify(currentUser));
@@ -3615,85 +3634,82 @@ async function showEnhancedDocumentUploadModal(verificationType, requiredFields 
     }
 
     // Beautiful Toast Notification System
-function showToast(message, type = 'info', duration = 5000) {
-    // Create toast container if it doesn't exist
-    let toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.className = 'toast-container';
-        document.body.appendChild(toastContainer);
-    }
+    function showToast(message, type = 'info', duration = 5000) {
+        // Create toast container if it doesn't exist
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'toast-container';
+            document.body.appendChild(toastContainer);
+        }
 
-    // Create toast element
-    const toastId = 'toast-' + Date.now();
-    const toast = document.createElement('div');
-    toast.id = toastId;
-    toast.className = `custom-toast ${type} toast-show`;
-    
-    // Set icon and title based on type
-    let iconClass, title;
-    switch(type) {
-        case 'success':
-            iconClass = 'bi-check-lg';
-            title = 'Success';
-            break;
-        case 'error':
-            iconClass = 'bi-x-circle';
-            title = 'Error';
-            break;
-        case 'warning':
-            iconClass = 'bi-exclamation-triangle';
-            title = 'Warning';
-            break;
-        case 'info':
-        default:
-            iconClass = 'bi-info-circle';
-            title = 'Info';
-    }
+        // Create toast element
+        const toastId = 'toast-' + Date.now();
+        const toast = document.createElement('div');
+        toast.id = toastId;
+        toast.className = `custom-toast ${type} toast-show`;
+        
+        // Set icon and title based on type
+        let iconClass, title;
+        switch(type) {
+            case 'success':
+                iconClass = 'bi-check-lg';
+                title = 'Success';
+                break;
+            case 'error':
+                iconClass = 'bi-x-circle';
+                title = 'Error';
+                break;
+            case 'warning':
+                iconClass = 'bi-exclamation-triangle';
+                title = 'Warning';
+                break;
+            case 'info':
+            default:
+                iconClass = 'bi-info-circle';
+                title = 'Info';
+        }
 
-    toast.innerHTML = `
-        <div class="toast-header">
-            <div class="d-flex align-items-center w-100">
-                <div class="toast-icon ${type}">
-                    <i class="bi ${iconClass}"></i>
+        toast.innerHTML = `
+            <div class="toast-header">
+                <div class="d-flex align-items-center w-100">
+                    <div class="toast-icon ${type}">
+                        <i class="bi ${iconClass}"></i>
+                    </div>
+                    <strong class="toast-title me-auto">${title}</strong>
+                    <button type="button" class="btn-close" onclick="removeToast('${toastId}')"></button>
                 </div>
-                <strong class="toast-title me-auto">${title}</strong>
-                <button type="button" class="btn-close" onclick="removeToast('${toastId}')"></button>
             </div>
-        </div>
-        <div class="toast-body">
-            ${message}
-        </div>
-    `;
+            <div class="toast-body">
+                ${message}
+            </div>
+        `;
 
-    toastContainer.appendChild(toast);
+        toastContainer.appendChild(toast);
 
-    // Auto remove after duration
-    if (duration > 0) {
-        setTimeout(() => {
-            removeToast(toastId);
-        }, duration);
+        // Auto remove after duration
+        if (duration > 0) {
+            setTimeout(() => {
+                removeToast(toastId);
+            }, duration);
+        }
+
+        return toastId;
     }
 
-    return toastId;
-}
-
-function removeToast(toastId) {
-    const toast = document.getElementById(toastId);
-    if (toast) {
-        toast.classList.remove('toast-show');
-        toast.classList.add('toast-hide');
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 300);
+    function removeToast(toastId) {
+        const toast = document.getElementById(toastId);
+        if (toast) {
+            toast.classList.remove('toast-show');
+            toast.classList.add('toast-hide');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }
     }
-}
-
-// Update all alert calls to use beautiful toasts
-// Replace all alert() calls with showToast() throughout your code
 
     async function deleteAccount() {
         const confirmText = document.getElementById('deleteConfirm').value;
@@ -3729,6 +3745,6 @@ function removeToast(toastId) {
             }
         }
     }
-</script>
+  </script>
 </body>
 </html>
