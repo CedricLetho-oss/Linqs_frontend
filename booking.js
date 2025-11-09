@@ -895,7 +895,7 @@ async function handleBookingSubmission(e) {
             checkOut: checkOutDate.toISOString(),
             numberOfGuests: 1,
             specialRequests: specialRequests,
-            bookingType: isShortTermBooking ? "short-term" : "student" // This is supported
+            bookingType: isShortTermBooking ? "short-term" : "student"
         };
 
         // FIXED: Add stayDuration for short-term bookings with proper logic
@@ -915,10 +915,9 @@ async function handleBookingSubmission(e) {
             // Add negotiatedPrice if it's a fixed rate
             if (shortTermParams.dailyRate && shortTermParams.dailyRate !== 'null' && shortTermParams.dailyRate !== 'undefined') {
                 bookingData.negotiatedPrice = parseInt(shortTermParams.dailyRate);
-                bookingData.priceNegotiable = false;
-            } else {
-                bookingData.priceNegotiable = true;
+                // REMOVED: priceNegotiable field since it's handled by the model default
             }
+            // REMOVED: Don't send priceNegotiable - let the model handle the default
         }
 
         console.log('📤 Booking data (VALIDATED):', bookingData);
@@ -967,6 +966,7 @@ async function handleBookingSubmission(e) {
         }
     }
 }
+
 
 // Update the success message to handle short-term bookings
 function showBookingSuccess(booking, formData) {
