@@ -7,12 +7,13 @@ document.addEventListener('DOMContentLoaded', function() {
 // API base URL
 const API_BASE_URL = window.API_BASE_URL || 'https://linqs-backend.onrender.com/api';
 
+// Update the initializeNavbar function
 async function initializeNavbar() {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     
     if (token && user.role === 'student') {
-        await loadBookingModeFromBackend();
+        await ensureBookingModeLoaded();
     }
     
     updateNavbarAuthState(token, user);
@@ -745,4 +746,20 @@ function requireLandlord(redirectUrl = 'home.html') {
     }
     
     return true;
+}
+
+// Add this function to navbar.js
+async function ensureBookingModeLoaded() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (user.role === 'student') {
+        // If booking_mode doesn't exist in user object, fetch from backend
+        if (!user.booking_mode) {
+            await loadBookingModeFromBackend();
+        }
+        
+        // Ensure localStorage booking_mode is in sync
+        const currentBookingMode = user.booking_mode || 'student';
+        localStorage.setItem('booking_mode', currentBookingMode);
+    }
 }

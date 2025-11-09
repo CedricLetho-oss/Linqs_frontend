@@ -989,20 +989,17 @@
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <script src="navbar.js"></script>
 
-  <script>
+<script>
     // Enhanced Homepage Featured Listings Manager
     class HomepageFeaturedManager {
         constructor() {
             this.properties = [];
             this.API_BASE_URL = window.API_BASE_URL || 'https://linqs-backend.onrender.com/api';
-            // Status configuration - MUST MATCH listings.js exactly
+            // Status configuration
             this.statusConfig = {
-                // Availability statuses (landlord-controlled)
                 available: { class: 'success', text: 'Available', icon: 'bi-check-circle' },
                 occupied: { class: 'warning', text: 'Occupied', icon: 'bi-person-check' },
                 maintenance: { class: 'danger', text: 'Maintenance', icon: 'bi-tools' },
-                
-                // Admin approval statuses
                 pending: { class: 'warning', text: 'Pending Approval', icon: 'bi-clock' },
                 approved: { class: 'success', text: 'Approved', icon: 'bi-check-circle' },
                 rejected: { class: 'danger', text: 'Rejected', icon: 'bi-x-circle' }
@@ -1046,48 +1043,59 @@
             this.featuredProperties = [];
         }
 
-        // UPDATED: Same status logic as listings.js
+        // Get user context with booking mode
+        getUserContext() {
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+            const bookingMode = localStorage.getItem('booking_mode') || 'student';
+            
+            return {
+                user,
+                role: user.role,
+                bookingMode,
+                isTenantMode: bookingMode === 'tenant',
+                isStudentMode: bookingMode === 'student',
+                isActualTenant: user.role === 'tenant',
+                isActualStudent: user.role === 'student'
+            };
+        }
+
+        // Get property status
         getPropertyStatus(property) {
-            // Priority 1: Use availability field (landlord-controlled - what students see)
             if (property.availability) {
-                return property.availability; // available, occupied, maintenance
+                return property.availability;
             }
-            // Priority 2: Use status field (admin approval status)
             if (property.status) {
-                // Only show approved properties to students, others are effectively unavailable
                 return property.status === 'approved' ? 'available' : 'occupied';
             }
-            // Priority 3: Fallback to legacy isAvailable field
             if (property.isAvailable !== undefined) {
                 return property.isAvailable ? 'available' : 'occupied';
             }
-            // Default: treat as available
             return 'available';
         }
 
-        // UPDATED: Get admin approval status (for internal use)
+        // Get admin approval status
         getAdminStatus(property) {
             if (property.status) {
-                return property.status; // pending, approved, rejected
+                return property.status;
             }
-            return 'approved'; // Default to approved if no status field
+            return 'approved';
         }
 
-        // NEW: Calculate property score for ranking
+        // Calculate property score for ranking
         calculatePropertyScore(property) {
             let score = 0;
             
             // High rating = high score (up to 50 points)
             const rating = property.averageRating || 0;
-            score += rating * 10; // 5 stars = 50 points
+            score += rating * 10;
             
             // More reviews = higher score (up to 20 points)
             const reviewCount = property.reviewCount || 0;
-            score += Math.min(reviewCount * 2, 20); // 10+ reviews = 20 points
+            score += Math.min(reviewCount * 2, 20);
             
             // More amenities = higher score (up to 15 points)
             const amenitiesCount = property.amenities ? property.amenities.length : 0;
-            score += Math.min(amenitiesCount * 1.5, 15); // 10+ amenities = 15 points
+            score += Math.min(amenitiesCount * 1.5, 15);
             
             // Accredited properties get bonus (10 points)
             if (property.accreditation === 'accredited') {
@@ -1105,14 +1113,14 @@
             return score;
         }
 
-        // Update this method in HomepageFeaturedManager
+        // Select featured properties based on user mode
         selectFeaturedProperties(properties) {
-            const user = JSON.parse(localStorage.getItem("user") || "{}");
-            const isTenant = user.role === 'tenant';
+            const context = this.getUserContext();
+            const isTenantMode = context.isTenantMode;
             
-            // For tenants, apply additional filtering
+            // Filter properties based on user mode
             let availableProperties;
-            if (isTenant) {
+            if (isTenantMode) {
                 availableProperties = this.filterPropertiesForTenants(properties);
             } else {
                 // For students, filter only available and approved properties
@@ -1144,9 +1152,28 @@
             return scoredProperties.slice(0, 4);
         }
 
+        // Filter properties for tenants
+        filterPropertiesForTenants(properties) {
+            const currentMonth = new Date().getMonth() + 1;
+            const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
+            
+            if (!isNovemberToJanuary) {
+                return []; // No properties outside Nov-Jan for tenants
+            }
+
+            return properties.filter(property => {
+                const acceptsShortTerm = property.acceptsShortTerm === true;
+                const isApproved = this.getAdminStatus(property) === 'approved';
+                const isAvailable = this.getPropertyStatus(property) === 'available';
+                
+                return acceptsShortTerm && isApproved && isAvailable;
+            });
+        }
+
+        // Load featured listings
         async loadFeaturedListings() {
             try {
-                // UPDATED: Fetch ALL properties first
+                // Fetch ALL properties first
                 const token = localStorage.getItem("token");
                 const response = await fetch(`${this.API_BASE_URL}/properties`, {
                     headers: {
@@ -1172,7 +1199,7 @@
                     throw new Error('Failed to fetch properties');
                 }
             } catch (error) {
-                console.log('Using enhanced demo featured listings with consistent logic');
+                console.log('Using enhanced demo featured listings');
                 const demoProperties = this.getEnhancedDemoFeatured();
                 
                 // Store ALL demo properties for filtering
@@ -1187,30 +1214,12 @@
             }
         }
 
-        // Add this method to filter properties for tenants
-        filterPropertiesForTenants(properties) {
-            const currentMonth = new Date().getMonth() + 1;
-            const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
-            
-            if (!isNovemberToJanuary) {
-                return []; // No properties outside Nov-Jan for tenants
-            }
-
-            return properties.filter(property => {
-                const acceptsShortTerm = property.acceptsShortTerm === true;
-                const isApproved = this.getAdminStatus(property) === 'approved';
-                const isAvailable = this.getPropertyStatus(property) === 'available';
-                
-                return acceptsShortTerm && isApproved && isAvailable;
-            });
-        }
-
-        // NEW: Get price display for property based on user type
+        // Get price display for property based on user type
         getPriceDisplay(property) {
-            const user = JSON.parse(localStorage.getItem("user") || "{}");
-            const isTenant = user.role === 'tenant';
+            const context = this.getUserContext();
+            const isTenantMode = context.isTenantMode;
             
-            if (isTenant && property.acceptsShortTerm) {
+            if (isTenantMode && property.acceptsShortTerm) {
                 if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
                     return {
                         price: `R${property.shortTermPrice}`,
@@ -1233,10 +1242,8 @@
             }
         }
 
+        // Demo properties data
         getEnhancedDemoFeatured() {
-            const user = JSON.parse(localStorage.getItem("user") || "{}");
-            const isTenant = user.role === 'tenant';
-            
             return [
                 {
                     _id: 'naval_heights',
@@ -1333,130 +1340,11 @@
                     status: 'approved',
                     averageRating: 4.6,
                     reviewCount: 29
-                },
-                {
-                    _id: 'joburg_flats',
-                    title: 'Joburg Student Flats',
-                    price: 5000,
-                    shortTermPrice: 350,
-                    shortTermPricing: 'fixed',
-                    acceptsShortTerm: true,
-                    location: { 
-                        city: 'Johannesburg',
-                        address: '45 Education Street'
-                    },
-                    bedrooms: 3,
-                    bathrooms: 2,
-                    propertyType: 'apartment',
-                    accreditation: 'self',
-                    genderPreference: 'female',
-                    amenities: ['modern', 'central', 'secure', 'furnished', 'laundry'],
-                    images: ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?ixlib=rb-4.0.3'],
-                    description: 'Walking distance to Wits University with modern facilities and great location in the city center.',
-                    availability: 'available',
-                    status: 'approved',
-                    averageRating: 4.3,
-                    reviewCount: 22
-                },
-                {
-                    _id: 'green_residence',
-                    title: 'Green Campus Residence',
-                    price: 3800,
-                    shortTermPrice: 280,
-                    shortTermPricing: 'fixed',
-                    acceptsShortTerm: true,
-                    location: { 
-                        city: 'Pretoria',
-                        address: '34 Student Lane'
-                    },
-                    bedrooms: 2,
-                    bathrooms: 1,
-                    propertyType: 'apartment',
-                    accreditation: 'accredited',
-                    genderPreference: 'unisex',
-                    amenities: ['wifi', 'parking', 'study areas', 'quiet', 'modern'],
-                    images: ['https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3'],
-                    description: 'Eco-friendly student residence with modern amenities and study spaces.',
-                    availability: 'available',
-                    status: 'approved',
-                    averageRating: 4.4,
-                    reviewCount: 18
-                },
-                {
-                    _id: 'westwood_digs',
-                    title: 'Westwood Student Digs',
-                    price: 3800,
-                    shortTermPrice: 270,
-                    shortTermPricing: 'fixed',
-                    acceptsShortTerm: false, // This will be filtered out for tenants
-                    location: { 
-                        city: 'Bloemfontein',
-                        address: '78 Campus View'
-                    },
-                    bedrooms: 1,
-                    bathrooms: 1,
-                    propertyType: 'studio',
-                    accreditation: 'accredited',
-                    genderPreference: 'male',
-                    amenities: ['shuttle', 'laundry', 'modern', 'wifi', 'study areas'],
-                    images: ['https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3'],
-                    description: 'Modern rooms with laundry facilities and convenient shuttle service to campus. All-inclusive pricing.',
-                    availability: 'occupied', // This will be filtered out
-                    status: 'approved',
-                    averageRating: 4.7,
-                    reviewCount: 31
-                },
-                {
-                    _id: 'pending_property',
-                    title: 'New Student Residence',
-                    price: 4000,
-                    shortTermPrice: 290,
-                    shortTermPricing: 'fixed',
-                    acceptsShortTerm: true,
-                    location: { 
-                        city: 'Pretoria',
-                        address: '90 Student Lane'
-                    },
-                    bedrooms: 2,
-                    bathrooms: 1,
-                    propertyType: 'apartment',
-                    accreditation: 'self',
-                    genderPreference: 'unisex',
-                    amenities: ['wifi', 'parking', 'modern'],
-                    images: ['https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3'],
-                    description: 'Brand new student residence with modern amenities.',
-                    availability: 'available',
-                    status: 'pending', // This will be filtered out
-                    averageRating: 0,
-                    reviewCount: 0
-                },
-                {
-                    _id: 'basic_apartment',
-                    title: 'Basic Student Apartment',
-                    price: 3200,
-                    shortTermPrice: 220,
-                    shortTermPricing: 'negotiable',
-                    acceptsShortTerm: true,
-                    location: { 
-                        city: 'Bloemfontein',
-                        address: '12 Simple Street'
-                    },
-                    bedrooms: 1,
-                    bathrooms: 1,
-                    propertyType: 'apartment',
-                    accreditation: 'self',
-                    genderPreference: 'unisex',
-                    amenities: ['wifi', 'furnished'], // Few amenities
-                    images: ['https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3'],
-                    description: 'Basic but comfortable student accommodation.',
-                    availability: 'available',
-                    status: 'approved',
-                    averageRating: 3.8, // Lower rating
-                    reviewCount: 5 // Few reviews
                 }
             ];
         }
 
+        // Render featured listings
         renderFeaturedListings(properties) {
             const container = document.getElementById('listingContainer');
             if (!container) return;
@@ -1478,130 +1366,129 @@
             }).join('');
         }
 
+        // Create property card HTML
         createEnhancedPropertyCard(property, priceDisplay) {
-    const accreditation = property.accreditation || 'self';
-    const accreditationInfo = this.accreditationConfig[accreditation] || this.accreditationConfig.self;
-    
-    const genderPreference = property.genderPreference || 'unisex';
-    const genderInfo = this.genderConfig[genderPreference] || this.genderConfig.unisex;
-    
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const isTenant = user.role === 'tenant';
-    
-    // NEW: Determine description based on user type
-    let propertyDescription = property.description; // Default for students
-    
-    if (isTenant && property.acceptsShortTerm && property.shortTermDescription) {
-        // Use short-term description for tenants
-        propertyDescription = property.shortTermDescription;
-    } else if (isTenant && property.acceptsShortTerm) {
-        // Fallback for tenants if no short-term description exists
-        propertyDescription = "Short-term accommodation available during student holidays. Perfect for temporary stays.";
-    }
-    
-    return `
-    <div class="card feature-card h-100">
-        <div class="position-relative">
-            <img src="${property.images[0]}" class="card-img-top" alt="${property.title}" 
-                 style="height: 200px; object-fit: cover; width: 100%;">
+            const accreditation = property.accreditation || 'self';
+            const accreditationInfo = this.accreditationConfig[accreditation] || this.accreditationConfig.self;
             
-            <!-- Status Badge - Always Available since we filtered -->
-            <div class="position-absolute top-0 start-0 m-2">
-                <span class="badge bg-success">
-                    <i class="bi bi-check-circle-fill me-1"></i>Available
-                </span>
-            </div>
+            const genderPreference = property.genderPreference || 'unisex';
+            const genderInfo = this.genderConfig[genderPreference] || this.genderConfig.unisex;
             
-            <!-- Price Tag - UPDATED for tenants/students -->
-            <div class="position-absolute top-0 end-0 m-2">
-                <span class="badge bg-success fs-6">
-                    ${priceDisplay.price}<small>${priceDisplay.label}</small>
-                </span>
-            </div>
+            const context = this.getUserContext();
+            const isTenantMode = context.isTenantMode;
             
-            <!-- Accreditation Badge - HIDDEN FOR TENANTS -->
-            ${!isTenant ? `
-            <div class="position-absolute bottom-0 start-0 m-2">
-                <span class="badge bg-${accreditationInfo.class}">
-                    <i class="bi ${accreditationInfo.icon} me-1"></i>${accreditationInfo.text}
-                </span>
-            </div>
-            ` : ''}
-        </div>
-
-        <div class="card-body">
-            <!-- Property Title & Location -->
-            <div class="mb-2">
-                <h6 class="card-title text-navy fw-bold mb-1">${property.title}</h6>
-                <div class="d-flex align-items-center text-muted small">
-                    <i class="bi bi-geo-alt-fill me-1"></i>
-                    <span>${property.location.city}</span>
-                </div>
-            </div>
-
-            <!-- UPDATED: Property Description based on user type -->
-            <p class="card-text text-muted small mb-3">
-                ${propertyDescription.substring(0, 80)}...
-            </p>
-
-            <!-- Property Details -->
-            <div class="row text-center mb-3">
-                <div class="col-4">
-                    <div class="text-primary">
-                        <i class="bi bi-door-closed-fill fs-5"></i>
-                        <div class="small">${property.bedrooms} Bed</div>
+            // Determine description based on user type
+            let propertyDescription = property.description;
+            if (isTenantMode && property.acceptsShortTerm && property.shortTermDescription) {
+                propertyDescription = property.shortTermDescription;
+            } else if (isTenantMode && property.acceptsShortTerm) {
+                propertyDescription = "Short-term accommodation available during student holidays. Perfect for temporary stays.";
+            }
+            
+            return `
+            <div class="card feature-card h-100">
+                <div class="position-relative">
+                    <img src="${property.images[0]}" class="card-img-top" alt="${property.title}" 
+                         style="height: 200px; object-fit: cover; width: 100%;">
+                    
+                    <!-- Status Badge - Always Available since we filtered -->
+                    <div class="position-absolute top-0 start-0 m-2">
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle-fill me-1"></i>Available
+                        </span>
                     </div>
-                </div>
-                <div class="col-4">
-                    <div class="text-info">
-                        <i class="bi bi-droplet-fill fs-5"></i>
-                        <div class="small">${property.bathrooms} Bath</div>
+                    
+                    <!-- Price Tag -->
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge bg-success fs-6">
+                            ${priceDisplay.price}<small>${priceDisplay.label}</small>
+                        </span>
                     </div>
-                </div>
-                <div class="col-4">
-                    <div class="text-warning">
-                        <i class="bi ${genderInfo.icon} fs-5"></i>
-                        <div class="small">${property.genderPreference}</div>
+                    
+                    <!-- Accreditation Badge - HIDDEN FOR TENANTS -->
+                    ${!isTenantMode ? `
+                    <div class="position-absolute bottom-0 start-0 m-2">
+                        <span class="badge bg-${accreditationInfo.class}">
+                            <i class="bi ${accreditationInfo.icon} me-1"></i>${accreditationInfo.text}
+                        </span>
                     </div>
-                </div>
-            </div>
-
-            <!-- Enhanced Amenities with Icons -->
-            <div class="mb-3">
-                <div class="amenities-grid">
-                    ${property.amenities.slice(0, 4).map(amenity => `
-                        <div class="amenity-item">
-                            <i class="bi ${this.amenityIcons[amenity.toLowerCase()] || 'bi-check-circle'} text-primary"></i>
-                            <span class="small">${amenity}</span>
-                        </div>
-                    `).join('')}
-                    ${property.amenities.length > 4 ? `
-                        <div class="amenity-item bg-primary text-white">
-                            <i class="bi bi-plus-circle"></i>
-                            <span class="small">+${property.amenities.length - 4} more</span>
-                        </div>
                     ` : ''}
                 </div>
-            </div>
 
-            <!-- Rating -->
-            <div class="d-flex align-items-center justify-content-between mb-3">
-                <div class="rating">
-                    ${this.generateStarRating(property.averageRating || 0)}
-                    <small class="text-muted ms-1">(${property.reviewCount || 0})</small>
+                <div class="card-body">
+                    <!-- Property Title & Location -->
+                    <div class="mb-2">
+                        <h6 class="card-title text-navy fw-bold mb-1">${property.title}</h6>
+                        <div class="d-flex align-items-center text-muted small">
+                            <i class="bi bi-geo-alt-fill me-1"></i>
+                            <span>${property.location.city}</span>
+                        </div>
+                    </div>
+
+                    <!-- Property Description -->
+                    <p class="card-text text-muted small mb-3">
+                        ${propertyDescription.substring(0, 80)}...
+                    </p>
+
+                    <!-- Property Details -->
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <div class="text-primary">
+                                <i class="bi bi-door-closed-fill fs-5"></i>
+                                <div class="small">${property.bedrooms} Bed</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-info">
+                                <i class="bi bi-droplet-fill fs-5"></i>
+                                <div class="small">${property.bathrooms} Bath</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-warning">
+                                <i class="bi ${genderInfo.icon} fs-5"></i>
+                                <div class="small">${property.genderPreference}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Amenities with Icons -->
+                    <div class="mb-3">
+                        <div class="amenities-grid">
+                            ${property.amenities.slice(0, 4).map(amenity => `
+                                <div class="amenity-item">
+                                    <i class="bi ${this.amenityIcons[amenity.toLowerCase()] || 'bi-check-circle'} text-primary"></i>
+                                    <span class="small">${amenity}</span>
+                                </div>
+                            `).join('')}
+                            ${property.amenities.length > 4 ? `
+                                <div class="amenity-item bg-primary text-white">
+                                    <i class="bi bi-plus-circle"></i>
+                                    <span class="small">+${property.amenities.length - 4} more</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Rating -->
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="rating">
+                            ${this.generateStarRating(property.averageRating || 0)}
+                            <small class="text-muted ms-1">(${property.reviewCount || 0})</small>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <div class="d-grid">
+                        <a href="property-details.html?id=${property._id}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-eye me-1"></i>View Details
+                        </a>
+                    </div>
                 </div>
-            </div>
+            </div>`;
+        }
 
-            <!-- Action Button -->
-            <div class="d-grid">
-                <a href="property-details.html?id=${property._id}" class="btn btn-primary btn-sm">
-                    <i class="bi bi-eye me-1"></i>View Details
-                </a>
-            </div>
-        </div>
-    </div>`;
-}
-
+        // Generate star rating HTML
         generateStarRating(rating) {
             let stars = '';
             const fullStars = Math.floor(rating);
@@ -1619,53 +1506,54 @@
             return stars;
         }
 
+        // No listings HTML
         getNoListingsHTML() {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const isTenant = user.role === 'tenant';
-    const currentMonth = new Date().getMonth() + 1;
-    const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
-    
-    if (isTenant && !isNovemberToJanuary) {
-        return `
-        <div class="col-12 text-center py-5">
-            <div class="no-listings-placeholder">
-                <i class="bi bi-calendar-x display-1 text-muted"></i>
-                <h4 class="text-navy mt-3">Short-term Accommodation Not Available</h4>
-                <p class="text-muted">Short-term student accommodation is only available during November to January.</p>
-                <p class="text-muted small">This period covers when students are away for holidays. Please check back during these months for available properties.</p>
-            </div>
-        </div>`;
-    }
+            const context = this.getUserContext();
+            const isTenantMode = context.isTenantMode;
+            const currentMonth = new Date().getMonth() + 1;
+            const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
+            
+            if (isTenantMode && !isNovemberToJanuary) {
+                return `
+                <div class="col-12 text-center py-5">
+                    <div class="no-listings-placeholder">
+                        <i class="bi bi-calendar-x display-1 text-muted"></i>
+                        <h4 class="text-navy mt-3">Short-term Accommodation Not Available</h4>
+                        <p class="text-muted">Short-term student accommodation is only available during November to January.</p>
+                        <p class="text-muted small">This period covers when students are away for holidays. Please check back during these months for available properties.</p>
+                    </div>
+                </div>`;
+            }
 
-    if (isTenant && isNovemberToJanuary) {
-        return `
-        <div class="col-12 text-center py-5">
-            <div class="no-listings-placeholder">
-                <i class="bi bi-house-heart display-1 text-muted"></i>
-                <h4 class="text-navy mt-3">No Short-term Listings Available</h4>
-                <p class="text-muted">No short-term accommodations are currently available for the holiday season.</p>
-                <p class="text-muted small">Check back later or contact landlords directly for short-term availability.</p>
-                <a href="listings.html" class="btn btn-gradient mt-3">
-                    <i class="bi bi-building me-1"></i>Browse All Listings
-                </a>
-            </div>
-        </div>`;
-    }
+            if (isTenantMode && isNovemberToJanuary) {
+                return `
+                <div class="col-12 text-center py-5">
+                    <div class="no-listings-placeholder">
+                        <i class="bi bi-house-heart display-1 text-muted"></i>
+                        <h4 class="text-navy mt-3">No Short-term Listings Available</h4>
+                        <p class="text-muted">No short-term accommodations are currently available for the holiday season.</p>
+                        <p class="text-muted small">Check back later or contact landlords directly for short-term availability.</p>
+                        <a href="listings.html" class="btn btn-gradient mt-3">
+                            <i class="bi bi-building me-1"></i>Browse All Listings
+                        </a>
+                    </div>
+                </div>`;
+            }
 
-    return `
-    <div class="col-12 text-center py-5">
-        <div class="no-listings-placeholder">
-            <i class="bi bi-house-heart display-1 text-muted"></i>
-            <h4 class="text-navy mt-3">No Available Listings</h4>
-            <p class="text-muted">All our featured accommodations are currently occupied or pending approval</p>
-            <a href="listings.html" class="btn btn-gradient">
-                <i class="bi bi-building me-1"></i>Browse All Listings
-            </a>
-        </div>
-    </div>`;
-}
+            return `
+            <div class="col-12 text-center py-5">
+                <div class="no-listings-placeholder">
+                    <i class="bi bi-house-heart display-1 text-muted"></i>
+                    <h4 class="text-navy mt-3">No Available Listings</h4>
+                    <p class="text-muted">All our featured accommodations are currently occupied or pending approval</p>
+                    <a href="listings.html" class="btn btn-gradient">
+                        <i class="bi bi-building me-1"></i>Browse All Listings
+                    </a>
+                </div>
+            </div>`;
+        }
         
-        // UPDATED: Filter from ALL properties, not just featured ones
+        // Filter properties
         filterProperties(locationFilter, priceFilter) {
             if (!this.allProperties.length) return;
             
@@ -1678,13 +1566,13 @@
                     show = false;
                 }
                 
-                // Filter by price - UPDATED for tenants/students
+                // Filter by price
                 if (priceFilter) {
-                    const user = JSON.parse(localStorage.getItem("user") || "{}");
-                    const isTenant = user.role === 'tenant';
+                    const context = this.getUserContext();
+                    const isTenantMode = context.isTenantMode;
                     
                     let priceToCheck = property.price;
-                    if (isTenant && property.acceptsShortTerm) {
+                    if (isTenantMode && property.acceptsShortTerm) {
                         if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
                             priceToCheck = property.shortTermPrice;
                         } else {
@@ -1723,17 +1611,86 @@
         }
     }
 
-    // Standalone functions for user type updates
-    function updateHeroSectionForUserType() {
+    // Booking Mode Manager
+    class HomepageBookingModeManager {
+        constructor() {
+            this.API_BASE_URL = window.API_BASE_URL || 'https://linqs-backend.onrender.com/api';
+        }
+
+        async syncBookingMode() {
+            try {
+                const user = JSON.parse(localStorage.getItem("user") || "{}");
+                
+                if (user.role === 'student') {
+                    const token = localStorage.getItem("token");
+                    const response = await fetch(`${this.API_BASE_URL}/users/booking-mode`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const backendBookingMode = data.booking_mode || 'student';
+                        const currentBookingMode = localStorage.getItem('booking_mode') || 'student';
+                        
+                        // Sync if there's a mismatch
+                        if (backendBookingMode !== currentBookingMode) {
+                            console.log(`Syncing booking mode: ${currentBookingMode} -> ${backendBookingMode}`);
+                            localStorage.setItem('booking_mode', backendBookingMode);
+                            
+                            // Update user object
+                            user.booking_mode = backendBookingMode;
+                            localStorage.setItem('user', JSON.stringify(user));
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            } catch (error) {
+                console.error('Error syncing booking mode:', error);
+                return false;
+            }
+        }
+
+        setupBookingModeListener(callback) {
+            window.addEventListener('bookingModeChanged', (event) => {
+                console.log('Booking mode change detected:', event.detail.mode);
+                if (callback && typeof callback === 'function') {
+                    setTimeout(callback, 100);
+                }
+            });
+        }
+    }
+
+    // UI Update Functions
+    function getUserContext() {
         const user = JSON.parse(localStorage.getItem("user") || "{}");
-        const isTenant = user.role === 'tenant';
+        const bookingMode = localStorage.getItem('booking_mode') || 'student';
+        
+        return {
+            user,
+            role: user.role,
+            username: user.username,
+            bookingMode,
+            isTenantMode: bookingMode === 'tenant',
+            isStudentMode: bookingMode === 'student',
+            isActualTenant: user.role === 'tenant',
+            isActualStudent: user.role === 'student'
+        };
+    }
+
+    function updateHeroSectionForUserType() {
+        const context = getUserContext();
+        const isTenantMode = context.isTenantMode;
         
         const heroSubtitle = document.querySelector('.hero-section .hero-subtitle');
         const searchTitle = document.querySelector('.search-container h5');
         const statsNumbers = document.querySelectorAll('.stat-number');
         const statLabels = document.querySelectorAll('.stat-number-label');
 
-        if (isTenant) {
+        if (isTenantMode) {
             // Tenant version
             if (heroSubtitle) {
                 heroSubtitle.textContent = 'Discover affordable short-term accommodations available during student holidays. Perfect for temporary stays from November to January.';
@@ -1755,9 +1712,6 @@
                 statsNumbers[2].textContent = '95%';
                 statLabels[2].textContent = 'Satisfaction';
             }
-            
-            // Update filter tags for tenants
-            updateFilterTagsForTenants();
         } else {
             // Student version (default)
             if (heroSubtitle) {
@@ -1783,85 +1737,15 @@
         }
     }
 
-    function updateFilterTagsForTenants() {
-        const filterTagsContainer = document.querySelector('.filter-tags');
-        if (!filterTagsContainer) return;
-
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
-        if (user.role !== 'tenant') return;
-
-        // Update or add tenant-specific filter tags
-        const tenantFilterTags = [
-            { text: 'All Locations', location: '' },
-            { text: 'Bloemfontein', location: 'bloemfontein' },
-            { text: 'Johannesburg', location: 'johannesburg' },
-            { text: 'Pretoria', location: 'pretoria' },
-            { text: 'Under R250/day', price: '250' },
-            { text: 'Negotiable Price', price: 'negotiable' },
-            { text: 'Short-term Ready', location: '' }
-        ];
-
-        filterTagsContainer.innerHTML = tenantFilterTags.map(tag => `
-            <button class="filter-tag ${tag.location === '' && !tag.price ? 'active' : ''}" 
-                    data-location="${tag.location || ''}" 
-                    data-price="${tag.price || ''}">
-                ${tag.text}
-            </button>
-        `).join('');
-
-        // Reattach event listeners to new buttons
-        const newFilterTags = filterTagsContainer.querySelectorAll('.filter-tag');
-        newFilterTags.forEach(tag => {
-            tag.addEventListener('click', function() {
-                newFilterTags.forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                
-                const location = this.getAttribute('data-location');
-                const price = this.getAttribute('data-price');
-                
-                // Apply filters
-                if (window.featuredManager) {
-                    window.featuredManager.filterProperties(location, price);
-                }
-            });
-        });
-    }
-
-    function updateFeaturedSectionForUserType() {
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
-        const isTenant = user.role === 'tenant';
-        
-        const featuredTitle = document.querySelector('#listingContainer').previousElementSibling.querySelector('h2');
-        const featuredSubtitle = document.querySelector('#listingContainer').previousElementSibling.querySelector('p');
-
-        if (isTenant) {
-            // Tenant version
-            if (featuredTitle) {
-                featuredTitle.textContent = 'Available Short-term Accommodations';
-            }
-            if (featuredSubtitle) {
-                featuredSubtitle.textContent = 'Verified properties available during student holidays (November-January)';
-            }
-        } else {
-            // Student version
-            if (featuredTitle) {
-                featuredTitle.textContent = 'Featured Accommodations';
-            }
-            if (featuredSubtitle) {
-                featuredSubtitle.textContent = 'AI-selected. Student-approved.';
-            }
-        }
-    }
-
     function updateFeaturesSectionForUserType() {
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
-        const isTenant = user.role === 'tenant';
+        const context = getUserContext();
+        const isTenantMode = context.isTenantMode;
         
         const featuresTitle = document.querySelector('.features-section h2');
         const featuresSubtitle = document.querySelector('.features-section .text-muted.fs-5');
         const featureItems = document.querySelectorAll('.features-section .col-md-4');
 
-        if (isTenant) {
+        if (isTenantMode) {
             // Tenant version
             if (featuresTitle) {
                 featuresTitle.innerHTML = 'Perfect for <span class="gradient-text">Short-term Stays</span>';
@@ -1875,7 +1759,6 @@
                 const icon = featureItems[0].querySelector('.feature-icon i');
                 const title = featureItems[0].querySelector('h5');
                 const text = featureItems[0].querySelector('p');
-                
                 if (icon) icon.className = 'bi bi-calendar-range';
                 if (title) title.textContent = 'Seasonal Availability';
                 if (text) text.textContent = 'Available during student holidays from November to January';
@@ -1885,7 +1768,6 @@
                 const icon = featureItems[1].querySelector('.feature-icon i');
                 const title = featureItems[1].querySelector('h5');
                 const text = featureItems[1].querySelector('p');
-                
                 if (icon) icon.className = 'bi bi-cash-coin';
                 if (title) title.textContent = 'Affordable Rates';
                 if (text) text.textContent = 'Competitive daily pricing for short-term stays';
@@ -1895,7 +1777,6 @@
                 const icon = featureItems[2].querySelector('.feature-icon i');
                 const title = featureItems[2].querySelector('h5');
                 const text = featureItems[2].querySelector('p');
-                
                 if (icon) icon.className = 'bi bi-house-check';
                 if (title) title.textContent = 'Verified Properties';
                 if (text) text.textContent = 'All accommodations verified and ready for short-term stays';
@@ -1914,7 +1795,6 @@
                 const icon = featureItems[0].querySelector('.feature-icon i');
                 const title = featureItems[0].querySelector('h5');
                 const text = featureItems[0].querySelector('p');
-                
                 if (icon) icon.className = 'bi bi-shield-check';
                 if (title) title.textContent = 'Verified Listings';
                 if (text) text.textContent = 'All accommodations are verified and reviewed by real students';
@@ -1924,7 +1804,6 @@
                 const icon = featureItems[1].querySelector('.feature-icon i');
                 const title = featureItems[1].querySelector('h5');
                 const text = featureItems[1].querySelector('p');
-                
                 if (icon) icon.className = 'bi bi-calendar-check';
                 if (title) title.textContent = 'Easy Booking';
                 if (text) text.textContent = 'Book viewings instantly with our simple scheduling system';
@@ -1934,7 +1813,6 @@
                 const icon = featureItems[2].querySelector('.feature-icon i');
                 const title = featureItems[2].querySelector('h5');
                 const text = featureItems[2].querySelector('p');
-                
                 if (icon) icon.className = 'bi bi-chat-heart';
                 if (title) title.textContent = 'Community Support';
                 if (text) text.textContent = 'Get help and share experiences with fellow students';
@@ -1943,12 +1821,12 @@
     }
 
     function updateStatsSectionForUserType() {
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
-        const isTenant = user.role === 'tenant';
+        const context = getUserContext();
+        const isTenantMode = context.isTenantMode;
         
         const statItems = document.querySelectorAll('.stats-section .stat-item');
 
-        if (isTenant) {
+        if (isTenantMode) {
             // Tenant version
             if (statItems[0]) {
                 const number = statItems[0].querySelector('.stat-number');
@@ -2003,51 +1881,170 @@
         }
     }
 
-    // Initialize AOS
-    AOS.init({
-        duration: 1000,
-        once: true,
-        offset: 100
-    });
+    function updateFeaturedSectionForUserType() {
+        const context = getUserContext();
+        const isTenantMode = context.isTenantMode;
+        
+        const featuredTitle = document.querySelector('#listingContainer').previousElementSibling.querySelector('h2');
+        const featuredSubtitle = document.querySelector('#listingContainer').previousElementSibling.querySelector('p');
 
-    // Enhanced Search Functionality
-    document.addEventListener("DOMContentLoaded", () => {
-        // Initialize Featured Listings
-        const featuredManager = new HomepageFeaturedManager();
-        window.featuredManager = featuredManager; // Make it globally available
-        featuredManager.loadFeaturedListings();
+        if (isTenantMode) {
+            // Tenant version
+            if (featuredTitle) {
+                featuredTitle.textContent = 'Available Short-term Accommodations';
+            }
+            if (featuredSubtitle) {
+                featuredSubtitle.textContent = 'Verified properties available during student holidays (November-January)';
+            }
+        } else {
+            // Student version
+            if (featuredTitle) {
+                featuredTitle.textContent = 'Featured Accommodations';
+            }
+            if (featuredSubtitle) {
+                featuredSubtitle.textContent = 'AI-selected. Student-approved.';
+            }
+        }
+    }
 
-        // Load user info - FIXED: Proper username display
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
+    function loadWelcomeMessage() {
+        const context = getUserContext();
         const welcomeMessage = document.getElementById("welcomeMessage");
         const usernameDisplay = document.getElementById("usernameDisplay");
 
-        if (user && user.username) {
+        if (context.username) {
             welcomeMessage.style.display = 'block';
-            usernameDisplay.textContent = user.username;
+            usernameDisplay.textContent = context.username;
             
-            // Update welcome message based on user role
             const welcomeTitle = welcomeMessage.querySelector('h4');
             const welcomeText = welcomeMessage.querySelector('p');
             
-            if (user.role === 'tenant') {
-                welcomeTitle.innerHTML = `Welcome back, <span id="usernameDisplay">${user.username}</span>! 👋`;
-                welcomeText.textContent = 'Find affordable short-term accommodation during student holidays. Browse verified properties available from November to January.';
+            if (context.isTenantMode) {
+                welcomeTitle.innerHTML = `Welcome back, <span id="usernameDisplay">${context.username}</span>! 👋`;
+                welcomeText.textContent = 'Find affordable short-term accommodations available during student holidays. Browse verified properties available from November to January.';
             } else {
-                welcomeTitle.innerHTML = `Welcome back, <span id="usernameDisplay">${user.username}</span>! 👋`;
+                welcomeTitle.innerHTML = `Welcome back, <span id="usernameDisplay">${context.username}</span>! 👋`;
                 welcomeText.textContent = 'Make your student accommodation dreams come true with ResLinQ. Browse listings, book viewings, and share your experience.';
             }
         } else {
             welcomeMessage.style.display = 'none';
         }
+    }
 
-        // Update all sections based on user type
+    function updateFilterTagsForUserType() {
+        const context = getUserContext();
+        const isTenantMode = context.isTenantMode;
+        const filterTagsContainer = document.querySelector('.filter-tags');
+        
+        if (!filterTagsContainer) return;
+
+        if (isTenantMode) {
+            // Tenant-specific filter tags
+            const tenantFilterTags = [
+                { text: 'All Locations', location: '' },
+                { text: 'Bloemfontein', location: 'bloemfontein' },
+                { text: 'Johannesburg', location: 'johannesburg' },
+                { text: 'Pretoria', location: 'pretoria' },
+                { text: 'Under R250/day', price: '250' },
+                { text: 'Negotiable Price', price: 'negotiable' }
+            ];
+
+            filterTagsContainer.innerHTML = tenantFilterTags.map(tag => `
+                <button class="filter-tag ${tag.location === '' && !tag.price ? 'active' : ''}" 
+                        data-location="${tag.location || ''}" 
+                        data-price="${tag.price || ''}">
+                    ${tag.text}
+                </button>
+            `).join('');
+        } else {
+            // Student filter tags (default)
+            const studentFilterTags = [
+                { text: 'All Locations', location: '' },
+                { text: 'Bloemfontein', location: 'bloemfontein' },
+                { text: 'Johannesburg', location: 'johannesburg' },
+                { text: 'Pretoria', location: 'pretoria' },
+                { text: 'Durban', location: 'durban' },
+                { text: 'Pietermaritzburg', location: 'other' },
+                { text: 'Under R5,000', price: '5000' }
+            ];
+
+            filterTagsContainer.innerHTML = studentFilterTags.map(tag => `
+                <button class="filter-tag ${tag.location === '' && !tag.price ? 'active' : ''}" 
+                        data-location="${tag.location || ''}" 
+                        data-price="${tag.price || ''}">
+                    ${tag.text}
+                </button>
+            `).join('');
+        }
+
+        // Reattach event listeners to new buttons
+        const newFilterTags = filterTagsContainer.querySelectorAll('.filter-tag');
+        newFilterTags.forEach(tag => {
+            tag.addEventListener('click', function() {
+                newFilterTags.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const location = this.getAttribute('data-location');
+                const price = this.getAttribute('data-price');
+                
+                // Apply filters
+                if (window.featuredManager) {
+                    window.featuredManager.filterProperties(location, price);
+                }
+            });
+        });
+    }
+
+    function updateAllSections() {
         updateHeroSectionForUserType();
         updateFeaturesSectionForUserType();
         updateStatsSectionForUserType();
         updateFeaturedSectionForUserType();
+        updateFilterTagsForUserType();
+        loadWelcomeMessage();
+    }
 
-        // Enhanced search functionality
+    function preventHorizontalScroll() {
+        document.body.style.overflowX = 'hidden';
+        document.documentElement.style.overflowX = 'hidden';
+        
+        window.addEventListener('resize', () => {
+            document.body.style.overflowX = 'hidden';
+            document.documentElement.style.overflowX = 'hidden';
+        });
+    }
+
+    // Main initialization function
+    async function initializeHomepage() {
+        // Initialize AOS animations
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        // Initialize booking mode manager and sync
+        const bookingModeManager = new HomepageBookingModeManager();
+        await bookingModeManager.syncBookingMode();
+        
+        // Setup booking mode change listener
+        bookingModeManager.setupBookingModeListener(() => {
+            console.log('Booking mode changed - updating homepage...');
+            updateAllSections();
+            if (window.featuredManager) {
+                window.featuredManager.loadFeaturedListings();
+            }
+        });
+
+        // Initialize featured listings manager
+        const featuredManager = new HomepageFeaturedManager();
+        window.featuredManager = featuredManager;
+        await featuredManager.loadFeaturedListings();
+
+        // Update all UI sections
+        updateAllSections();
+
+        // Setup search and filter event listeners
         const searchForm = document.getElementById("searchForm");
         const filterTags = document.querySelectorAll(".filter-tag");
         const noResults = document.getElementById("noResults");
@@ -2055,16 +2052,12 @@
         // Filter tag functionality
         filterTags.forEach(tag => {
             tag.addEventListener("click", function() {
-                // Remove active class from all tags
                 filterTags.forEach(t => t.classList.remove("active"));
-                // Add active class to clicked tag
                 this.classList.add("active");
                 
-                // Get filter criteria
                 const location = this.getAttribute("data-location");
                 const price = this.getAttribute("data-price");
                 
-                // Apply filters using the manager
                 featuredManager.filterProperties(location, price);
             });
         });
@@ -2075,7 +2068,6 @@
             const locationInput = document.getElementById("searchLocation").value;
             const maxPriceInput = document.getElementById("maxPrice").value;
             
-            // Apply filters using the manager
             featuredManager.filterProperties(locationInput, maxPriceInput);
         });
 
@@ -2094,16 +2086,12 @@
             }
         });
 
-        // Prevent horizontal overflow on mobile (matching about-us page)
-        function preventHorizontalScroll() {
-            document.body.style.overflowX = 'hidden';
-            document.documentElement.style.overflowX = 'hidden';
-        }
-        
-        // Apply on load and resize
+        // Prevent horizontal overflow on mobile
         preventHorizontalScroll();
-        window.addEventListener('resize', preventHorizontalScroll);
-    });
+    }
+
+    // Initialize the homepage when DOM is loaded
+    document.addEventListener("DOMContentLoaded", initializeHomepage);
 </script>
 </body>
 </html>
