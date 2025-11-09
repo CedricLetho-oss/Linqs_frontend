@@ -183,7 +183,8 @@ async function loadUserInfo() {
     }
 }
 
-// FIXED: Enhanced URL parameter handling with better error recovery
+
+// FIXED: Better URL parameter handling for short-term pricing 
 async function handleURLParameters() {
     const urlParams = new URLSearchParams(window.location.search);
     const property = urlParams.get("property");
@@ -199,12 +200,14 @@ async function handleURLParameters() {
         bookingType, dailyRate, minStay
     });
 
-    // Store short-term parameters globally
+    // FIXED: Store short-term parameters with proper validation
     window.shortTermParams = {
         bookingType: bookingType,
-        dailyRate: dailyRate,
-        minStay: minStay
+        dailyRate: dailyRate && dailyRate !== 'null' && dailyRate !== 'undefined' ? dailyRate : null,
+        minStay: minStay && minStay !== 'null' && minStay !== 'undefined' ? minStay : null
     };
+
+    console.log('Processed short-term params:', window.shortTermParams);
 
     const autoFillSection = document.getElementById('autoFillSection');
     const manualSelectionSection = document.getElementById('manualSelectionSection');
@@ -660,6 +663,8 @@ function updateSummary() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isStudent = user.role === 'student';
     const isTenant = user.role === 'tenant';
+    const shortTermParams = window.shortTermParams;
+    const isShortTermBooking = shortTermParams && shortTermParams.bookingType === 'shortterm';
     
     // Update accommodation details
     if (selectedAccommodation) {
@@ -673,6 +678,27 @@ function updateSummary() {
     
     const dateTime = formData.bookingDateTime;
     document.getElementById('summaryDateTime').textContent = formatDateTime(dateTime);
+    
+    // FIXED: Update pricing information for short-term bookings
+    if (isShortTermBooking && isTenant) {
+        const pricingInfo = document.getElementById('summaryPricing') || document.createElement('div');
+        if (!document.getElementById('summaryPricing')) {
+            pricingInfo.id = 'summaryPricing';
+            document.getElementById('summaryBookingType').parentNode.appendChild(pricingInfo);
+        }
+        
+        if (shortTermParams.dailyRate && shortTermParams.dailyRate !== 'null' && shortTermParams.dailyRate !== 'undefined') {
+            pricingInfo.innerHTML = `<strong>Pricing:</strong> R${shortTermParams.dailyRate} per day (Fixed Rate)`;
+        } else {
+            pricingInfo.innerHTML = `<strong>Pricing:</strong> Negotiable - to be discussed with landlord`;
+        }
+        
+        if (shortTermParams.minStay && shortTermParams.minStay !== 'null' && shortTermParams.minStay !== 'undefined') {
+            const minStayInfo = document.createElement('div');
+            minStayInfo.innerHTML = `<strong>Minimum Stay:</strong> ${shortTermParams.minStay} days`;
+            pricingInfo.appendChild(minStayInfo);
+        }
+    }
     
     // Update notes based on user role
     let notes = '';
@@ -688,7 +714,7 @@ function updateSummary() {
     document.getElementById('summaryEmail').textContent = formData.studentEmail || 'Not provided';
     document.getElementById('summaryPhone').textContent = formData.studentPhone || 'Not provided';
     
-    // NEW: Call the dedicated function to handle student number summary
+    // Update student number summary
     updateStudentNumberSummary();
 }
 
@@ -826,22 +852,34 @@ async function handleBookingSubmission(e) {
         // Build special requests with booking type and notes
         let specialRequests = `Booking Type: ${bookingTypeText}`;
 
-        // NEW: Enhanced short-term information
+        // FIXED: Enhanced short-term information with proper pricing logic
         if (isShortTermBooking) {
             specialRequests += `\nTenant Booking: Yes`;
             specialRequests += `\nBooking Category: Short-term Stay`;
             
-            // Add short-term pricing info if available
-            if (shortTermParams.dailyRate) {
+            // FIXED: Show fixed price OR negotiable based on landlord settings
+            if (shortTermParams.dailyRate && shortTermParams.dailyRate !== 'null' && shortTermParams.dailyRate !== 'undefined') {
                 specialRequests += `\nDaily Rate: R${shortTermParams.dailyRate}`;
+                specialRequests += `\nPricing Type: Fixed Daily Rate`;
+            } else {
+                specialRequests += `\nPricing Type: Negotiable`;
+                specialRequests += `\nDaily Rate: To be negotiated`;
             }
-            if (shortTermParams.minStay) {
+            
+            // Add minimum stay if available
+            if (shortTermParams.minStay && shortTermParams.minStay !== 'null' && shortTermParams.minStay !== 'undefined') {
                 specialRequests += `\nMinimum Stay: ${shortTermParams.minStay} days`;
             }
             
             // Add tenant-specific notes
             if (formData.tenantNotes) {
                 specialRequests += `\nTenant Requirements: ${formData.tenantNotes}`;
+                
+                // Try to extract duration from notes for better context
+                const durationMatch = formData.tenantNotes.match(/\b(\d+)\s*(days?|weeks?|months?)\b/i);
+                if (durationMatch) {
+                    specialRequests += `\nRequested Duration: ${durationMatch[1]} ${durationMatch[2]}`;
+                }
             }
         } else {
             // Add student-specific notes
@@ -860,13 +898,27 @@ async function handleBookingSubmission(e) {
             bookingType: isShortTermBooking ? "short-term" : "student" // This is supported
         };
 
-        // FIXED: Only add stayDuration if it's a short-term booking with tenant notes
-        if (isShortTermBooking && formData.tenantNotes) {
-            // Extract duration from tenant notes or set a default
-            bookingData.stayDuration = "To be negotiated based on requirements";
+        // FIXED: Add stayDuration for short-term bookings with proper logic
+        if (isShortTermBooking) {
+            if (formData.tenantNotes) {
+                // Extract duration from notes or set default
+                const durationMatch = formData.tenantNotes.match(/\b(\d+)\s*(days?|weeks?|months?)\b/i);
+                if (durationMatch) {
+                    bookingData.stayDuration = `${durationMatch[1]} ${durationMatch[2]}`;
+                } else {
+                    bookingData.stayDuration = "Duration to be discussed";
+                }
+            } else {
+                bookingData.stayDuration = "Flexible duration";
+            }
             
-            // If you want to be more specific, you can parse the notes:
-            // bookingData.stayDuration = extractDurationFromNotes(formData.tenantNotes);
+            // Add negotiatedPrice if it's a fixed rate
+            if (shortTermParams.dailyRate && shortTermParams.dailyRate !== 'null' && shortTermParams.dailyRate !== 'undefined') {
+                bookingData.negotiatedPrice = parseInt(shortTermParams.dailyRate);
+                bookingData.priceNegotiable = false;
+            } else {
+                bookingData.priceNegotiable = true;
+            }
         }
 
         console.log('📤 Booking data (VALIDATED):', bookingData);
@@ -929,20 +981,31 @@ function showBookingSuccess(booking, formData) {
     const bookingStatus = booking.status || 'pending';
     const propertyName = formData.propertyName || (booking.property && booking.property.title) || 'Unknown Property';
 
-    // Custom message for short-term bookings
+    // FIXED: Custom message for short-term bookings with proper pricing display
     const shortTermMessage = formData.isShortTermBooking ? 
         `<div class="alert alert-info mt-3">
             <i class="bi bi-info-circle me-2"></i>
             <strong>Short-term Stay Request Submitted!</strong><br>
             The landlord will contact you to discuss:
             <ul class="mb-0 mt-2">
-                <li>Exact pricing and duration</li>
-                <li>Available dates during December & January</li>
+                ${formData.shortTermParams && formData.shortTermParams.dailyRate && 
+                  formData.shortTermParams.dailyRate !== 'null' && 
+                  formData.shortTermParams.dailyRate !== 'undefined' ? 
+                    `<li><strong>Fixed Daily Rate:</strong> R${formData.shortTermParams.dailyRate} per day</li>` :
+                    `<li>Custom pricing based on your requirements</li>`
+                }
+                <li>Exact duration and dates</li>
                 <li>Any special requirements</li>
             </ul>
-            ${formData.shortTermParams && formData.shortTermParams.dailyRate ? 
-                `<div class="mt-2"><strong>Indicative Daily Rate:</strong> R${formData.shortTermParams.dailyRate}</div>` : ''}
-            ${formData.shortTermParams && formData.shortTermParams.minStay ? 
+            ${formData.shortTermParams && formData.shortTermParams.dailyRate && 
+             formData.shortTermParams.dailyRate !== 'null' && 
+             formData.shortTermParams.dailyRate !== 'undefined' ? 
+                `<div class="mt-2"><strong>Daily Rate:</strong> R${formData.shortTermParams.dailyRate} per day</div>` : 
+                `<div class="mt-2"><strong>Pricing:</strong> Negotiable - will be discussed with landlord</div>`
+            }
+            ${formData.shortTermParams && formData.shortTermParams.minStay && 
+             formData.shortTermParams.minStay !== 'null' && 
+             formData.shortTermParams.minStay !== 'undefined' ? 
                 `<div><strong>Minimum Stay:</strong> ${formData.shortTermParams.minStay} days</div>` : ''}
         </div>` : '';
 
@@ -961,7 +1024,16 @@ function showBookingSuccess(booking, formData) {
                         <p><strong>Type:</strong> ${formData.bookingType || 'N/A'}</p>
                         <p><strong>Date & Time:</strong> ${formatDateTime(formData.dateTime) || 'N/A'}</p>
                         <p><strong>Status:</strong> <span class="badge bg-warning">${bookingStatus}</span></p>
-                        ${formData.isShortTermBooking ? '<p><strong>Booking Type:</strong> <span class="badge bg-info">Short-term Stay</span></p>' : ''}
+                        ${formData.isShortTermBooking ? 
+                            `<p><strong>Booking Type:</strong> <span class="badge bg-info">Short-term Stay</span></p>
+                             <p><strong>Pricing:</strong> 
+                                ${formData.shortTermParams && formData.shortTermParams.dailyRate && 
+                                 formData.shortTermParams.dailyRate !== 'null' && 
+                                 formData.shortTermParams.dailyRate !== 'undefined' ? 
+                                    `<span class="text-success">R${formData.shortTermParams.dailyRate}/day (Fixed)</span>` : 
+                                    '<span class="text-warning">Negotiable</span>'
+                                }
+                             </p>` : ''}
                     </div>
                 </div>
             </div>
@@ -993,6 +1065,8 @@ function setupTenantFields() {
         tenantNotesSection.style.display = 'block';
     }
 }
+
+
 
 // Call this in your initialization
 document.addEventListener('DOMContentLoaded', function() {
