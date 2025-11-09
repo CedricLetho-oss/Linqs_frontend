@@ -1638,7 +1638,6 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="navbar.js"></script>
   
-  <!-- Property Details Script -->
   <script>
     // API base URL
     const API_BASE_URL = 'https://linqs-backend.onrender.com/api';
@@ -1686,312 +1685,158 @@
         self: { icon: 'bi-house', text: 'Self-paying', class: 'info' }
     };
 
-    // Initialization
-    document.addEventListener('DOMContentLoaded', function() {
-    console.log('Initializing property details page...');
-    currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-    initializeReviewForm();
-    loadPropertyDetails();
-    
-    setTimeout(() => {
-        updateVisibleReviewsCount();
-        enhanceForShortTermContext();
-    }, 500);
-});
+    // ============ INITIALIZATION ============
 
-    // Initialize review form event listeners
-    function initializeReviewForm() {
-        const starRating = document.getElementById('reviewStarRating');
-        if (starRating) {
-            starRating.addEventListener('click', function(e) {
-                if (e.target.classList.contains('bi-star') || e.target.classList.contains('bi-star-fill')) {
-                    const rating = parseInt(e.target.getAttribute('data-rating'));
-                    document.getElementById('reviewRating').value = rating;
+    document.addEventListener('DOMContentLoaded', async function() {
+        console.log('Initializing property details page...');
+        
+        // Sync booking mode first
+        await syncBookingMode();
+        
+        currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+        initializeReviewForm();
+        setupBookingModeListener();
+        
+        await loadPropertyDetails();
+        
+        setTimeout(() => {
+            updateVisibleReviewsCount();
+            updatePropertyDisplayForUserType();
+        }, 500);
+    });
+
+    // ============ BOOKING MODE MANAGEMENT ============
+
+    function getUserContext() {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const bookingMode = localStorage.getItem('booking_mode') || 'student';
+        
+        return {
+            user,
+            role: user.role,
+            bookingMode,
+            isTenantMode: bookingMode === 'tenant',
+            isStudentMode: bookingMode === 'student',
+            isActualTenant: user.role === 'tenant',
+            isActualStudent: user.role === 'student'
+        };
+    }
+
+    async function syncBookingMode() {
+        try {
+            const context = getUserContext();
+            
+            if (context.user.role === 'student') {
+                const token = localStorage.getItem("token");
+                const response = await fetch(`${API_BASE_URL}/users/booking-mode`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const backendBookingMode = data.booking_mode || 'student';
+                    const currentBookingMode = localStorage.getItem('booking_mode') || 'student';
                     
-                    const stars = this.querySelectorAll('.bi');
-                    stars.forEach((star, index) => {
-                        if (index < rating) {
-                            star.classList.add('active', 'bi-star-fill');
-                            star.classList.remove('bi-star');
-                        } else {
-                            star.classList.remove('active', 'bi-star-fill');
-                            star.classList.add('bi-star');
-                        }
-                    });
+                    if (backendBookingMode !== currentBookingMode) {
+                        console.log(`Syncing booking mode: ${currentBookingMode} -> ${backendBookingMode}`);
+                        localStorage.setItem('booking_mode', backendBookingMode);
+                        
+                        const user = JSON.parse(localStorage.getItem("user") || "{}");
+                        user.booking_mode = backendBookingMode;
+                        localStorage.setItem('user', JSON.stringify(user));
+                        return true;
+                    }
                 }
-            });
-        }
-
-        const reviewForm = document.getElementById('reviewForm');
-        if (reviewForm) {
-            reviewForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                await submitReview();
-            });
+            }
+            return false;
+        } catch (error) {
+            console.error('Error syncing booking mode:', error);
+            return false;
         }
     }
 
-    // Get property ID from URL parameters
+    function setupBookingModeListener() {
+        window.addEventListener('bookingModeChanged', (event) => {
+            console.log('Booking mode change detected in property details:', event.detail.mode);
+            setTimeout(() => {
+                updatePropertyDisplayForUserType();
+                updateRoomsDisplay();
+            }, 100);
+        });
+    }
+
+    // ============ PROPERTY DATA LOADING ============
+
     function getPropertyIdFromURL() {
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get('id');
     }
 
-    // ============ USER TYPE DETECTION ============
-    
-
-function isPropertyAvailableForShortTerm() {
-    if (!currentProperty || !currentProperty.acceptsShortTerm) return false;
-    
-    const currentMonth = new Date().getMonth() + 1; // 1-12
-    // December (12) and January (1) are short-term availability months
-    return currentMonth === 12 || currentMonth === 1;
-}
-
-// ============ USER TYPE DETECTION ============
-function detectUserTypeAndModifyDisplay() {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const isShortTermTenant = user.role === 'tenant';
-    
-    // Just log for debugging, don't block access
-    if (isShortTermTenant) {
-        console.log('Short-term tenant viewing property');
-        if (currentProperty && currentProperty.acceptsShortTerm) {
-            console.log('Property accepts short-term stays');
-        }
-    }
-}
-
-// RESTORED FROM OLD VERSION: Handle short-term display properly
-function handleShortTermDisplay() {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const isShortTermTenant = user.role === 'tenant';
-    const shortTermInfoContainer = document.getElementById('shortTermInfoContainer');
-    
-    // Clear previous content
-    if (shortTermInfoContainer) {
-        shortTermInfoContainer.innerHTML = '';
-    }
-    
-    // RESTORED FUNCTIONALITY: Show negotiable pricing for tenants
-    if (isShortTermTenant) {
-        // Update price display to show negotiable pricing
-        const priceElement = document.getElementById('propertyPrice');
-        const periodElement = document.getElementById('pricePeriod');
+    async function loadPropertyDetails() {
+        const propertyId = getPropertyIdFromURL();
         
-        if (currentProperty && currentProperty.acceptsShortTerm) {
-            if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
-                priceElement.textContent = `R${currentProperty.shortTermPrice}`;
-                periodElement.textContent = 'per day';
-                
-                // Add minimum stay info
-                if (shortTermInfoContainer) {
-                    const minStayInfo = document.createElement('div');
-                    minStayInfo.className = 'short-term-info';
-                    minStayInfo.innerHTML = `
-                        <i class="bi bi-calendar-check me-1"></i>
-                        Min. stay: ${currentProperty.shortTermMinStay || 1} days
-                    `;
-                    shortTermInfoContainer.appendChild(minStayInfo);
-                }
-            } else {
-                // RESTORED: Show negotiable price for tenants
-                priceElement.textContent = 'Negotiable';
-                periodElement.textContent = 'Contact for pricing';
-                
-                if (shortTermInfoContainer) {
-                    const negotiableInfo = document.createElement('div');
-                    negotiableInfo.className = 'short-term-info';
-                    negotiableInfo.innerHTML = `
-                        <i class="bi bi-chat-dots me-1"></i>
-                        Price negotiable based on duration
-                    `;
-                    shortTermInfoContainer.appendChild(negotiableInfo);
-                }
-            }
-            
-            // Add short-term badge as visual indicator
-            const shortTermBadge = document.createElement('span');
-            shortTermBadge.className = 'badge short-term-badge';
-            shortTermBadge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term Available';
-            
-            const propertyBadges = document.querySelector('.property-badges');
-            if (propertyBadges) {
-                propertyBadges.appendChild(shortTermBadge);
-            }
-        }
-    }
-}
-
-// RESTORED FROM OLD VERSION: Modify display for user type
-function modifyDisplayForUserType() {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const isTenant = user.role === 'tenant';
-    
-    if (isTenant) {
-        console.log('Tenant viewing property - removing gender and accreditation info');
-        
-        // RESTORED: Remove gender preference and accreditation for tenants
-        const genderSection = document.getElementById('genderSection');
-        const accreditationSection = document.getElementById('accreditationSection');
-        const genderBadge = document.getElementById('propertyGenderBadge');
-        const accreditationBadge = document.getElementById('propertyAccreditationBadge');
-        
-        if (genderSection) genderSection.style.display = 'none';
-        if (accreditationSection) accreditationSection.style.display = 'none';
-        if (genderBadge) genderBadge.style.display = 'none';
-        if (accreditationBadge) accreditationBadge.style.display = 'none';
-        
-        // RESTORED: Update description to show short-term specific info if available
-        if (currentProperty && currentProperty.acceptsShortTerm && currentProperty.shortTermDescription) {
-            const descriptionElement = document.getElementById('propertyDescription');
-            if (descriptionElement) {
-                descriptionElement.textContent = currentProperty.shortTermDescription;
-                
-                // Add short-term availability period info
-                const availabilityInfo = document.createElement('div');
-                availabilityInfo.className = 'alert alert-info mt-3';
-                availabilityInfo.innerHTML = `
-                    <i class="bi bi-info-circle me-2"></i>
-                    <strong>Short-term availability:</strong> This property is available for short-term stays during December & January.
-                    ${currentProperty.shortTermMinStay ? `Minimum stay: ${currentProperty.shortTermMinStay} days.` : ''}
-                `;
-                descriptionElement.parentNode.appendChild(availabilityInfo);
-            }
-        }
-        
-        // Update booking button text for tenants
-        const bookingBtn = document.querySelector('.btn-primary.action-btn');
-        if (bookingBtn && currentProperty && currentProperty.acceptsShortTerm) {
-            bookingBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request Short-term Stay';
-        }
-    } else {
-        // For students, show the gender and accreditation info
-        const genderSection = document.getElementById('genderSection');
-        const accreditationSection = document.getElementById('accreditationSection');
-        const genderBadge = document.getElementById('propertyGenderBadge');
-        const accreditationBadge = document.getElementById('propertyAccreditationBadge');
-        
-        if (genderSection) genderSection.style.display = 'flex';
-        if (accreditationSection) accreditationSection.style.display = 'flex';
-        if (genderBadge) genderBadge.style.display = 'inline-block';
-        if (accreditationBadge) accreditationBadge.style.display = 'inline-block';
-    }
-}
-
-// RESTORED FROM OLD VERSION: Enhance for short-term context
-function enhanceForShortTermContext() {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const isShortTermTenant = user.role === 'tenant';
-    
-    // Only add enhancements if property accepts short-term
-    // But don't block access if it doesn't
-    if (!isShortTermTenant || !currentProperty || !currentProperty.acceptsShortTerm) return;
-    
-    // Add seasonal availability information
-    const locationSection = document.querySelector('.location-info');
-    if (locationSection) {
-        const seasonalInfo = document.createElement('div');
-        seasonalInfo.className = 'alert alert-warning mt-3';
-        seasonalInfo.innerHTML = `
-            <i class="bi bi-calendar-event me-2"></i>
-            <strong>Seasonal Availability:</strong> Perfect for holiday stays! Available December - January while students are away.
-        `;
-        locationSection.appendChild(seasonalInfo);
-    }
-    
-    // Modify contact button for short-term inquiries
-    const contactBtn = document.querySelector('button[onclick="contactLandlord()"]');
-    if (contactBtn) {
-        contactBtn.innerHTML = '<i class="bi bi-chat-dots me-1"></i>Inquire About Short-term Stay';
-    }
-    
-    // Add quick booking info to sidebar
-    const bookingCard = document.querySelector('.property-card .d-grid');
-    if (bookingCard) {
-        const quickInfo = document.createElement('div');
-        quickInfo.className = 'short-term-pricing mt-3';
-        quickInfo.innerHTML = `
-            <h6 class="text-navy mb-2"><i class="bi bi-lightning me-2"></i>Short-term Stay</h6>
-            ${currentProperty.shortTermPricing === 'fixed' ? `
-                <div class="daily-rate">R${currentProperty.shortTermPrice}/day</div>
-                <small class="text-muted">Minimum ${currentProperty.shortTermMinStay || 1} days</small>
-            ` : `
-                <div class="negotiable-price">Price Negotiable</div>
-                <small class="text-muted">Contact for custom rates</small>
-            `}
-        `;
-        bookingCard.parentNode.insertBefore(quickInfo, bookingCard);
-    }
-}
-
-// ============ PROPERTY DATA LOADING ============
-   async function loadPropertyDetails() {
-    const propertyId = getPropertyIdFromURL();
-    
-    if (!propertyId) {
-        alert('No property ID specified in URL');
-        window.location.href = 'listings.html';
-        return;
-    }
-
-    try {
-        const token = localStorage.getItem("token");
-        
-        const propertyResponse = await fetch(`${API_BASE_URL}/properties/${propertyId}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!propertyResponse.ok) {
-            throw new Error('Property not found');
-        }
-
-        const propertyData = await propertyResponse.json();
-        currentProperty = propertyData.property || propertyData;
-        
-        console.log('Loaded property:', currentProperty);
-        
-        // SIMPLE APPROACH: Only check admin approval for all users
-        const adminStatus = getAdminStatus(currentProperty);
-        if (adminStatus !== 'approved') {
-            showToast('This property is not available for viewing.', 'error');
-            setTimeout(() => {
-                window.location.href = 'listings.html';
-            }, 2000);
+        if (!propertyId) {
+            alert('No property ID specified in URL');
+            window.location.href = 'listings.html';
             return;
         }
-        
-        const landlordId = String(currentProperty.landlord?._id || currentProperty.landlord);
-        if (landlordId && landlordId !== 'undefined') {
-            await loadLandlordDetails(landlordId);
-        } else {
-            currentLandlord = {
-                firstName: 'Landlord',
-                lastName: 'User',
-                avatar: 'https://via.placeholder.com/80',
-                isVerified: true
-            };
+
+        try {
+            const token = localStorage.getItem("token");
+            
+            const propertyResponse = await fetch(`${API_BASE_URL}/properties/${propertyId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!propertyResponse.ok) {
+                throw new Error('Property not found');
+            }
+
+            const propertyData = await propertyResponse.json();
+            currentProperty = propertyData.property || propertyData;
+            
+            console.log('Loaded property:', currentProperty);
+            
+            const adminStatus = getAdminStatus(currentProperty);
+            if (adminStatus !== 'approved') {
+                showToast('This property is not available for viewing.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'listings.html';
+                }, 2000);
+                return;
+            }
+            
+            const landlordId = String(currentProperty.landlord?._id || currentProperty.landlord);
+            if (landlordId && landlordId !== 'undefined') {
+                await loadLandlordDetails(landlordId);
+            } else {
+                currentLandlord = {
+                    firstName: 'Landlord',
+                    lastName: 'User',
+                    avatar: 'https://via.placeholder.com/80',
+                    isVerified: true
+                };
+            }
+            
+            await loadPropertyReviews(propertyId);
+            updatePropertyDisplay();
+            
+            await loadPropertyRooms();
+            checkUserCanReview();
+            await checkFavoriteStatus();
+            
+        } catch (error) {
+            console.error('Error loading property details:', error);
+            showToast('Failed to load property details: ' + error.message, 'error');
+            window.location.href = 'listings.html';
         }
-        
-        await loadPropertyReviews(propertyId);
-        updatePropertyDisplay();
-        
-        // RESTORED: Call modifyDisplayForUserType to handle tenant-specific display
-        modifyDisplayForUserType();
-        
-        await loadPropertyRooms();
-        checkUserCanReview();
-        await checkFavoriteStatus();
-        
-    } catch (error) {
-        console.error('Error loading property details:', error);
-        showToast('Failed to load property details: ' + error.message, 'error');
-        window.location.href = 'listings.html';
     }
-}
 
     async function loadLandlordDetails(landlordId) {
         try {
@@ -2047,39 +1892,38 @@ function enhanceForShortTermContext() {
     }
 
     async function loadPropertyRooms() {
-    const propertyId = getPropertyIdFromURL();
-    
-    try {
-        const token = localStorage.getItem("token");
-        const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
+        const propertyId = getPropertyIdFromURL();
+        
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
 
-        if (response.ok) {
-            const data = await response.json();
-            propertyRooms = data.rooms || [];
-            
-            // Ensure each room has short-term pricing fields
-            propertyRooms = propertyRooms.map(room => ({
-                ...room,
-                shortTermPricing: room.shortTermPricing || 'negotiable',
-                shortTermPrice: room.shortTermPrice || 0,
-                shortTermMinStay: room.shortTermMinStay || 1,
-                shortTermDescription: room.shortTermDescription || ''
-            }));
-            
-            updateRoomsDisplay();
-        } else {
+            if (response.ok) {
+                const data = await response.json();
+                propertyRooms = data.rooms || [];
+                
+                propertyRooms = propertyRooms.map(room => ({
+                    ...room,
+                    shortTermPricing: room.shortTermPricing || 'negotiable',
+                    shortTermPrice: room.shortTermPrice || 0,
+                    shortTermMinStay: room.shortTermMinStay || 1,
+                    shortTermDescription: room.shortTermDescription || ''
+                }));
+                
+                updateRoomsDisplay();
+            } else {
+                createBasicRooms();
+            }
+        } catch (error) {
+            console.error('Error loading rooms:', error);
             createBasicRooms();
         }
-    } catch (error) {
-        console.error('Error loading rooms:', error);
-        createBasicRooms();
     }
-}
 
     function createBasicRooms() {
         if (currentProperty && currentProperty.bedrooms > 0) {
@@ -2103,23 +1947,17 @@ function enhanceForShortTermContext() {
 
     // ============ UI UPDATES ============
 
-    // Enhanced property display function
     function updatePropertyDisplay() {
-    if (!currentProperty) return;
+        if (!currentProperty) return;
 
         const propertyStatus = getPropertyStatus(currentProperty);
         const statusInfo = statusConfig[propertyStatus] || statusConfig.available;
         const genderInfo = genderConfig[currentProperty.genderPreference] || genderConfig.unisex;
         const accreditationInfo = accreditationConfig[currentProperty.accreditation] || accreditationConfig.self;
 
-        // Update single title
         document.getElementById('propertyTitle').textContent = currentProperty.title;
-        
-        // Update price and period (will be overridden for tenants in handleShortTermDisplay)
         document.getElementById('propertyPrice').textContent = `R${currentProperty.price}`;
         document.getElementById('pricePeriod').textContent = 'per month';
-        
-        // Update other details
         document.getElementById('propertyDescription').textContent = currentProperty.description;
         document.getElementById('propertyLocation').textContent = `${currentProperty.location.city}, ${currentProperty.location.state}`;
         document.getElementById('propertyFullAddress').textContent = `${currentProperty.location.address}, ${currentProperty.location.city}, ${currentProperty.location.state} ${currentProperty.location.zipCode}`;
@@ -2128,28 +1966,22 @@ function enhanceForShortTermContext() {
         document.getElementById('propertyTypeBadge').textContent = currentProperty.propertyType;
         document.getElementById('propertyType').textContent = currentProperty.propertyType;
         
-        // Update status badges
         const statusBadge = document.getElementById('propertyStatusBadge');
         statusBadge.textContent = statusInfo.text;
         statusBadge.className = `badge bg-${statusInfo.class}`;
         statusBadge.innerHTML = `<i class="bi ${statusInfo.icon} me-1"></i>${statusInfo.text}`;
         
-        // Update gender badge and section (visibility handled in modifyDisplayForUserType)
         const genderBadge = document.getElementById('propertyGenderBadge');
         genderBadge.textContent = genderInfo.text;
         genderBadge.className = `badge bg-${genderInfo.class}`;
         genderBadge.innerHTML = `<i class="bi ${genderInfo.icon} me-1"></i>${genderInfo.text}`;
         document.getElementById('propertyGender').textContent = genderInfo.text === 'Unisex' ? 'Any Gender' : genderInfo.text + ' Only';
         
-        // Update accreditation badge and section (visibility handled in modifyDisplayForUserType)
         const accreditationBadge = document.getElementById('propertyAccreditationBadge');
         accreditationBadge.textContent = accreditationInfo.text;
         accreditationBadge.className = `badge bg-${accreditationInfo.class}`;
         accreditationBadge.innerHTML = `<i class="bi ${accreditationInfo.icon} me-1"></i>${accreditationInfo.text}`;
         document.getElementById('propertyAccreditation').textContent = accreditationInfo.text === 'Accredited' ? 'University Accredited' : 'Private Accommodation';
-        
-        // RESTORED: Handle short-term tenant display with negotiable pricing
-        handleShortTermDisplay();
         
         updateImageGallery();
         updateAmenitiesDisplay();
@@ -2163,780 +1995,332 @@ function enhanceForShortTermContext() {
         }, 500);
     }
 
-    
-
-function copyAddress() {
-    if (!currentProperty || !currentProperty.location) return;
-    
-    const location = currentProperty.location;
-    const address = `${location.address}, ${location.city}, ${location.state} ${location.zipCode}`;
-    
-    navigator.clipboard.writeText(address).then(() => {
-        showToast('Address copied to clipboard!', 'success');
-    }).catch(() => {
-        showToast('Failed to copy address', 'error');
-    });
-}
-
-function updateLocationMap() {
-    const mapContainer = document.getElementById('propertyMap');
-    
-    if (!currentProperty || !currentProperty.location) {
-        showMapError('Location data not available');
-        return;
+    function updatePropertyDisplayForUserType() {
+        const context = getUserContext();
+        const isTenantMode = context.isTenantMode;
+        
+        handleShortTermDisplay();
+        modifyDisplayForUserType();
+        updateRoomsDisplay();
     }
 
-    const location = currentProperty.location;
-    const address = `${location.address}, ${location.city}, ${location.state}`;
-    
-    // Clear previous content and show loading
-    mapContainer.innerHTML = `
-        <div class="map-loading">
-            <div class="spinner-border text-primary mb-2" role="status">
-                <span class="visually-hidden">Loading map...</span>
-            </div>
-            <p class="text-muted">Loading interactive map...</p>
-        </div>
-    `;
-    
-    // Initialize map after a short delay to ensure container is ready
-    setTimeout(() => {
-        initializeLeafletMap(location, address);
-    }, 100);
-}
-
-function initializeLeafletMap(location, address) {
-    const mapContainer = document.getElementById('propertyMap');
-    
-    try {
-        // Get coordinates - use actual coordinates if available, otherwise fallback to city center
-        const coords = getPropertyCoordinates(location);
+    function handleShortTermDisplay() {
+        const context = getUserContext();
+        const isTenantMode = context.isTenantMode;
+        const shortTermInfoContainer = document.getElementById('shortTermInfoContainer');
         
-        // Initialize the map
-        propertyMap = L.map('propertyMap').setView([coords.lat, coords.lng], 15);
-        
-        // Add OpenStreetMap tiles (completely free)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 19,
-        }).addTo(propertyMap);
-        
-        // Create a custom icon
-        const customIcon = L.divIcon({
-            html: `<div class="custom-marker" style="background: var(--primary); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
-                     <i class="bi bi-house-fill"></i>
-                  </div>`,
-            className: 'custom-div-icon',
-            iconSize: [40, 40],
-            iconAnchor: [20, 40],
-            popupAnchor: [0, -40]
-        });
-        
-        // Add marker with custom icon
-        propertyMarker = L.marker([coords.lat, coords.lng], { icon: customIcon })
-            .addTo(propertyMap)
-            .bindPopup(`
-                <div class="custom-marker-popup">
-                    <h4>${currentProperty.title}</h4>
-                    <p class="mb-2">${address}</p>
-                    <div class="d-flex flex-wrap gap-1">
-                        <span class="badge bg-primary">${currentProperty.propertyType}</span>
-                        <span class="badge bg-success">Available</span>
-                    </div>
-                    <div class="mt-2">
-                        <button class="btn btn-sm btn-outline-primary" onclick="openGoogleMaps()">
-                            <i class="bi bi-arrow-up-right me-1"></i>Open in Google Maps
-                        </button>
-                    </div>
-                </div>
-            `)
-            .openPopup();
-        
-        // Add map controls
-        addMapControls();
-        
-        // Add click handler to open popup
-        propertyMap.on('click', function() {
-            propertyMarker.openPopup();
-        });
-        
-    } catch (error) {
-        console.error('Error initializing map:', error);
-        showMapError('Failed to load map. Click below to view location.');
-    }
-}
-
-function getPropertyCoordinates(location) {
-    // If coordinates are available in the property data, use them
-    if (location.latitude && location.longitude) {
-        return {
-            lat: parseFloat(location.latitude),
-            lng: parseFloat(location.longitude)
-        };
-    }
-    
-    // Otherwise, use city-level coordinates (you can expand this)
-    const cityCoords = {
-        'Bloemfontein': { lat: -29.0852, lng: 26.1596 },
-        'Johannesburg': { lat: -26.2041, lng: 28.0473 },
-        'Cape Town': { lat: -33.9249, lng: 18.4241 },
-        'Durban': { lat: -29.8587, lng: 31.0218 },
-        'Pretoria': { lat: -25.7479, lng: 28.2293 }
-        // Add more cities as needed
-    };
-    
-    const city = location.city;
-    if (city && cityCoords[city]) {
-        return cityCoords[city];
-    }
-    
-    // Default to Bloemfontein coordinates
-    return { lat: -29.0852, lng: 26.1596 };
-}
-
-function addMapControls() {
-    const controlsHtml = `
-        <button class="btn btn-sm btn-light" onclick="openGoogleMaps()" title="Open in Google Maps">
-            <i class="bi bi-arrow-up-right"></i>
-        </button>
-        <button class="btn btn-sm btn-light mt-1" onclick="copyAddress()" title="Copy Address">
-            <i class="bi bi-clipboard"></i>
-        </button>
-        <button class="btn btn-sm btn-light mt-1" onclick="resetMapView()" title="Reset View">
-            <i class="bi bi-geo-alt"></i>
-        </button>
-    `;
-    
-    // Create controls container if it doesn't exist
-    let controlsContainer = document.querySelector('.map-controls');
-    if (!controlsContainer) {
-        controlsContainer = document.createElement('div');
-        controlsContainer.className = 'map-controls';
-        document.querySelector('.map-container').appendChild(controlsContainer);
-    }
-    
-    controlsContainer.innerHTML = controlsHtml;
-}
-
-function resetMapView() {
-    if (propertyMap && propertyMarker) {
-        const latlng = propertyMarker.getLatLng();
-        propertyMap.setView(latlng, 15);
-        propertyMarker.openPopup();
-    }
-}
-
-function showMapError(message) {
-    const mapContainer = document.getElementById('propertyMap');
-    mapContainer.innerHTML = `
-        <div class="map-error">
-            <i class="bi bi-exclamation-triangle display-4 mb-3"></i>
-            <h5 class="mb-2">Map Unavailable</h5>
-            <p class="mb-3">${message}</p>
-            <button class="btn btn-primary" onclick="openGoogleMaps()">
-                <i class="bi bi-geo-alt me-2"></i>View Location in Google Maps
-            </button>
-        </div>
-    `;
-}
-
-    function openGoogleMaps() {
-        if (!currentProperty.location) {
-            showToast('Location data not available', 'error');
-            return;
+        if (shortTermInfoContainer) {
+            shortTermInfoContainer.innerHTML = '';
         }
-
-        const location = currentProperty.location;
-        const address = encodeURIComponent(`${location.address}, ${location.city}, ${location.state} ${location.zipCode}`);
-        const url = `https://www.google.com/maps/search/?api=1&query=${address}`;
-        window.open(url, '_blank');
-    }
-
-    function updateBookingButton(propertyStatus) {
-        const bookingBtn = document.querySelector('.btn-primary.action-btn');
-        if (!bookingBtn) return;
-
-        if (propertyStatus === 'available') {
-            bookingBtn.disabled = false;
-            bookingBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request to Book';
-            bookingBtn.style.opacity = '1';
-        } else if (propertyStatus === 'occupied') {
-            bookingBtn.disabled = true;
-            bookingBtn.innerHTML = '<i class="bi bi-person-check me-2"></i>Fully Booked';
-            bookingBtn.style.opacity = '0.6';
-        } else if (propertyStatus === 'maintenance') {
-            bookingBtn.disabled = true;
-            bookingBtn.innerHTML = '<i class="bi bi-tools me-2"></i>Under Maintenance';
-            bookingBtn.style.opacity = '0.6';
+        
+        if (isTenantMode) {
+            const priceElement = document.getElementById('propertyPrice');
+            const periodElement = document.getElementById('pricePeriod');
+            
+            if (currentProperty && currentProperty.acceptsShortTerm) {
+                if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
+                    priceElement.textContent = `R${currentProperty.shortTermPrice}`;
+                    periodElement.textContent = 'per day';
+                    
+                    if (shortTermInfoContainer) {
+                        const minStayInfo = document.createElement('div');
+                        minStayInfo.className = 'short-term-info';
+                        minStayInfo.innerHTML = `
+                            <i class="bi bi-calendar-check me-1"></i>
+                            Min. stay: ${currentProperty.shortTermMinStay || 1} days
+                        `;
+                        shortTermInfoContainer.appendChild(minStayInfo);
+                    }
+                } else {
+                    priceElement.textContent = 'Negotiable';
+                    periodElement.textContent = 'Contact for pricing';
+                    
+                    if (shortTermInfoContainer) {
+                        const negotiableInfo = document.createElement('div');
+                        negotiableInfo.className = 'short-term-info';
+                        negotiableInfo.innerHTML = `
+                            <i class="bi bi-chat-dots me-1"></i>
+                            Price negotiable based on duration
+                        `;
+                        shortTermInfoContainer.appendChild(negotiableInfo);
+                    }
+                }
+                
+                const shortTermBadge = document.createElement('span');
+                shortTermBadge.className = 'badge short-term-badge';
+                shortTermBadge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term Available';
+                
+                const propertyBadges = document.querySelector('.property-badges');
+                if (propertyBadges) {
+                    propertyBadges.appendChild(shortTermBadge);
+                }
+            }
         }
     }
 
-    function updateImageGallery() {
-        const gallery = document.getElementById('propertyImageGallery');
-        const thumbnails = document.getElementById('propertyThumbnails');
+    function modifyDisplayForUserType() {
+        const context = getUserContext();
+        const isTenantMode = context.isTenantMode;
         
-        const images = currentProperty.images && currentProperty.images.length > 0 
-            ? currentProperty.images 
-            : ['https://via.placeholder.com/800x400?text=Property+Image'];
-        
-        gallery.innerHTML = `
-            <img src="${images[0]}" class="main-image" alt="${currentProperty.title}" id="mainPropertyImage">
-        `;
-        
-        thumbnails.innerHTML = images.map((image, index) => `
-            <img src="${image}" class="thumbnail ${index === 0 ? 'active' : ''}" 
-                alt="Thumbnail ${index + 1}" 
-                onclick="changeMainImage('${image}', this)">
-        `).join('');
-    }
-
-    function changeMainImage(imageSrc, element) {
-        document.getElementById('mainPropertyImage').src = imageSrc;
-        
-        document.querySelectorAll('.thumbnail').forEach(thumb => {
-            thumb.classList.remove('active');
-        });
-        element.classList.add('active');
-    }
-
-    function updateAmenitiesDisplay() {
-        const amenitiesContainer = document.getElementById('propertyAmenities');
-        const amenities = currentProperty.amenities || [];
-        
-        if (amenities.length === 0) {
-            amenitiesContainer.innerHTML = '<p class="text-muted">No amenities listed</p>';
-            return;
-        }
-        
-        amenitiesContainer.innerHTML = amenities.map(amenity => `
-            <span class="amenity-badge">
-                <i class="bi bi-${getAmenityIcon(amenity)}"></i>
-                ${amenity.charAt(0).toUpperCase() + amenity.slice(1)}
-            </span>
-        `).join('');
-    }
-
-    function getAmenityIcon(amenity) {
-        const icons = {
-            wifi: 'wifi',
-            parking: 'car-front',
-            laundry: 'droplet',
-            furnished: 'house',
-            gym: 'activity',
-            pool: 'water',
-            ac: 'snow',
-            heating: 'thermometer-sun',
-            shuttle: 'bus-front',
-            cctv: 'camera-video'
-        };
-        return icons[amenity] || 'check';
-    }
-
-    function updateLandlordDisplay() {
-        if (!currentLandlord) return;
-        
-        document.getElementById('landlordName').textContent = 
-            `${currentLandlord.firstName} ${currentLandlord.lastName}`;
-        document.getElementById('landlordAvatar').src = currentLandlord.avatar || 'https://via.placeholder.com/80';
-        
-        if (!currentLandlord.isVerified) {
-            document.getElementById('landlordVerified').className = 'badge bg-warning';
-            document.getElementById('landlordVerified').innerHTML = '<i class="bi bi-clock me-1"></i>Pending Verification';
-        }
-    }
-
-function updateRoomsDisplay() {
-    const roomsContainer = document.getElementById('propertyRooms');
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const isShortTermTenant = user.role === 'tenant';
-    
-    if (propertyRooms.length === 0) {
-        roomsContainer.innerHTML = `
-            <div class="text-center py-4">
-                <i class="bi bi-door-closed display-4 text-muted mb-3"></i>
-                <p class="text-muted">No room details available</p>
-                <small>Contact the landlord for room availability</small>
-            </div>
-        `;
-        return;
-    }
-    
-    roomsContainer.innerHTML = propertyRooms.map(room => {
-        // Determine pricing and description based on user type
-        let roomPrice, pricePeriod, pricePrefix;
-        
-        if (isShortTermTenant && room.shortTermPricing) {
-            if (room.shortTermPricing === 'fixed' && room.shortTermPrice) {
-                roomPrice = room.shortTermPrice;
-                pricePeriod = 'day';
-                pricePrefix = '';
-            } else {
-                roomPrice = 'Negotiable';
-                pricePeriod = '';
-                pricePrefix = '';
+        if (isTenantMode) {
+            const genderSection = document.getElementById('genderSection');
+            const accreditationSection = document.getElementById('accreditationSection');
+            const genderBadge = document.getElementById('propertyGenderBadge');
+            const accreditationBadge = document.getElementById('propertyAccreditationBadge');
+            
+            if (genderSection) genderSection.style.display = 'none';
+            if (accreditationSection) accreditationSection.style.display = 'none';
+            if (genderBadge) genderBadge.style.display = 'none';
+            if (accreditationBadge) accreditationBadge.style.display = 'none';
+            
+            if (currentProperty && currentProperty.acceptsShortTerm && currentProperty.shortTermDescription) {
+                const descriptionElement = document.getElementById('propertyDescription');
+                if (descriptionElement) {
+                    descriptionElement.textContent = currentProperty.shortTermDescription;
+                    
+                    const availabilityInfo = document.createElement('div');
+                    availabilityInfo.className = 'alert alert-info mt-3';
+                    availabilityInfo.innerHTML = `
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Short-term availability:</strong> This property is available for short-term stays during December & January.
+                        ${currentProperty.shortTermMinStay ? `Minimum stay: ${currentProperty.shortTermMinStay} days.` : ''}
+                    `;
+                    descriptionElement.parentNode.appendChild(availabilityInfo);
+                }
+            }
+            
+            const bookingBtn = document.querySelector('.btn-primary.action-btn');
+            if (bookingBtn && currentProperty && currentProperty.acceptsShortTerm) {
+                bookingBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request Short-term Stay';
             }
         } else {
-            roomPrice = room.price;
-            pricePeriod = 'month';
-            pricePrefix = '';
+            const genderSection = document.getElementById('genderSection');
+            const accreditationSection = document.getElementById('accreditationSection');
+            const genderBadge = document.getElementById('propertyGenderBadge');
+            const accreditationBadge = document.getElementById('propertyAccreditationBadge');
+            
+            if (genderSection) genderSection.style.display = 'flex';
+            if (accreditationSection) accreditationSection.style.display = 'flex';
+            if (genderBadge) genderBadge.style.display = 'inline-block';
+            if (accreditationBadge) accreditationBadge.style.display = 'inline-block';
         }
+    }
+
+    function updateRoomsDisplay() {
+        const roomsContainer = document.getElementById('propertyRooms');
+        const context = getUserContext();
+        const isTenantMode = context.isTenantMode;
         
-        const roomDescription = isShortTermTenant && room.shortTermDescription ? 
-            room.shortTermDescription : room.description;
-        
-        // Short-term badge for tenants
-        const shortTermBadge = isShortTermTenant && room.shortTermPricing ? `
-            <span class="badge short-term-badge ms-1">
-                <i class="bi bi-calendar-range me-1"></i>
-                ${room.shortTermPricing === 'fixed' ? `R${room.shortTermPrice}/day` : 'Price Negotiable'}
-            </span>
-        ` : '';
-        
-        // Price display logic - use smaller font for negotiable
-        const priceDisplay = roomPrice === 'Negotiable' ? 
-            `<div class="negotiable-price">${roomPrice}</div>` :
-            `<div class="text-primary fw-bold">R${roomPrice}/${pricePeriod}</div>`;
-        
-        return `
-            <div class="col-md-6 mb-4">
-                <div class="room-card ${room.isAvailable ? 'border-success' : 'border-warning'}">
-                    <div class="row g-0">
-                        <div class="col-md-5">
-                            <img src="${room.images && room.images.length > 0 ? room.images[0] : 'https://via.placeholder.com/300x200?text=Room+Image'}" 
-                                class="room-image" alt="${room.roomNumber || room.roomType}"
-                                onclick="openRoomGallery('${room._id}')" style="cursor: pointer;">
-                        </div>
-                        <div class="col-md-7">
-                            <div class="p-3">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="text-navy mb-0">${room.roomNumber ? room.roomNumber + ' - ' : ''}${roomTypeConfig[room.roomType]?.text || room.roomType}</h5>
-                                    <span class="badge bg-${room.isAvailable ? 'success' : 'warning'}">
-                                        <i class="bi ${room.isAvailable ? 'bi-check-circle' : 'bi-person-check'} me-1"></i>
-                                        ${room.isAvailable ? 'Available' : 'Occupied'}
-                                    </span>
-                                </div>
-                                
-                                ${shortTermBadge}
-                                
-                                <p class="text-muted small mb-2">${roomDescription || 'Comfortable room with essential amenities'}</p>
-                                
-                                <div class="mb-2">
-                                    ${room.features && room.features.slice(0, 3).map(feature => `
-                                        <span class="badge bg-light text-dark me-1 small">${feature.replace('-', ' ')}</span>
-                                    `).join('')}
-                                    ${room.features && room.features.length > 3 ? `<span class="badge bg-light text-dark small">+${room.features.length - 3}</span>` : ''}
-                                </div>
-                                
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div>
-                                        <span class="text-muted small me-3"><i class="bi bi-arrows-fullscreen me-1"></i>${room.size || 'Standard size'}</span>
-                                        <span class="text-muted small"><i class="bi bi-${roomTypeConfig[room.roomType]?.icon || 'door-closed'} me-1"></i>${roomTypeConfig[room.roomType]?.text || room.roomType}</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        ${priceDisplay}
-                                        ${isShortTermTenant && room.shortTermMinStay && roomPrice !== 'Negotiable' ? `
-                                            <small class="text-muted d-block">Min. stay: ${room.shortTermMinStay} days</small>
-                                        ` : ''}
-                                    </div>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn btn-outline-primary btn-sm" onclick="viewRoomDetails('${room._id}')">
-                                            <i class="bi bi-eye me-1"></i>Details
-                                        </button>
-                                        ${room.isAvailable ? `
-                                            <button class="btn btn-primary btn-sm" onclick="bookSpecificRoom('${room._id}')">
-                                                <i class="bi bi-calendar-check me-1"></i>Book
-                                            </button>
-                                        ` : ''}
-                                    </div>
-                                </div>
-                                
-                                ${!room.isAvailable && room.occupant ? `
-                                    <div class="mt-2 p-2 bg-light rounded small">
-                                        <i class="bi bi-info-circle me-1"></i>
-                                        Currently occupied${room.occupant.name ? ` by ${room.occupant.name}` : ''}
-                                    </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                    </div>
+        if (propertyRooms.length === 0) {
+            roomsContainer.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="bi bi-door-closed display-4 text-muted mb-3"></i>
+                    <p class="text-muted">No room details available</p>
+                    <small>Contact the landlord for room availability</small>
                 </div>
-            </div>
-        `;
-    }).join('');
-}
-
-    function updateReviewsDisplay() {
-        const averageRating = propertyReviews.length > 0 
-            ? (propertyReviews.reduce((sum, review) => sum + (review.rating || 0), 0) / propertyReviews.length).toFixed(1)
-            : '0.0';
-        
-        const reviewCount = propertyReviews.length;
-        
-        document.getElementById('averageRating').textContent = averageRating;
-        document.getElementById('reviewCount').textContent = `${reviewCount} review${reviewCount !== 1 ? 's' : ''}`;
-        
-        document.getElementById('averageRatingStars').innerHTML = generateStarRating(parseFloat(averageRating));
-        
-        updateRatingBreakdown();
-        updateReviewsList();
-    }
-
-    function generateStarRating(rating) {
-        let stars = '';
-        const fullStars = Math.floor(rating);
-        const hasHalfStar = rating % 1 >= 0.5;
-        
-        for (let i = 1; i <= 5; i++) {
-            if (i <= fullStars) {
-                stars += '<i class="bi bi-star-fill"></i>';
-            } else if (i === fullStars + 1 && hasHalfStar) {
-                stars += '<i class="bi bi-star-half"></i>';
-            } else {
-                stars += '<i class="bi bi-star"></i>';
-            }
+            `;
+            return;
         }
-        return stars;
-    }
-
-    function updateRatingBreakdown() {
-        const breakdownContainer = document.getElementById('ratingBreakdown');
-        const ratings = [5, 4, 3, 2, 1];
         
-        breakdownContainer.innerHTML = ratings.map(stars => {
-            const count = propertyReviews.filter(review => Math.floor(review.rating) === stars).length;
-            const percentage = propertyReviews.length > 0 ? (count / propertyReviews.length) * 100 : 0;
+        roomsContainer.innerHTML = propertyRooms.map(room => {
+            let roomPrice, pricePeriod;
+            
+            if (isTenantMode && room.shortTermPricing) {
+                if (room.shortTermPricing === 'fixed' && room.shortTermPrice) {
+                    roomPrice = room.shortTermPrice;
+                    pricePeriod = 'day';
+                } else {
+                    roomPrice = 'Negotiable';
+                    pricePeriod = '';
+                }
+            } else {
+                roomPrice = room.price;
+                pricePeriod = 'month';
+            }
+            
+            const roomDescription = isTenantMode && room.shortTermDescription ? 
+                room.shortTermDescription : room.description;
+            
+            const shortTermBadge = isTenantMode && room.shortTermPricing ? `
+                <span class="badge short-term-badge ms-1">
+                    <i class="bi bi-calendar-range me-1"></i>
+                    ${room.shortTermPricing === 'fixed' ? `R${room.shortTermPrice}/day` : 'Price Negotiable'}
+                </span>
+            ` : '';
+            
+            const priceDisplay = roomPrice === 'Negotiable' ? 
+                `<div class="negotiable-price">${roomPrice}</div>` :
+                `<div class="text-primary fw-bold">R${roomPrice}/${pricePeriod}</div>`;
             
             return `
-                <div class="row align-items-center mb-1">
-                    <div class="col-2">
-                        <small>${stars} stars</small>
-                    </div>
-                    <div class="col-8">
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar bg-warning" style="width: ${percentage}%"></div>
+                <div class="col-md-6 mb-4">
+                    <div class="room-card ${room.isAvailable ? 'border-success' : 'border-warning'}">
+                        <div class="row g-0">
+                            <div class="col-md-5">
+                                <img src="${room.images && room.images.length > 0 ? room.images[0] : 'https://via.placeholder.com/300x200?text=Room+Image'}" 
+                                    class="room-image" alt="${room.roomNumber || room.roomType}"
+                                    onclick="openRoomGallery('${room._id}')" style="cursor: pointer;">
+                            </div>
+                            <div class="col-md-7">
+                                <div class="p-3">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="text-navy mb-0">${room.roomNumber ? room.roomNumber + ' - ' : ''}${roomTypeConfig[room.roomType]?.text || room.roomType}</h5>
+                                        <span class="badge bg-${room.isAvailable ? 'success' : 'warning'}">
+                                            <i class="bi ${room.isAvailable ? 'bi-check-circle' : 'bi-person-check'} me-1"></i>
+                                            ${room.isAvailable ? 'Available' : 'Occupied'}
+                                        </span>
+                                    </div>
+                                    
+                                    ${shortTermBadge}
+                                    
+                                    <p class="text-muted small mb-2">${roomDescription || 'Comfortable room with essential amenities'}</p>
+                                    
+                                    <div class="mb-2">
+                                        ${room.features && room.features.slice(0, 3).map(feature => `
+                                            <span class="badge bg-light text-dark me-1 small">${feature.replace('-', ' ')}</span>
+                                        `).join('')}
+                                        ${room.features && room.features.length > 3 ? `<span class="badge bg-light text-dark small">+${room.features.length - 3}</span>` : ''}
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <span class="text-muted small me-3"><i class="bi bi-arrows-fullscreen me-1"></i>${room.size || 'Standard size'}</span>
+                                            <span class="text-muted small"><i class="bi bi-${roomTypeConfig[room.roomType]?.icon || 'door-closed'} me-1"></i>${roomTypeConfig[room.roomType]?.text || room.roomType}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            ${priceDisplay}
+                                            ${isTenantMode && room.shortTermMinStay && roomPrice !== 'Negotiable' ? `
+                                                <small class="text-muted d-block">Min. stay: ${room.shortTermMinStay} days</small>
+                                            ` : ''}
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="viewRoomDetails('${room._id}')">
+                                                <i class="bi bi-eye me-1"></i>Details
+                                            </button>
+                                            ${room.isAvailable ? `
+                                                <button class="btn btn-primary btn-sm" onclick="bookSpecificRoom('${room._id}')">
+                                                    <i class="bi bi-calendar-check me-1"></i>Book
+                                                </button>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                    
+                                    ${!room.isAvailable && room.occupant ? `
+                                        <div class="mt-2 p-2 bg-light rounded small">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Currently occupied${room.occupant.name ? ` by ${room.occupant.name}` : ''}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-2 text-end">
-                        <small class="text-muted">${count}</small>
                     </div>
                 </div>
             `;
         }).join('');
     }
 
-    function updateReviewsList() {
-    const reviewsContainer = document.getElementById('propertyReviews');
-    const visibleCountElement = document.getElementById('visibleReviewsCount');
-    const totalCountElement = document.getElementById('totalReviewsCount');
-    const scrollIndicator = document.getElementById('scrollIndicator');
-    
-    const totalReviews = propertyReviews.length;
-    totalCountElement.textContent = totalReviews;
-    
-    if (!propertyReviews || propertyReviews.length === 0) {
-        reviewsContainer.innerHTML = `
-            <div class="text-center py-4">
-                <i class="bi bi-chat-square-text display-4 text-muted mb-3"></i>
-                <p class="text-muted">No reviews yet</p>
-                <small>Be the first to review this property</small>
-            </div>
-        `;
-        visibleCountElement.textContent = '0';
-        scrollIndicator.style.display = 'none';
-        return;
-    }
-
-        reviewsContainer.innerHTML = propertyReviews.map((review, index) => {
-        const reviewDate = review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Recently';
-        const studentName = review.student?.username || review.student?.firstName || 'Anonymous';
-        
-        // ✅ ADDED: Check if reviewer is verified
-        const isVerified = review.student?.isVerified || false;
-        const verificationStatus = review.student?.verificationStatus || '';
-        
-        const landlordResponse = review.landlordResponse;
-        const hasLandlordResponse = landlordResponse && landlordResponse.comment;
-        const responseDate = hasLandlordResponse && landlordResponse.respondedAt ? 
-            new Date(landlordResponse.respondedAt).toLocaleDateString() : 'Recently';
-        
-        return `
-        <div class="review-card" data-review-index="${index}">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-                <div>
-                    <h6 class="mb-1">${review.title || 'No Title'}</h6>
-                    <div class="rating-stars small">
-                        ${generateStarRating(review.rating || 0)}
-                    </div>
-                </div>
-                <small class="text-muted">${reviewDate}</small>
-            </div>
-            <p class="mb-2">${review.comment || 'No comment provided'}</p>
-            <div class="d-flex flex-wrap gap-2 small mb-3 align-items-center">
-                <span class="text-muted">By: ${studentName}</span>
-                
-                <!-- ✅ ADDED: Verification Badge -->
-                ${isVerified ? `
-                    <span class="verification-badge" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
-                        <i class="bi bi-patch-check-fill me-1"></i>Verified
-                    </span>
-                ` : ''}
-                
-                ${review.isRecommended ? '<span class="text-success"><i class="bi bi-check-circle me-1"></i>Recommended</span>' : ''}
-                
-                ${review.cleanliness ? `<span class="text-muted"><i class="bi bi-bucket me-1"></i>Cleanliness: ${review.cleanliness}/5</span>` : ''}
-                ${review.location ? `<span class="text-muted"><i class="bi bi-geo-alt me-1"></i>Location: ${review.location}/5</span>` : ''}
-                ${review.value ? `<span class="text-muted"><i class="bi bi-currency-dollar me-1"></i>Value: ${review.value}/5</span>` : ''}
-            </div>
-            
-            ${hasLandlordResponse ? `
-                <div class="landlord-response bg-light rounded p-3 mt-3 border-start border-3 border-primary">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <strong class="text-primary">
-                            <i class="bi bi-patch-check-fill me-1"></i>Landlord's Response
-                        </strong>
-                        <small class="text-muted">${responseDate}</small>
-                    </div>
-                    <p class="mb-0 text-dark">${landlordResponse.comment}</p>
-                </div>
-            ` : ''}
-        </div>
-        `}).join('');
-    
-    // Update visible reviews count (initially shows about 2-3 reviews)
-    updateVisibleReviewsCount();
-    
-    // Show scroll indicator if there are more than 3 reviews
-    if (totalReviews > 3) {
-        scrollIndicator.style.display = 'block';
-    } else {
-        scrollIndicator.style.display = 'none';
-    }
-    
-    // Add scroll event listener to update visible count
-    const reviewsContainerElement = document.querySelector('.reviews-container');
-    if (reviewsContainerElement) {
-        reviewsContainerElement.addEventListener('scroll', updateVisibleReviewsCount);
-    }
-}
-
-// Add this new function to calculate visible reviews
-function updateVisibleReviewsCount() {
-    const reviewsContainer = document.querySelector('.reviews-container');
-    const reviewCards = document.querySelectorAll('.review-card');
-    const visibleCountElement = document.getElementById('visibleReviewsCount');
-    
-    if (!reviewsContainer || reviewCards.length === 0) {
-        visibleCountElement.textContent = '0';
-        return;
-    }
-    
-    const containerRect = reviewsContainer.getBoundingClientRect();
-    let visibleCount = 0;
-    
-    reviewCards.forEach(card => {
-        const cardRect = card.getBoundingClientRect();
-        // Check if at least 50% of the card is visible
-        if (cardRect.top <= containerRect.bottom - (cardRect.height * 0.5)) {
-            visibleCount++;
-        }
-    });
-    
-    visibleCountElement.textContent = Math.min(visibleCount, reviewCards.length);
-}
-
-    // ============ HELPER FUNCTIONS ============
-
-    function getPropertyStatus(property) {
-        if (property.availability) {
-            return property.availability;
-        }
-        if (property.status) {
-            return property.status === 'approved' ? 'available' : 'occupied';
-        }
-        if (property.isAvailable !== undefined) {
-            return property.isAvailable ? 'available' : 'occupied';
-        }
-        return 'available';
-    }
-
-    function getAdminStatus(property) {
-    if (!property) return 'unknown';
-    
-    // Check various possible status fields
-    if (property.status) {
-        return property.status;
-    }
-    if (property.adminStatus) {
-        return property.adminStatus;
-    }
-    if (property.approvalStatus) {
-        return property.approvalStatus;
-    }
-    if (property.isApproved !== undefined) {
-        return property.isApproved ? 'approved' : 'pending';
-    }
-    
-    // Default to approved if no status found
-    return 'approved';
-}
-
-    function showToast(message, type = 'info') {
-        const toastContainer = document.querySelector('.toast-container');
-        const toastId = 'toast-' + Date.now();
-        
-        const toast = document.createElement('div');
-        toast.className = `toast align-items-center text-bg-${type} border-0`;
-        toast.id = toastId;
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">
-                    ${message}
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        `;
-        
-        toastContainer.appendChild(toast);
-        const bsToast = new bootstrap.Toast(toast);
-        bsToast.show();
-        
-        toast.addEventListener('hidden.bs.toast', () => {
-            toast.remove();
-        });
-    }
-
     // ============ INTERACTION FUNCTIONS ============
 
-    function filterRooms(status) {
-        const roomCards = document.querySelectorAll('.room-card');
-        roomCards.forEach(room => {
-            const isAvailable = room.classList.contains('border-success');
-            const shouldShow = 
-                status === 'all' ||
-                (status === 'available' && isAvailable) ||
-                (status === 'occupied' && !isAvailable);
-            
-            room.parentElement.style.display = shouldShow ? 'block' : 'none';
-        });
-    }
-
-    function bookSpecificRoom(roomId) {
-    const room = propertyRooms.find(r => r._id === roomId);
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const isShortTermTenant = user.role === 'tenant';
-    
-    if (room) {
-        let bookingUrl = `booking.html?propertyId=${currentProperty._id}&roomId=${roomId}`;
+    function submitBookingRequest() {
+        if (!currentProperty) return;
         
-        if (isShortTermTenant) {
+        const propertyStatus = getPropertyStatus(currentProperty);
+        if (propertyStatus !== 'available') {
+            let message = 'This property is not available for booking at the moment.';
+            if (propertyStatus === 'occupied') {
+                message = 'This property is currently occupied and not available for booking.';
+            } else if (propertyStatus === 'maintenance') {
+                message = 'This property is under maintenance and not available for booking.';
+            }
+            showToast(message, 'warning');
+            return;
+        }
+        
+        const context = getUserContext();
+        const isTenantMode = context.isTenantMode;
+        
+        let bookingUrl = `booking.html?propertyId=${currentProperty._id}`;
+        
+        if (isTenantMode && currentProperty.acceptsShortTerm) {
             bookingUrl += '&bookingType=shortterm';
-            if (room.shortTermPricing === 'fixed' && room.shortTermPrice) {
-                bookingUrl += `&dailyRate=${room.shortTermPrice}`;
+            
+            if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
+                bookingUrl += `&dailyRate=${currentProperty.shortTermPrice}`;
             }
-            if (room.shortTermMinStay) {
-                bookingUrl += `&minStay=${room.shortTermMinStay}`;
+            
+            if (currentProperty.shortTermMinStay) {
+                bookingUrl += `&minStay=${currentProperty.shortTermMinStay}`;
             }
-        } else {
-            bookingUrl += `&roomPrice=${room.price}`;
+            
+            const currentMonth = new Date().getMonth() + 1;
+            const isShortTermSeason = currentMonth === 12 || currentMonth === 1;
+            
+            if (!isShortTermSeason) {
+                showToast('Short-term stays are only available during December and January.', 'info');
+            }
         }
         
         window.location.href = bookingUrl;
     }
-}
 
-    function checkUserCanReview() {
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
+    function bookSpecificRoom(roomId) {
+        const room = propertyRooms.find(r => r._id === roomId);
+        const context = getUserContext();
+        const isTenantMode = context.isTenantMode;
         
-        if (user.role !== 'student') {
-            disableReviewButton('Only students can write reviews');
-            return;
-        }
-
-        const userHasReviewed = propertyReviews.some(review => {
-            const reviewStudentId = review.student?._id || review.student;
-            const currentUserId = user._id || user.id;
-            return reviewStudentId === currentUserId;
-        });
-
-        if (userHasReviewed) {
-            disableReviewButton('You have already reviewed this property');
-        } else {
-            enableReviewButton();
-        }
-    }
-
-    function enableReviewButton() {
-        const reviewBtn = document.getElementById('writeReviewBtn');
-        if (reviewBtn) {
-            reviewBtn.disabled = false;
-            reviewBtn.innerHTML = '<i class="bi bi-pencil-square me-2"></i>Write Review';
-            reviewBtn.style.opacity = '1';
+        if (room) {
+            let bookingUrl = `booking.html?propertyId=${currentProperty._id}&roomId=${roomId}`;
+            
+            if (isTenantMode) {
+                bookingUrl += '&bookingType=shortterm';
+                if (room.shortTermPricing === 'fixed' && room.shortTermPrice) {
+                    bookingUrl += `&dailyRate=${room.shortTermPrice}`;
+                }
+                if (room.shortTermMinStay) {
+                    bookingUrl += `&minStay=${room.shortTermMinStay}`;
+                }
+            } else {
+                bookingUrl += `&roomPrice=${room.price}`;
+            }
+            
+            window.location.href = bookingUrl;
         }
     }
 
-    function disableReviewButton(message) {
-        const reviewBtn = document.getElementById('writeReviewBtn');
-        if (reviewBtn) {
-            reviewBtn.disabled = true;
-            reviewBtn.innerHTML = `<i class="bi bi-check-circle me-2"></i>${message}`;
-            reviewBtn.style.opacity = '0.6';
-        }
-    }
+    // ============ REVIEW SYSTEM ============
 
-    async function loadUserBookings() {
-        try {
-            const token = localStorage.getItem("token");
-            const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+    function initializeReviewForm() {
+        const starRating = document.getElementById('reviewStarRating');
+        if (starRating) {
+            starRating.addEventListener('click', function(e) {
+                if (e.target.classList.contains('bi-star') || e.target.classList.contains('bi-star-fill')) {
+                    const rating = parseInt(e.target.getAttribute('data-rating'));
+                    document.getElementById('reviewRating').value = rating;
+                    
+                    const stars = this.querySelectorAll('.bi');
+                    stars.forEach((star, index) => {
+                        if (index < rating) {
+                            star.classList.add('active', 'bi-star-fill');
+                            star.classList.remove('bi-star');
+                        } else {
+                            star.classList.remove('active', 'bi-star-fill');
+                            star.classList.add('bi-star');
+                        }
+                    });
                 }
             });
-
-            if (response.ok) {
-                const data = await response.json();
-                userBookings = (data.bookings || []).filter(booking => 
-                    booking.property?._id === currentProperty._id
-                );
-                updateBookingSelection();
-            } else {
-                userBookings = [];
-                updateBookingSelection();
-            }
-        } catch (error) {
-            console.error('Error loading user bookings:', error);
-            userBookings = [];
-            updateBookingSelection();
         }
-    }
 
-    function updateBookingSelection() {
-        const bookingSelect = document.getElementById('reviewBookingId');
-        const bookingSection = document.getElementById('bookingSelectionSection');
-        
-        if (!bookingSelect || !bookingSection) return;
-        
-        if (userBookings.length === 0) {
-            bookingSection.style.display = 'none';
-            bookingSelect.innerHTML = '<option value="">General review</option>';
-        } else {
-            bookingSection.style.display = 'block';
-            bookingSelect.innerHTML = '<option value="">General review (not tied to booking)</option>' +
-                userBookings.map(booking => {
-                    const status = booking.status || 'unknown';
-                    const checkIn = new Date(booking.checkIn).toLocaleDateString();
-                    const checkOut = new Date(booking.checkOut).toLocaleDateString();
-                    return `
-                        <option value="${booking._id}">
-                            ${status === 'completed' ? '✅' : '📅'} 
-                            Booking (${status}) - 
-                            ${checkIn} to ${checkOut}
-                        </option>
-                    `;
-                }).join('');
+        const reviewForm = document.getElementById('reviewForm');
+        if (reviewForm) {
+            reviewForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await submitReview();
+            });
         }
     }
 
@@ -3060,6 +2444,611 @@ function updateVisibleReviewsCount() {
         }
     }
 
+    // ============ UTILITY FUNCTIONS ============
+
+    function getPropertyStatus(property) {
+        if (property.availability) {
+            return property.availability;
+        }
+        if (property.status) {
+            return property.status === 'approved' ? 'available' : 'occupied';
+        }
+        if (property.isAvailable !== undefined) {
+            return property.isAvailable ? 'available' : 'occupied';
+        }
+        return 'available';
+    }
+
+    function getAdminStatus(property) {
+        if (!property) return 'unknown';
+        
+        if (property.status) {
+            return property.status;
+        }
+        if (property.adminStatus) {
+            return property.adminStatus;
+        }
+        if (property.approvalStatus) {
+            return property.approvalStatus;
+        }
+        if (property.isApproved !== undefined) {
+            return property.isApproved ? 'approved' : 'pending';
+        }
+        
+        return 'approved';
+    }
+
+    function showToast(message, type = 'info') {
+        const toastContainer = document.querySelector('.toast-container');
+        const toastId = 'toast-' + Date.now();
+        
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-bg-${type} border-0`;
+        toast.id = toastId;
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
+        });
+    }
+
+    // ============ EXISTING FUNCTIONS (KEEP THESE) ============
+
+    function updateImageGallery() {
+        const gallery = document.getElementById('propertyImageGallery');
+        const thumbnails = document.getElementById('propertyThumbnails');
+        
+        const images = currentProperty.images && currentProperty.images.length > 0 
+            ? currentProperty.images 
+            : ['https://via.placeholder.com/800x400?text=Property+Image'];
+        
+        gallery.innerHTML = `
+            <img src="${images[0]}" class="main-image" alt="${currentProperty.title}" id="mainPropertyImage">
+        `;
+        
+        thumbnails.innerHTML = images.map((image, index) => `
+            <img src="${image}" class="thumbnail ${index === 0 ? 'active' : ''}" 
+                alt="Thumbnail ${index + 1}" 
+                onclick="changeMainImage('${image}', this)">
+        `).join('');
+    }
+
+    function changeMainImage(imageSrc, element) {
+        document.getElementById('mainPropertyImage').src = imageSrc;
+        
+        document.querySelectorAll('.thumbnail').forEach(thumb => {
+            thumb.classList.remove('active');
+        });
+        element.classList.add('active');
+    }
+
+    function updateAmenitiesDisplay() {
+        const amenitiesContainer = document.getElementById('propertyAmenities');
+        const amenities = currentProperty.amenities || [];
+        
+        if (amenities.length === 0) {
+            amenitiesContainer.innerHTML = '<p class="text-muted">No amenities listed</p>';
+            return;
+        }
+        
+        amenitiesContainer.innerHTML = amenities.map(amenity => `
+            <span class="amenity-badge">
+                <i class="bi bi-${getAmenityIcon(amenity)}"></i>
+                ${amenity.charAt(0).toUpperCase() + amenity.slice(1)}
+            </span>
+        `).join('');
+    }
+
+    function getAmenityIcon(amenity) {
+        const icons = {
+            wifi: 'wifi',
+            parking: 'car-front',
+            laundry: 'droplet',
+            furnished: 'house',
+            gym: 'activity',
+            pool: 'water',
+            ac: 'snow',
+            heating: 'thermometer-sun',
+            shuttle: 'bus-front',
+            cctv: 'camera-video'
+        };
+        return icons[amenity] || 'check';
+    }
+
+    function updateLandlordDisplay() {
+        if (!currentLandlord) return;
+        
+        document.getElementById('landlordName').textContent = 
+            `${currentLandlord.firstName} ${currentLandlord.lastName}`;
+        document.getElementById('landlordAvatar').src = currentLandlord.avatar || 'https://via.placeholder.com/80';
+        
+        if (!currentLandlord.isVerified) {
+            document.getElementById('landlordVerified').className = 'badge bg-warning';
+            document.getElementById('landlordVerified').innerHTML = '<i class="bi bi-clock me-1"></i>Pending Verification';
+        }
+    }
+
+    function updateReviewsDisplay() {
+        const averageRating = propertyReviews.length > 0 
+            ? (propertyReviews.reduce((sum, review) => sum + (review.rating || 0), 0) / propertyReviews.length).toFixed(1)
+            : '0.0';
+        
+        const reviewCount = propertyReviews.length;
+        
+        document.getElementById('averageRating').textContent = averageRating;
+        document.getElementById('reviewCount').textContent = `${reviewCount} review${reviewCount !== 1 ? 's' : ''}`;
+        
+        document.getElementById('averageRatingStars').innerHTML = generateStarRating(parseFloat(averageRating));
+        
+        updateRatingBreakdown();
+        updateReviewsList();
+    }
+
+    function generateStarRating(rating) {
+        let stars = '';
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+        
+        for (let i = 1; i <= 5; i++) {
+            if (i <= fullStars) {
+                stars += '<i class="bi bi-star-fill"></i>';
+            } else if (i === fullStars + 1 && hasHalfStar) {
+                stars += '<i class="bi bi-star-half"></i>';
+            } else {
+                stars += '<i class="bi bi-star"></i>';
+            }
+        }
+        return stars;
+    }
+
+    function updateRatingBreakdown() {
+        const breakdownContainer = document.getElementById('ratingBreakdown');
+        const ratings = [5, 4, 3, 2, 1];
+        
+        breakdownContainer.innerHTML = ratings.map(stars => {
+            const count = propertyReviews.filter(review => Math.floor(review.rating) === stars).length;
+            const percentage = propertyReviews.length > 0 ? (count / propertyReviews.length) * 100 : 0;
+            
+            return `
+                <div class="row align-items-center mb-1">
+                    <div class="col-2">
+                        <small>${stars} stars</small>
+                    </div>
+                    <div class="col-8">
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-warning" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                    <div class="col-2 text-end">
+                        <small class="text-muted">${count}</small>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function updateReviewsList() {
+        const reviewsContainer = document.getElementById('propertyReviews');
+        const visibleCountElement = document.getElementById('visibleReviewsCount');
+        const totalCountElement = document.getElementById('totalReviewsCount');
+        const scrollIndicator = document.getElementById('scrollIndicator');
+        
+        const totalReviews = propertyReviews.length;
+        totalCountElement.textContent = totalReviews;
+        
+        if (!propertyReviews || propertyReviews.length === 0) {
+            reviewsContainer.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="bi bi-chat-square-text display-4 text-muted mb-3"></i>
+                    <p class="text-muted">No reviews yet</p>
+                    <small>Be the first to review this property</small>
+                </div>
+            `;
+            visibleCountElement.textContent = '0';
+            scrollIndicator.style.display = 'none';
+            return;
+        }
+
+        reviewsContainer.innerHTML = propertyReviews.map((review, index) => {
+            const reviewDate = review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Recently';
+            const studentName = review.student?.username || review.student?.firstName || 'Anonymous';
+            
+            const isVerified = review.student?.isVerified || false;
+            const verificationStatus = review.student?.verificationStatus || '';
+            
+            const landlordResponse = review.landlordResponse;
+            const hasLandlordResponse = landlordResponse && landlordResponse.comment;
+            const responseDate = hasLandlordResponse && landlordResponse.respondedAt ? 
+                new Date(landlordResponse.respondedAt).toLocaleDateString() : 'Recently';
+            
+            return `
+            <div class="review-card" data-review-index="${index}">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <h6 class="mb-1">${review.title || 'No Title'}</h6>
+                        <div class="rating-stars small">
+                            ${generateStarRating(review.rating || 0)}
+                        </div>
+                    </div>
+                    <small class="text-muted">${reviewDate}</small>
+                </div>
+                <p class="mb-2">${review.comment || 'No comment provided'}</p>
+                <div class="d-flex flex-wrap gap-2 small mb-3 align-items-center">
+                    <span class="text-muted">By: ${studentName}</span>
+                    
+                    ${isVerified ? `
+                        <span class="verification-badge" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+                            <i class="bi bi-patch-check-fill me-1"></i>Verified
+                        </span>
+                    ` : ''}
+                    
+                    ${review.isRecommended ? '<span class="text-success"><i class="bi bi-check-circle me-1"></i>Recommended</span>' : ''}
+                    
+                    ${review.cleanliness ? `<span class="text-muted"><i class="bi bi-bucket me-1"></i>Cleanliness: ${review.cleanliness}/5</span>` : ''}
+                    ${review.location ? `<span class="text-muted"><i class="bi bi-geo-alt me-1"></i>Location: ${review.location}/5</span>` : ''}
+                    ${review.value ? `<span class="text-muted"><i class="bi bi-currency-dollar me-1"></i>Value: ${review.value}/5</span>` : ''}
+                </div>
+                
+                ${hasLandlordResponse ? `
+                    <div class="landlord-response bg-light rounded p-3 mt-3 border-start border-3 border-primary">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong class="text-primary">
+                                <i class="bi bi-patch-check-fill me-1"></i>Landlord's Response
+                            </strong>
+                            <small class="text-muted">${responseDate}</small>
+                        </div>
+                        <p class="mb-0 text-dark">${landlordResponse.comment}</p>
+                    </div>
+                ` : ''}
+            </div>
+            `}).join('');
+        
+        updateVisibleReviewsCount();
+        
+        if (totalReviews > 3) {
+            scrollIndicator.style.display = 'block';
+        } else {
+            scrollIndicator.style.display = 'none';
+        }
+        
+        const reviewsContainerElement = document.querySelector('.reviews-container');
+        if (reviewsContainerElement) {
+            reviewsContainerElement.addEventListener('scroll', updateVisibleReviewsCount);
+        }
+    }
+
+    function updateVisibleReviewsCount() {
+        const reviewsContainer = document.querySelector('.reviews-container');
+        const reviewCards = document.querySelectorAll('.review-card');
+        const visibleCountElement = document.getElementById('visibleReviewsCount');
+        
+        if (!reviewsContainer || reviewCards.length === 0) {
+            visibleCountElement.textContent = '0';
+            return;
+        }
+        
+        const containerRect = reviewsContainer.getBoundingClientRect();
+        let visibleCount = 0;
+        
+        reviewCards.forEach(card => {
+            const cardRect = card.getBoundingClientRect();
+            if (cardRect.top <= containerRect.bottom - (cardRect.height * 0.5)) {
+                visibleCount++;
+            }
+        });
+        
+        visibleCountElement.textContent = Math.min(visibleCount, reviewCards.length);
+    }
+
+    function updateBookingButton(propertyStatus) {
+        const bookingBtn = document.querySelector('.btn-primary.action-btn');
+        if (!bookingBtn) return;
+
+        if (propertyStatus === 'available') {
+            bookingBtn.disabled = false;
+            bookingBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request to Book';
+            bookingBtn.style.opacity = '1';
+        } else if (propertyStatus === 'occupied') {
+            bookingBtn.disabled = true;
+            bookingBtn.innerHTML = '<i class="bi bi-person-check me-2"></i>Fully Booked';
+            bookingBtn.style.opacity = '0.6';
+        } else if (propertyStatus === 'maintenance') {
+            bookingBtn.disabled = true;
+            bookingBtn.innerHTML = '<i class="bi bi-tools me-2"></i>Under Maintenance';
+            bookingBtn.style.opacity = '0.6';
+        }
+    }
+
+    function updateLocationMap() {
+        const mapContainer = document.getElementById('propertyMap');
+        
+        if (!currentProperty || !currentProperty.location) {
+            showMapError('Location data not available');
+            return;
+        }
+
+        const location = currentProperty.location;
+        const address = `${location.address}, ${location.city}, ${location.state}`;
+        
+        mapContainer.innerHTML = `
+            <div class="map-loading">
+                <div class="spinner-border text-primary mb-2" role="status">
+                    <span class="visually-hidden">Loading map...</span>
+                </div>
+                <p class="text-muted">Loading interactive map...</p>
+            </div>
+        `;
+        
+        setTimeout(() => {
+            initializeLeafletMap(location, address);
+        }, 100);
+    }
+
+    function initializeLeafletMap(location, address) {
+        const mapContainer = document.getElementById('propertyMap');
+        
+        try {
+            const coords = getPropertyCoordinates(location);
+            
+            propertyMap = L.map('propertyMap').setView([coords.lat, coords.lng], 15);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19,
+            }).addTo(propertyMap);
+            
+            const customIcon = L.divIcon({
+                html: `<div class="custom-marker" style="background: var(--primary); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+                         <i class="bi bi-house-fill"></i>
+                      </div>`,
+                className: 'custom-div-icon',
+                iconSize: [40, 40],
+                iconAnchor: [20, 40],
+                popupAnchor: [0, -40]
+            });
+            
+            propertyMarker = L.marker([coords.lat, coords.lng], { icon: customIcon })
+                .addTo(propertyMap)
+                .bindPopup(`
+                    <div class="custom-marker-popup">
+                        <h4>${currentProperty.title}</h4>
+                        <p class="mb-2">${address}</p>
+                        <div class="d-flex flex-wrap gap-1">
+                            <span class="badge bg-primary">${currentProperty.propertyType}</span>
+                            <span class="badge bg-success">Available</span>
+                        </div>
+                        <div class="mt-2">
+                            <button class="btn btn-sm btn-outline-primary" onclick="openGoogleMaps()">
+                                <i class="bi bi-arrow-up-right me-1"></i>Open in Google Maps
+                            </button>
+                        </div>
+                    </div>
+                `)
+                .openPopup();
+            
+            addMapControls();
+            
+            propertyMap.on('click', function() {
+                propertyMarker.openPopup();
+            });
+            
+        } catch (error) {
+            console.error('Error initializing map:', error);
+            showMapError('Failed to load map. Click below to view location.');
+        }
+    }
+
+    function getPropertyCoordinates(location) {
+        if (location.latitude && location.longitude) {
+            return {
+                lat: parseFloat(location.latitude),
+                lng: parseFloat(location.longitude)
+            };
+        }
+        
+        const cityCoords = {
+            'Bloemfontein': { lat: -29.0852, lng: 26.1596 },
+            'Johannesburg': { lat: -26.2041, lng: 28.0473 },
+            'Cape Town': { lat: -33.9249, lng: 18.4241 },
+            'Durban': { lat: -29.8587, lng: 31.0218 },
+            'Pretoria': { lat: -25.7479, lng: 28.2293 }
+        };
+        
+        const city = location.city;
+        if (city && cityCoords[city]) {
+            return cityCoords[city];
+        }
+        
+        return { lat: -29.0852, lng: 26.1596 };
+    }
+
+    function addMapControls() {
+        const controlsHtml = `
+            <button class="btn btn-sm btn-light" onclick="openGoogleMaps()" title="Open in Google Maps">
+                <i class="bi bi-arrow-up-right"></i>
+            </button>
+            <button class="btn btn-sm btn-light mt-1" onclick="copyAddress()" title="Copy Address">
+                <i class="bi bi-clipboard"></i>
+            </button>
+            <button class="btn btn-sm btn-light mt-1" onclick="resetMapView()" title="Reset View">
+                <i class="bi bi-geo-alt"></i>
+            </button>
+        `;
+        
+        let controlsContainer = document.querySelector('.map-controls');
+        if (!controlsContainer) {
+            controlsContainer = document.createElement('div');
+            controlsContainer.className = 'map-controls';
+            document.querySelector('.map-container').appendChild(controlsContainer);
+        }
+        
+        controlsContainer.innerHTML = controlsHtml;
+    }
+
+    function resetMapView() {
+        if (propertyMap && propertyMarker) {
+            const latlng = propertyMarker.getLatLng();
+            propertyMap.setView(latlng, 15);
+            propertyMarker.openPopup();
+        }
+    }
+
+    function showMapError(message) {
+        const mapContainer = document.getElementById('propertyMap');
+        mapContainer.innerHTML = `
+            <div class="map-error">
+                <i class="bi bi-exclamation-triangle display-4 mb-3"></i>
+                <h5 class="mb-2">Map Unavailable</h5>
+                <p class="mb-3">${message}</p>
+                <button class="btn btn-primary" onclick="openGoogleMaps()">
+                    <i class="bi bi-geo-alt me-2"></i>View Location in Google Maps
+                </button>
+            </div>
+        `;
+    }
+
+    function openGoogleMaps() {
+        if (!currentProperty.location) {
+            showToast('Location data not available', 'error');
+            return;
+        }
+
+        const location = currentProperty.location;
+        const address = encodeURIComponent(`${location.address}, ${location.city}, ${location.state} ${location.zipCode}`);
+        const url = `https://www.google.com/maps/search/?api=1&query=${address}`;
+        window.open(url, '_blank');
+    }
+
+    function copyAddress() {
+        if (!currentProperty || !currentProperty.location) return;
+        
+        const location = currentProperty.location;
+        const address = `${location.address}, ${location.city}, ${location.state} ${location.zipCode}`;
+        
+        navigator.clipboard.writeText(address).then(() => {
+            showToast('Address copied to clipboard!', 'success');
+        }).catch(() => {
+            showToast('Failed to copy address', 'error');
+        });
+    }
+
+    function filterRooms(status) {
+        const roomCards = document.querySelectorAll('.room-card');
+        roomCards.forEach(room => {
+            const isAvailable = room.classList.contains('border-success');
+            const shouldShow = 
+                status === 'all' ||
+                (status === 'available' && isAvailable) ||
+                (status === 'occupied' && !isAvailable);
+            
+            room.parentElement.style.display = shouldShow ? 'block' : 'none';
+        });
+    }
+
+    function checkUserCanReview() {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        
+        if (user.role !== 'student') {
+            disableReviewButton('Only students can write reviews');
+            return;
+        }
+
+        const userHasReviewed = propertyReviews.some(review => {
+            const reviewStudentId = review.student?._id || review.student;
+            const currentUserId = user._id || user.id;
+            return reviewStudentId === currentUserId;
+        });
+
+        if (userHasReviewed) {
+            disableReviewButton('You have already reviewed this property');
+        } else {
+            enableReviewButton();
+        }
+    }
+
+    function enableReviewButton() {
+        const reviewBtn = document.getElementById('writeReviewBtn');
+        if (reviewBtn) {
+            reviewBtn.disabled = false;
+            reviewBtn.innerHTML = '<i class="bi bi-pencil-square me-2"></i>Write Review';
+            reviewBtn.style.opacity = '1';
+        }
+    }
+
+    function disableReviewButton(message) {
+        const reviewBtn = document.getElementById('writeReviewBtn');
+        if (reviewBtn) {
+            reviewBtn.disabled = true;
+            reviewBtn.innerHTML = `<i class="bi bi-check-circle me-2"></i>${message}`;
+            reviewBtn.style.opacity = '0.6';
+        }
+    }
+
+    async function loadUserBookings() {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                userBookings = (data.bookings || []).filter(booking => 
+                    booking.property?._id === currentProperty._id
+                );
+                updateBookingSelection();
+            } else {
+                userBookings = [];
+                updateBookingSelection();
+            }
+        } catch (error) {
+            console.error('Error loading user bookings:', error);
+            userBookings = [];
+            updateBookingSelection();
+        }
+    }
+
+    function updateBookingSelection() {
+        const bookingSelect = document.getElementById('reviewBookingId');
+        const bookingSection = document.getElementById('bookingSelectionSection');
+        
+        if (!bookingSelect || !bookingSection) return;
+        
+        if (userBookings.length === 0) {
+            bookingSection.style.display = 'none';
+            bookingSelect.innerHTML = '<option value="">General review</option>';
+        } else {
+            bookingSection.style.display = 'block';
+            bookingSelect.innerHTML = '<option value="">General review (not tied to booking)</option>' +
+                userBookings.map(booking => {
+                    const status = booking.status || 'unknown';
+                    const checkIn = new Date(booking.checkIn).toLocaleDateString();
+                    const checkOut = new Date(booking.checkOut).toLocaleDateString();
+                    return `
+                        <option value="${booking._id}">
+                            ${status === 'completed' ? '✅' : '📅'} 
+                            Booking (${status}) - 
+                            ${checkIn} to ${checkOut}
+                        </option>
+                    `;
+                }).join('');
+        }
+    }
+
     function reportProperty() {
         if (!currentProperty || !currentLandlord) return;
         
@@ -3099,173 +3088,159 @@ function updateVisibleReviewsCount() {
     }
 
     function viewRoomDetails(roomId) {
-    console.log('Opening room details for:', roomId);
-    const room = propertyRooms.find(r => r._id === roomId);
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const isShortTermTenant = user.role === 'tenant';
-    
-    if (!room) {
-        console.error('Room not found:', roomId);
-        showToast('Room details not available', 'error');
-        return;
-    }
-
-    // Determine pricing and description based on user type
-    let roomPrice, pricePeriod, priceLabel;
-    
-    if (isShortTermTenant && room.shortTermPricing) {
-        if (room.shortTermPricing === 'fixed' && room.shortTermPrice) {
-            roomPrice = room.shortTermPrice;
-            pricePeriod = 'day';
-            priceLabel = 'Daily Rate';
-        } else {
-            roomPrice = 'Negotiable';
-            pricePeriod = '';
-            priceLabel = 'Daily Rate';
+        const room = propertyRooms.find(r => r._id === roomId);
+        const context = getUserContext();
+        const isTenantMode = context.isTenantMode;
+        
+        if (!room) {
+            showToast('Room details not available', 'error');
+            return;
         }
-    } else {
-        roomPrice = room.price;
-        pricePeriod = 'month';
-        priceLabel = 'Monthly Rent';
-    }
-    
-    const roomDescription = isShortTermTenant && room.shortTermDescription ? 
-        room.shortTermDescription : room.description;
 
-    // Short-term pricing section for tenants (without additional notes)
-    const shortTermSection = isShortTermTenant && room.shortTermPricing ? `
-        <div class="short-term-pricing mt-3 p-3 bg-light rounded">
-            <h6 class="text-navy mb-2"><i class="bi bi-calendar-range me-2"></i>Short-term Stay Details</h6>
-            <div class="row">
-                <div class="col-6">
-                    <strong>Pricing Type:</strong>
-                    <span class="badge ${room.shortTermPricing === 'fixed' ? 'bg-success' : 'bg-info'} ms-2">
-                        ${room.shortTermPricing === 'fixed' ? 'Fixed Rate' : 'Negotiable'}
-                    </span>
-                </div>
-                <div class="col-6">
-                    <strong>Minimum Stay:</strong> ${room.shortTermMinStay || 1} days
+        let roomPrice, pricePeriod, priceLabel;
+        
+        if (isTenantMode && room.shortTermPricing) {
+            if (room.shortTermPricing === 'fixed' && room.shortTermPrice) {
+                roomPrice = room.shortTermPrice;
+                pricePeriod = 'day';
+                priceLabel = 'Daily Rate';
+            } else {
+                roomPrice = 'Negotiable';
+                pricePeriod = '';
+                priceLabel = 'Daily Rate';
+            }
+        } else {
+            roomPrice = room.price;
+            pricePeriod = 'month';
+            priceLabel = 'Monthly Rent';
+        }
+        
+        const roomDescription = isTenantMode && room.shortTermDescription ? 
+            room.shortTermDescription : room.description;
+
+        const shortTermSection = isTenantMode && room.shortTermPricing ? `
+            <div class="short-term-pricing mt-3 p-3 bg-light rounded">
+                <h6 class="text-navy mb-2"><i class="bi bi-calendar-range me-2"></i>Short-term Stay Details</h6>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Pricing Type:</strong>
+                        <span class="badge ${room.shortTermPricing === 'fixed' ? 'bg-success' : 'bg-info'} ms-2">
+                            ${room.shortTermPricing === 'fixed' ? 'Fixed Rate' : 'Negotiable'}
+                        </span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Minimum Stay:</strong> ${room.shortTermMinStay || 1} days
+                    </div>
                 </div>
             </div>
-        </div>
-    ` : '';
+        ` : '';
 
-    // Update modal content
-    document.getElementById('roomDetailsModalLabel').textContent = 
-        room.roomNumber ? `${room.roomNumber} Details` : 'Room Details';
-    
-    document.getElementById('roomDetailsName').textContent = 
-        room.roomNumber ? `${room.roomNumber} - ${roomTypeConfig[room.roomType]?.text || room.roomType}` : 
-        roomTypeConfig[room.roomType]?.text || room.roomType;
-    
-    const statusBadge = document.getElementById('roomDetailsStatus');
-    if (room.isAvailable) {
-        statusBadge.className = 'badge bg-success';
-        statusBadge.innerHTML = '<i class="bi bi-check-circle me-1"></i>Available';
-    } else {
-        statusBadge.className = 'badge bg-warning';
-        statusBadge.innerHTML = '<i class="bi bi-person-check me-1"></i>Occupied';
-    }
-    
-    const typeBadge = document.getElementById('roomDetailsType');
-    typeBadge.textContent = roomTypeConfig[room.roomType]?.text || room.roomType;
-    
-    // Update price display
-    const priceElement = document.getElementById('roomDetailsPrice');
-    const periodElement = priceElement.nextElementSibling;
-    
-    if (roomPrice === 'Negotiable') {
-        priceElement.textContent = 'Negotiable';
-        priceElement.className = 'negotiable-price mb-1';
-        periodElement.textContent = 'Contact for pricing';
-    } else {
-        priceElement.textContent = `R${roomPrice}`;
-        priceElement.className = 'text-success mb-1';
-        periodElement.textContent = `per ${pricePeriod}`;
-    }
-    
-    // Update the price label
-    const priceSection = document.querySelector('.price-section');
-    const priceLabelElement = priceSection.querySelector('h6') || document.createElement('h6');
-    if (!priceSection.querySelector('h6')) {
-        priceLabelElement.className = 'text-navy mb-2';
-        priceSection.insertBefore(priceLabelElement, priceSection.firstChild);
-    }
-    priceLabelElement.textContent = priceLabel;
-    
-    document.getElementById('roomDetailsSize').textContent = room.size || 'Standard size';
-    document.getElementById('roomDetailsRoomType').textContent = 
-        roomTypeConfig[room.roomType]?.text || room.roomType;
-    document.getElementById('roomDetailsDescription').textContent = roomDescription;
-    
-    const featuresContainer = document.getElementById('roomDetailsFeatures');
-    const features = room.features || ['single-bed', 'desk', 'wardrobe', 'window'];
-    featuresContainer.innerHTML = features.map(feature => `
-        <span class="feature-badge-sm">
-            <i class="bi bi-check-lg"></i>
-            ${feature.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        </span>
-    `).join('');
-    
-    // Add short-term section AFTER features section (moved from before)
-    const featuresSection = document.querySelector('.features-section');
-    const existingShortTermSection = document.querySelector('.short-term-pricing');
-    if (existingShortTermSection) {
-        existingShortTermSection.remove();
-    }
-    if (isShortTermTenant && room.shortTermPricing) {
-        // Insert short-term section after features section
-        featuresSection.insertAdjacentHTML('afterend', shortTermSection);
-    }
-    
-    // Update carousel
-    const carouselInner = document.getElementById('roomDetailsCarouselInner');
-    const images = room.images && room.images.length > 0 
-        ? room.images 
-        : ['https://via.placeholder.com/600x400?text=Room+Image'];
-    
-    carouselInner.innerHTML = images.map((image, index) => `
-        <div class="carousel-item ${index === 0 ? 'active' : ''}">
-            <img src="${image}" class="d-block w-100" alt="Room image ${index + 1}" style="height: 300px; object-fit: cover;">
-        </div>
-    `).join('');
-    
-    // Update occupant info
-    const occupantInfo = document.getElementById('roomOccupantInfo');
-    const occupantDetails = document.getElementById('roomOccupantDetails');
-    
-    if (!room.isAvailable && room.occupant) {
-        occupantInfo.style.display = 'block';
-        occupantDetails.textContent = room.occupant.name 
-            ? `Currently occupied by ${room.occupant.name}`
-            : 'Currently occupied';
-    } else {
-        occupantInfo.style.display = 'none';
-    }
-    
-    // Update booking button
-    const bookBtn = document.getElementById('roomDetailsBookBtn');
-    if (room.isAvailable) {
-        bookBtn.style.display = 'block';
-        bookBtn.onclick = () => {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('roomDetailsModal'));
-            modal.hide();
-            setTimeout(() => bookFromRoomDetails(room._id), 300);
-        };
-        // Update button text for tenants
-        if (isShortTermTenant) {
-            bookBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request Short-term Stay';
+        document.getElementById('roomDetailsModalLabel').textContent = 
+            room.roomNumber ? `${room.roomNumber} Details` : 'Room Details';
+        
+        document.getElementById('roomDetailsName').textContent = 
+            room.roomNumber ? `${room.roomNumber} - ${roomTypeConfig[room.roomType]?.text || room.roomType}` : 
+            roomTypeConfig[room.roomType]?.text || room.roomType;
+        
+        const statusBadge = document.getElementById('roomDetailsStatus');
+        if (room.isAvailable) {
+            statusBadge.className = 'badge bg-success';
+            statusBadge.innerHTML = '<i class="bi bi-check-circle me-1"></i>Available';
         } else {
-            bookBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Book This Room';
+            statusBadge.className = 'badge bg-warning';
+            statusBadge.innerHTML = '<i class="bi bi-person-check me-1"></i>Occupied';
         }
-    } else {
-        bookBtn.style.display = 'none';
+        
+        const typeBadge = document.getElementById('roomDetailsType');
+        typeBadge.textContent = roomTypeConfig[room.roomType]?.text || room.roomType;
+        
+        const priceElement = document.getElementById('roomDetailsPrice');
+        const periodElement = priceElement.nextElementSibling;
+        
+        if (roomPrice === 'Negotiable') {
+            priceElement.textContent = 'Negotiable';
+            priceElement.className = 'negotiable-price mb-1';
+            periodElement.textContent = 'Contact for pricing';
+        } else {
+            priceElement.textContent = `R${roomPrice}`;
+            priceElement.className = 'text-success mb-1';
+            periodElement.textContent = `per ${pricePeriod}`;
+        }
+        
+        const priceSection = document.querySelector('.price-section');
+        const priceLabelElement = priceSection.querySelector('h6') || document.createElement('h6');
+        if (!priceSection.querySelector('h6')) {
+            priceLabelElement.className = 'text-navy mb-2';
+            priceSection.insertBefore(priceLabelElement, priceSection.firstChild);
+        }
+        priceLabelElement.textContent = priceLabel;
+        
+        document.getElementById('roomDetailsSize').textContent = room.size || 'Standard size';
+        document.getElementById('roomDetailsRoomType').textContent = 
+            roomTypeConfig[room.roomType]?.text || room.roomType;
+        document.getElementById('roomDetailsDescription').textContent = roomDescription;
+        
+        const featuresContainer = document.getElementById('roomDetailsFeatures');
+        const features = room.features || ['single-bed', 'desk', 'wardrobe', 'window'];
+        featuresContainer.innerHTML = features.map(feature => `
+            <span class="feature-badge-sm">
+                <i class="bi bi-check-lg"></i>
+                ${feature.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            </span>
+        `).join('');
+        
+        const featuresSection = document.querySelector('.features-section');
+        const existingShortTermSection = document.querySelector('.short-term-pricing');
+        if (existingShortTermSection) {
+            existingShortTermSection.remove();
+        }
+        if (isTenantMode && room.shortTermPricing) {
+            featuresSection.insertAdjacentHTML('afterend', shortTermSection);
+        }
+        
+        const carouselInner = document.getElementById('roomDetailsCarouselInner');
+        const images = room.images && room.images.length > 0 
+            ? room.images 
+            : ['https://via.placeholder.com/600x400?text=Room+Image'];
+        
+        carouselInner.innerHTML = images.map((image, index) => `
+            <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                <img src="${image}" class="d-block w-100" alt="Room image ${index + 1}" style="height: 300px; object-fit: cover;">
+            </div>
+        `).join('');
+        
+        const occupantInfo = document.getElementById('roomOccupantInfo');
+        const occupantDetails = document.getElementById('roomOccupantDetails');
+        
+        if (!room.isAvailable && room.occupant) {
+            occupantInfo.style.display = 'block';
+            occupantDetails.textContent = room.occupant.name 
+                ? `Currently occupied by ${room.occupant.name}`
+                : 'Currently occupied';
+        } else {
+            occupantInfo.style.display = 'none';
+        }
+        
+        const bookBtn = document.getElementById('roomDetailsBookBtn');
+        if (room.isAvailable) {
+            bookBtn.style.display = 'block';
+            bookBtn.onclick = () => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('roomDetailsModal'));
+                modal.hide();
+                setTimeout(() => bookFromRoomDetails(room._id), 300);
+            };
+            if (isTenantMode) {
+                bookBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request Short-term Stay';
+            } else {
+                bookBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Book This Room';
+            }
+        } else {
+            bookBtn.style.display = 'none';
+        }
+        
+        const roomDetailsModal = new bootstrap.Modal(document.getElementById('roomDetailsModal'));
+        roomDetailsModal.show();
     }
-    
-    // Show the modal
-    const roomDetailsModal = new bootstrap.Modal(document.getElementById('roomDetailsModal'));
-    roomDetailsModal.show();
-}
 
     function bookFromRoomDetails(roomId) {
         const room = propertyRooms.find(r => r._id === roomId);
@@ -3278,57 +3253,6 @@ function updateVisibleReviewsCount() {
             }, 300);
         }
     }
-
-    function submitBookingRequest() {
-    if (!currentProperty) return;
-    
-    const propertyStatus = getPropertyStatus(currentProperty);
-    if (propertyStatus !== 'available') {
-        let message = 'This property is not available for booking at the moment.';
-        if (propertyStatus === 'occupied') {
-            message = 'This property is currently occupied and not available for booking.';
-        } else if (propertyStatus === 'maintenance') {
-            message = 'This property is under maintenance and not available for booking.';
-        }
-        showToast(message, 'warning');
-        return;
-    }
-    
-    // NEW: Get current user info to determine booking type
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const isShortTermTenant = user.role === 'tenant';
-    
-    // Start with basic booking URL
-    let bookingUrl = `booking.html?propertyId=${currentProperty._id}`;
-    
-    // NEW: If it's a short-term tenant AND property accepts short-term stays
-    if (isShortTermTenant && currentProperty.acceptsShortTerm) {
-        // Add booking type parameter so booking page knows it's short-term
-        bookingUrl += '&bookingType=shortterm';
-        
-        // NEW: Pass short-term pricing info to pre-fill the booking form
-        if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
-            bookingUrl += `&dailyRate=${currentProperty.shortTermPrice}`;
-        }
-        
-        // NEW: Pass minimum stay requirement
-        if (currentProperty.shortTermMinStay) {
-            bookingUrl += `&minStay=${currentProperty.shortTermMinStay}`;
-        }
-        
-        // NEW: Optional - add seasonal availability check
-        const currentMonth = new Date().getMonth() + 1; // 1-12
-        const isShortTermSeason = currentMonth === 12 || currentMonth === 1; // Dec or Jan
-        
-        if (!isShortTermSeason) {
-            showToast('Short-term stays are only available during December and January.', 'info');
-            // You can choose to proceed anyway or return here
-        }
-    }
-    
-    // Redirect to booking page with all parameters
-    window.location.href = bookingUrl;
-}
 
     async function saveToFavorites() {
         if (!currentProperty) return;
@@ -3405,25 +3329,24 @@ function updateVisibleReviewsCount() {
     }
 
     function contactLandlord() {
-    if (!currentLandlord) {
-        showToast('Landlord information not available', 'error');
-        return;
-    }
+        if (!currentLandlord) {
+            showToast('Landlord information not available', 'error');
+            return;
+        }
 
-    // Try different possible email fields
-    const landlordEmail = currentLandlord.email || 
-                         (currentLandlord.contactInfo && currentLandlord.contactInfo.email) || 
-                         (currentProperty && currentProperty.contactInfo && currentProperty.contactInfo.email);
+        const landlordEmail = currentLandlord.email || 
+                             (currentLandlord.contactInfo && currentLandlord.contactInfo.email) || 
+                             (currentProperty && currentProperty.contactInfo && currentProperty.contactInfo.email);
 
-    if (landlordEmail) {
-        const subject = `Inquiry about ${currentProperty.title}`;
-        const body = `Hello ${currentLandlord.firstName || currentLandlord.username || 'Landlord'},\n\nI am interested in your property "${currentProperty.title}" and would like to get more information.\n\nBest regards,\n[Your Name]`;
-        
-        window.location.href = `mailto:${landlordEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    } else {
-        showToast('Landlord contact information is not available', 'error');
+        if (landlordEmail) {
+            const subject = `Inquiry about ${currentProperty.title}`;
+            const body = `Hello ${currentLandlord.firstName || currentLandlord.username || 'Landlord'},\n\nI am interested in your property "${currentProperty.title}" and would like to get more information.\n\nBest regards,\n[Your Name]`;
+            
+            window.location.href = `mailto:${landlordEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        } else {
+            showToast('Landlord contact information is not available', 'error');
+        }
     }
-}
 
     function viewLandlordProfile() {
         if (currentLandlord) {
@@ -3486,24 +3409,20 @@ function updateVisibleReviewsCount() {
         }
     }
 
-    // Clean up map when leaving page
-window.addEventListener('beforeunload', function() {
-    if (propertyMap) {
-        propertyMap.remove();
-        propertyMap = null;
-    }
-});
+    // Clean up
+    window.addEventListener('beforeunload', function() {
+        if (propertyMap) {
+            propertyMap.remove();
+            propertyMap = null;
+        }
+    });
 
-// Also clean up when navigating away via your navigation
-document.addEventListener('DOMContentLoaded', function() {
-    // Your existing initialization code...
-    
-    // Clean up existing map if any
-    if (propertyMap) {
-        propertyMap.remove();
-        propertyMap = null;
-    }
-});
-  </script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (propertyMap) {
+            propertyMap.remove();
+            propertyMap = null;
+        }
+    });
+</script>
 </body>
 </html>
