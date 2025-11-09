@@ -61,7 +61,9 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
     handleURLParameters();
     loadUserInfo();
-    setupRoleSpecificFields(); // NEW: Add this line
+    setupRoleSpecificFields();
+    updateIdFieldLabel(); 
+    setupTenantFields();
     
     console.log('Booking form initialized successfully');
 });
@@ -118,7 +120,25 @@ function setupEventListeners() {
     }
 }
 
-// Update the loadUserInfo function to handle notes fields
+// NEW: Update ID field label based on user role
+function updateIdFieldLabel() {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const idLabel = document.getElementById('idLabel');
+    const idHelpText = document.getElementById('idHelpText');
+    const studentNumberField = document.getElementById('studentNumber');
+    
+    if (user.role === 'student') {
+        idLabel.textContent = 'Student Number';
+        idHelpText.textContent = 'Your university student number (optional)';
+        studentNumberField.placeholder = 'e.g., 12345678';
+    } else if (user.role === 'tenant') {
+        idLabel.textContent = 'ID Number';
+        idHelpText.textContent = 'Your ID number for verification (optional)';
+        studentNumberField.placeholder = 'e.g., 8501015000089';
+    }
+}
+
+// Update the loadUserInfo function to handle ID field properly
 async function loadUserInfo() {
     try {
         const token = localStorage.getItem('token');
@@ -144,8 +164,12 @@ async function loadUserInfo() {
                 email: user.email, 
                 phone: user.phone,
                 studentNumber: user.studentNumber,
+                idNumber: user.idNumber,
                 role: user.role
             });
+
+            // Update ID field label based on role
+            updateIdFieldLabel();
 
             // Show/hide student number field based on role
             if (studentNumberContainer) {
@@ -172,6 +196,17 @@ async function loadUserInfo() {
             if (phoneField) {
                 phoneField.value = user.phone || '';
                 formData.studentPhone = user.phone || '';
+            }
+            
+            // Load appropriate ID number based on role
+            if (studentNumberField) {
+                if (user.role === 'student') {
+                    studentNumberField.value = user.studentNumber || '';
+                    formData.studentNumber = user.studentNumber || '';
+                } else if (user.role === 'tenant') {
+                    studentNumberField.value = user.idNumber || '';
+                    formData.studentNumber = user.idNumber || '';
+                }
             }
             
             console.log('User info prefilled successfully. Role:', user.role);
@@ -714,19 +749,27 @@ function updateSummary() {
     document.getElementById('summaryEmail').textContent = formData.studentEmail || 'Not provided';
     document.getElementById('summaryPhone').textContent = formData.studentPhone || 'Not provided';
     
-    // Update student number summary
+    // Update student number/ID number summary with correct label
     updateStudentNumberSummary();
 }
 
-// NEW: Update the student number summary display
+// NEW: Update the student number summary display with role-specific labels
 function updateStudentNumberSummary() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isStudent = user.role === 'student';
+    const isTenant = user.role === 'tenant';
     const studentNumberSummary = document.getElementById('studentNumberSummary');
     
     if (studentNumberSummary) {
-        if (isStudent && formData.studentNumber) {
+        if ((isStudent || isTenant) && formData.studentNumber) {
             studentNumberSummary.style.display = 'block';
+            
+            // Update the label based on user role
+            const labelElement = studentNumberSummary.querySelector('strong');
+            if (labelElement) {
+                labelElement.textContent = isStudent ? 'Student Number:' : 'ID Number:';
+            }
+            
             document.getElementById('summaryStudentNumber').textContent = formData.studentNumber;
         } else {
             studentNumberSummary.style.display = 'none';
@@ -885,6 +928,15 @@ async function handleBookingSubmission(e) {
             // Add student-specific notes
             if (formData.studentNotes) {
                 specialRequests += `\nStudent Notes: ${formData.studentNotes}`;
+            }
+        }
+
+        // NEW: Add ID information based on user role
+        if (formData.studentNumber) {
+            if (user.role === 'student') {
+                specialRequests += `\nStudent Number: ${formData.studentNumber}`;
+            } else if (user.role === 'tenant') {
+                specialRequests += `\nID Number: ${formData.studentNumber}`;
             }
         }
 
@@ -1065,11 +1117,3 @@ function setupTenantFields() {
         tenantNotesSection.style.display = 'block';
     }
 }
-
-
-
-// Call this in your initialization
-document.addEventListener('DOMContentLoaded', function() {
-    // ... existing initialization code ...
-    setupTenantFields();
-});
