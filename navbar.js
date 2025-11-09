@@ -1,4 +1,4 @@
-// navbar.js - Enhanced with User Dropdown & Dynamic Navigation & Beautiful Logout Modal
+// navbar.js - Enhanced with User Dropdown & Dynamic Navigation & Beautiful Logout Modal & Mode Switching
 document.addEventListener('DOMContentLoaded', function() {
     initializeNavbar();
     createLogoutModal(); // Create the logout modal on page load
@@ -66,12 +66,17 @@ function updateNavbarAuthState(token, user) {
     if (!authButtons) return;
 
     if (token && user.username) {
+        // Get current booking mode
+        const currentMode = getCurrentBookingMode();
+        const modeDisplay = getModeDisplayName(currentMode);
+        
         // User is logged in - show user dropdown
         authButtons.innerHTML = `
             <div class="dropdown">
                 <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-person-circle me-2"></i>
                     ${user.username}
+                    ${user.role === 'student' ? `<span class="badge bg-warning ms-2">${modeDisplay}</span>` : ''}
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                     <li>
@@ -79,9 +84,29 @@ function updateNavbarAuthState(token, user) {
                             <strong>${user.firstName || user.username}</strong>
                             <br>
                             <small class="text-muted">${getRoleDisplayName(user.role)}</small>
+                            ${user.role === 'student' ? `<br><small class="text-warning"><i class="bi bi-clock"></i> ${modeDisplay} Mode</small>` : ''}
                         </div>
                     </li>
                     <li><hr class="dropdown-divider"></li>
+                    
+                    <!-- MODE SWITCHING FOR STUDENTS ONLY -->
+                    ${user.role === 'student' ? `
+                    <li>
+                        <div class="dropdown-item-text px-3 py-2">
+                            <small class="text-muted d-block mb-1">Booking Mode:</small>
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-sm ${currentMode === 'student' ? 'btn-primary' : 'btn-outline-primary'}" onclick="switchBookingMode('student')">
+                                    Student
+                                </button>
+                                <button type="button" class="btn btn-sm ${currentMode === 'tenant' ? 'btn-warning' : 'btn-outline-warning'}" onclick="switchBookingMode('tenant')">
+                                    Short-term
+                                </button>
+                            </div>
+                        </div>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    ` : ''}
+                    
                     <li>
                         <a class="dropdown-item" href="profile.html">
                             <i class="bi bi-person me-2"></i>My Profile
@@ -206,6 +231,110 @@ function updateNavbarAuthState(token, user) {
     }
 }
 
+// NEW: Booking Mode Management Functions
+function getCurrentBookingMode() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    // Only students can switch modes
+    if (user.role !== 'student') {
+        return 'student'; // Default for non-students
+    }
+    return localStorage.getItem('booking_mode') || 'student';
+}
+
+function setBookingMode(mode) {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    // Only allow mode switching for students
+    if (user.role === 'student') {
+        localStorage.setItem('booking_mode', mode);
+        
+        // Update user object in localStorage
+        user.booking_mode = mode;
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        // Dispatch event for other components to update
+        window.dispatchEvent(new CustomEvent('bookingModeChanged', {
+            detail: { mode: mode }
+        }));
+        
+        return true;
+    }
+    return false;
+}
+
+function switchBookingMode(mode) {
+    if (setBookingMode(mode)) {
+        // Close the dropdown
+        const dropdown = bootstrap.Dropdown.getInstance(document.getElementById('userDropdown'));
+        if (dropdown) {
+            dropdown.hide();
+        }
+        
+        // Show success message
+        showModeSwitchSuccess(mode);
+        
+        // Update navbar to reflect new mode
+        setTimeout(() => {
+            updateNavbar();
+        }, 100);
+        
+        // Reload current page to apply mode changes (optional)
+        setTimeout(() => {
+            if (shouldReloadPageOnModeChange()) {
+                window.location.reload();
+            }
+        }, 500);
+    }
+}
+
+function showModeSwitchSuccess(mode) {
+    const modeName = getModeDisplayName(mode);
+    const toastHTML = `
+        <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 9999;">
+            <div class="toast align-items-center text-white bg-success border-0 show" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        Switched to <strong>${modeName} Mode</strong>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', toastHTML);
+    
+    // Remove the toast after 3 seconds
+    setTimeout(() => {
+        const toast = document.querySelector('.toast');
+        if (toast) {
+            toast.remove();
+        }
+    }, 3000);
+}
+
+function getModeDisplayName(mode) {
+    const modeNames = {
+        'student': 'Student',
+        'tenant': 'Short-term'
+    };
+    return modeNames[mode] || 'Student';
+}
+
+function shouldReloadPageOnModeChange() {
+    // List of pages that should reload when mode changes
+    const reloadPages = [
+        'home.html',
+        'index.html',
+        'listings.html',
+        'my-bookings.html',
+        'bookings.html'
+    ];
+    
+    const currentPage = window.location.pathname.split('/').pop();
+    return reloadPages.includes(currentPage);
+}
+
 // NEW FUNCTION: Mobile dropdown positioning fix
 // UPDATED FUNCTION: Mobile dropdown positioning fix - More compact
 function setupMobileDropdownFix() {
@@ -222,7 +351,7 @@ function setupMobileDropdownFix() {
             dropdownMenu.style.right = '15px';
             dropdownMenu.style.left = 'auto';
             dropdownMenu.style.transform = 'none';
-            dropdownMenu.style.width = '250px'; // Reduced width
+            dropdownMenu.style.width = '280px'; // Slightly wider for mode buttons
             dropdownMenu.style.maxHeight = '70vh'; // Limit height
             dropdownMenu.style.overflowY = 'auto'; // Add scroll if needed
             dropdownMenu.style.zIndex = '1060';
@@ -239,6 +368,12 @@ function setupMobileDropdownFix() {
             dropdownItems.forEach(item => {
                 item.style.padding = '0.5rem 1rem';
                 item.style.fontSize = '0.9rem';
+            });
+            
+            const modeButtons = dropdownMenu.querySelectorAll('.btn-group .btn');
+            modeButtons.forEach(btn => {
+                btn.style.padding = '0.25rem 0.5rem';
+                btn.style.fontSize = '0.8rem';
             });
             
             const dividers = dropdownMenu.querySelectorAll('.dropdown-divider');
@@ -274,6 +409,12 @@ function setupMobileDropdownFix() {
             dropdownItems.forEach(item => {
                 item.style.padding = '';
                 item.style.fontSize = '';
+            });
+            
+            const modeButtons = dropdownMenu.querySelectorAll('.btn-group .btn');
+            modeButtons.forEach(btn => {
+                btn.style.padding = '';
+                btn.style.fontSize = '';
             });
             
             const dividers = dropdownMenu.querySelectorAll('.dropdown-divider');
@@ -377,6 +518,12 @@ function setupNavbarEventListeners() {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         updateNavbarAuthState(token, user);
     });
+    
+    // Listen for booking mode changes
+    window.addEventListener('bookingModeChanged', function(e) {
+        // Update navbar to reflect new mode
+        updateNavbar();
+    });
 }
 
 // Function to trigger navbar update from other pages
@@ -450,6 +597,26 @@ function isLoggedIn() {
 function getUserRole() {
     const user = getCurrentUser();
     return user.role || 'student';
+}
+
+// Get current booking mode (for mode-aware pages)
+function getCurrentBookingMode() {
+    const user = getCurrentUser();
+    // Only students can switch modes
+    if (user.role !== 'student') {
+        return 'student'; // Default for non-students
+    }
+    return localStorage.getItem('booking_mode') || 'student';
+}
+
+// Check if user is in student mode
+function isStudentMode() {
+    return getCurrentBookingMode() === 'student';
+}
+
+// Check if user is in tenant mode
+function isTenantMode() {
+    return getCurrentBookingMode() === 'tenant';
 }
 
 // Student/Tenant specific authorization
