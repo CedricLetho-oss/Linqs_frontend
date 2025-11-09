@@ -1461,156 +1461,6 @@
         await loadUserActivities();
         loadPreferences();
         checkAdminAccess();
-        loadBookingMode();
-    }
-
-    // NEW: Load and display booking mode
-    async function loadBookingMode() {
-        try {
-            const token = localStorage.getItem("token");
-            const response = await fetch(`${API_BASE_URL}/users/booking-mode`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                const bookingMode = data.booking_mode || 'student';
-                const canSwitchModes = data.can_switch_modes || false;
-                
-                // Update UI based on booking mode
-                updateBookingModeDisplay(bookingMode, canSwitchModes);
-            }
-        } catch (error) {
-            console.error('Error loading booking mode:', error);
-            // Default to student mode if API fails
-            updateBookingModeDisplay('student', true);
-        }
-    }
-
-    // NEW: Update booking mode display in UI
-    function updateBookingModeDisplay(bookingMode, canSwitchModes) {
-        // Update profile role display based on booking mode
-        const profileRoleElement = document.getElementById('profileRole');
-        const roleDisplayElement = document.getElementById('roleDisplay');
-        
-        if (currentUser) {
-            if (currentUser.role === 'admin') {
-                profileRoleElement.textContent = 'System Administrator';
-                roleDisplayElement.value = 'Administrator';
-            } else if (currentUser.role === 'tenant') {
-                profileRoleElement.textContent = 'Short-term Tenant';
-                roleDisplayElement.value = 'Tenant';
-            } else if (currentUser.role === 'landlord') {
-                profileRoleElement.textContent = 'Property Landlord';
-                roleDisplayElement.value = 'Landlord';
-            } else {
-                // Student with booking mode
-                if (bookingMode === 'tenant') {
-                    profileRoleElement.textContent = 'Student (Short-term Mode)';
-                    roleDisplayElement.value = 'Student - Short-term';
-                } else {
-                    profileRoleElement.textContent = 'Student (Academic Mode)';
-                    roleDisplayElement.value = 'Student - Academic';
-                }
-            }
-        }
-
-        // Update account type display
-        const accountTypeDisplay = document.getElementById('accountTypeDisplay');
-        if (currentUser) {
-            if (currentUser.role === 'admin') {
-                accountTypeDisplay.textContent = 'Administrator Account';
-            } else if (currentUser.role === 'tenant') {
-                accountTypeDisplay.textContent = 'Short-term Tenant Account';
-            } else if (currentUser.role === 'landlord') {
-                accountTypeDisplay.textContent = 'Landlord Account';
-            } else {
-                if (bookingMode === 'tenant') {
-                    accountTypeDisplay.textContent = 'Student Account (Short-term Mode)';
-                } else {
-                    accountTypeDisplay.textContent = 'Student Account (Academic Mode)';
-                }
-            }
-        }
-
-        // Show/hide booking mode toggle for students
-        const bookingModeToggle = document.getElementById('bookingModeToggle');
-        if (bookingModeToggle) {
-            if (canSwitchModes && currentUser && currentUser.role === 'student') {
-                bookingModeToggle.style.display = 'block';
-                updateBookingModeToggleState(bookingMode);
-            } else {
-                bookingModeToggle.style.display = 'none';
-            }
-        }
-    }
-
-    // NEW: Update booking mode toggle state
-    function updateBookingModeToggleState(bookingMode) {
-        const studentModeBtn = document.getElementById('studentModeBtn');
-        const tenantModeBtn = document.getElementById('tenantModeBtn');
-        
-        if (studentModeBtn && tenantModeBtn) {
-            if (bookingMode === 'student') {
-                studentModeBtn.classList.add('active');
-                tenantModeBtn.classList.remove('active');
-            } else {
-                studentModeBtn.classList.remove('active');
-                tenantModeBtn.classList.add('active');
-            }
-        }
-    }
-
-    // NEW: Switch booking mode
-    async function switchBookingMode(mode) {
-        if (!['student', 'tenant'].includes(mode)) {
-            showToast('Invalid booking mode selected', 'error');
-            return;
-        }
-
-        try {
-            const token = localStorage.getItem("token");
-            const response = await fetch(`${API_BASE_URL}/users/booking-mode`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ booking_mode: mode })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                
-                // Update local user data
-                if (currentUser) {
-                    currentUser.booking_mode = mode;
-                    updateLocalStorage();
-                }
-                
-                // Update UI
-                updateBookingModeDisplay(mode, true);
-                updateBookingModeToggleState(mode);
-                
-                // Show success message
-                const modeName = mode === 'student' ? 'Academic' : 'Short-term';
-                showToast(`Booking mode switched to ${modeName} Mode`, 'success');
-                
-                // Add activity
-                await addActivity('preferences', 'Booking Mode Changed', 
-                    `You switched to ${modeName.toLowerCase()} booking mode`);
-                    
-            } else {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to switch booking mode');
-            }
-        } catch (error) {
-            console.error('Error switching booking mode:', error);
-            showToast(`Failed to switch booking mode: ${error.message}`, 'error');
-        }
     }
 
     // Check if user is admin and update UI accordingly
@@ -1637,24 +1487,24 @@
 
     // Password visibility toggle functionality
     function initializePasswordToggles() {
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('.toggle-password')) {
-                const button = e.target.closest('.toggle-password');
-                const targetId = button.getAttribute('data-target');
-                const passwordInput = document.getElementById(targetId);
-                const icon = button.querySelector('i');
-                
-                if (passwordInput.type === 'password') {
-                    passwordInput.type = 'text';
-                    icon.className = 'bi bi-eye-slash';
-                    button.setAttribute('aria-label', 'Hide password');
-                } else {
-                    passwordInput.type = 'password';
-                    icon.className = 'bi bi-eye';
-                    button.setAttribute('aria-label', 'Show password');
-                }
-            }
-        });
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.toggle-password')) {
+          const button = e.target.closest('.toggle-password');
+          const targetId = button.getAttribute('data-target');
+          const passwordInput = document.getElementById(targetId);
+          const icon = button.querySelector('i');
+          
+          if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.className = 'bi bi-eye-slash';
+            button.setAttribute('aria-label', 'Hide password');
+          } else {
+            passwordInput.type = 'password';
+            icon.className = 'bi bi-eye';
+            button.setAttribute('aria-label', 'Show password');
+          }
+        }
+      });
     }
 
     // Load admin statistics
@@ -1768,7 +1618,6 @@
             email: user.email || '',
             phone: user.phone || '',
             role: user.role || 'student',
-            booking_mode: user.booking_mode || 'student', // NEW: Include booking mode
             avatar: user.avatar || user.profilePicture || 'https://via.placeholder.com/120',
             bio: user.bio || '',
             streetAddress: user.streetAddress || user.address?.street || '',
@@ -2598,7 +2447,17 @@
 
         document.getElementById('profileName').textContent = `${currentUser.firstName} ${currentUser.lastName}`.trim() || 'User Name';
         
-        // Role display will be updated by booking mode functions
+        if (currentUser.role === 'admin') {
+            document.getElementById('profileRole').textContent = 'System Administrator';
+            document.getElementById('roleDisplay').value = 'Administrator';
+        } else if (currentUser.role === 'tenant') {
+            document.getElementById('profileRole').textContent = 'Short-term Tenant';
+            document.getElementById('roleDisplay').value = 'Tenant';
+        } else {
+            document.getElementById('profileRole').textContent = currentUser.role === 'landlord' ? 'Property Landlord' : 'Student Tenant';
+            document.getElementById('roleDisplay').value = currentUser.role === 'landlord' ? 'Landlord' : 'Student';
+        }
+        
         document.getElementById('profileEmail').textContent = currentUser.email || 'No email';
         document.getElementById('profilePhone').textContent = currentUser.phone || 'No phone';
         document.getElementById('profileAvatar').src = currentUser.avatar;
@@ -2609,7 +2468,14 @@
         document.getElementById('memberSince').textContent = `Member since ${memberSince}`;
         document.getElementById('memberSinceDisplay').textContent = new Date(currentUser.memberSince).toLocaleDateString();
 
-        // Account type display will be updated by booking mode functions
+        // FIXED: Proper account type display for tenant
+        if (currentUser.role === 'admin') {
+            document.getElementById('accountTypeDisplay').textContent = 'Administrator Account';
+        } else if (currentUser.role === 'tenant') {
+            document.getElementById('accountTypeDisplay').textContent = 'Short-term Tenant Account';
+        } else {
+            document.getElementById('accountTypeDisplay').textContent = currentUser.role === 'landlord' ? 'Landlord Account' : 'Student Account';
+        }
         
         updateRoleSpecificSections();
         updateFormFields();
@@ -2727,8 +2593,14 @@
         setValue('phone', currentUser.phone);
         setValue('bio', currentUser.bio);
         
-        // Role display will be updated by booking mode functions
-        setValue('roleDisplay', 'Loading...');
+        // FIXED: Proper role display for tenant
+        if (currentUser.role === 'admin') {
+            setValue('roleDisplay', 'Administrator');
+        } else if (currentUser.role === 'tenant') {
+            setValue('roleDisplay', 'Tenant');
+        } else {
+            setValue('roleDisplay', currentUser.role === 'landlord' ? 'Landlord' : 'Student');
+        }
         
         setValue('streetAddress', currentUser.streetAddress);
         setValue('city', currentUser.city);
@@ -3078,17 +2950,18 @@
                     updateLocalStorage();
                     updateProfileDisplay();
                     await addActivity('profile', 'Role Changed', 'You became a landlord and can now manage properties');
-                    showToast('Welcome to ResLinQ Landlord! You can now add and manage properties.', 'success');
+                    alert('Welcome to ResLinQ Landlord! You can now add and manage properties.');
                 } else {
                     const errorData = await response.json();
                     throw new Error(errorData.error || 'Failed to switch role');
                 }
             } catch (error) {
-                showToast('Failed to switch role: ' + error.message, 'error');
+                showToast('Failed to switch role: ' + error.message);
             }
         }
     }
 
+    // FIXED VERIFICATION FUNCTION - Only shows toast once for verified/pending users
     async function verifyAccount() {
         if (confirm('Start account verification process? You will need to upload verification documents.')) {
             // Reset the toast shown flag when user starts a new verification
@@ -3113,9 +2986,87 @@
                 console.log('Starting verification for:', verificationType);
                 console.log('Required fields:', requiredFields);
                 
-                // For now, show a placeholder message since the document upload modal is complex
-                showToast('Verification document upload feature coming soon!', 'info');
+                const uploadedDocuments = await showEnhancedDocumentUploadModal(verificationType, requiredFields);
                 
+                if (!uploadedDocuments) {
+                    showToast('Document upload cancelled', 'warning');
+                    return;
+                }
+
+                console.log('Uploaded documents:', uploadedDocuments);
+
+                const token = localStorage.getItem("token");
+                
+                // Check if we have the required documents
+                let hasRequiredDocs = true;
+                let missingFields = [];
+                
+                for (const field of requiredFields) {
+                    if (!uploadedDocuments[field] || uploadedDocuments[field].length === 0) {
+                        missingFields.push(field);
+                        hasRequiredDocs = false;
+                    }
+                }
+                
+                if (!hasRequiredDocs) {
+                    const fieldNames = missingFields.map(field => {
+                        switch(field) {
+                            case 'idCard': return 'ID Card';
+                            case 'proofOfEnrollment': return 'Proof of Enrollment';
+                            case 'proofOfOwnership': return 'Proof of Ownership';
+                            case 'businessLicense': return 'Business License';
+                            default: return field;
+                        }
+                    }).join(', ');
+                    
+                    showToast(`Missing required documents: ${fieldNames}`, 'error');
+                    return;
+                }
+
+                console.log('Sending verification request with documents:', uploadedDocuments);
+
+                const response = await fetch(`${API_BASE_URL}/users/verify`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: verificationType,
+                        documents: uploadedDocuments
+                    })
+                });
+
+                console.log('Verification response status:', response.status);
+                
+                let data;
+                try {
+                    data = await response.json();
+                } catch (parseError) {
+                    console.error('Failed to parse response as JSON:', parseError);
+                    throw new Error('Server returned invalid response');
+                }
+                
+                if (response.ok && data.success) {
+                    currentUser.verificationStatus = 'pending';
+                    currentUser.isVerified = false;
+                    
+                    updateLocalStorage();
+                    updateVerificationStatus();
+                    
+                    await addActivity('verification', 'Verification Started', 'You submitted verification documents for review');
+                    
+                    localStorage.removeItem('verificationStatus');
+                    
+                    showToast('✅ Verification request submitted! Your documents are under review.', 'success');
+                    
+                    setTimeout(() => {
+                        checkVerificationStatus();
+                    }, 2000);
+                    
+                } else {
+                    throw new Error(data.message || data.error || 'Failed to submit verification');
+                }
             } catch (error) {
                 console.error('Error starting verification:', error);
                 showToast(`Failed to start verification: ${error.message}`, 'error');
@@ -3123,6 +3074,7 @@
         }
     }
 
+    // FIXED VERIFICATION STATUS CHECK - Only shows toast once
     async function checkVerificationStatus() {
         try {
             const token = localStorage.getItem("token");
@@ -3163,12 +3115,507 @@
         }
     }
 
+    // Function to clear verification toast flag (optional)
+    function clearVerificationToastFlag() {
+        localStorage.removeItem(VERIFICATION_TOAST_SHOWN_KEY);
+    }
+
+    // SIMPLIFIED document upload modal - removing the complex broken function
+    async function showEnhancedDocumentUploadModal(verificationType, requiredFields = []) {
+        return new Promise((resolve) => {
+            // Determine modal title and description based on verification type
+            let modalTitle = 'Upload Verification Documents';
+            let modalDescription = '';
+            
+            if (verificationType === 'tenant') {
+                modalTitle = 'Tenant Verification - ID Card Required';
+                modalDescription = 'As a short-term tenant, you only need to verify your identity with an ID card.';
+            } else if (verificationType === 'student') {
+                modalTitle = 'Student Verification';
+                modalDescription = 'Please upload your student ID and proof of enrollment.';
+            } else if (verificationType === 'landlord') {
+                modalTitle = 'Landlord Verification';
+                modalDescription = 'Please upload your business documents for verification.';
+            }
+
+            const modalHtml = `
+                <div class="modal fade" id="documentUploadModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">${modalTitle}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                ${modalDescription ? `<div class="alert alert-info mb-4">${modalDescription}</div>` : ''}
+                                
+                                <form id="documentUploadForm">
+                                    <input type="hidden" name="type" value="${verificationType}">
+                                    
+                                    ${verificationType === 'student' ? `
+                                        <!-- Student fields remain the same -->
+                                        <div class="mb-4">
+                                            <h6><i class="bi bi-person-badge me-2"></i>Student ID Card *</h6>
+                                            <p class="text-muted small">Upload clear photos of your student ID card (front and back)</p>
+                                            <input type="file" class="form-control document-file" name="idCard" multiple accept="image/*,.pdf" required>
+                                            <div class="form-text">Max 3 files. Supported: JPG, PNG, PDF</div>
+                                            <div id="idCardPreview" class="file-preview-container mt-2"></div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <h6><i class="bi bi-mortarboard me-2"></i>Proof of Enrollment/Academic Transcript *</h6>
+                                            <p class="text-muted small">Upload proof of current enrollment or academic transcript</p>
+                                            <input type="file" class="form-control document-file" name="proofOfEnrollment" multiple accept="image/*,.pdf" required>
+                                            <div class="form-text">Max 5 files. Supported: JPG, PNG, PDF</div>
+                                            <div id="proofOfEnrollmentPreview" class="file-preview-container mt-2"></div>
+                                        </div>
+                                    ` : verificationType === 'tenant' ? `
+                                        <!-- TENANT: Only ID Card Required -->
+                                        <div class="mb-4">
+                                            <h6><i class="bi bi-person-badge me-2"></i>ID Card *</h6>
+                                            <p class="text-muted small">Upload clear photos of your ID card (front and back) for identity verification</p>
+                                            <input type="file" class="form-control document-file" name="idCard" multiple accept="image/*,.pdf" required>
+                                            <div class="form-text">Max 3 files. Supported: JPG, PNG, PDF</div>
+                                            <div id="idCardPreview" class="file-preview-container mt-2"></div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <h6><i class="bi bi-file-earmark-text me-2"></i>Additional Documents (Optional)</h6>
+                                            <p class="text-muted small">Any additional identification or supporting documents</p>
+                                            <input type="file" class="form-control document-file" name="additionalDocuments" multiple accept="image/*,.pdf">
+                                            <div class="form-text">Max 5 files. Supported: JPG, PNG, PDF</div>
+                                            <div id="additionalDocumentsPreview" class="file-preview-container mt-2"></div>
+                                        </div>
+                                    ` : `
+                                        <!-- Landlord fields remain the same -->
+                                        <div class="mb-4">
+                                            <h6><i class="bi bi-person-badge me-2"></i>ID Card *</h6>
+                                            <p class="text-muted small">Upload clear photos of your ID card (front and back)</p>
+                                            <input type="file" class="form-control document-file" name="idCard" multiple accept="image/*,.pdf" required>
+                                            <div class="form-text">Max 3 files. Supported: JPG, PNG, PDF</div>
+                                            <div id="idCardPreview" class="file-preview-container mt-2"></div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <h6><i class="bi bi-house-check me-2"></i>Proof of Ownership *</h6>
+                                            <p class="text-muted small">Upload property ownership documents, titles, or rental agreements</p>
+                                            <input type="file" class="form-control document-file" name="proofOfOwnership" multiple accept="image/*,.pdf" required>
+                                            <div class="form-text">Max 10 files. Supported: JPG, PNG, PDF</div>
+                                            <div id="proofOfOwnershipPreview" class="file-preview-container mt-2"></div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <h6><i class="bi bi-building me-2"></i>Business License *</h6>
+                                            <p class="text-muted small">Upload business registration and license documents</p>
+                                            <input type="file" class="form-control document-file" name="businessLicense" multiple accept="image/*,.pdf" required>
+                                            <div class="form-text">Max 5 files. Supported: JPG, PNG, PDF</div>
+                                            <div id="businessLicensePreview" class="file-preview-container mt-2"></div>
+                                        </div>
+                                    `}
+                                    
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <strong>Document Requirements:</strong>
+                                        <ul class="mb-0 mt-2">
+                                            <li>Maximum file size: 10MB per file</li>
+                                            <li>Supported formats: JPG, PNG, PDF</li>
+                                            <li>Ensure documents are clear and readable</li>
+                                            <li>All required documents must be uploaded</li>
+                                            <li>Documents will be securely stored in Cloudinary</li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="upload-progress" id="uploadProgress" style="display: none;">
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <p class="text-center mb-0" id="uploadStatus">Preparing upload...</p>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="submitDocuments">Submit Verification</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <style>
+                    .file-preview-container {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 10px;
+                    }
+                    .file-preview-item {
+                        position: relative;
+                        width: 100px;
+                        height: 100px;
+                        border: 1px solid #ddd;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .file-preview-item img {
+                        max-width: 100%;
+                        max-height: 100%;
+                        object-fit: cover;
+                    }
+                    .file-preview-item .file-icon {
+                        font-size: 2rem;
+                        color: #6c757d;
+                    }
+                    .file-preview-item .remove-file {
+                        position: absolute;
+                        top: 2px;
+                        right: 2px;
+                        background: rgba(255,255,255,0.8);
+                        border: none;
+                        border-radius: 50%;
+                        width: 20px;
+                        height: 20px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 12px;
+                        cursor: pointer;
+                    }
+                    .pdf-icon { color: #dc3545; }
+                    .image-icon { color: #198754; }
+                </style>
+            `;
+            
+            // Add modal to DOM
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            const modal = new bootstrap.Modal(document.getElementById('documentUploadModal'));
+            const submitBtn = document.getElementById('submitDocuments');
+            const form = document.getElementById('documentUploadForm');
+            
+            // Store file data
+            const fileData = new Map();
+            
+            // Initialize file preview functionality
+            initializeFilePreviews(fileData, form);
+            
+            submitBtn.onclick = async () => {
+              console.log('Submit button clicked, checking file data:', fileData);
+              console.log('Required fields for validation:', requiredFields);
+              
+              // Validate required files - USE THE PASSED requiredFields PARAMETER
+              let isValid = true;
+              let missingFields = [];
+              
+              for (const field of requiredFields) {
+                  const files = fileData.get(field) || [];
+                  console.log(`Field ${field} has ${files.length} files:`, files.map(f => f.name));
+                  
+                  if (files.length === 0) {
+                      const fieldName = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                      missingFields.push(fieldName);
+                      isValid = false;
+                  }
+              }
+              
+              if (!isValid) {
+                  showToast(`Please upload the following required documents:\n• ${missingFields.join('\n• ')}`);
+                  return;
+              }
+                
+                // Validate file sizes and types
+                let hasInvalidFiles = false;
+                let invalidFiles = [];
+                
+                for (const [fieldName, files] of fileData.entries()) {
+                    for (const file of files) {
+                        if (file.size > 10 * 1024 * 1024) {
+                            hasInvalidFiles = true;
+                            invalidFiles.push(`${file.name} (too large)`);
+                        }
+                        
+                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                        if (!allowedTypes.includes(file.type)) {
+                            hasInvalidFiles = true;
+                            invalidFiles.push(`${file.name} (invalid type)`);
+                        }
+                    }
+                }
+                
+                if (hasInvalidFiles) {
+                    showToast(`The following files are invalid:\n• ${invalidFiles.join('\n• ')}\n\nPlease ensure files are under 10MB and are JPG, PNG, or PDF format.`);
+                    return;
+                }
+                
+                // Show loading state
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
+                
+                try {
+                    // Show upload progress
+                    document.getElementById('uploadProgress').style.display = 'block';
+                    const progressBar = document.querySelector('.progress-bar');
+                    const uploadStatus = document.getElementById('uploadStatus');
+                    
+                    // Upload all files to Cloudinary and get URLs
+                    const uploadedDocuments = {};
+                    const allFiles = [];
+                    
+                    // Collect all files
+                    for (const [fieldName, files] of fileData.entries()) {
+                        if (files && files.length > 0) {
+                            allFiles.push(...files.map(file => ({ fieldName, file })));
+                        }
+                    }
+                    
+                    console.log('Total files to upload:', allFiles.length);
+                    
+                    let processedFiles = 0;
+                    const totalFiles = allFiles.length;
+                    
+                    if (totalFiles === 0) {
+                        throw new Error('No files selected for upload');
+                    }
+                    
+                    // Upload files with better error handling
+                    for (const { fieldName, file } of allFiles) {
+                        uploadStatus.textContent = `Uploading ${file.name}...`;
+                        console.log(`Uploading ${file.name} for field ${fieldName}`);
+                        
+                        try {
+                            const cloudinaryUrl = await uploadToCloudinary(file);
+                            if (cloudinaryUrl) {
+                                if (!uploadedDocuments[fieldName]) {
+                                    uploadedDocuments[fieldName] = [];
+                                }
+                                uploadedDocuments[fieldName].push(cloudinaryUrl);
+                                console.log(`✅ Successfully uploaded ${file.name}: ${cloudinaryUrl}`);
+                            } else {
+                                console.error(`❌ Failed to get URL for ${file.name}`);
+                                throw new Error(`Failed to upload ${file.name}`);
+                            }
+                        } catch (uploadError) {
+                            console.error(`Failed to upload ${file.name}:`, uploadError);
+                            throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+                        }
+                        
+                        processedFiles++;
+                        const progress = (processedFiles / totalFiles) * 100;
+                        progressBar.style.width = `${progress}%`;
+                    }
+                    
+                    uploadStatus.textContent = 'Finalizing upload...';
+                    
+                    console.log('Final uploaded documents:', uploadedDocuments);
+                    
+                    // Verify all required documents were uploaded
+                    for (const field of requiredFields) {
+                        if (!uploadedDocuments[field] || uploadedDocuments[field].length === 0) {
+                            throw new Error(`Required document ${field} was not uploaded successfully`);
+                        }
+                    }
+                    
+                    if (Object.keys(uploadedDocuments).length > 0) {
+                        modal.hide();
+                        resolve(uploadedDocuments);
+                    } else {
+                        throw new Error('No files were successfully uploaded to Cloudinary');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error processing form:', error);
+                    showToast('Error uploading documents: ' + error.message);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Submit Verification';
+                    document.getElementById('uploadProgress').style.display = 'none';
+                }
+            };
+            
+            modal.show();
+            
+            // Clean up modal after hide
+            modal._element.addEventListener('hidden.bs.modal', () => {
+                document.getElementById('documentUploadModal').remove();
+                resolve(null);
+            });
+
+            // Helper function for file previews
+            function initializeFilePreviews(fileData, form) {
+                const fileInputs = form.querySelectorAll('.document-file');
+                
+                fileInputs.forEach(input => {
+                    const fieldName = input.name;
+                    console.log(`Initializing file input for: ${fieldName}`);
+                    fileData.set(fieldName, []);
+                    
+                    input.addEventListener('change', function(e) {
+                        const previewContainerId = `${fieldName}Preview`;
+                        const previewContainer = document.getElementById(previewContainerId);
+                        
+                        if (!previewContainer) {
+                            console.error(`Preview container not found for: ${fieldName}, looking for ID: ${previewContainerId}`);
+                            console.log('Available preview containers:', 
+                                Array.from(document.querySelectorAll('[id$="Preview"]')).map(el => el.id)
+                            );
+                            return;
+                        }
+                        
+                        previewContainer.innerHTML = '';
+                        const files = Array.from(this.files);
+                        console.log(`Files selected for ${fieldName}:`, files.map(f => f.name));
+                        
+                        // Validate files before storing
+                        const validFiles = files.filter(file => {
+                            if (file.size > 10 * 1024 * 1024) {
+                                showToast(`File ${file.name} is too large. Maximum size is 10MB.`);
+                                return false;
+                            }
+                            
+                            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                            if (!allowedTypes.includes(file.type)) {
+                                showToast(`File ${file.name} is not a supported format. Please use JPG, PNG, or PDF.`);
+                                return false;
+                            }
+                            
+                            return true;
+                        });
+                        
+                        // Store only valid files
+                        fileData.set(fieldName, validFiles);
+                        console.log(`Valid files stored for ${fieldName}:`, validFiles.map(f => f.name));
+                        
+                        // Update the input with only valid files
+                        const dt = new DataTransfer();
+                        validFiles.forEach(file => dt.items.add(file));
+                        this.files = dt.files;
+                        
+                        // Create previews for valid files
+                        validFiles.forEach((file, index) => {
+                            const previewItem = document.createElement('div');
+                            previewItem.className = 'file-preview-item';
+                            previewItem.dataset.index = index;
+                            
+                            if (file.type.startsWith('image/')) {
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    previewItem.innerHTML = `
+                                        <img src="${e.target.result}" alt="${file.name}">
+                                        <button type="button" class="remove-file" data-field="${fieldName}" data-index="${index}">×</button>
+                                    `;
+                                    previewContainer.appendChild(previewItem);
+                                    
+                                    // Add remove event listener for this specific button
+                                    previewItem.querySelector('.remove-file').addEventListener('click', function() {
+                                        removeFile(fieldName, index, fileData, form);
+                                    });
+                                };
+                                reader.readAsDataURL(file);
+                            } else {
+                                const fileExtension = file.name.split('.').pop().toLowerCase();
+                                let iconClass = 'file-icon';
+                                if (fileExtension === 'pdf') iconClass += ' pdf-icon';
+                                else iconClass += ' image-icon';
+                                
+                                previewItem.innerHTML = `
+                                    <div class="${iconClass}">
+                                        <i class="bi bi-file-earmark"></i>
+                                    </div>
+                                    <button type="button" class="remove-file" data-field="${fieldName}" data-index="${index}">×</button>
+                                    <small class="position-absolute bottom-0 start-0 end-0 text-center bg-light">${fileExtension}</small>
+                                `;
+                                previewContainer.appendChild(previewItem);
+                                
+                                // Add remove event listener for this specific button
+                                previewItem.querySelector('.remove-file').addEventListener('click', function() {
+                                    removeFile(fieldName, index, fileData, form);
+                                });
+                            }
+                        });
+                        
+                        console.log('Current fileData state:', Array.from(fileData.entries()).map(([key, value]) => 
+                            `${key}: ${value.length} files`
+                        ));
+                    });
+                });
+                
+                function removeFile(fieldName, index, fileData, form) {
+                    console.log(`Removing file from ${fieldName} at index ${index}`);
+                    
+                    const files = fileData.get(fieldName) || [];
+                    if (index >= 0 && index < files.length) {
+                        files.splice(index, 1);
+                        fileData.set(fieldName, files);
+                        
+                        // Update the actual file input
+                        const fileInput = form.querySelector(`input[name="${fieldName}"]`);
+                        const dt = new DataTransfer();
+                        files.forEach(file => dt.items.add(file));
+                        fileInput.files = dt.files;
+                        
+                        // Re-render preview
+                        const previewContainerId = `${fieldName}Preview`;
+                        const previewContainer = document.getElementById(previewContainerId);
+                        if (previewContainer) {
+                            previewContainer.innerHTML = '';
+                            files.forEach((file, newIndex) => {
+                                const previewItem = document.createElement('div');
+                                previewItem.className = 'file-preview-item';
+                                previewItem.dataset.index = newIndex;
+                                
+                                if (file.type.startsWith('image/')) {
+                                    const reader = new FileReader();
+                                    reader.onload = function(e) {
+                                        previewItem.innerHTML = `
+                                            <img src="${e.target.result}" alt="${file.name}">
+                                            <button type="button" class="remove-file" data-field="${fieldName}" data-index="${newIndex}">×</button>
+                                        `;
+                                        previewContainer.appendChild(previewItem);
+                                        
+                                        // Re-add event listener
+                                        previewItem.querySelector('.remove-file').addEventListener('click', function() {
+                                            removeFile(fieldName, newIndex, fileData, form);
+                                        });
+                                    };
+                                    reader.readAsDataURL(file);
+                                } else {
+                                    const fileExtension = file.name.split('.').pop().toLowerCase();
+                                    let iconClass = 'file-icon';
+                                    if (fileExtension === 'pdf') iconClass += ' pdf-icon';
+                                    else iconClass += ' image-icon';
+                                    
+                                    previewItem.innerHTML = `
+                                        <div class="${iconClass}">
+                                            <i class="bi bi-file-earmark"></i>
+                                        </div>
+                                        <button type="button" class="remove-file" data-field="${fieldName}" data-index="${newIndex}">×</button>
+                                        <small class="position-absolute bottom-0 start-0 end-0 text-center bg-light">${fileExtension}</small>
+                                    `;
+                                    previewContainer.appendChild(previewItem);
+                                    
+                                    // Re-add event listener
+                                    previewItem.querySelector('.remove-file').addEventListener('click', function() {
+                                        removeFile(fieldName, newIndex, fileData, form);
+                                    });
+                                }
+                            });
+                        }
+                    }
+                    
+                    console.log('Updated fileData state after removal:', Array.from(fileData.entries()).map(([key, value]) => 
+                        `${key}: ${value.length} files`
+                    ));
+                }
+            }
+        });
+    }
+
     function updateLocalStorage() {
         localStorage.setItem("user", JSON.stringify(currentUser));
     }
 
     function enable2FA() {
-        showToast('Two-factor authentication setup coming soon!', 'info');
+        alert('Two-factor authentication setup would begin here.');
     }
 
     function downloadData() {
@@ -3183,7 +3630,7 @@
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         addActivity('profile', 'Data Downloaded', 'You downloaded your personal data');
-        showToast('Your data has been downloaded!', 'success');
+        alert('Your data has been downloaded!');
     }
 
     // Beautiful Toast Notification System
@@ -3283,7 +3730,7 @@
                 });
 
                 if (response.ok) {
-                    showToast('Account deletion scheduled. You will receive a confirmation email.', 'success');
+                    showToast('Account deletion scheduled. You will receive a confirmation email.');
                     bootstrap.Modal.getInstance(document.getElementById('deleteAccountModal')).hide();
                     setTimeout(() => {
                         localStorage.clear();
@@ -3294,10 +3741,10 @@
                     throw new Error(errorData.error || 'Failed to delete account');
                 }
             } catch (error) {
-                showToast('Failed to delete account: ' + error.message, 'error');
+                showToast('Failed to delete account: ' + error.message);
             }
         }
     }
-</script>
+  </script>
 </body>
 </html>
