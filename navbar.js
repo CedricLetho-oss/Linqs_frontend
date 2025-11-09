@@ -1,19 +1,77 @@
 // navbar.js - Enhanced with User Dropdown & Dynamic Navigation & Beautiful Logout Modal & Mode Switching
 document.addEventListener('DOMContentLoaded', function() {
     initializeNavbar();
-    createLogoutModal(); // Create the logout modal on page load
+    createLogoutModal();
 });
 
-function initializeNavbar() {
+// API base URL
+const API_BASE_URL = window.API_BASE_URL || 'https://linqs-backend.onrender.com/api';
+
+async function initializeNavbar() {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (token && user.role === 'student') {
+        await loadBookingModeFromBackend();
+    }
     
     updateNavbarAuthState(token, user);
     setupNavbarEventListeners();
 }
 
+async function loadBookingModeFromBackend() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/users/booking-mode`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const bookingMode = data.booking_mode || 'student';
+            
+            localStorage.setItem('booking_mode', bookingMode);
+            
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            user.booking_mode = bookingMode;
+            localStorage.setItem('user', JSON.stringify(user));
+        }
+    } catch (error) {
+        console.error('Error loading booking mode:', error);
+        const bookingMode = localStorage.getItem('booking_mode') || 'student';
+        localStorage.setItem('booking_mode', bookingMode);
+    }
+}
+
+async function updateBookingModeOnBackend(mode) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/users/booking-mode`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ booking_mode: mode })
+        });
+
+        if (response.ok) {
+            return true;
+        } else {
+            const errorData = await response.json();
+            console.error('Backend update failed:', errorData);
+            return false;
+        }
+    } catch (error) {
+        console.error('Error updating booking mode:', error);
+        return false;
+    }
+}
+
 function createLogoutModal() {
-    // Create the logout modal HTML
     const modalHTML = `
         <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -50,11 +108,8 @@ function createLogoutModal() {
         </div>
     `;
     
-    // Add the modal to the body if it doesn't exist
     if (!document.getElementById('logoutModal')) {
         document.body.insertAdjacentHTML('beforeend', modalHTML);
-        
-        // Add event listener for the confirm logout button
         document.getElementById('confirmLogout').addEventListener('click', performLogout);
     }
 }
@@ -66,17 +121,16 @@ function updateNavbarAuthState(token, user) {
     if (!authButtons) return;
 
     if (token && user.username) {
-        // Get current booking mode
         const currentMode = getCurrentBookingMode();
         const modeDisplay = getModeDisplayName(currentMode);
+        const modeBadgeClass = getModeBadgeClass(currentMode);
         
-        // User is logged in - show user dropdown
         authButtons.innerHTML = `
             <div class="dropdown">
                 <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-person-circle me-2"></i>
                     ${user.username}
-                    ${user.role === 'student' ? `<span class="badge bg-warning ms-2">${modeDisplay}</span>` : ''}
+                    ${user.role === 'student' ? `<span class="badge ${modeBadgeClass} ms-2">${modeDisplay}</span>` : ''}
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                     <li>
@@ -84,22 +138,21 @@ function updateNavbarAuthState(token, user) {
                             <strong>${user.firstName || user.username}</strong>
                             <br>
                             <small class="text-muted">${getRoleDisplayName(user.role)}</small>
-                            ${user.role === 'student' ? `<br><small class="text-warning"><i class="bi bi-clock"></i> ${modeDisplay} Mode</small>` : ''}
+                            ${user.role === 'student' ? `<br><small class="${getModeTextClass(currentMode)}"><i class="bi bi-clock"></i> ${modeDisplay} Mode</small>` : ''}
                         </div>
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     
-                    <!-- MODE SWITCHING FOR STUDENTS ONLY -->
                     ${user.role === 'student' ? `
                     <li>
                         <div class="dropdown-item-text px-3 py-2">
                             <small class="text-muted d-block mb-1">Booking Mode:</small>
                             <div class="btn-group w-100" role="group">
                                 <button type="button" class="btn btn-sm ${currentMode === 'student' ? 'btn-primary' : 'btn-outline-primary'}" onclick="switchBookingMode('student')">
-                                    Student
+                                    <i class="bi bi-mortarboard me-1"></i>Student
                                 </button>
                                 <button type="button" class="btn btn-sm ${currentMode === 'tenant' ? 'btn-warning' : 'btn-outline-warning'}" onclick="switchBookingMode('tenant')">
-                                    Short-term
+                                    <i class="bi bi-briefcase me-1"></i>Short-term
                                 </button>
                             </div>
                         </div>
@@ -139,14 +192,10 @@ function updateNavbarAuthState(token, user) {
             </div>
         `;
         
-        // Update navigation links for logged-in users
         if (navbarNav) {
-            // Clear existing navigation links
             navbarNav.innerHTML = '';
             
-            // Role-specific navigation
             if (user.role === 'student' || user.role === 'tenant') {
-                // Student/Tenant navbar: Home, Listings, My Bookings, Help
                 const studentLinks = [
                     { href: 'home.html', icon: 'bi-house-door-fill', text: 'Home' },
                     { href: 'listings.html', icon: 'bi-building', text: 'Listings' },
@@ -166,7 +215,6 @@ function updateNavbarAuthState(token, user) {
                 });
                 
             } else if (user.role === 'landlord') {
-                // Landlord navbar: Dashboard, Properties, Bookings, Reports, Analytics, Help
                 const landlordLinks = [
                     { href: 'landlord-dashboard.html', icon: 'bi-speedometer2', text: 'Dashboard' },
                     { href: 'manage-properties.html', icon: 'bi-building', text: 'Properties' },
@@ -189,11 +237,9 @@ function updateNavbarAuthState(token, user) {
             }
         }
         
-        // Add mobile-specific dropdown positioning fix
         setupMobileDropdownFix();
         
     } else {
-        // User is not logged in - show login/signup buttons and basic navigation
         authButtons.innerHTML = `
             <a href="authorization.html" class="btn btn-outline-light me-2 nav-btn">
                 <i class="bi bi-box-arrow-in-right me-1"></i>Login
@@ -203,7 +249,6 @@ function updateNavbarAuthState(token, user) {
             </a>
         `;
         
-        // For non-logged in users - basic navigation
         if (navbarNav) {
             navbarNav.innerHTML = `
                 <li class="nav-item">
@@ -231,58 +276,87 @@ function updateNavbarAuthState(token, user) {
     }
 }
 
-// NEW: Booking Mode Management Functions
 function getCurrentBookingMode() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    // Only students can switch modes
     if (user.role !== 'student') {
-        return 'student'; // Default for non-students
+        return 'student';
     }
     return localStorage.getItem('booking_mode') || 'student';
 }
 
-function setBookingMode(mode) {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    // Only allow mode switching for students
-    if (user.role === 'student') {
+function getModeDisplayName(mode) {
+    const modeNames = {
+        'student': 'Student',
+        'tenant': 'Short-term'
+    };
+    return modeNames[mode] || 'Student';
+}
+
+function getModeBadgeClass(mode) {
+    const badgeClasses = {
+        'student': 'bg-primary',
+        'tenant': 'bg-warning text-dark'
+    };
+    return badgeClasses[mode] || 'bg-primary';
+}
+
+function getModeTextClass(mode) {
+    const textClasses = {
+        'student': 'text-primary',
+        'tenant': 'text-warning'
+    };
+    return textClasses[mode] || 'text-primary';
+}
+
+async function switchBookingMode(mode) {
+    const currentMode = getCurrentBookingMode();
+    
+    if (currentMode === mode) {
+        return;
+    }
+    
+    const buttons = document.querySelectorAll('.btn-group .btn');
+    buttons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.textContent.toLowerCase().includes(mode)) {
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Switching...';
+        }
+    });
+    
+    const success = await updateBookingModeOnBackend(mode);
+    
+    buttons.forEach(btn => {
+        btn.disabled = false;
+        if (btn.textContent.includes('Switching')) {
+            btn.innerHTML = mode === 'student' ? '<i class="bi bi-mortarboard me-1"></i>Student' : '<i class="bi bi-briefcase me-1"></i>Short-term';
+        }
+    });
+    
+    if (success) {
         localStorage.setItem('booking_mode', mode);
         
-        // Update user object in localStorage
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
         user.booking_mode = mode;
         localStorage.setItem('user', JSON.stringify(user));
         
-        // Dispatch event for other components to update
-        window.dispatchEvent(new CustomEvent('bookingModeChanged', {
-            detail: { mode: mode }
-        }));
-        
-        return true;
-    }
-    return false;
-}
-
-function switchBookingMode(mode) {
-    if (setBookingMode(mode)) {
-        // Close the dropdown
         const dropdown = bootstrap.Dropdown.getInstance(document.getElementById('userDropdown'));
         if (dropdown) {
             dropdown.hide();
         }
         
-        // Show success message
         showModeSwitchSuccess(mode);
         
-        // Update navbar to reflect new mode
         setTimeout(() => {
             updateNavbar();
         }, 100);
         
-        // Reload current page to apply mode changes (optional)
         setTimeout(() => {
             if (shouldReloadPageOnModeChange()) {
                 window.location.reload();
             }
         }, 500);
+    } else {
+        showToast('Failed to update booking mode. Please try again.', 'error');
     }
 }
 
@@ -304,7 +378,6 @@ function showModeSwitchSuccess(mode) {
     
     document.body.insertAdjacentHTML('beforeend', toastHTML);
     
-    // Remove the toast after 3 seconds
     setTimeout(() => {
         const toast = document.querySelector('.toast');
         if (toast) {
@@ -313,16 +386,80 @@ function showModeSwitchSuccess(mode) {
     }, 3000);
 }
 
-function getModeDisplayName(mode) {
-    const modeNames = {
-        'student': 'Student',
-        'tenant': 'Short-term'
-    };
-    return modeNames[mode] || 'Student';
+function showToast(message, type = 'info', duration = 5000) {
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'toast-container';
+        document.body.appendChild(toastContainer);
+    }
+
+    const toastId = 'toast-' + Date.now();
+    const toast = document.createElement('div');
+    toast.id = toastId;
+    toast.className = `custom-toast ${type} toast-show`;
+    
+    let iconClass, title;
+    switch(type) {
+        case 'success':
+            iconClass = 'bi-check-lg';
+            title = 'Success';
+            break;
+        case 'error':
+            iconClass = 'bi-x-circle';
+            title = 'Error';
+            break;
+        case 'warning':
+            iconClass = 'bi-exclamation-triangle';
+            title = 'Warning';
+            break;
+        case 'info':
+        default:
+            iconClass = 'bi-info-circle';
+            title = 'Info';
+    }
+
+    toast.innerHTML = `
+        <div class="toast-header">
+            <div class="d-flex align-items-center w-100">
+                <div class="toast-icon ${type}">
+                    <i class="bi ${iconClass}"></i>
+                </div>
+                <strong class="toast-title me-auto">${title}</strong>
+                <button type="button" class="btn-close" onclick="removeToast('${toastId}')"></button>
+            </div>
+        </div>
+        <div class="toast-body">
+            ${message}
+        </div>
+    `;
+
+    toastContainer.appendChild(toast);
+
+    if (duration > 0) {
+        setTimeout(() => {
+            removeToast(toastId);
+        }, duration);
+    }
+
+    return toastId;
+}
+
+function removeToast(toastId) {
+    const toast = document.getElementById(toastId);
+    if (toast) {
+        toast.classList.remove('toast-show');
+        toast.classList.add('toast-hide');
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }
 }
 
 function shouldReloadPageOnModeChange() {
-    // List of pages that should reload when mode changes
     const reloadPages = [
         'home.html',
         'index.html',
@@ -335,30 +472,25 @@ function shouldReloadPageOnModeChange() {
     return reloadPages.includes(currentPage);
 }
 
-// NEW FUNCTION: Mobile dropdown positioning fix
-// UPDATED FUNCTION: Mobile dropdown positioning fix - More compact
 function setupMobileDropdownFix() {
     const userDropdown = document.getElementById('userDropdown');
     if (!userDropdown) return;
 
-    // Add event listener for dropdown show event
     userDropdown.addEventListener('show.bs.dropdown', function() {
         const dropdownMenu = this.nextElementSibling;
-        if (dropdownMenu && window.innerWidth < 992) { // Bootstrap's lg breakpoint
-            // More compact positioning
+        if (dropdownMenu && window.innerWidth < 992) {
             dropdownMenu.style.position = 'fixed';
-            dropdownMenu.style.top = '60px'; // Position just below navbar
+            dropdownMenu.style.top = '60px';
             dropdownMenu.style.right = '15px';
             dropdownMenu.style.left = 'auto';
             dropdownMenu.style.transform = 'none';
-            dropdownMenu.style.width = '280px'; // Slightly wider for mode buttons
-            dropdownMenu.style.maxHeight = '70vh'; // Limit height
-            dropdownMenu.style.overflowY = 'auto'; // Add scroll if needed
+            dropdownMenu.style.width = '280px';
+            dropdownMenu.style.maxHeight = '70vh';
+            dropdownMenu.style.overflowY = 'auto';
             dropdownMenu.style.zIndex = '1060';
             dropdownMenu.style.borderRadius = '10px';
             dropdownMenu.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
             
-            // Make dropdown content more compact
             const dropdownHeader = dropdownMenu.querySelector('.dropdown-header');
             if (dropdownHeader) {
                 dropdownHeader.style.padding = '0.5rem 1rem';
@@ -383,7 +515,6 @@ function setupMobileDropdownFix() {
         }
     });
 
-    // Reset styles when dropdown is hidden
     userDropdown.addEventListener('hide.bs.dropdown', function() {
         const dropdownMenu = this.nextElementSibling;
         if (dropdownMenu) {
@@ -399,7 +530,6 @@ function setupMobileDropdownFix() {
             dropdownMenu.style.borderRadius = '';
             dropdownMenu.style.boxShadow = '';
             
-            // Reset content styles
             const dropdownHeader = dropdownMenu.querySelector('.dropdown-header');
             if (dropdownHeader) {
                 dropdownHeader.style.padding = '';
@@ -424,7 +554,6 @@ function setupMobileDropdownFix() {
         }
     });
     
-    // Close dropdown when clicking outside on mobile
     document.addEventListener('click', function(event) {
         if (window.innerWidth < 992 && userDropdown && !userDropdown.contains(event.target)) {
             const dropdownMenu = userDropdown.nextElementSibling;
@@ -436,37 +565,28 @@ function setupMobileDropdownFix() {
 }
 
 function showLogoutModal(username) {
-    // Set the username in the modal
     document.getElementById('logoutUsername').textContent = username;
-    
-    // Show the modal
     const logoutModal = new bootstrap.Modal(document.getElementById('logoutModal'));
     logoutModal.show();
 }
 
 function performLogout() {
-    // Close the modal first
     const logoutModal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
     logoutModal.hide();
     
-    // Clear authentication data
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     
-    // Dispatch custom event to update navbar
     window.dispatchEvent(new Event('userAuthChange'));
     
-    // Show a brief success message (optional)
     showLogoutSuccess();
     
-    // Redirect to home page after a short delay
     setTimeout(() => {
         window.location.href = 'home.html';
     }, 1500);
 }
 
 function showLogoutSuccess() {
-    // Create a temporary success message
     const successHTML = `
         <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 9999;">
             <div class="toast align-items-center text-white bg-success border-0 show" role="alert">
@@ -483,7 +603,6 @@ function showLogoutSuccess() {
     
     document.body.insertAdjacentHTML('beforeend', successHTML);
     
-    // Remove the toast after 3 seconds
     setTimeout(() => {
         const toast = document.querySelector('.toast');
         if (toast) {
@@ -496,14 +615,13 @@ function getRoleDisplayName(role) {
     const roleNames = {
         'student': 'Student',
         'landlord': 'Landlord',
-        'tenant': 'Tenant', // ADDED tenant role display
+        'tenant': 'Tenant',
         'admin': 'Administrator'
     };
     return roleNames[role] || 'User';
 }
 
 function setupNavbarEventListeners() {
-    // Listen for storage changes to update navbar when login status changes
     window.addEventListener('storage', function(e) {
         if (e.key === 'token' || e.key === 'user') {
             const token = localStorage.getItem('token');
@@ -512,28 +630,23 @@ function setupNavbarEventListeners() {
         }
     });
     
-    // Custom event for login/logout (for same-tab updates)
     window.addEventListener('userAuthChange', function() {
         const token = localStorage.getItem('token');
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         updateNavbarAuthState(token, user);
     });
     
-    // Listen for booking mode changes
     window.addEventListener('bookingModeChanged', function(e) {
-        // Update navbar to reflect new mode
         updateNavbar();
     });
 }
 
-// Function to trigger navbar update from other pages
 function updateNavbar() {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     updateNavbarAuthState(token, user);
 }
 
-// Enhanced authorization check for protected pages
 function requireAuth(redirectUrl = 'authorization.html') {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -547,13 +660,11 @@ function requireAuth(redirectUrl = 'authorization.html') {
     return true;
 }
 
-// Role-based access control - UPDATED to include tenants with students
 function requireRole(allowedRoles, redirectUrl = 'home.html') {
     if (!requireAuth()) return false;
     
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     
-    // Special handling: if student is allowed, tenant should also be allowed
     const effectiveAllowedRoles = [...allowedRoles];
     if (allowedRoles.includes('student') && !allowedRoles.includes('tenant')) {
         effectiveAllowedRoles.push('tenant');
@@ -571,55 +682,45 @@ function requireRole(allowedRoles, redirectUrl = 'home.html') {
     return true;
 }
 
-// Check if user is student or tenant (for student/tenant pages)
 function isStudentOrTenant() {
     const user = getCurrentUser();
     return user.role === 'student' || user.role === 'tenant';
 }
 
-// Check if user is landlord
 function isLandlord() {
     const user = getCurrentUser();
     return user.role === 'landlord';
 }
 
-// Get current user info
 function getCurrentUser() {
     return JSON.parse(localStorage.getItem('user') || '{}');
 }
 
-// Check if user is logged in
 function isLoggedIn() {
     return !!localStorage.getItem('token');
 }
 
-// Get user role
 function getUserRole() {
     const user = getCurrentUser();
     return user.role || 'student';
 }
 
-// Get current booking mode (for mode-aware pages)
 function getCurrentBookingMode() {
     const user = getCurrentUser();
-    // Only students can switch modes
     if (user.role !== 'student') {
-        return 'student'; // Default for non-students
+        return 'student';
     }
     return localStorage.getItem('booking_mode') || 'student';
 }
 
-// Check if user is in student mode
 function isStudentMode() {
     return getCurrentBookingMode() === 'student';
 }
 
-// Check if user is in tenant mode
 function isTenantMode() {
     return getCurrentBookingMode() === 'tenant';
 }
 
-// Student/Tenant specific authorization
 function requireStudentOrTenant(redirectUrl = 'home.html') {
     if (!requireAuth()) return false;
     
@@ -633,7 +734,6 @@ function requireStudentOrTenant(redirectUrl = 'home.html') {
     return true;
 }
 
-// Landlord specific authorization
 function requireLandlord(redirectUrl = 'home.html') {
     if (!requireAuth()) return false;
     
