@@ -2476,18 +2476,34 @@ generateReviewCard(review) {
 }
 
     // In the generateReportCard method, update to include reporter type and verification
+// Fix the generateReportCard method to handle actual reports data structure
 generateReportCard(report) {
     const reporterName = report.reporter?.username || 'Anonymous User';
     const propertyName = report.reportedProperty?.title || 'Unknown Property';
     const priorityClass = `priority-${report.priority}`;
     
-    // NEW: Get reporter type and verification status
+    // FIXED: Handle the actual data structure from reports API
     const reporterType = report.reporterType || report.reporter?.role || 'unknown';
     const isAnonymous = report.isAnonymous || false;
-    const isVerified = report.reporter?.isVerified || false;
+    
+    // FIXED: Check verification status based on actual data structure
+    // The reports API might not populate reporter.isVerified, so we need to handle both cases
+    const isVerified = report.reporter?.isVerified || 
+                      (report.reporter && report.reporter.verificationStatus === 'approved') || 
+                      false;
     
     // Format reporter type for display
     const reporterTypeDisplay = this.formatReporterType(reporterType);
+    
+    // FIXED: Better verification badge display
+    let verificationBadge = '';
+    if (!isAnonymous) {
+        if (isVerified) {
+            verificationBadge = '<span class="badge bg-success ms-1" style="font-size: 0.6rem;"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>';
+        } else {
+            verificationBadge = '<span class="badge bg-secondary ms-1" style="font-size: 0.6rem;"><i class="bi bi-x-circle me-1"></i>Unverified</span>';
+        }
+    }
     
     return `
         <div class="card report-card ${report.status}">
@@ -2500,10 +2516,10 @@ generateReportCard(report) {
                         <div>
                             <h6 class="mb-0">${report.title}</h6>
                             <div class="report-meta">
-                                <span>
-                                    ${isAnonymous ? 'Anonymous' : `By ${reporterName}`} 
-                                    • ${reporterTypeDisplay}
-                                    ${!isAnonymous && isVerified ? '• <span class="text-success">✓ Verified</span>' : ''}
+                                <span class="d-flex align-items-center flex-wrap">
+                                    <span class="me-2">${isAnonymous ? 'Anonymous' : `By ${reporterName}`}</span>
+                                    <span class="me-2">• ${reporterTypeDisplay}</span>
+                                    ${verificationBadge}
                                 </span>
                                 <br>
                                 <span>${propertyName}</span> • 
@@ -3207,48 +3223,62 @@ setupEventListeners() {
         }
     }
 
-    async submitResponse() {
-        const reviewId = document.getElementById('reviewId').value;
-        const responseText = document.getElementById('responseText').value.trim();
-        
-        if (!responseText) {
-            alert('Please enter a response');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}/response`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${this.token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    response: responseText
-                })
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                
-                const reviewIndex = this.reviews.findIndex(r => r._id === reviewId);
-                if (reviewIndex !== -1) {
-                    this.reviews[reviewIndex] = result.review;
-                }
-
-                this.showToast('Response submitted successfully!', 'success');
-                bootstrap.Modal.getInstance(document.getElementById('responseModal')).hide();
-                this.loadReviews();
-                this.updateDashboardStats();
-            } else {
-                const error = await response.json();
-                this.showToast('Error: ' + error.error, 'error');
-            }
-        } catch (error) {
-            console.error('Error submitting response:', error);
-            this.showToast('Failed to submit response. Please try again.', 'error');
-        }
+    // Fix the submitResponse method to preserve verification status
+async submitResponse() {
+    const reviewId = document.getElementById('reviewId').value;
+    const responseText = document.getElementById('responseText').value.trim();
+    
+    if (!responseText) {
+        alert('Please enter a response');
+        return;
     }
+
+    try {
+        // Store the current review data before making the API call
+        const currentReview = this.reviews.find(r => r._id === reviewId);
+        const originalStudentData = currentReview?.student ? { ...currentReview.student } : null;
+
+        const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}/response`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${this.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                response: responseText
+            })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            
+            const reviewIndex = this.reviews.findIndex(r => r._id === reviewId);
+            if (reviewIndex !== -1) {
+                // Preserve the student verification data when updating the review
+                const updatedReview = result.review;
+                if (originalStudentData && updatedReview) {
+                    updatedReview.student = {
+                        ...updatedReview.student,
+                        isVerified: originalStudentData.isVerified,
+                        verificationStatus: originalStudentData.verificationStatus
+                    };
+                }
+                this.reviews[reviewIndex] = updatedReview;
+            }
+
+            this.showToast('Response submitted successfully!', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('responseModal')).hide();
+            this.loadReviews();
+            this.updateDashboardStats();
+        } else {
+            const error = await response.json();
+            this.showToast('Error: ' + error.error, 'error');
+        }
+    } catch (error) {
+        console.error('Error submitting response:', error);
+        this.showToast('Failed to submit response. Please try again.', 'error');
+    }
+}
 
     async updateReportStatus() {
         const reportId = document.getElementById('reportId').value;
@@ -3299,11 +3329,17 @@ setupEventListeners() {
     }
 
    // In the showReportDetailsModal method, update to include reporter details
+// Fix the showReportDetailsModal method for reports
 showReportDetailsModal(report) {
-    // NEW: Get detailed reporter info
+    // FIXED: Handle the actual data structure from reports API
     const reporterType = report.reporterType || report.reporter?.role || 'unknown';
     const isAnonymous = report.isAnonymous || false;
-    const isVerified = report.reporter?.isVerified || false;
+    
+    // FIXED: Check verification status based on actual data structure
+    const isVerified = report.reporter?.isVerified || 
+                      (report.reporter && report.reporter.verificationStatus === 'approved') || 
+                      false;
+    
     const reporterName = isAnonymous ? 'Anonymous' : (report.reporter?.username || 'Unknown User');
     
     const modalHTML = `
@@ -3352,7 +3388,7 @@ showReportDetailsModal(report) {
                             </div>
                         </div>
 
-                        <!-- NEW: Enhanced Reporter Information Section -->
+                        <!-- FIXED: Enhanced Reporter Information Section -->
                         <div class="report-field mt-3">
                             <label class="form-label fw-bold text-muted small">REPORTER INFORMATION</label>
                             <div class="card bg-light">
@@ -3365,7 +3401,9 @@ showReportDetailsModal(report) {
                                         <div class="col-md-6">
                                             <p class="mb-1"><strong>Status:</strong> 
                                                 ${isAnonymous ? 'Anonymous Report' : 
-                                                  isVerified ? 'Verified User ✓' : 'Unverified User'}
+                                                  isVerified ? 
+                                                  '<span class="badge bg-success"><i class="bi bi-patch-check-fill me-1"></i>Verified User</span>' : 
+                                                  '<span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Unverified User</span>'}
                                             </p>
                                             <p class="mb-0"><strong>Report Type:</strong> ${this.formatReportType(report.reportType)}</p>
                                         </div>
@@ -3451,7 +3489,6 @@ showReportDetailsModal(report) {
         </div>
     `;
 
-    // Rest of the modal implementation remains the same...
     const existingModal = document.getElementById('reportDetailsModal');
     if (existingModal) {
         existingModal.remove();
