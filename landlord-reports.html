@@ -1927,18 +1927,19 @@ updateDashboardStats() {
         ? (reviewsWithRatings.reduce((sum, review) => sum + review.rating, 0) / reviewsWithRatings.length).toFixed(1)
         : '0.0';
     
-    // NEW: Count verified reviews
+    // Count verified reviews
     const verifiedReviews = this.reviews.filter(review => 
         review.student && review.student.isVerified
     ).length;
     
-    // NEW: Count reports by type
-    const studentReports = this.reports.filter(report => 
-        report.reporterType === 'student' || report.reporter?.role === 'student'
+    // Count verified reports
+    const verifiedReports = this.reports.filter(report => 
+        !report.isAnonymous && report.reporter && report.reporter.isVerified
     ).length;
     
-    const tenantReports = this.reports.filter(report => 
-        report.reporterType === 'tenant' || report.reporter?.role === 'tenant'
+    // Count anonymous reports
+    const anonymousReports = this.reports.filter(report => 
+        report.isAnonymous
     ).length;
     
     document.getElementById('averageRating').textContent = averageRating;
@@ -1951,12 +1952,13 @@ updateDashboardStats() {
 
     document.getElementById('reviewedProperties').textContent = this.properties.length;
     
-    // NEW: Log verification stats for debugging
+    // Log verification stats for debugging
     console.log('Verification Stats:', {
         totalReviews: this.reviews.length,
         verifiedReviews: verifiedReviews,
-        studentReports: studentReports,
-        tenantReports: tenantReports
+        totalReports: this.reports.length,
+        verifiedReports: verifiedReports,
+        anonymousReports: anonymousReports
     });
 }
 
@@ -2477,32 +2479,35 @@ generateReviewCard(review) {
 
     // In the generateReportCard method, update to include reporter type and verification
 // Fix the generateReportCard method to handle actual reports data structure
+// Fix the generateReportCard method to properly handle verification
 generateReportCard(report) {
     const reporterName = report.reporter?.username || 'Anonymous User';
     const propertyName = report.reportedProperty?.title || 'Unknown Property';
     const priorityClass = `priority-${report.priority}`;
     
-    // FIXED: Handle the actual data structure from reports API
+    // FIXED: Better verification status handling
     const reporterType = report.reporterType || report.reporter?.role || 'unknown';
     const isAnonymous = report.isAnonymous || false;
     
-    // FIXED: Check verification status based on actual data structure
-    // The reports API might not populate reporter.isVerified, so we need to handle both cases
-    const isVerified = report.reporter?.isVerified || 
-                      (report.reporter && report.reporter.verificationStatus === 'approved') || 
-                      false;
+    // FIXED: Proper verification status check
+    const isVerified = report.reporter?.isVerified || false;
+    const verificationStatus = report.reporter?.verificationStatus || 'unverified';
     
     // Format reporter type for display
     const reporterTypeDisplay = this.formatReporterType(reporterType);
     
-    // FIXED: Better verification badge display
+    // FIXED: Enhanced verification badge display
     let verificationBadge = '';
     if (!isAnonymous) {
         if (isVerified) {
             verificationBadge = '<span class="badge bg-success ms-1" style="font-size: 0.6rem;"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>';
+        } else if (verificationStatus === 'pending') {
+            verificationBadge = '<span class="badge bg-warning ms-1" style="font-size: 0.6rem;"><i class="bi bi-clock me-1"></i>Pending</span>';
         } else {
             verificationBadge = '<span class="badge bg-secondary ms-1" style="font-size: 0.6rem;"><i class="bi bi-x-circle me-1"></i>Unverified</span>';
         }
+    } else {
+        verificationBadge = '<span class="badge bg-dark ms-1" style="font-size: 0.6rem;"><i class="bi bi-incognito me-1"></i>Anonymous</span>';
     }
     
     return `
@@ -3330,17 +3335,17 @@ async submitResponse() {
 
    // In the showReportDetailsModal method, update to include reporter details
 // Fix the showReportDetailsModal method for reports
+// Enhanced showReportDetailsModal with better verification display
 showReportDetailsModal(report) {
-    // FIXED: Handle the actual data structure from reports API
+    // FIXED: Enhanced verification status handling
     const reporterType = report.reporterType || report.reporter?.role || 'unknown';
     const isAnonymous = report.isAnonymous || false;
     
-    // FIXED: Check verification status based on actual data structure
-    const isVerified = report.reporter?.isVerified || 
-                      (report.reporter && report.reporter.verificationStatus === 'approved') || 
-                      false;
+    const isVerified = report.reporter?.isVerified || false;
+    const verificationStatus = report.reporter?.verificationStatus || 'unverified';
     
     const reporterName = isAnonymous ? 'Anonymous' : (report.reporter?.username || 'Unknown User');
+    const reporterEmail = isAnonymous ? 'Hidden' : (report.reporter?.email || 'Not provided');
     
     const modalHTML = `
         <div class="modal fade" id="reportDetailsModal" tabindex="-1" aria-labelledby="reportDetailsModalLabel" aria-hidden="true">
@@ -3388,7 +3393,7 @@ showReportDetailsModal(report) {
                             </div>
                         </div>
 
-                        <!-- FIXED: Enhanced Reporter Information Section -->
+                        <!-- FIXED: Enhanced Reporter Information with Verification -->
                         <div class="report-field mt-3">
                             <label class="form-label fw-bold text-muted small">REPORTER INFORMATION</label>
                             <div class="card bg-light">
@@ -3397,12 +3402,16 @@ showReportDetailsModal(report) {
                                         <div class="col-md-6">
                                             <p class="mb-1"><strong>Name:</strong> ${reporterName}</p>
                                             <p class="mb-1"><strong>Type:</strong> ${this.formatReporterType(reporterType)}</p>
+                                            <p class="mb-1"><strong>Email:</strong> ${reporterEmail}</p>
                                         </div>
                                         <div class="col-md-6">
-                                            <p class="mb-1"><strong>Status:</strong> 
-                                                ${isAnonymous ? 'Anonymous Report' : 
+                                            <p class="mb-1"><strong>Verification Status:</strong> 
+                                                ${isAnonymous ? 
+                                                    '<span class="badge bg-dark"><i class="bi bi-incognito me-1"></i>Anonymous Report</span>' : 
                                                   isVerified ? 
                                                   '<span class="badge bg-success"><i class="bi bi-patch-check-fill me-1"></i>Verified User</span>' : 
+                                                  verificationStatus === 'pending' ?
+                                                  '<span class="badge bg-warning"><i class="bi bi-clock me-1"></i>Verification Pending</span>' :
                                                   '<span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Unverified User</span>'}
                                             </p>
                                             <p class="mb-0"><strong>Report Type:</strong> ${this.formatReportType(report.reportType)}</p>
@@ -3426,6 +3435,7 @@ showReportDetailsModal(report) {
                             </div>
                         </div>
 
+                        <!-- Rest of the modal content remains the same -->
                         <div class="report-field">
                             <label class="form-label fw-bold text-muted small">PROPERTY</label>
                             <p class="mb-0">
@@ -3489,6 +3499,7 @@ showReportDetailsModal(report) {
         </div>
     `;
 
+    // Rest of the modal display code remains the same...
     const existingModal = document.getElementById('reportDetailsModal');
     if (existingModal) {
         existingModal.remove();
