@@ -1179,15 +1179,21 @@
           <div class="col-md-8">
             <div class="report-section">
               <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="text-navy mb-0">Recent Reviews</h5>
-                <div>
-                  <select class="form-select form-select-sm" id="reviewFilter">
-                    <option value="all">All Reviews</option>
-                    <option value="positive">Positive</option>
-                    <option value="negative">Negative</option>
-                    <option value="unresponded">Unresponded</option>
-                  </select>
-                </div>
+                  <h5 class="text-navy mb-0">Recent Reviews</h5>
+                  <div class="d-flex gap-2">
+                      <select class="form-select form-select-sm" id="reviewFilter">
+                          <option value="all">All Reviews</option>
+                          <option value="positive">Positive</option>
+                          <option value="negative">Negative</option>
+                          <option value="unresponded">Unresponded</option>
+                      </select>
+                      <!-- NEW: Verification Status Filter -->
+                      <select class="form-select form-select-sm" id="reviewVerificationFilter">
+                          <option value="all">All Users</option>
+                          <option value="verified">Verified Only</option>
+                          <option value="unverified">Unverified Only</option>
+                      </select>
+                  </div>
               </div>
               
               <div id="reviewsList">
@@ -1618,7 +1624,6 @@ class ReportsManager {
     this.properties = [];
     this.bookings = [];
     
-    // FIXED: Load payments using landlord-specific method
     this.payments = this.loadPayments();
     
     this.financialData = {
@@ -1627,9 +1632,13 @@ class ReportsManager {
         currentMonthRevenue: 0,
         revenueProperties: 0
     };
+    
+    // NEW: Add verification filter
     this.currentReviewFilter = 'all';
+    this.currentReviewVerificationFilter = 'all';
     this.currentReportStatusFilter = 'all';
     this.currentReportPriorityFilter = 'all';
+    
     this.bookingChart = null;
     this.occupancyChart = null;
     this.revenueChart = null;
@@ -1911,22 +1920,45 @@ updateMonthlyRevenueManually(monthName, year, amount) {
     this.refreshData();
 }
 
-    updateDashboardStats() {
-        const reviewsWithRatings = this.reviews.filter(review => review.rating && review.rating > 0);
-        const averageRating = reviewsWithRatings.length > 0 
-            ? (reviewsWithRatings.reduce((sum, review) => sum + review.rating, 0) / reviewsWithRatings.length).toFixed(1)
-            : '0.0';
-        
-        document.getElementById('averageRating').textContent = averageRating;
-        document.getElementById('totalReviews').textContent = this.reviews.length;
+    // In the updateDashboardStats method, add verification stats
+updateDashboardStats() {
+    const reviewsWithRatings = this.reviews.filter(review => review.rating && review.rating > 0);
+    const averageRating = reviewsWithRatings.length > 0 
+        ? (reviewsWithRatings.reduce((sum, review) => sum + review.rating, 0) / reviewsWithRatings.length).toFixed(1)
+        : '0.0';
+    
+    // NEW: Count verified reviews
+    const verifiedReviews = this.reviews.filter(review => 
+        review.student && review.student.isVerified
+    ).length;
+    
+    // NEW: Count reports by type
+    const studentReports = this.reports.filter(report => 
+        report.reporterType === 'student' || report.reporter?.role === 'student'
+    ).length;
+    
+    const tenantReports = this.reports.filter(report => 
+        report.reporterType === 'tenant' || report.reporter?.role === 'tenant'
+    ).length;
+    
+    document.getElementById('averageRating').textContent = averageRating;
+    document.getElementById('totalReviews').textContent = this.reviews.length;
 
-        const openReports = this.reports.filter(report => 
-            report.status === 'pending' || report.status === 'under_review'
-        ).length;
-        document.getElementById('totalReports').textContent = openReports;
+    const openReports = this.reports.filter(report => 
+        report.status === 'pending' || report.status === 'under_review'
+    ).length;
+    document.getElementById('totalReports').textContent = openReports;
 
-        document.getElementById('reviewedProperties').textContent = this.properties.length;
-    }
+    document.getElementById('reviewedProperties').textContent = this.properties.length;
+    
+    // NEW: Log verification stats for debugging
+    console.log('Verification Stats:', {
+        totalReviews: this.reviews.length,
+        verifiedReviews: verifiedReviews,
+        studentReports: studentReports,
+        tenantReports: tenantReports
+    });
+}
 
     updateFinancialUI() {
         const currentMonthElement = document.getElementById('currentMonthRevenue');
@@ -2360,128 +2392,174 @@ clearRevenueData() {
         return stars;
     }
 
-    generateReviewCard(review) {
-        const sentiment = this.getReviewSentiment(review.rating);
-        const hasResponse = review.landlordResponse && review.landlordResponse.comment;
-        const studentName = review.student?.username || 'Anonymous Student';
-        const propertyName = review.property?.title || 'Property';
-        const reviewType = review.reviewType === 'booking' ? 'Booking Review' : 'General Review';
-        
-        return `
-            <div class="card review-card ${sentiment}">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                <i class="bi bi-person-fill text-white"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-0">${studentName}</h6>
+    // In the generateReviewCard method, update to include verification status
+generateReviewCard(review) {
+    const sentiment = this.getReviewSentiment(review.rating);
+    const hasResponse = review.landlordResponse && review.landlordResponse.comment;
+    const studentName = review.student?.username || 'Anonymous Student';
+    const propertyName = review.property?.title || 'Property';
+    const reviewType = review.reviewType === 'booking' ? 'Booking Review' : 'General Review';
+    
+    // NEW: Check if student is verified
+    const isVerified = review.student?.isVerified || false;
+    const verificationStatus = review.student?.verificationStatus || 'unverified';
+    
+    return `
+        <div class="card review-card ${sentiment}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                            <i class="bi bi-person-fill text-white"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">${studentName}</h6>
+                            <div class="d-flex align-items-center gap-2">
                                 <small class="text-muted">${propertyName}</small>
-                                <br>
-                                <small class="text-info">${reviewType}</small>
+                                <!-- NEW: Verification Badge -->
+                                ${isVerified ? `
+                                    <span class="badge bg-success" style="font-size: 0.6rem;">
+                                        <i class="bi bi-patch-check-fill me-1"></i>Verified
+                                    </span>
+                                ` : verificationStatus === 'pending' ? `
+                                    <span class="badge bg-warning" style="font-size: 0.6rem;">
+                                        <i class="bi bi-clock me-1"></i>Pending
+                                    </span>
+                                ` : `
+                                    <span class="badge bg-secondary" style="font-size: 0.6rem;">
+                                        <i class="bi bi-x-circle me-1"></i>Unverified
+                                    </span>
+                                `}
                             </div>
-                        </div>
-                        <div class="text-end">
-                            <div class="rating-stars mb-1">
-                                ${this.generateStars(review.rating)}
-                            </div>
-                            <small class="text-muted">${new Date(review.createdAt).toLocaleDateString()}</small>
+                            <br>
+                            <small class="text-info">${reviewType}</small>
                         </div>
                     </div>
-                    
-                    <p class="mb-3">${review.comment}</p>
-                    
-                    ${hasResponse ? `
-                        <div class="alert alert-light border">
-                            <div class="d-flex justify-content-between align-items-start mb-1">
-                                <strong>Your Response</strong>
-                                <small class="text-muted">${new Date(review.landlordResponse.respondedAt).toLocaleDateString()}</small>
-                            </div>
-                            <p class="mb-0">${review.landlordResponse.comment}</p>
+                    <div class="text-end">
+                        <div class="rating-stars mb-1">
+                            ${this.generateStars(review.rating)}
                         </div>
+                        <small class="text-muted">${new Date(review.createdAt).toLocaleDateString()}</small>
+                    </div>
+                </div>
+                
+                <p class="mb-3">${review.comment}</p>
+                
+                ${hasResponse ? `
+                    <div class="alert alert-light border">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <strong>Your Response</strong>
+                            <small class="text-muted">${new Date(review.landlordResponse.respondedAt).toLocaleDateString()}</small>
+                        </div>
+                        <p class="mb-0">${review.landlordResponse.comment}</p>
+                    </div>
+                ` : `
+                    <div class="alert alert-warning">
+                        <small>No response yet</small>
+                    </div>
+                `}
+                
+                <div class="review-actions d-flex justify-content-end">
+                    ${!hasResponse ? `
+                        <button class="btn btn-sm btn-outline-primary" onclick="reportsManager.openResponseModal('${review._id}')">
+                            <i class="bi bi-reply me-1"></i>Respond
+                        </button>
                     ` : `
-                        <div class="alert alert-warning">
-                            <small>No response yet</small>
-                        </div>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="reportsManager.openResponseModal('${review._id}')">
+                            <i class="bi bi-pencil me-1"></i>Edit Response
+                        </button>
                     `}
-                    
-                    <div class="review-actions d-flex justify-content-end">
-                        ${!hasResponse ? `
-                            <button class="btn btn-sm btn-outline-primary" onclick="reportsManager.openResponseModal('${review._id}')">
-                                <i class="bi bi-reply me-1"></i>Respond
-                            </button>
-                        ` : `
-                            <button class="btn btn-sm btn-outline-secondary" onclick="reportsManager.openResponseModal('${review._id}')">
-                                <i class="bi bi-pencil me-1"></i>Edit Response
-                            </button>
-                        `}
-                    </div>
                 </div>
             </div>
-        `;
-    }
+        </div>
+    `;
+}
 
-    generateReportCard(report) {
-        const reporterName = report.reporter?.username || 'Anonymous User';
-        const propertyName = report.reportedProperty?.title || 'Unknown Property';
-        const priorityClass = `priority-${report.priority}`;
-        
-        return `
-            <div class="card report-card ${report.status}">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-danger rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                <i class="bi bi-flag-fill text-white"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-0">${report.title}</h6>
-                                <div class="report-meta">
-                                    <span>By ${reporterName}</span> • 
-                                    <span>${propertyName}</span> • 
-                                    <span>${new Date(report.createdAt).toLocaleDateString()}</span>
-                                </div>
-                            </div>
+    // In the generateReportCard method, update to include reporter type and verification
+generateReportCard(report) {
+    const reporterName = report.reporter?.username || 'Anonymous User';
+    const propertyName = report.reportedProperty?.title || 'Unknown Property';
+    const priorityClass = `priority-${report.priority}`;
+    
+    // NEW: Get reporter type and verification status
+    const reporterType = report.reporterType || report.reporter?.role || 'unknown';
+    const isAnonymous = report.isAnonymous || false;
+    const isVerified = report.reporter?.isVerified || false;
+    
+    // Format reporter type for display
+    const reporterTypeDisplay = this.formatReporterType(reporterType);
+    
+    return `
+        <div class="card report-card ${report.status}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-danger rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                            <i class="bi bi-flag-fill text-white"></i>
                         </div>
-                        <div class="text-end">
-                            <span class="badge ${priorityClass} priority-badge me-1">${report.priority}</span>
-                            <span class="badge bg-secondary">${report.status.replace('_', ' ')}</span>
+                        <div>
+                            <h6 class="mb-0">${report.title}</h6>
+                            <div class="report-meta">
+                                <span>
+                                    ${isAnonymous ? 'Anonymous' : `By ${reporterName}`} 
+                                    • ${reporterTypeDisplay}
+                                    ${!isAnonymous && isVerified ? '• <span class="text-success">✓ Verified</span>' : ''}
+                                </span>
+                                <br>
+                                <span>${propertyName}</span> • 
+                                <span>${new Date(report.createdAt).toLocaleDateString()}</span>
+                            </div>
                         </div>
                     </div>
-                    
-                    <p class="mb-3">${report.description}</p>
-                    
-                    ${report.evidence && report.evidence.length > 0 ? `
-                        <div class="mb-3">
-                            <strong>Evidence:</strong>
-                            <div class="mt-2">
-                                ${report.evidence.map(evidence => `
-                                    <img src="${evidence}" class="evidence-preview" alt="Evidence" onclick="window.open('${evidence}', '_blank')">
-                                `).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-                    
-                    ${report.adminNotes ? `
-                        <div class="alert alert-info">
-                            <strong>Admin Notes:</strong>
-                            <p class="mb-0 mt-1">${report.adminNotes}</p>
-                        </div>
-                    ` : ''}
-                    
-                    <div class="report-actions d-flex justify-content-end gap-2">
-                        <button class="btn btn-sm btn-outline-primary" onclick="reportsManager.openUpdateReportModal('${report._id}')">
-                            <i class="bi bi-pencil me-1"></i>Update Status
-                        </button>
-                        <button class="btn btn-sm btn-outline-info" onclick="reportsManager.viewReportDetails('${report._id}')">
-                            <i class="bi bi-eye me-1"></i>View Details
-                        </button>
+                    <div class="text-end">
+                        <span class="badge ${priorityClass} priority-badge me-1">${report.priority}</span>
+                        <span class="badge bg-secondary">${report.status.replace('_', ' ')}</span>
                     </div>
                 </div>
+                
+                <p class="mb-3">${report.description}</p>
+                
+                ${report.evidence && report.evidence.length > 0 ? `
+                    <div class="mb-3">
+                        <strong>Evidence:</strong>
+                        <div class="mt-2">
+                            ${report.evidence.map(evidence => `
+                                <img src="${evidence}" class="evidence-preview" alt="Evidence" onclick="window.open('${evidence}', '_blank')">
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+                
+                ${report.adminNotes ? `
+                    <div class="alert alert-info">
+                        <strong>Admin Notes:</strong>
+                        <p class="mb-0 mt-1">${report.adminNotes}</p>
+                    </div>
+                ` : ''}
+                
+                <div class="report-actions d-flex justify-content-end gap-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="reportsManager.openUpdateReportModal('${report._id}')">
+                        <i class="bi bi-pencil me-1"></i>Update Status
+                    </button>
+                    <button class="btn btn-sm btn-outline-info" onclick="reportsManager.viewReportDetails('${report._id}')">
+                        <i class="bi bi-eye me-1"></i>View Details
+                    </button>
+                </div>
             </div>
-        `;
-    }
+        </div>
+    `;
+}
+
+// Add helper method to format reporter type
+formatReporterType(type) {
+    const typeMap = {
+        'student': 'Student',
+        'tenant': 'Short-term Tenant',
+        'landlord': 'Landlord',
+        'unknown': 'User'
+    };
+    return typeMap[type] || type;
+}
 
     getReviewSentiment(rating) {
         if (rating >= 4) return 'positive';
@@ -2509,6 +2587,7 @@ clearRevenueData() {
             '<div class="empty-state"><i class="bi bi-flag"></i><p>No reports found</p></div>';
     }
 
+    // Update filterReviews method to include verification filtering
     filterReviews() {
         let filtered = this.reviews;
         
@@ -2524,9 +2603,15 @@ clearRevenueData() {
                 break;
         }
         
+        // NEW: Filter by verification status
+        if (this.currentReviewVerificationFilter === 'verified') {
+            filtered = filtered.filter(review => review.student && review.student.isVerified);
+        } else if (this.currentReviewVerificationFilter === 'unverified') {
+            filtered = filtered.filter(review => !review.student || !review.student.isVerified);
+        }
+        
         return filtered;
     }
-
     filterReports() {
         let filtered = this.reports;
         
@@ -3020,31 +3105,41 @@ updatePaymentsUI() {
     }
 }
 
-    setupEventListeners() {
-        const reviewFilter = document.getElementById('reviewFilter');
-        if (reviewFilter) {
-            reviewFilter.addEventListener('change', (e) => {
-                this.currentReviewFilter = e.target.value;
-                this.loadReviews();
-            });
-        }
-
-        const reportStatusFilter = document.getElementById('reportStatusFilter');
-        if (reportStatusFilter) {
-            reportStatusFilter.addEventListener('change', (e) => {
-                this.currentReportStatusFilter = e.target.value;
-                this.loadReports();
-            });
-        }
-
-        const reportPriorityFilter = document.getElementById('reportPriorityFilter');
-        if (reportPriorityFilter) {
-            reportPriorityFilter.addEventListener('change', (e) => {
-                this.currentReportPriorityFilter = e.target.value;
-                this.loadReports();
-            });
-        }
+    // In the setupEventListeners method, add verification filter
+setupEventListeners() {
+    const reviewFilter = document.getElementById('reviewFilter');
+    if (reviewFilter) {
+        reviewFilter.addEventListener('change', (e) => {
+            this.currentReviewFilter = e.target.value;
+            this.loadReviews();
+        });
     }
+
+    // NEW: Add verification filter for reviews
+    const reviewVerificationFilter = document.getElementById('reviewVerificationFilter');
+    if (reviewVerificationFilter) {
+        reviewVerificationFilter.addEventListener('change', (e) => {
+            this.currentReviewVerificationFilter = e.target.value;
+            this.loadReviews();
+        });
+    }
+
+    const reportStatusFilter = document.getElementById('reportStatusFilter');
+    if (reportStatusFilter) {
+        reportStatusFilter.addEventListener('change', (e) => {
+            this.currentReportStatusFilter = e.target.value;
+            this.loadReports();
+        });
+    }
+
+    const reportPriorityFilter = document.getElementById('reportPriorityFilter');
+    if (reportPriorityFilter) {
+        reportPriorityFilter.addEventListener('change', (e) => {
+            this.currentReportPriorityFilter = e.target.value;
+            this.loadReports();
+        });
+    }
+}
 
     setupRealTimeUpdates() {
         setInterval(() => {
@@ -3203,151 +3298,179 @@ updatePaymentsUI() {
         }
     }
 
-    showReportDetailsModal(report) {
-        const modalHTML = `
-            <div class="modal fade" id="reportDetailsModal" tabindex="-1" aria-labelledby="reportDetailsModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="reportDetailsModalLabel">
-                                <i class="bi bi-flag-fill me-2"></i>Report Details
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row g-3">
-                                <div class="col-12 col-md-6">
-                                    <div class="report-field">
-                                        <label class="form-label fw-bold text-muted small">TITLE</label>
-                                        <p class="mb-0 text-break">${report.title}</p>
-                                    </div>
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <div class="report-field">
-                                        <label class="form-label fw-bold text-muted small">STATUS</label>
-                                        <div>
-                                            <span class="badge ${this.getStatusBadgeClass(report.status)}">
-                                                ${report.status.replace('_', ' ').toUpperCase()}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <div class="report-field">
-                                        <label class="form-label fw-bold text-muted small">PRIORITY</label>
-                                        <div>
-                                            <span class="badge ${this.getPriorityBadgeClass(report.priority)} priority-badge">
-                                                ${report.priority.toUpperCase()}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <div class="report-field">
-                                        <label class="form-label fw-bold text-muted small">DATE REPORTED</label>
-                                        <p class="mb-0">${new Date(report.createdAt).toLocaleDateString()}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="report-field mt-3">
-                                <label class="form-label fw-bold text-muted small">REPORTED BY</label>
-                                <p class="mb-0">
-                                    <i class="bi bi-person me-1"></i>
-                                    ${report.reporter?.username || 'Anonymous User'}
-                                </p>
-                            </div>
-
-                            <div class="report-field">
-                                <label class="form-label fw-bold text-muted small">PROPERTY</label>
-                                <p class="mb-0">
-                                    <i class="bi bi-house me-1"></i>
-                                    ${report.reportedProperty?.title || 'Unknown Property'}
-                                </p>
-                            </div>
-
-                            <div class="report-field">
-                                <label class="form-label fw-bold text-muted small">REPORT TYPE</label>
-                                <p class="mb-0">
-                                    <i class="bi bi-tag me-1"></i>
-                                    ${this.formatReportType(report.reportType)}
-                                </p>
-                            </div>
-
-                            <div class="report-field">
-                                <label class="form-label fw-bold text-muted small">DESCRIPTION</label>
-                                <div class="card bg-light">
-                                    <div class="card-body p-3">
-                                        <p class="mb-0">${report.description}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            ${report.evidence && report.evidence.length > 0 ? `
+   // In the showReportDetailsModal method, update to include reporter details
+showReportDetailsModal(report) {
+    // NEW: Get detailed reporter info
+    const reporterType = report.reporterType || report.reporter?.role || 'unknown';
+    const isAnonymous = report.isAnonymous || false;
+    const isVerified = report.reporter?.isVerified || false;
+    const reporterName = isAnonymous ? 'Anonymous' : (report.reporter?.username || 'Unknown User');
+    
+    const modalHTML = `
+        <div class="modal fade" id="reportDetailsModal" tabindex="-1" aria-labelledby="reportDetailsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="reportDetailsModalLabel">
+                            <i class="bi bi-flag-fill me-2"></i>Report Details
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
                                 <div class="report-field">
-                                    <label class="form-label fw-bold text-muted small">EVIDENCE</label>
-                                    <div class="d-flex flex-wrap gap-2">
-                                        ${report.evidence.map(evidence => `
-                                            <div class="evidence-item">
-                                                <img src="${evidence}" class="evidence-modal-preview" alt="Evidence" 
-                                                     onclick="window.open('${evidence}', '_blank')"
-                                                     data-bs-toggle="tooltip" title="Click to view full size">
+                                    <label class="form-label fw-bold text-muted small">TITLE</label>
+                                    <p class="mb-0 text-break">${report.title}</p>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="report-field">
+                                    <label class="form-label fw-bold text-muted small">STATUS</label>
+                                    <div>
+                                        <span class="badge ${this.getStatusBadgeClass(report.status)}">
+                                            ${report.status.replace('_', ' ').toUpperCase()}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="report-field">
+                                    <label class="form-label fw-bold text-muted small">PRIORITY</label>
+                                    <div>
+                                        <span class="badge ${this.getPriorityBadgeClass(report.priority)} priority-badge">
+                                            ${report.priority.toUpperCase()}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="report-field">
+                                    <label class="form-label fw-bold text-muted small">DATE REPORTED</label>
+                                    <p class="mb-0">${new Date(report.createdAt).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- NEW: Enhanced Reporter Information Section -->
+                        <div class="report-field mt-3">
+                            <label class="form-label fw-bold text-muted small">REPORTER INFORMATION</label>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-1"><strong>Name:</strong> ${reporterName}</p>
+                                            <p class="mb-1"><strong>Type:</strong> ${this.formatReporterType(reporterType)}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-1"><strong>Status:</strong> 
+                                                ${isAnonymous ? 'Anonymous Report' : 
+                                                  isVerified ? 'Verified User ✓' : 'Unverified User'}
+                                            </p>
+                                            <p class="mb-0"><strong>Report Type:</strong> ${this.formatReportType(report.reportType)}</p>
+                                        </div>
+                                    </div>
+                                    ${report.contactInfo && !isAnonymous ? `
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <small class="text-muted">Contact Information:</small>
+                                                <p class="mb-0 small">
+                                                    ${report.contactInfo.email ? `Email: ${report.contactInfo.email}<br>` : ''}
+                                                    ${report.contactInfo.phone ? `Phone: ${report.contactInfo.phone}<br>` : ''}
+                                                    ${report.contactInfo.studentNumber ? `Student #: ${report.contactInfo.studentNumber}<br>` : ''}
+                                                    ${report.contactInfo.idNumber ? `ID #: ${report.contactInfo.idNumber}` : ''}
+                                                </p>
                                             </div>
-                                        `).join('')}
-                                    </div>
+                                        </div>
+                                    ` : ''}
                                 </div>
-                            ` : ''}
-
-                            ${report.adminNotes ? `
-                                <div class="report-field">
-                                    <label class="form-label fw-bold text-muted small">ADMIN NOTES</label>
-                                    <div class="alert alert-info">
-                                        <p class="mb-0">${report.adminNotes}</p>
-                                    </div>
-                                </div>
-                            ` : ''}
-
-                            ${report.resolutionNotes ? `
-                                <div class="report-field">
-                                    <label class="form-label fw-bold text-muted small">RESOLUTION NOTES</label>
-                                    <div class="alert alert-success">
-                                        <p class="mb-0">${report.resolutionNotes}</p>
-                                    </div>
-                                </div>
-                            ` : ''}
+                            </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                <i class="bi bi-x-circle me-1"></i>Close
-                            </button>
-                            <button type="button" class="btn btn-primary" onclick="reportsManager.openUpdateReportModalFromDetails('${report._id}')">
-                                <i class="bi bi-pencil me-1"></i>Update Status
-                            </button>
+
+                        <div class="report-field">
+                            <label class="form-label fw-bold text-muted small">PROPERTY</label>
+                            <p class="mb-0">
+                                <i class="bi bi-house me-1"></i>
+                                ${report.reportedProperty?.title || 'Unknown Property'}
+                            </p>
                         </div>
+
+                        <div class="report-field">
+                            <label class="form-label fw-bold text-muted small">DESCRIPTION</label>
+                            <div class="card bg-light">
+                                <div class="card-body p-3">
+                                    <p class="mb-0">${report.description}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        ${report.evidence && report.evidence.length > 0 ? `
+                            <div class="report-field">
+                                <label class="form-label fw-bold text-muted small">EVIDENCE</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    ${report.evidence.map(evidence => `
+                                        <div class="evidence-item">
+                                            <img src="${evidence}" class="evidence-modal-preview" alt="Evidence" 
+                                                 onclick="window.open('${evidence}', '_blank')"
+                                                 data-bs-toggle="tooltip" title="Click to view full size">
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${report.adminNotes ? `
+                            <div class="report-field">
+                                <label class="form-label fw-bold text-muted small">ADMIN NOTES</label>
+                                <div class="alert alert-info">
+                                    <p class="mb-0">${report.adminNotes}</p>
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${report.resolutionNotes ? `
+                            <div class="report-field">
+                                <label class="form-label fw-bold text-muted small">RESOLUTION NOTES</label>
+                                <div class="alert alert-success">
+                                    <p class="mb-0">${report.resolutionNotes}</p>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Close
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="reportsManager.openUpdateReportModalFromDetails('${report._id}')">
+                            <i class="bi bi-pencil me-1"></i>Update Status
+                        </button>
                     </div>
                 </div>
             </div>
-        `;
+        </div>
+    `;
 
-        const existingModal = document.getElementById('reportDetailsModal');
-        if (existingModal) {
-            existingModal.remove();
-        }
-
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-        const modal = new bootstrap.Modal(document.getElementById('reportDetailsModal'));
-        modal.show();
-
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-
-        document.getElementById('reportDetailsModal').addEventListener('hidden.bs.modal', function () {
-            this.remove();
-        });
+    // Rest of the modal implementation remains the same...
+    const existingModal = document.getElementById('reportDetailsModal');
+    if (existingModal) {
+        existingModal.remove();
     }
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    const modal = new bootstrap.Modal(document.getElementById('reportDetailsModal'));
+    modal.show();
+
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    document.getElementById('reportDetailsModal').addEventListener('hidden.bs.modal', function () {
+        this.remove();
+    });
+}
 
     openUpdateReportModalFromDetails(reportId) {
         const detailsModal = bootstrap.Modal.getInstance(document.getElementById('reportDetailsModal'));
