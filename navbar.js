@@ -481,60 +481,70 @@ function setupMobileDropdownFix() {
         const dropdownMenu = this.nextElementSibling;
         if (dropdownMenu && window.innerWidth < 992) {
             const viewportHeight = window.innerHeight;
-            const navbarHeight = 60;
-            const availableHeight = viewportHeight - navbarHeight - 10;
-
-            // Apply compact mobile styles
+            const navbarHeight = 60; // Approximate navbar height
+            
+            // Calculate available space
+            const availableHeight = viewportHeight - navbarHeight - 20; // 20px padding from top/bottom
+            
             dropdownMenu.style.position = 'fixed';
             dropdownMenu.style.top = navbarHeight + 'px';
             dropdownMenu.style.right = '10px';
             dropdownMenu.style.left = 'auto';
             dropdownMenu.style.transform = 'none';
-            dropdownMenu.style.width = '280px';
-            dropdownMenu.style.maxWidth = 'calc(100vw - 20px)';
-            dropdownMenu.style.maxHeight = Math.min(availableHeight, 500) + 'px';
+            dropdownMenu.style.width = 'calc(100vw - 20px)';
+            dropdownMenu.style.maxWidth = '280px';
+            dropdownMenu.style.maxHeight = Math.min(availableHeight, 400) + 'px'; // Cap at 400px max
             dropdownMenu.style.overflowY = 'auto';
             dropdownMenu.style.zIndex = '1060';
-            dropdownMenu.style.borderRadius = '8px';
+            dropdownMenu.style.borderRadius = '10px';
             dropdownMenu.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-            dropdownMenu.style.padding = '0';
+            dropdownMenu.style.fontSize = '0.9rem';
             
-            // Force compact styling
+            // Optimize dropdown header
             const dropdownHeader = dropdownMenu.querySelector('.dropdown-header');
             if (dropdownHeader) {
-                dropdownHeader.style.padding = '0.5rem 0.75rem';
-                dropdownHeader.style.fontSize = '0.8rem';
-                dropdownHeader.style.lineHeight = '1.3';
+                dropdownHeader.style.padding = '0.75rem 1rem';
+                dropdownHeader.style.fontSize = '0.85rem';
             }
             
+            // Optimize dropdown items
             const dropdownItems = dropdownMenu.querySelectorAll('.dropdown-item');
             dropdownItems.forEach(item => {
-                item.style.padding = '0.5rem 0.75rem';
+                item.style.padding = '0.6rem 1rem';
                 item.style.fontSize = '0.85rem';
-                item.style.minHeight = '40px';
+                item.style.minHeight = 'auto';
             });
             
+            // Optimize mode switcher section
             const modeSection = dropdownMenu.querySelector('.dropdown-item-text');
             if (modeSection) {
-                modeSection.style.padding = '0.4rem 0.75rem';
+                modeSection.style.padding = '0.5rem 1rem';
+                
+                const modeButtons = modeSection.querySelectorAll('.btn-group .btn');
+                modeButtons.forEach(btn => {
+                    btn.style.padding = '0.3rem 0.5rem';
+                    btn.style.fontSize = '0.75rem';
+                    btn.style.lineHeight = '1.2';
+                });
                 
                 const modeLabel = modeSection.querySelector('.text-muted');
                 if (modeLabel) {
                     modeLabel.style.fontSize = '0.75rem';
-                    modeLabel.style.marginBottom = '0.25rem';
+                    modeLabel.style.marginBottom = '0.3rem';
                 }
-                
-                const modeButtons = modeSection.querySelectorAll('.btn-group .btn');
-                modeButtons.forEach(btn => {
-                    btn.style.padding = '0.25rem 0.4rem';
-                    btn.style.fontSize = '0.75rem';
-                    btn.style.lineHeight = '1.2';
-                });
             }
             
+            // Optimize dividers
             const dividers = dropdownMenu.querySelectorAll('.dropdown-divider');
             dividers.forEach(divider => {
-                divider.style.margin = '0.2rem 0';
+                divider.style.margin = '0.25rem 0';
+            });
+            
+            // Remove any unnecessary badges in mobile view
+            const badges = dropdownMenu.querySelectorAll('.badge');
+            badges.forEach(badge => {
+                badge.style.fontSize = '0.7rem';
+                badge.style.padding = '0.2rem 0.4rem';
             });
         }
     });
@@ -542,32 +552,61 @@ function setupMobileDropdownFix() {
     userDropdown.addEventListener('hide.bs.dropdown', function() {
         const dropdownMenu = this.nextElementSibling;
         if (dropdownMenu) {
-            // Reset all inline styles
-            const stylesToReset = [
-                'position', 'top', 'right', 'left', 'transform', 'width', 
-                'maxWidth', 'maxHeight', 'overflowY', 'zIndex', 'borderRadius', 
-                'boxShadow', 'padding'
-            ];
+            // Reset all styles
+            dropdownMenu.style.position = '';
+            dropdownMenu.style.top = '';
+            dropdownMenu.style.right = '';
+            dropdownMenu.style.left = '';
+            dropdownMenu.style.transform = '';
+            dropdownMenu.style.width = '';
+            dropdownMenu.style.maxWidth = '';
+            dropdownMenu.style.maxHeight = '';
+            dropdownMenu.style.overflowY = '';
+            dropdownMenu.style.zIndex = '';
+            dropdownMenu.style.borderRadius = '';
+            dropdownMenu.style.boxShadow = '';
+            dropdownMenu.style.fontSize = '';
             
-            stylesToReset.forEach(style => {
-                dropdownMenu.style[style] = '';
+            const dropdownHeader = dropdownMenu.querySelector('.dropdown-header');
+            if (dropdownHeader) {
+                dropdownHeader.style.padding = '';
+                dropdownHeader.style.fontSize = '';
+            }
+            
+            const dropdownItems = dropdownMenu.querySelectorAll('.dropdown-item');
+            dropdownItems.forEach(item => {
+                item.style.padding = '';
+                item.style.fontSize = '';
+                item.style.minHeight = '';
             });
             
-            // Reset child element styles
-            const elementsToReset = [
-                '.dropdown-header',
-                '.dropdown-item', 
-                '.dropdown-item-text',
-                '.btn-group .btn',
-                '.dropdown-divider',
-                '.text-muted'
-            ];
-            
-            elementsToReset.forEach(selector => {
-                const elements = dropdownMenu.querySelectorAll(selector);
-                elements.forEach(element => {
-                    element.style = '';
+            const modeSection = dropdownMenu.querySelector('.dropdown-item-text');
+            if (modeSection) {
+                modeSection.style.padding = '';
+                
+                const modeButtons = modeSection.querySelectorAll('.btn-group .btn');
+                modeButtons.forEach(btn => {
+                    btn.style.padding = '';
+                    btn.style.fontSize = '';
+                    btn.style.lineHeight = '';
                 });
+                
+                const modeLabel = modeSection.querySelector('.text-muted');
+                if (modeLabel) {
+                    modeLabel.style.fontSize = '';
+                    modeLabel.style.marginBottom = '';
+                }
+            }
+            
+            const dividers = dropdownMenu.querySelectorAll('.dropdown-divider');
+            dividers.forEach(divider => {
+                divider.style.margin = '';
+            });
+            
+            const badges = dropdownMenu.querySelectorAll('.badge');
+            badges.forEach(badge => {
+                badge.style.fontSize = '';
+                badge.style.padding = '';
             });
         }
     });
@@ -581,6 +620,17 @@ function setupMobileDropdownFix() {
                 if (bsDropdown) {
                     bsDropdown.hide();
                 }
+            }
+        }
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        const dropdownMenu = userDropdown.nextElementSibling;
+        if (dropdownMenu && dropdownMenu.classList.contains('show') && window.innerWidth >= 992) {
+            const bsDropdown = bootstrap.Dropdown.getInstance(userDropdown);
+            if (bsDropdown) {
+                bsDropdown.hide();
             }
         }
     });
