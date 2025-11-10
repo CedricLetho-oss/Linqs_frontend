@@ -309,16 +309,45 @@ function getModeTextClass(mode) {
     return textClasses[mode] || 'text-primary';
 }
 
+// Add to your existing navbar.js
+
+// Scroll effect for navbar
+function initNavbarScrollEffect() {
+    const navbar = document.querySelector('.navbar');
+    let lastScrollTop = 0;
+    
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (scrollTop > 100) {
+            navbar.classList.add('navbar-scrolled');
+        } else {
+            navbar.classList.remove('navbar-scrolled');
+        }
+        
+        // Hide navbar on scroll down, show on scroll up
+        if (scrollTop > lastScrollTop && scrollTop > 200) {
+            navbar.style.transform = 'translateY(-100%)';
+        } else {
+            navbar.style.transform = 'translateY(0)';
+        }
+        
+        lastScrollTop = scrollTop;
+    });
+}
+
+// Enhanced mode switching with animation
 async function switchBookingMode(mode) {
     const currentMode = getCurrentBookingMode();
     
-    if (currentMode === mode) {
-        return;
-    }
+    if (currentMode === mode) return;
     
+    // Add visual feedback
     const buttons = document.querySelectorAll('.btn-group .btn');
     buttons.forEach(btn => {
         btn.disabled = true;
+        btn.classList.remove('mode-switch-active');
+        
         if (btn.textContent.toLowerCase().includes(mode)) {
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Switching...';
         }
@@ -326,38 +355,118 @@ async function switchBookingMode(mode) {
     
     const success = await updateBookingModeOnBackend(mode);
     
-    buttons.forEach(btn => {
-        btn.disabled = false;
-        if (btn.textContent.includes('Switching')) {
-            btn.innerHTML = mode === 'student' ? '<i class="bi bi-mortarboard me-1"></i>Student' : '<i class="bi bi-briefcase me-1"></i>Short-term';
-        }
-    });
-    
     if (success) {
         localStorage.setItem('booking_mode', mode);
-        
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         user.booking_mode = mode;
         localStorage.setItem('user', JSON.stringify(user));
         
-        const dropdown = bootstrap.Dropdown.getInstance(document.getElementById('userDropdown'));
-        if (dropdown) {
-            dropdown.hide();
-        }
+        // Visual confirmation
+        buttons.forEach(btn => {
+            if (btn.textContent.toLowerCase().includes(mode)) {
+                btn.classList.add('mode-switch-active');
+            }
+            btn.disabled = false;
+            btn.innerHTML = mode === 'student' 
+                ? '<i class="bi bi-mortarboard me-1"></i>Student' 
+                : '<i class="bi bi-briefcase me-1"></i>Short-term';
+        });
         
         showModeSwitchSuccess(mode);
+        setTimeout(updateNavbar, 300);
         
-        setTimeout(() => {
-            updateNavbar();
-        }, 100);
-        
-        setTimeout(() => {
-            if (shouldReloadPageOnModeChange()) {
-                window.location.reload();
-            }
-        }, 500);
     } else {
         showToast('Failed to update booking mode. Please try again.', 'error');
+    }
+}
+
+// Enhanced user dropdown with notifications
+function enhanceUserDropdown(user) {
+    const hasNotifications = checkUserNotifications(user.id);
+    
+    if (hasNotifications) {
+        const dropdownToggle = document.querySelector('.dropdown-toggle');
+        if (dropdownToggle) {
+            const notificationDot = document.createElement('span');
+            notificationDot.className = 'notification-dot';
+            dropdownToggle.style.position = 'relative';
+            dropdownToggle.appendChild(notificationDot);
+        }
+    }
+}
+
+// Search functionality
+function initNavbarSearch() {
+    const searchHTML = `
+        <div class="nav-search-container me-3 d-none d-lg-block">
+            <div class="input-group nav-search-group">
+                <input type="text" class="form-control nav-search" placeholder="Search listings...">
+                <button class="btn btn-outline-light" type="button">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    const authButtons = document.querySelector('.signup-login-buttons');
+    if (authButtons) {
+        authButtons.insertAdjacentHTML('beforebegin', searchHTML);
+        
+        // Add search functionality
+        const searchInput = document.querySelector('.nav-search');
+        searchInput.addEventListener('input', debounce(handleSearch, 300));
+    }
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+function handleSearch(event) {
+    const query = event.target.value.trim();
+    if (query.length > 2) {
+        // Implement search logic here
+        console.log('Searching for:', query);
+    }
+}
+
+// Update initializeNavbar function
+async function initializeNavbar() {
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (token && user.role === 'student') {
+        await ensureBookingModeLoaded();
+    }
+    
+    updateNavbarAuthState(token, user);
+    setupNavbarEventListeners();
+    initNavbarScrollEffect();
+    initNavbarSearch();
+    
+    if (token) {
+        enhanceUserDropdown(user);
+    }
+}
+
+// Enhanced mobile menu animation
+function setupMobileMenuAnimation() {
+    const navbarToggler = document.querySelector('.navbar-toggler');
+    const navbarCollapse = document.querySelector('.navbar-collapse');
+    
+    if (navbarToggler && navbarCollapse) {
+        navbarToggler.addEventListener('click', function() {
+            this.classList.toggle('active');
+            navbarCollapse.classList.toggle('show');
+        });
     }
 }
 

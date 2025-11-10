@@ -449,3 +449,179 @@ body {
         margin-left: 0.35rem !important;
     }
 }
+
+/* Enhanced Navbar Styles */
+.navbar {
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 15px rgba(10, 42, 67, 0.1);
+}
+
+.navbar-scrolled {
+  background: rgba(28, 43, 74, 0.95) !important;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Animated Navbar Brand */
+.navbar-brand {
+  position: relative;
+  overflow: hidden;
+}
+
+.navbar-brand::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #fff, transparent);
+  transition: left 0.5s ease;
+}
+
+.navbar-brand:hover::after {
+  left: 100%;
+}
+
+/* Enhanced Dropdown */
+.dropdown-menu {
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  animation: dropdownFadeIn 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Gradient User Badge */
+.user-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 6px 15px;
+  border: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.user-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.user-badge:hover::before {
+  left: 100%;
+}
+
+.user-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Mode Switch Animation */
+.mode-switch-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 25px;
+  background: #f8f9fa;
+  padding: 2px;
+}
+
+.mode-switch-btn {
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+  border: none !important;
+}
+
+.mode-switch-active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  transform: scale(1.05);
+}
+
+/* Notification Dot */
+.notification-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  background: #ff4757;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+  100% { transform: scale(0.95); opacity: 1; }
+}
+
+/* Enhanced Mobile Menu */
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    background: rgba(28, 43, 74, 0.98);
+    backdrop-filter: blur(10px);
+    border-radius: 0 0 15px 15px;
+    margin: 0 -12px;
+    padding: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+  
+  .nav-item {
+    opacity: 0;
+    animation: slideInRight 0.5s ease forwards;
+  }
+  
+  .nav-item:nth-child(1) { animation-delay: 0.1s; }
+  .nav-item:nth-child(2) { animation-delay: 0.2s; }
+  .nav-item:nth-child(3) { animation-delay: 0.3s; }
+  .nav-item:nth-child(4) { animation-delay: 0.4s; }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Search Bar Enhancement */
+.nav-search {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 25px;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.nav-search:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.nav-search::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
