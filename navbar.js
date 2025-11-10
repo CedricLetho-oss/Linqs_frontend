@@ -483,57 +483,75 @@ function setupMobileDropdownFix() {
     userDropdown.addEventListener('show.bs.dropdown', function() {
         const dropdownMenu = this.nextElementSibling;
         if (dropdownMenu && window.innerWidth < 992) {
+            const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
             const navbarHeight = 60;
             const availableHeight = viewportHeight - navbarHeight - 10;
 
-            // Apply mobile positioning for ALL users
+            // Calculate optimal width based on screen size
+            let dropdownWidth;
+            if (viewportWidth < 400) {
+                dropdownWidth = viewportWidth - 40; // Almost full width on very small screens
+            } else if (viewportWidth < 576) {
+                dropdownWidth = 300; // Slightly smaller for small phones
+            } else {
+                dropdownWidth = 320; // Standard mobile width
+            }
+
+            // Apply mobile positioning
             dropdownMenu.style.position = 'fixed';
             dropdownMenu.style.top = navbarHeight + 'px';
             dropdownMenu.style.right = '10px';
             dropdownMenu.style.left = 'auto';
             dropdownMenu.style.transform = 'none';
-            dropdownMenu.style.width = '280px';
+            dropdownMenu.style.width = dropdownWidth + 'px';
             dropdownMenu.style.maxWidth = 'calc(100vw - 20px)';
-            dropdownMenu.style.maxHeight = Math.min(availableHeight, 500) + 'px';
+            dropdownMenu.style.maxHeight = Math.min(availableHeight, 400) + 'px'; // Reduced max height
             dropdownMenu.style.overflowY = 'auto';
             dropdownMenu.style.zIndex = '1060';
             dropdownMenu.style.borderRadius = '8px';
             dropdownMenu.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            dropdownMenu.style.padding = '0.5rem 0'; // Reduced padding
             
-            // ONLY apply compact styling for STUDENTS
-            if (isStudent) {
-                const dropdownHeader = dropdownMenu.querySelector('.dropdown-header');
-                if (dropdownHeader) {
-                    dropdownHeader.style.padding = '0.75rem 1rem';
+            // Apply compact styling for ALL users on mobile
+            const dropdownHeader = dropdownMenu.querySelector('.dropdown-header');
+            if (dropdownHeader) {
+                dropdownHeader.style.padding = '0.5rem 0.75rem'; // More compact
+            }
+            
+            const dropdownItems = dropdownMenu.querySelectorAll('.dropdown-item');
+            dropdownItems.forEach(item => {
+                item.style.padding = '0.4rem 0.75rem'; // More compact
+                item.style.fontSize = '0.9rem'; // Slightly smaller text
+            });
+            
+            // Compact mode section for students
+            const modeSection = dropdownMenu.querySelector('.dropdown-item-text');
+            if (modeSection) {
+                modeSection.style.padding = '0.4rem 0.75rem'; // More compact
+                
+                const modeLabel = modeSection.querySelector('.text-muted');
+                if (modeLabel) {
+                    modeLabel.style.fontSize = '0.75rem';
+                    modeLabel.style.marginBottom = '0.2rem';
                 }
                 
-                const dropdownItems = dropdownMenu.querySelectorAll('.dropdown-item');
-                dropdownItems.forEach(item => {
-                    item.style.padding = '0.6rem 1rem';
+                const modeButtons = modeSection.querySelectorAll('.btn-group .btn');
+                modeButtons.forEach(btn => {
+                    btn.style.padding = '0.2rem 0.4rem';
+                    btn.style.fontSize = '0.75rem';
+                    btn.style.lineHeight = '1.1';
                 });
-                
-                const modeSection = dropdownMenu.querySelector('.dropdown-item-text');
-                if (modeSection) {
-                    modeSection.style.padding = '0.6rem 1rem';
-                    
-                    const modeLabel = modeSection.querySelector('.text-muted');
-                    if (modeLabel) {
-                        modeLabel.style.fontSize = '0.8rem';
-                        modeLabel.style.marginBottom = '0.3rem';
-                    }
-                    
-                    const modeButtons = modeSection.querySelectorAll('.btn-group .btn');
-                    modeButtons.forEach(btn => {
-                        btn.style.padding = '0.3rem 0.6rem';
-                        btn.style.fontSize = '0.8rem';
-                    });
-                }
-                
-                const dividers = dropdownMenu.querySelectorAll('.dropdown-divider');
-                dividers.forEach(divider => {
-                    divider.style.margin = '0.3rem 0';
-                });
+            }
+            
+            const dividers = dropdownMenu.querySelectorAll('.dropdown-divider');
+            dividers.forEach(divider => {
+                divider.style.margin = '0.2rem 0';
+            });
+
+            // Add scroll if content is too long
+            if (dropdownMenu.scrollHeight > availableHeight) {
+                dropdownMenu.style.overflowY = 'auto';
             }
         }
     });
@@ -541,11 +559,11 @@ function setupMobileDropdownFix() {
     userDropdown.addEventListener('hide.bs.dropdown', function() {
         const dropdownMenu = this.nextElementSibling;
         if (dropdownMenu) {
-            // Reset all inline styles for ALL users
+            // Reset all inline styles
             const stylesToReset = [
                 'position', 'top', 'right', 'left', 'transform', 'width', 
                 'maxWidth', 'maxHeight', 'overflowY', 'zIndex', 'borderRadius', 
-                'boxShadow'
+                'boxShadow', 'padding'
             ];
             
             stylesToReset.forEach(style => {
@@ -565,7 +583,7 @@ function setupMobileDropdownFix() {
             elementsToReset.forEach(selector => {
                 const elements = dropdownMenu.querySelectorAll(selector);
                 elements.forEach(element => {
-                    element.style = '';
+                    element.removeAttribute('style');
                 });
             });
         }
@@ -583,6 +601,19 @@ function setupMobileDropdownFix() {
             }
         }
     });
+
+    // Close dropdown when scrolling on mobile
+    window.addEventListener('scroll', function() {
+        if (window.innerWidth < 992) {
+            const dropdownMenu = userDropdown.nextElementSibling;
+            if (dropdownMenu && dropdownMenu.classList.contains('show')) {
+                const bsDropdown = bootstrap.Dropdown.getInstance(userDropdown);
+                if (bsDropdown) {
+                    bsDropdown.hide();
+                }
+            }
+        }
+    }, { passive: true });
 }
 
 function showLogoutModal(username) {
