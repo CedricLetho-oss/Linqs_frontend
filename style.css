@@ -391,3 +391,34 @@ body {
   color: #FFFFFF !important; /* White */
   font-weight: bold;
 }
+
+/* Mobile dropdown optimizations */
+@media (max-width: 991.98px) {
+    .dropdown-menu {
+        border: 1px solid rgba(0,0,0,.15) !important;
+    }
+    
+    .dropdown-menu .btn-group {
+        flex-wrap: nowrap;
+    }
+    
+    .dropdown-menu .btn-group .btn {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Ensure dropdown doesn't overflow viewport */
+    .dropdown-menu[style*="position: fixed"] {
+        overscroll-behavior: contain;
+    }
+}
+
+/* Improve touch targets on mobile */
+@media (max-width: 576px) {
+    .dropdown-item {
+        min-height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+}
