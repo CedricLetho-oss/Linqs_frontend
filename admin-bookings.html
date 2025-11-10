@@ -898,7 +898,7 @@ async function deleteBooking(bookingId) {
       }
     }
 
-// IMPROVED: Get display price with type - FIXED VERSION
+// IMPROVED: Get display price with proper tenant/student detection
 function getDisplayPrice(booking) {
   // Use the data from aggregation if available, otherwise fall back
   const negotiatedPrice = booking.negotiatedPrice || 0;
@@ -910,6 +910,19 @@ function getDisplayPrice(booking) {
   const priceType = booking.priceType || 'monthly';
   const isNegotiable = booking.isNegotiable || false;
   
+  // Debug logging
+  console.log('Booking pricing debug:', {
+    bookingId: booking._id,
+    bookingSource,
+    priceType,
+    negotiatedPrice,
+    totalPrice,
+    basePrice,
+    userRole: booking.userRole,
+    userBookingMode: booking.userBookingMode,
+    bookingType: booking.bookingType
+  });
+
   let displayPrice = 0;
   let finalPriceType = priceType;
   let priceLabel = '/month';
@@ -922,7 +935,7 @@ function getDisplayPrice(booking) {
   } else if (totalPrice > 0) {
     displayPrice = totalPrice;
     
-    // Determine label based on booking type
+    // Determine label based on booking type and user role
     if (bookingSource === 'Short-term' || bookingSource === 'Tenant') {
       finalPriceType = 'daily';
       priceLabel = '/day';
@@ -959,20 +972,27 @@ function getDisplayPrice(booking) {
   };
 }
 
-// IMPROVED: Get enhanced booking type
+// IMPROVED: Get enhanced booking type with proper tenant detection
 function getEnhancedBookingType(booking) {
   // Use aggregation field if available
   if (booking.bookingSource) {
     return booking.bookingSource;
   }
   
-  // Fallback logic
+  // Fallback logic - check multiple sources for tenant identification
   const baseType = booking.bookingType || 'student';
   const hasNegotiatedPrice = booking.negotiatedPrice > 0;
   const studentRole = booking.student?.role || 'student';
   const bookingMode = booking.student?.booking_mode || 'student';
   
-  if (baseType === 'tenant' || studentRole === 'tenant' || bookingMode === 'tenant') {
+  // Check if it's a tenant booking
+  const isTenant = baseType === 'tenant' || 
+                  studentRole === 'tenant' || 
+                  bookingMode === 'tenant' ||
+                  booking.userRole === 'tenant' ||
+                  booking.userBookingMode === 'tenant';
+
+  if (isTenant) {
     return hasNegotiatedPrice ? 'Tenant (Negotiated)' : 'Tenant';
   } else if (baseType === 'short-term') {
     return 'Short-term';
@@ -981,7 +1001,7 @@ function getEnhancedBookingType(booking) {
   }
 }
 
-// Get booking source badge HTML
+// IMPROVED: Get booking source badge with better tenant detection
 function getBookingSourceBadge(booking) {
   const source = booking.bookingSource || getEnhancedBookingType(booking);
   const priceInfo = getDisplayPrice(booking);
@@ -989,8 +1009,8 @@ function getBookingSourceBadge(booking) {
   const badges = {
     'Student': { class: 'bg-primary', text: 'Student', icon: 'bi-person' },
     'Tenant': { class: 'bg-success', text: 'Tenant', icon: 'bi-house' },
-    'Tenant (Student Mode)': { class: 'bg-info', text: 'Tenant Mode', icon: 'bi-arrow-repeat' },
     'Tenant (Negotiated)': { class: 'bg-warning', text: 'Tenant (Negotiated)', icon: 'bi-currency-exchange' },
+    'Tenant (Student Mode)': { class: 'bg-info', text: 'Tenant Mode', icon: 'bi-arrow-repeat' },
     'Short-term': { class: 'bg-secondary', text: 'Short-term', icon: 'bi-calendar-week' }
   };
   
@@ -1007,8 +1027,6 @@ function getBookingSourceBadge(booking) {
           </span>${negotiableBadge}`;
 }
 
-
-// Update the table headers to include price and booking source
 // In your displayBookings function, update the table headers and content:
 function displayBookings(bookings) {
     const tbody = document.getElementById('bookingsTable');
