@@ -394,31 +394,138 @@ body {
 
 /* Mobile dropdown optimizations */
 @media (max-width: 991.98px) {
-    .dropdown-menu {
-        border: 1px solid rgba(0,0,0,.15) !important;
+    /* Fix for student username with badge - stack badge below username */
+    .signup-login-buttons .dropdown-toggle {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 0.4rem 0.8rem;
+        min-height: auto;
     }
     
+    .signup-login-buttons .dropdown-toggle .badge {
+        margin: 0.1rem 0 0 0 !important;
+        font-size: 0.65rem;
+        padding: 0.15rem 0.4rem;
+        display: block;
+        width: fit-content;
+    }
+    
+    /* Compact dropdown menu */
+    .dropdown-menu {
+        border: 1px solid rgba(0,0,0,.15) !important;
+        padding: 0.25rem 0;
+        min-width: auto;
+        width: 280px !important;
+        max-width: 90vw;
+    }
+    
+    /* Compact dropdown header */
+    .dropdown-header {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.8rem;
+        line-height: 1.3;
+    }
+    
+    .dropdown-header small {
+        font-size: 0.75rem;
+    }
+    
+    /* Compact dropdown items */
+    .dropdown-item {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.85rem;
+        min-height: 40px !important;
+        display: flex;
+        align-items: center;
+    }
+    
+    /* Compact booking mode section */
+    .dropdown-item-text.px-3.py-2 {
+        padding: 0.4rem 0.75rem !important;
+    }
+    
+    .dropdown-item-text .text-muted {
+        font-size: 0.75rem;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    /* Compact mode buttons */
     .dropdown-menu .btn-group {
         flex-wrap: nowrap;
+        gap: 0.1rem;
     }
     
     .dropdown-menu .btn-group .btn {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        padding: 0.25rem 0.4rem !important;
+        font-size: 0.75rem;
+        line-height: 1.2;
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .dropdown-menu .btn-group .btn i {
+        margin-right: 0.1rem !important;
+        font-size: 0.7rem;
+    }
+    
+    /* Compact dividers */
+    .dropdown-divider {
+        margin: 0.2rem 0 !important;
     }
     
     /* Ensure dropdown doesn't overflow viewport */
     .dropdown-menu[style*="position: fixed"] {
         overscroll-behavior: contain;
+        max-height: 70vh;
+        overflow-y: auto;
     }
 }
 
-/* Improve touch targets on mobile */
+/* Additional mobile-specific fixes for navbar */
 @media (max-width: 576px) {
-    .dropdown-item {
-        min-height: 44px !important;
-        display: flex !important;
-        align-items: center !important;
+    /* Ensure navbar brand doesn't get pushed */
+    .navbar-brand {
+        font-size: 1.2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 120px;
     }
+    
+    /* Compact user dropdown button */
+    .signup-login-buttons .dropdown-toggle {
+        font-size: 0.9rem;
+        max-width: 140px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Stack username and badge vertically */
+    .signup-login-buttons .dropdown-toggle .badge {
+        transform: scale(0.9);
+    }
+    
+    /* Improve touch targets while keeping compact */
+    .dropdown-item {
+        min-height: 42px !important;
+    }
+}
+
+/* Fix for desktop - ensure proper badge placement */
+@media (min-width: 992px) {
+    .signup-login-buttons .dropdown-toggle .badge {
+        margin-left: 0.35rem !important;
+    }
+}
+
+/* Ensure icons in dropdown are properly sized */
+.dropdown-item i {
+    width: 16px;
+    text-align: center;
+    margin-right: 0.5rem;
+    font-size: 0.9rem;
 }
