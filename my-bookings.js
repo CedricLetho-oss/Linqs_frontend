@@ -1,5 +1,4 @@
-// my-bookings.js - Updated for Short-term Tenant Support
-const API_BASE_URL = 'https://linqs-backend.onrender.com/api';
+
 
 class MyBookingsManager {
     constructor() {
