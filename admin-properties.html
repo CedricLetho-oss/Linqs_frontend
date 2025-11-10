@@ -961,9 +961,79 @@ async function updatePropertyStatus(propertyId, status) {
     }
 
     // Update table information
-    function updateTableInfo(count) {
-      document.getElementById('tableInfo').textContent = `Showing ${count} properties`;
+function updateTableInfo(count) {
+  document.getElementById('tableInfo').textContent = `Showing ${count} properties`;
+}
+
+// FIXED: View property details function
+async function viewPropertyDetails(propertyId) {
+  try {
+    console.log('Viewing details for property ID:', propertyId);
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
     }
+
+    let property = null;
+    
+    // Try multiple endpoints to get property details
+    try {
+      // Try admin endpoint first
+      const adminResponse = await fetch(`${API_BASE_URL}/admin/properties/${propertyId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (adminResponse.ok) {
+        const adminData = await adminResponse.json();
+        console.log('Admin endpoint response:', adminData);
+        
+        // FIX: Extract property from the correct location
+        if (adminData.success && adminData.data) {
+          property = adminData.data.property || adminData.data;
+          console.log('Admin endpoint property details:', property);
+        }
+      }
+    } catch (adminError) {
+      console.log('Admin details endpoint failed:', adminError);
+    }
+    
+    // If admin endpoint failed, try regular endpoint
+    if (!property) {
+      try {
+        const regularResponse = await fetch(`${API_BASE_URL}/properties/${propertyId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (regularResponse.ok) {
+          const regularData = await regularResponse.json();
+          property = regularData.property || regularData.data || regularData;
+          console.log('Regular endpoint property details:', property);
+        } else {
+          throw new Error(`HTTP error! status: ${regularResponse.status}`);
+        }
+      } catch (regularError) {
+        console.log('Regular endpoint failed:', regularError);
+      }
+    }
+
+    // If still no property, throw error
+    if (!property) {
+      throw new Error('Could not fetch property details from any endpoint');
+    }
+    
+    // Display the property details
+    displayPropertyDetails(property);
+    
+  } catch (error) {
+    console.error('Error viewing property:', error);
+    alert('Failed to load property details: ' + error.message);
+  }
+}
 
 // Enhanced property details display with short-term pricing
 function displayPropertyDetails(property) {
