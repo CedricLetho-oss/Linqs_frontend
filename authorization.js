@@ -1,6 +1,3 @@
-// authorization.js - COMPLETE WITH ALL FEATURES
-const API_BASE_URL = 'https://linqs-backend.onrender.com/api';
-
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
   console.log("Authorization page loaded");
