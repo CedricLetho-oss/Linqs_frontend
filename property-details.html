@@ -1641,7 +1641,6 @@
   <!-- Property Details Script -->
 <script>
     
-
     // Global variables
     let currentProperty = null;
     let currentLandlord = null;
@@ -1689,11 +1688,9 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         console.log('Initializing property details page...');
-        
-        // Get current user
         currentUser = JSON.parse(localStorage.getItem("user") || "{}");
         
-        // Ensure booking mode is loaded for students
+        // Initialize booking mode for students
         if (currentUser.role === 'student') {
             ensureBookingModeLoaded().then(() => {
                 initializePage();
@@ -1702,13 +1699,18 @@
             initializePage();
         }
         
-        // Set up event listeners for booking mode changes
+        // Set up booking mode change listeners
         setupBookingModeListeners();
     });
 
     function initializePage() {
         initializeReviewForm();
         loadPropertyDetails();
+        
+        setTimeout(() => {
+            updateVisibleReviewsCount();
+            enhanceForShortTermContext();
+        }, 500);
     }
 
     // ============ BOOKING MODE MANAGEMENT ============
@@ -1774,19 +1776,218 @@
     }
 
     function setupBookingModeListeners() {
-        // Listen for booking mode changes from navbar
+        // Listen for booking mode changes from navbar - AUTO REFRESH PAGE
         window.addEventListener('bookingModeChanged', function() {
-            console.log('Booking mode changed - updating property display');
-            updatePropertyDisplayForBookingMode();
+            console.log('Booking mode changed - auto-refreshing page');
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
         });
         
         // Listen for storage changes
         window.addEventListener('storage', function(e) {
             if (e.key === 'booking_mode' || e.key === 'user') {
-                console.log('Storage changed - updating display');
-                setTimeout(updatePropertyDisplayForBookingMode, 100);
+                console.log('Storage changed - refreshing page');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 100);
             }
         });
+    }
+
+    // ============ USER TYPE DETECTION & DISPLAY MODIFICATION ============
+
+    function isPropertyAvailableForShortTerm() {
+        if (!currentProperty || !currentProperty.acceptsShortTerm) return false;
+        
+        const currentMonth = new Date().getMonth() + 1;
+        return currentMonth === 12 || currentMonth === 1;
+    }
+
+    function detectUserTypeAndModifyDisplay() {
+        const userType = getEffectiveUserType();
+        
+        console.log('Detected user type:', userType);
+        
+        if (userType === 'tenant') {
+            console.log('Tenant viewing property');
+            if (currentProperty && currentProperty.acceptsShortTerm) {
+                console.log('Property accepts short-term stays');
+            }
+        }
+    }
+
+    // Handle short-term display properly
+    function handleShortTermDisplay() {
+        const userType = getEffectiveUserType();
+        const shortTermInfoContainer = document.getElementById('shortTermInfoContainer');
+        
+        // Clear previous content
+        if (shortTermInfoContainer) {
+            shortTermInfoContainer.innerHTML = '';
+        }
+        
+        // Show negotiable pricing for tenants
+        if (userType === 'tenant') {
+            const priceElement = document.getElementById('propertyPrice');
+            const periodElement = document.getElementById('pricePeriod');
+            
+            if (currentProperty && currentProperty.acceptsShortTerm) {
+                if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
+                    priceElement.textContent = `R${currentProperty.shortTermPrice}`;
+                    periodElement.textContent = 'per day';
+                    
+                    // Add minimum stay info
+                    if (shortTermInfoContainer) {
+                        const minStayInfo = document.createElement('div');
+                        minStayInfo.className = 'short-term-info';
+                        minStayInfo.innerHTML = `
+                            <i class="bi bi-calendar-check me-1"></i>
+                            Min. stay: ${currentProperty.shortTermMinStay || 1} days
+                        `;
+                        shortTermInfoContainer.appendChild(minStayInfo);
+                    }
+                } else {
+                    // Show negotiable price for tenants
+                    priceElement.textContent = 'Negotiable';
+                    periodElement.textContent = 'Contact for pricing';
+                    
+                    if (shortTermInfoContainer) {
+                        const negotiableInfo = document.createElement('div');
+                        negotiableInfo.className = 'short-term-info';
+                        negotiableInfo.innerHTML = `
+                            <i class="bi bi-chat-dots me-1"></i>
+                            Price negotiable based on duration
+                        `;
+                        shortTermInfoContainer.appendChild(negotiableInfo);
+                    }
+                }
+                
+                // Add short-term badge as visual indicator
+                const shortTermBadge = document.createElement('span');
+                shortTermBadge.className = 'badge short-term-badge';
+                shortTermBadge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term Available';
+                
+                const propertyBadges = document.querySelector('.property-badges');
+                if (propertyBadges) {
+                    // Remove existing short-term badge first
+                    const existingBadge = propertyBadges.querySelector('.badge.short-term-badge');
+                    if (existingBadge) {
+                        existingBadge.remove();
+                    }
+                    propertyBadges.appendChild(shortTermBadge);
+                }
+            }
+        }
+    }
+
+    // Modify display for user type - INCLUDES DESCRIPTION CHANGES
+    function modifyDisplayForUserType() {
+        const userType = getEffectiveUserType();
+        
+        console.log('Modifying display for user type:', userType);
+        
+        if (userType === 'tenant') {
+            console.log('Tenant viewing property - removing gender and accreditation info');
+            
+            // Remove gender preference and accreditation for tenants
+            const genderSection = document.getElementById('genderSection');
+            const accreditationSection = document.getElementById('accreditationSection');
+            const genderBadge = document.getElementById('propertyGenderBadge');
+            const accreditationBadge = document.getElementById('propertyAccreditationBadge');
+            
+            if (genderSection) genderSection.style.display = 'none';
+            if (accreditationSection) accreditationSection.style.display = 'none';
+            if (genderBadge) genderBadge.style.display = 'none';
+            if (accreditationBadge) accreditationBadge.style.display = 'none';
+            
+            // UPDATE DESCRIPTION: Show short-term specific info if available
+            if (currentProperty && currentProperty.acceptsShortTerm && currentProperty.shortTermDescription) {
+                const descriptionElement = document.getElementById('propertyDescription');
+                if (descriptionElement) {
+                    descriptionElement.textContent = currentProperty.shortTermDescription;
+                    
+                    // Add short-term availability period info
+                    const availabilityInfo = document.createElement('div');
+                    availabilityInfo.className = 'alert alert-info mt-3';
+                    availabilityInfo.innerHTML = `
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Short-term availability:</strong> This property is available for short-term stays during December & January.
+                        ${currentProperty.shortTermMinStay ? `Minimum stay: ${currentProperty.shortTermMinStay} days.` : ''}
+                    `;
+                    descriptionElement.parentNode.appendChild(availabilityInfo);
+                }
+            }
+            
+            // Update booking button text for tenants
+            const bookingBtn = document.querySelector('.btn-primary.action-btn');
+            if (bookingBtn && currentProperty && currentProperty.acceptsShortTerm) {
+                bookingBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request Short-term Stay';
+            }
+        } else {
+            // For students, show the gender and accreditation info
+            const genderSection = document.getElementById('genderSection');
+            const accreditationSection = document.getElementById('accreditationSection');
+            const genderBadge = document.getElementById('propertyGenderBadge');
+            const accreditationBadge = document.getElementById('propertyAccreditationBadge');
+            
+            if (genderSection) genderSection.style.display = 'flex';
+            if (accreditationSection) accreditationSection.style.display = 'flex';
+            if (genderBadge) genderBadge.style.display = 'inline-block';
+            if (accreditationBadge) accreditationBadge.style.display = 'inline-block';
+            
+            // UPDATE DESCRIPTION: Use regular description for students
+            if (currentProperty && currentProperty.description) {
+                const descriptionElement = document.getElementById('propertyDescription');
+                if (descriptionElement) {
+                    descriptionElement.textContent = currentProperty.description;
+                }
+            }
+        }
+    }
+
+    // Enhance for short-term context
+    function enhanceForShortTermContext() {
+        const userType = getEffectiveUserType();
+        
+        // Only add enhancements if property accepts short-term
+        if (userType !== 'tenant' || !currentProperty || !currentProperty.acceptsShortTerm) return;
+        
+        // Add seasonal availability information
+        const locationSection = document.querySelector('.location-info');
+        if (locationSection) {
+            const seasonalInfo = document.createElement('div');
+            seasonalInfo.className = 'alert alert-warning mt-3';
+            seasonalInfo.innerHTML = `
+                <i class="bi bi-calendar-event me-2"></i>
+                <strong>Seasonal Availability:</strong> Perfect for holiday stays! Available December - January while students are away.
+            `;
+            locationSection.appendChild(seasonalInfo);
+        }
+        
+        // Modify contact button for short-term inquiries
+        const contactBtn = document.querySelector('button[onclick="contactLandlord()"]');
+        if (contactBtn) {
+            contactBtn.innerHTML = '<i class="bi bi-chat-dots me-1"></i>Inquire About Short-term Stay';
+        }
+        
+        // Add quick booking info to sidebar
+        const bookingCard = document.querySelector('.property-card .d-grid');
+        if (bookingCard) {
+            const quickInfo = document.createElement('div');
+            quickInfo.className = 'short-term-pricing mt-3';
+            quickInfo.innerHTML = `
+                <h6 class="text-navy mb-2"><i class="bi bi-lightning me-2"></i>Short-term Stay</h6>
+                ${currentProperty.shortTermPricing === 'fixed' ? `
+                    <div class="daily-rate">R${currentProperty.shortTermPrice}/day</div>
+                    <small class="text-muted">Minimum ${currentProperty.shortTermMinStay || 1} days</small>
+                ` : `
+                    <div class="negotiable-price">Price Negotiable</div>
+                    <small class="text-muted">Contact for custom rates</small>
+                `}
+            `;
+            bookingCard.parentNode.insertBefore(quickInfo, bookingCard);
+        }
     }
 
     // ============ PROPERTY DATA LOADING ============
@@ -1822,7 +2023,9 @@
             const propertyData = await propertyResponse.json();
             currentProperty = propertyData.property || propertyData;
             
-            // Check admin status
+            console.log('Loaded property:', currentProperty);
+            
+            // Check admin approval
             const adminStatus = getAdminStatus(currentProperty);
             if (adminStatus !== 'approved') {
                 showToast('This property is not available for viewing.', 'error');
@@ -1832,7 +2035,6 @@
                 return;
             }
             
-            // Load landlord details
             const landlordId = String(currentProperty.landlord?._id || currentProperty.landlord);
             if (landlordId && landlordId !== 'undefined') {
                 await loadLandlordDetails(landlordId);
@@ -1845,14 +2047,18 @@
                 };
             }
             
-            // Load additional data
             await loadPropertyReviews(propertyId);
-            await loadPropertyRooms();
-            
-            // Update UI
             updatePropertyDisplay();
+            
+            // Call modifyDisplayForUserType to handle tenant-specific display INCLUDING DESCRIPTION
+            modifyDisplayForUserType();
+            
+            await loadPropertyRooms();
             checkUserCanReview();
             await checkFavoriteStatus();
+            
+            // Enhance for short-term context
+            enhanceForShortTermContext();
             
         } catch (error) {
             console.error('Error loading property details:', error);
@@ -1930,33 +2136,26 @@
                 const data = await response.json();
                 propertyRooms = data.rooms || [];
                 
-                // Ensure all room fields are present
+                // Ensure each room has short-term pricing fields
                 propertyRooms = propertyRooms.map(room => ({
                     ...room,
                     shortTermPricing: room.shortTermPricing || 'negotiable',
                     shortTermPrice: room.shortTermPrice || 0,
                     shortTermMinStay: room.shortTermMinStay || 1,
-                    shortTermDescription: room.shortTermDescription || '',
-                    roomNumber: room.roomNumber || `Room ${room._id}`,
-                    roomType: room.roomType || 'single',
-                    description: room.description || 'Comfortable room with essential amenities',
-                    images: room.images || currentProperty.images || ['https://via.placeholder.com/400x300?text=Room+Image'],
-                    features: room.features || ['single-bed', 'desk', 'wardrobe', 'window'],
-                    size: room.size || '12-15 m²',
-                    price: room.price || Math.floor((currentProperty?.price || 0) / (currentProperty?.bedrooms || 1)),
-                    isAvailable: room.isAvailable !== undefined ? room.isAvailable : true,
-                    occupant: room.occupant || null
+                    shortTermDescription: room.shortTermDescription || ''
                 }));
+                
+                updateRoomsDisplay();
             } else {
-                await createBasicRooms();
+                createBasicRooms();
             }
         } catch (error) {
             console.error('Error loading rooms:', error);
-            await createBasicRooms();
+            createBasicRooms();
         }
     }
 
-    async function createBasicRooms() {
+    function createBasicRooms() {
         if (currentProperty && currentProperty.bedrooms > 0) {
             propertyRooms = [];
             for (let i = 1; i <= currentProperty.bedrooms; i++) {
@@ -1973,51 +2172,39 @@
                     shortTermPricing: 'negotiable',
                     shortTermPrice: 0,
                     shortTermMinStay: 1,
-                    shortTermDescription: '',
-                    occupant: null
+                    shortTermDescription: ''
                 });
             }
+            updateRoomsDisplay();
         }
     }
 
     // ============ UI UPDATES ============
 
+    // Enhanced property display function
     function updatePropertyDisplay() {
         if (!currentProperty) return;
 
-        // Update basic property info
-        updateBasicPropertyInfo();
-        
-        // Update based on booking mode
-        updatePropertyDisplayForBookingMode();
-        
-        // Update other sections
-        updateImageGallery();
-        updateAmenitiesDisplay();
-        updateLandlordDisplay();
-        updateReviewsDisplay();
-        updateLocationMap();
-
-        setTimeout(() => {
-            updateVisibleReviewsCount();
-        }, 500);
-    }
-
-    function updateBasicPropertyInfo() {
         const propertyStatus = getPropertyStatus(currentProperty);
         const statusInfo = statusConfig[propertyStatus] || statusConfig.available;
         const genderInfo = genderConfig[currentProperty.genderPreference] || genderConfig.unisex;
         const accreditationInfo = accreditationConfig[currentProperty.accreditation] || accreditationConfig.self;
 
-        // Update all property fields
-        document.getElementById('propertyTitle').textContent = currentProperty.title || 'Property Title';
-        document.getElementById('propertyDescription').textContent = currentProperty.description || 'No description available';
-        document.getElementById('propertyLocation').textContent = `${currentProperty.location?.city || 'City'}, ${currentProperty.location?.state || 'State'}`;
-        document.getElementById('propertyFullAddress').textContent = `${currentProperty.location?.address || 'Address'}, ${currentProperty.location?.city || 'City'}, ${currentProperty.location?.state || 'State'} ${currentProperty.location?.zipCode || ''}`;
-        document.getElementById('bedroomsCount').textContent = currentProperty.bedrooms || 0;
-        document.getElementById('bathroomsCount').textContent = currentProperty.bathrooms || 0;
-        document.getElementById('propertyTypeBadge').textContent = currentProperty.propertyType || 'Property';
-        document.getElementById('propertyType').textContent = currentProperty.propertyType || 'Property';
+        // Update single title
+        document.getElementById('propertyTitle').textContent = currentProperty.title;
+        
+        // Update price and period (will be overridden for tenants in handleShortTermDisplay)
+        document.getElementById('propertyPrice').textContent = `R${currentProperty.price}`;
+        document.getElementById('pricePeriod').textContent = 'per month';
+        
+        // Update other details
+        document.getElementById('propertyDescription').textContent = currentProperty.description;
+        document.getElementById('propertyLocation').textContent = `${currentProperty.location.city}, ${currentProperty.location.state}`;
+        document.getElementById('propertyFullAddress').textContent = `${currentProperty.location.address}, ${currentProperty.location.city}, ${currentProperty.location.state} ${currentProperty.location.zipCode}`;
+        document.getElementById('bedroomsCount').textContent = currentProperty.bedrooms;
+        document.getElementById('bathroomsCount').textContent = currentProperty.bathrooms;
+        document.getElementById('propertyTypeBadge').textContent = currentProperty.propertyType;
+        document.getElementById('propertyType').textContent = currentProperty.propertyType;
         
         // Update status badges
         const statusBadge = document.getElementById('propertyStatusBadge');
@@ -2025,291 +2212,33 @@
         statusBadge.className = `badge bg-${statusInfo.class}`;
         statusBadge.innerHTML = `<i class="bi ${statusInfo.icon} me-1"></i>${statusInfo.text}`;
         
-        // Update gender badge and section
+        // Update gender badge and section (visibility handled in modifyDisplayForUserType)
         const genderBadge = document.getElementById('propertyGenderBadge');
         genderBadge.textContent = genderInfo.text;
         genderBadge.className = `badge bg-${genderInfo.class}`;
         genderBadge.innerHTML = `<i class="bi ${genderInfo.icon} me-1"></i>${genderInfo.text}`;
         document.getElementById('propertyGender').textContent = genderInfo.text === 'Unisex' ? 'Any Gender' : genderInfo.text + ' Only';
         
-        // Update accreditation badge and section
+        // Update accreditation badge and section (visibility handled in modifyDisplayForUserType)
         const accreditationBadge = document.getElementById('propertyAccreditationBadge');
         accreditationBadge.textContent = accreditationInfo.text;
         accreditationBadge.className = `badge bg-${accreditationInfo.class}`;
         accreditationBadge.innerHTML = `<i class="bi ${accreditationInfo.icon} me-1"></i>${accreditationInfo.text}`;
         document.getElementById('propertyAccreditation').textContent = accreditationInfo.text === 'Accredited' ? 'University Accredited' : 'Private Accommodation';
-    }
+        
+        // Handle short-term tenant display with negotiable pricing
+        handleShortTermDisplay();
+        
+        updateImageGallery();
+        updateAmenitiesDisplay();
+        updateLandlordDisplay();
+        updateReviewsDisplay();
+        updateBookingButton(propertyStatus);
+        updateLocationMap();
 
-    function updatePropertyDisplayForBookingMode() {
-        if (!currentProperty) return;
-        
-        const userType = getEffectiveUserType();
-        console.log('Updating property display for user type:', userType);
-        
-        updatePriceDisplay(userType);
-        updateUserSpecificDisplay(userType);
-        updateBookingButton(userType);
-        updateRoomsDisplay();
-        updateShortTermIndicators(userType);
-    }
-
-    function updateUserSpecificDisplay(userType) {
-        const genderSection = document.getElementById('genderSection');
-        const accreditationSection = document.getElementById('accreditationSection');
-        const genderBadge = document.getElementById('propertyGenderBadge');
-        const accreditationBadge = document.getElementById('propertyAccreditationBadge');
-        
-        if (userType === 'tenant') {
-            // Hide gender and accreditation for tenants
-            if (genderSection) genderSection.style.display = 'none';
-            if (accreditationSection) accreditationSection.style.display = 'none';
-            if (genderBadge) genderBadge.style.display = 'none';
-            if (accreditationBadge) accreditationBadge.style.display = 'none';
-        } else {
-            // Show gender and accreditation for students
-            if (genderSection) genderSection.style.display = 'flex';
-            if (accreditationSection) accreditationSection.style.display = 'flex';
-            if (genderBadge) genderBadge.style.display = 'inline-block';
-            if (accreditationBadge) accreditationBadge.style.display = 'inline-block';
-        }
-    }
-
-    function updatePriceDisplay(userType) {
-        const priceElement = document.getElementById('propertyPrice');
-        const periodElement = document.getElementById('pricePeriod');
-        const shortTermInfoContainer = document.getElementById('shortTermInfoContainer');
-        
-        if (!priceElement || !periodElement) return;
-        
-        // Clear previous short-term info
-        if (shortTermInfoContainer) {
-            shortTermInfoContainer.innerHTML = '';
-        }
-        
-        if (userType === 'tenant' && currentProperty && currentProperty.acceptsShortTerm) {
-            // Tenant view with short-term pricing
-            if (currentProperty.shortTermPricing === 'fixed' && currentProperty.shortTermPrice) {
-                priceElement.textContent = `R${currentProperty.shortTermPrice}`;
-                periodElement.textContent = 'per day';
-                
-                if (shortTermInfoContainer && currentProperty.shortTermMinStay) {
-                    const minStayInfo = document.createElement('div');
-                    minStayInfo.className = 'short-term-info';
-                    minStayInfo.innerHTML = `
-                        <i class="bi bi-calendar-check me-1"></i>
-                        Min. stay: ${currentProperty.shortTermMinStay} days
-                    `;
-                    shortTermInfoContainer.appendChild(minStayInfo);
-                }
-            } else {
-                // Negotiable pricing
-                priceElement.textContent = 'Negotiable';
-                periodElement.textContent = 'Contact for pricing';
-                
-                if (shortTermInfoContainer) {
-                    const negotiableInfo = document.createElement('div');
-                    negotiableInfo.className = 'short-term-info';
-                    negotiableInfo.innerHTML = `
-                        <i class="bi bi-chat-dots me-1"></i>
-                        Price negotiable based on duration
-                    `;
-                    shortTermInfoContainer.appendChild(negotiableInfo);
-                }
-            }
-            
-            // Add short-term badge
-            ensureShortTermBadge();
-        } else {
-            // Student view with monthly pricing
-            priceElement.textContent = `R${currentProperty.price || 0}`;
-            periodElement.textContent = 'per month';
-            
-            // Show short-term availability badge if property accepts short-term
-            if (currentProperty.acceptsShortTerm) {
-                ensureShortTermBadge('student');
-            } else {
-                removeShortTermBadge();
-            }
-        }
-    }
-
-    function ensureShortTermBadge(mode = 'tenant') {
-        removeShortTermBadge();
-        
-        const propertyBadges = document.querySelector('.property-badges');
-        if (!propertyBadges) return;
-        
-        const shortTermBadge = document.createElement('span');
-        shortTermBadge.className = mode === 'tenant' ? 'badge short-term-badge' : 'badge bg-info';
-        shortTermBadge.innerHTML = mode === 'tenant' 
-            ? '<i class="bi bi-calendar-range me-1"></i>Short-term Available'
-            : '<i class="bi bi-calendar-range me-1"></i>Also Available for Short-term';
-        
-        propertyBadges.appendChild(shortTermBadge);
-    }
-
-    function removeShortTermBadge() {
-        const existingBadge = document.querySelector('.property-badges .badge.short-term-badge, .property-badges .badge.bg-info');
-        if (existingBadge) {
-            existingBadge.remove();
-        }
-    }
-
-    function updateBookingButton(userType) {
-        const bookingBtn = document.querySelector('.btn-primary.action-btn');
-        if (!bookingBtn) return;
-
-        const propertyStatus = getPropertyStatus(currentProperty);
-        
-        if (propertyStatus !== 'available') {
-            let message = 'This property is not available for booking at the moment.';
-            if (propertyStatus === 'occupied') {
-                message = 'This property is currently occupied and not available for booking.';
-            } else if (propertyStatus === 'maintenance') {
-                message = 'This property is under maintenance and not available for booking.';
-            }
-            
-            bookingBtn.disabled = true;
-            bookingBtn.innerHTML = `<i class="bi bi-x-circle me-2"></i>${message}`;
-            bookingBtn.style.opacity = '0.6';
-            return;
-        }
-
-        bookingBtn.disabled = false;
-        bookingBtn.style.opacity = '1';
-        
-        if (userType === 'tenant' && currentProperty.acceptsShortTerm) {
-            bookingBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request Short-term Stay';
-        } else {
-            bookingBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request to Book';
-        }
-    }
-
-    function updateShortTermIndicators(userType) {
-        const contactBtn = document.querySelector('button[onclick="contactLandlord()"]');
-        if (contactBtn && userType === 'tenant' && currentProperty.acceptsShortTerm) {
-            contactBtn.innerHTML = '<i class="bi bi-chat-dots me-1"></i>Inquire About Short-term Stay';
-        } else if (contactBtn) {
-            contactBtn.innerHTML = '<i class="bi bi-envelope me-1"></i>Contact Landlord';
-        }
-    }
-
-    function updateRoomsDisplay() {
-        const roomsContainer = document.getElementById('propertyRooms');
-        const userType = getEffectiveUserType();
-        
-        if (propertyRooms.length === 0) {
-            roomsContainer.innerHTML = `
-                <div class="text-center py-4">
-                    <i class="bi bi-door-closed display-4 text-muted mb-3"></i>
-                    <p class="text-muted">No room details available</p>
-                    <small>Contact the landlord for room availability</small>
-                </div>
-            `;
-            return;
-        }
-        
-        roomsContainer.innerHTML = propertyRooms.map(room => {
-            let roomPrice, pricePeriod, showShortTerm;
-            
-            if (userType === 'tenant' && room.shortTermPricing) {
-                showShortTerm = true;
-                if (room.shortTermPricing === 'fixed' && room.shortTermPrice) {
-                    roomPrice = room.shortTermPrice;
-                    pricePeriod = 'day';
-                } else {
-                    roomPrice = 'Negotiable';
-                    pricePeriod = '';
-                }
-            } else {
-                showShortTerm = false;
-                roomPrice = room.price;
-                pricePeriod = 'month';
-            }
-            
-            const roomDescription = userType === 'tenant' && room.shortTermDescription ? 
-                room.shortTermDescription : room.description;
-            
-            const shortTermBadge = showShortTerm ? `
-                <span class="badge short-term-badge ms-1">
-                    <i class="bi bi-calendar-range me-1"></i>
-                    ${room.shortTermPricing === 'fixed' ? `R${room.shortTermPrice}/day` : 'Price Negotiable'}
-                </span>
-            ` : '';
-            
-            const priceDisplay = roomPrice === 'Negotiable' ? 
-                `<div class="negotiable-price">${roomPrice}</div>` :
-                `<div class="text-primary fw-bold">R${roomPrice}/${pricePeriod}</div>`;
-            
-            return `
-                <div class="col-md-6 mb-4">
-                    <div class="room-card ${room.isAvailable ? 'border-success' : 'border-warning'}">
-                        <div class="row g-0">
-                            <div class="col-md-5">
-                                <img src="${room.images && room.images.length > 0 ? room.images[0] : 'https://via.placeholder.com/300x200?text=Room+Image'}" 
-                                    class="room-image" alt="${room.roomNumber || room.roomType}"
-                                    onclick="openRoomGallery('${room._id}')" style="cursor: pointer;">
-                            </div>
-                            <div class="col-md-7">
-                                <div class="p-3">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <h5 class="text-navy mb-0">${room.roomNumber ? room.roomNumber + ' - ' : ''}${roomTypeConfig[room.roomType]?.text || room.roomType}</h5>
-                                        <span class="badge bg-${room.isAvailable ? 'success' : 'warning'}">
-                                            <i class="bi ${room.isAvailable ? 'bi-check-circle' : 'bi-person-check'} me-1"></i>
-                                            ${room.isAvailable ? 'Available' : 'Occupied'}
-                                        </span>
-                                    </div>
-                                    
-                                    ${shortTermBadge}
-                                    
-                                    <p class="text-muted small mb-2">${roomDescription || 'Comfortable room with essential amenities'}</p>
-                                    
-                                    <div class="mb-2">
-                                        ${room.features && room.features.slice(0, 3).map(feature => `
-                                            <span class="badge bg-light text-dark me-1 small">${feature.replace('-', ' ')}</span>
-                                        `).join('')}
-                                        ${room.features && room.features.length > 3 ? `<span class="badge bg-light text-dark small">+${room.features.length - 3}</span>` : ''}
-                                    </div>
-                                    
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <div>
-                                            <span class="text-muted small me-3"><i class="bi bi-arrows-fullscreen me-1"></i>${room.size || 'Standard size'}</span>
-                                            <span class="text-muted small"><i class="bi bi-${roomTypeConfig[room.roomType]?.icon || 'door-closed'} me-1"></i>${roomTypeConfig[room.roomType]?.text || room.roomType}</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            ${priceDisplay}
-                                            ${showShortTerm && room.shortTermMinStay && roomPrice !== 'Negotiable' ? `
-                                                <small class="text-muted d-block">Min. stay: ${room.shortTermMinStay} days</small>
-                                            ` : ''}
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            <button class="btn btn-outline-primary btn-sm" onclick="viewRoomDetails('${room._id}')">
-                                                <i class="bi bi-eye me-1"></i>Details
-                                            </button>
-                                            ${room.isAvailable ? `
-                                                <button class="btn btn-primary btn-sm" onclick="bookSpecificRoom('${room._id}')">
-                                                    <i class="bi bi-calendar-check me-1"></i>Book
-                                                </button>
-                                            ` : ''}
-                                        </div>
-                                    </div>
-                                    
-                                    ${!room.isAvailable && room.occupant ? `
-                                        <div class="mt-2 p-2 bg-light rounded small">
-                                            <i class="bi bi-info-circle me-1"></i>
-                                            Currently occupied${room.occupant.name ? ` by ${room.occupant.name}` : ''}
-                                        </div>
-                                    ` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
+        setTimeout(() => {
+            updateVisibleReviewsCount();
+        }, 500);
     }
 
     function updateImageGallery() {
@@ -2368,14 +2297,7 @@
             ac: 'snow',
             heating: 'thermometer-sun',
             shuttle: 'bus-front',
-            cctv: 'camera-video',
-            security: 'shield-check',
-            internet: 'wifi',
-            cleaning: 'bucket',
-            maintenance: 'tools',
-            electricity: 'lightning',
-            water: 'droplet',
-            gas: 'fire'
+            cctv: 'camera-video'
         };
         return icons[amenity] || 'check';
     }
@@ -2384,12 +2306,160 @@
         if (!currentLandlord) return;
         
         document.getElementById('landlordName').textContent = 
-            `${currentLandlord.firstName || 'Landlord'} ${currentLandlord.lastName || ''}`;
+            `${currentLandlord.firstName} ${currentLandlord.lastName}`;
         document.getElementById('landlordAvatar').src = currentLandlord.avatar || 'https://via.placeholder.com/80';
         
         if (!currentLandlord.isVerified) {
             document.getElementById('landlordVerified').className = 'badge bg-warning';
             document.getElementById('landlordVerified').innerHTML = '<i class="bi bi-clock me-1"></i>Pending Verification';
+        }
+    }
+
+    function updateRoomsDisplay() {
+        const roomsContainer = document.getElementById('propertyRooms');
+        const userType = getEffectiveUserType();
+        
+        if (propertyRooms.length === 0) {
+            roomsContainer.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="bi bi-door-closed display-4 text-muted mb-3"></i>
+                    <p class="text-muted">No room details available</p>
+                    <small>Contact the landlord for room availability</small>
+                </div>
+            `;
+            return;
+        }
+        
+        roomsContainer.innerHTML = propertyRooms.map(room => {
+            // Determine pricing and description based on user type
+            let roomPrice, pricePeriod, pricePrefix;
+            
+            if (userType === 'tenant' && room.shortTermPricing) {
+                if (room.shortTermPricing === 'fixed' && room.shortTermPrice) {
+                    roomPrice = room.shortTermPrice;
+                    pricePeriod = 'day';
+                    pricePrefix = '';
+                } else {
+                    roomPrice = 'Negotiable';
+                    pricePeriod = '';
+                    pricePrefix = '';
+                }
+            } else {
+                roomPrice = room.price;
+                pricePeriod = 'month';
+                pricePrefix = '';
+            }
+            
+            const roomDescription = userType === 'tenant' && room.shortTermDescription ? 
+                room.shortTermDescription : room.description;
+            
+            // Short-term badge for tenants
+            const shortTermBadge = userType === 'tenant' && room.shortTermPricing ? `
+                <span class="badge short-term-badge ms-1">
+                    <i class="bi bi-calendar-range me-1"></i>
+                    ${room.shortTermPricing === 'fixed' ? `R${room.shortTermPrice}/day` : 'Price Negotiable'}
+                </span>
+            ` : '';
+            
+            // Price display logic - use smaller font for negotiable
+            const priceDisplay = roomPrice === 'Negotiable' ? 
+                `<div class="negotiable-price">${roomPrice}</div>` :
+                `<div class="text-primary fw-bold">R${roomPrice}/${pricePeriod}</div>`;
+            
+            return `
+                <div class="col-md-6 mb-4">
+                    <div class="room-card ${room.isAvailable ? 'border-success' : 'border-warning'}">
+                        <div class="row g-0">
+                            <div class="col-md-5">
+                                <img src="${room.images && room.images.length > 0 ? room.images[0] : 'https://via.placeholder.com/300x200?text=Room+Image'}" 
+                                    class="room-image" alt="${room.roomNumber || room.roomType}"
+                                    onclick="openRoomGallery('${room._id}')" style="cursor: pointer;">
+                            </div>
+                            <div class="col-md-7">
+                                <div class="p-3">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="text-navy mb-0">${room.roomNumber ? room.roomNumber + ' - ' : ''}${roomTypeConfig[room.roomType]?.text || room.roomType}</h5>
+                                        <span class="badge bg-${room.isAvailable ? 'success' : 'warning'}">
+                                            <i class="bi ${room.isAvailable ? 'bi-check-circle' : 'bi-person-check'} me-1"></i>
+                                            ${room.isAvailable ? 'Available' : 'Occupied'}
+                                        </span>
+                                    </div>
+                                    
+                                    ${shortTermBadge}
+                                    
+                                    <p class="text-muted small mb-2">${roomDescription || 'Comfortable room with essential amenities'}</p>
+                                    
+                                    <div class="mb-2">
+                                        ${room.features && room.features.slice(0, 3).map(feature => `
+                                            <span class="badge bg-light text-dark me-1 small">${feature.replace('-', ' ')}</span>
+                                        `).join('')}
+                                        ${room.features && room.features.length > 3 ? `<span class="badge bg-light text-dark small">+${room.features.length - 3}</span>` : ''}
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <span class="text-muted small me-3"><i class="bi bi-arrows-fullscreen me-1"></i>${room.size || 'Standard size'}</span>
+                                            <span class="text-muted small"><i class="bi bi-${roomTypeConfig[room.roomType]?.icon || 'door-closed'} me-1"></i>${roomTypeConfig[room.roomType]?.text || room.roomType}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            ${priceDisplay}
+                                            ${userType === 'tenant' && room.shortTermMinStay && roomPrice !== 'Negotiable' ? `
+                                                <small class="text-muted d-block">Min. stay: ${room.shortTermMinStay} days</small>
+                                            ` : ''}
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="viewRoomDetails('${room._id}')">
+                                                <i class="bi bi-eye me-1"></i>Details
+                                            </button>
+                                            ${room.isAvailable ? `
+                                                <button class="btn btn-primary btn-sm" onclick="bookSpecificRoom('${room._id}')">
+                                                    <i class="bi bi-calendar-check me-1"></i>Book
+                                                </button>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                    
+                                    ${!room.isAvailable && room.occupant ? `
+                                        <div class="mt-2 p-2 bg-light rounded small">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Currently occupied${room.occupant.name ? ` by ${room.occupant.name}` : ''}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function updateBookingButton(propertyStatus) {
+        const bookingBtn = document.querySelector('.btn-primary.action-btn');
+        if (!bookingBtn) return;
+
+        const userType = getEffectiveUserType();
+
+        if (propertyStatus === 'available') {
+            bookingBtn.disabled = false;
+            bookingBtn.style.opacity = '1';
+            
+            if (userType === 'tenant' && currentProperty.acceptsShortTerm) {
+                bookingBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request Short-term Stay';
+            } else {
+                bookingBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request to Book';
+            }
+        } else if (propertyStatus === 'occupied') {
+            bookingBtn.disabled = true;
+            bookingBtn.innerHTML = '<i class="bi bi-person-check me-2"></i>Fully Booked';
+            bookingBtn.style.opacity = '0.6';
+        } else if (propertyStatus === 'maintenance') {
+            bookingBtn.disabled = true;
+            bookingBtn.innerHTML = '<i class="bi bi-tools me-2"></i>Under Maintenance';
+            bookingBtn.style.opacity = '0.6';
         }
     }
 
@@ -2709,6 +2779,39 @@
                 </button>
             </div>
         `;
+    }
+
+    // ============ REVIEW FORM INITIALIZATION ============
+
+    function initializeReviewForm() {
+        const starRating = document.getElementById('reviewStarRating');
+        if (starRating) {
+            starRating.addEventListener('click', function(e) {
+                if (e.target.classList.contains('bi-star') || e.target.classList.contains('bi-star-fill')) {
+                    const rating = parseInt(e.target.getAttribute('data-rating'));
+                    document.getElementById('reviewRating').value = rating;
+                    
+                    const stars = this.querySelectorAll('.bi');
+                    stars.forEach((star, index) => {
+                        if (index < rating) {
+                            star.classList.add('active', 'bi-star-fill');
+                            star.classList.remove('bi-star');
+                        } else {
+                            star.classList.remove('active', 'bi-star-fill');
+                            star.classList.add('bi-star');
+                        }
+                    });
+                }
+            });
+        }
+
+        const reviewForm = document.getElementById('reviewForm');
+        if (reviewForm) {
+            reviewForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await submitReview();
+            });
+        }
     }
 
     // ============ INTERACTION FUNCTIONS ============
@@ -3220,6 +3323,18 @@
         roomDetailsModal.show();
     }
 
+    function bookFromRoomDetails(roomId) {
+        const room = propertyRooms.find(r => r._id === roomId);
+        if (room) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('roomDetailsModal'));
+            modal.hide();
+            
+            setTimeout(() => {
+                window.location.href = `booking.html?propertyId=${currentProperty._id}&roomId=${roomId}&roomPrice=${room.price}`;
+            }, 300);
+        }
+    }
+
     async function saveToFavorites() {
         if (!currentProperty) return;
         
@@ -3369,39 +3484,6 @@
         }
     }
 
-    // ============ REVIEW FORM INITIALIZATION ============
-
-    function initializeReviewForm() {
-        const starRating = document.getElementById('reviewStarRating');
-        if (starRating) {
-            starRating.addEventListener('click', function(e) {
-                if (e.target.classList.contains('bi-star') || e.target.classList.contains('bi-star-fill')) {
-                    const rating = parseInt(e.target.getAttribute('data-rating'));
-                    document.getElementById('reviewRating').value = rating;
-                    
-                    const stars = this.querySelectorAll('.bi');
-                    stars.forEach((star, index) => {
-                        if (index < rating) {
-                            star.classList.add('active', 'bi-star-fill');
-                            star.classList.remove('bi-star');
-                        } else {
-                            star.classList.remove('active', 'bi-star-fill');
-                            star.classList.add('bi-star');
-                        }
-                    });
-                }
-            });
-        }
-
-        const reviewForm = document.getElementById('reviewForm');
-        if (reviewForm) {
-            reviewForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                await submitReview();
-            });
-        }
-    }
-
     // ============ HELPER FUNCTIONS ============
 
     function getPropertyStatus(property) {
@@ -3463,6 +3545,15 @@
 
     // Clean up map when leaving page
     window.addEventListener('beforeunload', function() {
+        if (propertyMap) {
+            propertyMap.remove();
+            propertyMap = null;
+        }
+    });
+
+    // Also clean up when navigating away via your navigation
+    document.addEventListener('DOMContentLoaded', function() {
+        // Clean up existing map if any
         if (propertyMap) {
             propertyMap.remove();
             propertyMap = null;
