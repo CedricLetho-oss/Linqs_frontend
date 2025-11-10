@@ -923,29 +923,52 @@ function getDisplayPrice(booking) {
   const totalPrice = booking.totalPrice || 0;
   const basePrice = booking.property?.price || 0;
   
-  // Use negotiated price if available, otherwise total price
-  const displayPrice = negotiatedPrice > 0 ? negotiatedPrice : totalPrice;
-  
-  // Determine price type
+  // IMPROVED: Better price selection logic
+  let displayPrice = 0;
   let priceType = 'monthly';
   let priceLabel = '/month';
   
   if (negotiatedPrice > 0) {
+    displayPrice = negotiatedPrice;
     priceType = 'negotiated';
     priceLabel = ' (negotiated)';
-  } else if (booking.bookingType === 'short-term') {
-    priceType = 'daily';
-    priceLabel = '/day';
-  } else if (booking.bookingType === 'tenant') {
-    priceType = 'negotiated';
-    priceLabel = ' (tenant)';
+  } else if (totalPrice > 0) {
+    displayPrice = totalPrice;
+    
+    // Determine if it's daily or monthly based on booking type
+    if (booking.bookingType === 'short-term' || booking.bookingType === 'tenant') {
+      priceType = 'daily';
+      priceLabel = '/day';
+    } else {
+      priceType = 'monthly';
+      priceLabel = '/month';
+    }
+  } else if (basePrice > 0) {
+    displayPrice = basePrice;
+    priceType = 'base';
+    priceLabel = '/month (base)';
+  } else {
+    // If all prices are 0, it's negotiable
+    priceType = 'negotiable';
+    priceLabel = ' (negotiable)';
+  }
+  
+  // Format the display based on price type
+  let formattedPrice = '';
+  if (priceType === 'negotiable') {
+    formattedPrice = `<span class="text-warning">Negotiable</span>`;
+  } else if (displayPrice > 0) {
+    formattedPrice = `R${displayPrice}${priceLabel}`;
+  } else {
+    formattedPrice = `<span class="text-muted">To be discussed</span>`;
   }
   
   return {
     amount: displayPrice,
     type: priceType,
     label: priceLabel,
-    formatted: `R${displayPrice}${priceLabel}`
+    formatted: formattedPrice,
+    isNegotiable: priceType === 'negotiable' || displayPrice === 0
   };
 }
 
@@ -964,10 +987,17 @@ function getBookingSourceBadge(booking) {
   
   const config = badges[source] || badges['Student'];
   
-  return `<span class="badge ${config.class} me-1" title="${source} - ${priceInfo.label}">
+  // Add negotiable indicator
+  const negotiableBadge = priceInfo.isNegotiable ? 
+    `<span class="badge bg-warning ms-1" title="Price is negotiable">
+      <i class="bi bi-question-circle me-1"></i>Negotiable
+    </span>` : '';
+  
+  return `<span class="badge ${config.class} me-1" title="${source}">
             <i class="${config.icon} me-1"></i>${config.text}
-          </span>`;
+          </span>${negotiableBadge}`;
 }
+
 
 // Update the table headers to include price and booking source
 // In your displayBookings function, update the table headers and content:
@@ -1779,6 +1809,7 @@ function updateAlertsContent(pendingBookings, upcomingToday) {
 
     // Load card view with real data
     // Update the loadCardView function to include pricing info
+// Update the card view pricing display
 function loadCardView() {
     const cardsContainer = document.getElementById('bookingsCards');
     
@@ -1847,8 +1878,24 @@ function loadCardView() {
               </div>
               
               <div class="mb-3">
-                <div class="fw-bold text-success fs-5">${priceInfo.formatted}</div>
+                <div class="${priceInfo.isNegotiable ? 'text-warning fw-bold fs-5' : 'text-success fw-bold fs-5'}">
+                  ${priceInfo.formatted}
+                </div>
                 <small class="text-muted">${getEnhancedBookingType(booking)} • ${priceInfo.type} pricing</small>
+                ${booking.negotiatedPrice > 0 ? `
+                  <div class="mt-1">
+                    <small class="text-success">
+                      <i class="bi bi-check-circle me-1"></i>Negotiated price
+                    </small>
+                  </div>
+                ` : ''}
+                ${priceInfo.isNegotiable ? `
+                  <div class="mt-1">
+                    <small class="text-warning">
+                      <i class="bi bi-info-circle me-1"></i>Price to be discussed
+                    </small>
+                  </div>
+                ` : ''}
               </div>
               
               <div class="d-flex gap-1">
@@ -1860,7 +1907,6 @@ function loadCardView() {
     }).join('');
 
 
-    // NEW: Generate card action buttons based on booking status
 // Update generateCardActionButtons to include delete option
 function generateCardActionButtons(booking) {
     const status = booking.status || 'pending';
@@ -2090,7 +2136,7 @@ function generateCardActionButtons(booking) {
     }
 
     // Update createBookingModalContent to show delete option and indicate deleted entities
-// Update createBookingModalContent to show tenant/student info and pricing
+// Update createBookingModalContent to show tenant/student info and pricing// Update the booking modal to show detailed pricing information
 function createBookingModalContent(booking) {
     const property = booking.property || {};
     const student = booking.student || {};
@@ -2140,16 +2186,23 @@ function createBookingModalContent(booking) {
         </div>
         ` : ''}
         
-        <!-- NEW: Booking Source and Pricing Header -->
-        <div class="alert alert-info mb-3">
+        <!-- IMPROVED: Booking Source and Pricing Header -->
+        <div class="alert ${priceInfo.isNegotiable ? 'alert-warning' : 'alert-info'} mb-3">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h6 class="mb-1">${bookingSource} Booking</h6>
                     <p class="mb-0">User Role: ${studentRole} | Booking Mode: ${bookingMode}</p>
                 </div>
                 <div class="text-end">
-                    <h4 class="text-success mb-0">${priceInfo.formatted}</h4>
+                    <h4 class="${priceInfo.isNegotiable ? 'text-warning' : 'text-success'} mb-0">
+                        ${priceInfo.formatted}
+                    </h4>
                     <small class="text-muted">${priceInfo.type} pricing</small>
+                    ${priceInfo.isNegotiable ? `
+                        <div class="mt-1">
+                            <small><i class="bi bi-info-circle me-1"></i>Price requires negotiation</small>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         </div>
@@ -2183,10 +2236,16 @@ function createBookingModalContent(booking) {
             <p><strong>Description:</strong> ${bookingTypeInfo.description}</p>
           </div>
           <div class="col-md-6">
-            <h6>Pricing & Status</h6>
+            <h6>Pricing Details</h6>
             <p><strong>Total Price:</strong> R${booking.totalPrice || 0}</p>
-            ${booking.negotiatedPrice > 0 ? `<p><strong>Negotiated Price:</strong> R${booking.negotiatedPrice}</p>` : ''}
+            ${booking.negotiatedPrice > 0 ? `
+                <p><strong>Negotiated Price:</strong> R${booking.negotiatedPrice}</p>
+                <p class="text-success"><i class="bi bi-check-circle me-1"></i>Price has been negotiated</p>
+            ` : priceInfo.isNegotiable ? `
+                <p class="text-warning"><i class="bi bi-question-circle me-1"></i>Price requires negotiation</p>
+            ` : ''}
             ${booking.stayDuration ? `<p><strong>Stay Duration:</strong> ${booking.stayDuration}</p>` : ''}
+            <p><strong>Price Type:</strong> ${priceInfo.type}</p>
             <p><strong>Status:</strong> <span class="badge bg-${getStatusColor(booking.status)}">${booking.status || 'pending'}</span></p>
             <p><strong>Created:</strong> ${booking.createdAt ? formatDateTime(booking.createdAt) : 'N/A'}</p>
             <p><strong>Last Updated:</strong> ${booking.updatedAt ? formatDateTime(booking.updatedAt) : 'N/A'}</p>
