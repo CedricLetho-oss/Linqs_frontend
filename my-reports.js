@@ -1,7 +1,3 @@
-// my-reports.js - FIXED VERSION
-// Remove the import and use global variable
-const API_BASE_URL = window.API_BASE_URL || 'https://linqs-backend.onrender.com/api';
-
 class ReportForm {
     constructor() {
         this.token = localStorage.getItem("token");
