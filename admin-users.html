@@ -273,6 +273,12 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.05);
       margin-bottom: 1.5rem;
     }
+
+    /* Add to existing role badge styles */
+.role-tenant { background: #e9d5ff; color: #7c3aed; }
+
+/* Update analytics card for tenants */
+.analytics-card.tenants { border-top: 4px solid #7c3aed; }
   </style>
 </head>
 <body>
@@ -454,6 +460,9 @@
         <button class="btn btn-outline-info action-btn" data-action="filterByRole" data-role="student">
             <i class="bi bi-person me-1"></i>Students
         </button>
+        <button class="btn btn-outline-secondary action-btn" data-action="filterByRole" data-role="tenant">
+          <i class="bi bi-briefcase me-1"></i>Tenants 
+        </button>
         <button class="btn btn-outline-warning action-btn" data-action="filterByStatus" data-status="pending">
             <i class="bi bi-clock me-1"></i>Pending
         </button>
@@ -470,14 +479,15 @@
             <input type="text" class="form-control" id="searchInput" placeholder="Search by name, email, username...">
           </div>
           <div class="col-md-3">
-            <label class="form-label">Role</label>
-            <select class="form-select" id="roleFilter">
-              <option value="">All Roles</option>
-              <option value="student">Student</option>
-              <option value="landlord">Landlord</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
+          <label class="form-label">Role</label>
+          <select class="form-select" id="roleFilter">
+            <option value="">All Roles</option>
+            <option value="student">Student</option>
+            <option value="landlord">Landlord</option>
+            <option value="tenant">Tenant</option> 
+            <option value="admin">Admin</option>
+          </select>
+        </div>
           <div class="col-md-3">
             <label class="form-label">Status</label>
             <select class="form-select" id="statusFilter">
