@@ -781,565 +781,591 @@
   <script src="navbar.js"></script>
   
   <script>
-    // Initialize AOS
-    AOS.init({
-      duration: 1000,
-      once: true,
-      offset: 100
-    });
+  // Initialize AOS
+AOS.init({
+  duration: 1000,
+  once: true,
+  offset: 100
+});
+
+class PropertyComparator {
+  constructor() {
+    this.favorites = [];
+    this.selectedProperties = [];
+    this.maxSelection = 4;
+    this.currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    this.userRole = this.currentUser.role || 'student';
+    this.currentBookingMode = this.getCurrentBookingMode();
     
-    class PropertyComparator {
-      constructor() {
-        this.favorites = [];
-        this.selectedProperties = [];
-        this.maxSelection = 4;
-        this.currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-        this.userRole = this.currentUser.role || 'student';
-        
-        this.init();
-      }
+    this.init();
+  }
 
-      init() {
-        this.bindEvents();
-        this.loadFavorites();
-      }
-
-      bindEvents() {
-        // Compare button
-        document.getElementById('compare-button').addEventListener('click', () => {
-          this.compareProperties();
-        });
-
-        // Reset comparison
-        document.getElementById('reset-comparison').addEventListener('click', () => {
-          this.resetComparison();
-        });
-      }
-
-      async loadFavorites() {
-        this.showLoading();
-        
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.href = 'authorization.html';
-                return;
-            }
-
-            // Get property IDs from URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            const propertyIds = urlParams.getAll('id');
-            
-            // Fetch all favorites
-            let url = `${API_BASE_URL}/favorites?limit=50`;
-            
-            const response = await fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.status === 401) {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = 'authorization.html';
-                return;
-            }
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch favorites: ${response.status}`);
-            }
-
-            const data = await response.json();
-            
-            if (data.success) {
-                let favorites = data.data || data.favorites || [];
-                console.log('Favorites data:', favorites);
-                
-                // FIX: Filter out favorites with null properties and ensure property has _id
-                favorites = favorites.filter(favorite => 
-                    favorite && 
-                    favorite.property && 
-                    favorite.property._id && 
-                    typeof favorite.property._id === 'string'
-                );
-                
-                console.log('Filtered favorites:', favorites);
-                
-                // Filter to matching IDs if provided in URL
-                if (propertyIds.length > 0) {
-                    favorites = favorites.filter(favorite => 
-                        propertyIds.includes(favorite.property._id)
-                    );
-                }
-                
-                this.favorites = favorites;
-                this.renderSelection();
-                
-                // Auto-select properties from URL if provided
-                if (propertyIds.length > 0 && favorites.length > 0) {
-                    this.autoSelectProperties(propertyIds);
-                }
-            } else {
-                throw new Error(data.message || 'Unknown error occurred');
-            }
-        } catch (error) {
-            console.error('Error loading favorites:', error);
-            this.showError('Failed to load favorites. Please try again.');
-        }
+  // NEW: Get current booking mode
+  getCurrentBookingMode() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.role !== 'student') {
+      return 'student'; // Non-students always use student mode
     }
+    return localStorage.getItem('booking_mode') || 'student';
+  }
 
-      autoSelectProperties(propertyIds) {
-        const idsToSelect = propertyIds.slice(0, this.maxSelection);
-        
-        idsToSelect.forEach(id => {
-          const favorite = this.favorites.find(f => f.property._id === id);
-          if (favorite && this.selectedProperties.length < this.maxSelection) {
-            this.selectedProperties.push(favorite.property);
-          }
-        });
-        
-        this.renderSelection();
-        
-        if (this.selectedProperties.length >= 2 && this.selectedProperties.length <= 4) {
-          document.getElementById('compare-button').disabled = false;
-          document.getElementById('compare-button').innerHTML = 
-            `<i class="bi bi-bar-chart me-2"></i>Compare ${this.selectedProperties.length} Properties`;
-          
-          setTimeout(() => {
-            this.compareProperties();
-          }, 300);
-        }
-      }
+  init() {
+    this.bindEvents();
+    this.loadFavorites();
+  }
 
-      renderSelection() {
-        const container = document.getElementById('properties-selection');
-        const emptyState = document.getElementById('empty-state');
-        const loadingState = document.getElementById('loading-state');
+  bindEvents() {
+    // Compare button
+    document.getElementById('compare-button').addEventListener('click', () => {
+      this.compareProperties();
+    });
 
-        container.innerHTML = '';
-        loadingState.classList.add('d-none');
+    // Reset comparison
+    document.getElementById('reset-comparison').addEventListener('click', () => {
+      this.resetComparison();
+    });
 
-        if (this.favorites.length === 0) {
-          emptyState.classList.remove('d-none');
-          return;
-        }
-
-        emptyState.classList.add('d-none');
-
-        this.favorites.forEach(favorite => {
-          const property = favorite.property;
-          const isSelected = this.selectedProperties.some(p => p._id === property._id);
-          
-          const col = document.createElement('div');
-          col.className = 'col-md-6 col-lg-3 mb-4';
-          
-          // Get role-based price display
-          const priceDisplay = this.getRoleBasedPriceDisplay(property);
-          
-          col.innerHTML = `
-            <div class="selection-card ${isSelected ? 'selected' : ''}" data-property-id="${property._id}">
-              <!-- FIXED: Consistent image container -->
-              <div class="property-image-container mb-3">
-                <img src="${property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/300x200/1e3a8a/ffffff?text=Property+Image'}" 
-                    alt="${property.title}" class="property-image">
-              </div>
-              <h5 class="property-title">${property.title}</h5>
-              <p class="property-location text-muted small mb-2">
-                <i class="bi bi-geo-alt"></i> ${property.location?.address || 'Location not specified'}
-              </p>
-              <p class="property-price fw-bold ${priceDisplay.className} mb-3">${priceDisplay.text}</p>
-              <div class="property-features mb-3">
-                <small class="text-muted">
-                  ${this.getRoleBasedFeatures(property)}
-                </small>
-              </div>
-              <div class="selection-indicator">
-                ${isSelected ? 
-                  '<span class="badge bg-success"><i class="bi bi-check-lg me-1"></i>Selected</span>' : 
-                  '<span class="badge bg-light text-dark"><i class="bi bi-plus me-1"></i>Select to Compare</span>'
-                }
-              </div>
-            </div>
-          `;
-          
-          col.querySelector('.selection-card').addEventListener('click', () => {
-            this.togglePropertySelection(favorite);
-          });
-          
-          container.appendChild(col);
-        });
-      }
-
-      // FIXED: Role-based price display
-      getRoleBasedPriceDisplay(property) {
-          if (this.userRole === 'tenant' && property.acceptsShortTerm) {
-              if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
-                  return {
-                      text: `R${property.shortTermPrice}/day`,
-                      className: 'text-success'
-                  };
-              } else if (property.shortTermPricing === 'negotiable') {
-                  return {
-                      text: 'Price negotiable (short-term)',
-                      className: 'text-success'
-                  };
-              } else {
-                  // Fallback to monthly pricing if short-term details are incomplete
-                  return {
-                      text: `R${property.price}/month`,
-                      className: 'text-primary'
-                  };
-              }
-          } else {
-              return {
-                  text: `R${property.price}/month`,
-                  className: 'text-primary'
-              };
-          }
-      }
-
-      // NEW: Role-based features display
-      getRoleBasedFeatures(property) {
-        if (this.userRole === 'tenant') {
-          // Tenant view - focus on short-term availability
-          return `
-            <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds • 
-            <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths •
-            <i class="bi bi-calendar me-1"></i>Short-term available
-          `;
-        } else {
-          // Student view - include gender and accreditation
-          return `
-            <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds • 
-            <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths •
-            <i class="bi bi-people me-1"></i>${this.getGenderText(property.genderPreference)} •
-            <i class="bi bi-award me-1"></i>${this.getAccreditationText(property.accreditation)}
-          `;
-        }
-      }
-
-      getSafeNumber(value) {
-        return value !== undefined && value !== null ? value : 'N/A';
-      }
-
-      getGenderText(genderPreference) {
-        if (!genderPreference || genderPreference === 'undefined') return 'Unisex';
-        const genderMap = {
-          'unisex': 'Unisex',
-          'male': 'Male Only', 
-          'female': 'Female Only'
-        };
-        return genderMap[genderPreference] || genderPreference;
-      }
-
-      getAccreditationText(accreditation) {
-        if (!accreditation || accreditation === 'undefined') return 'Self-paying';
-        const accreditationMap = {
-          'accredited': 'University Accredited',
-          'self': 'Self-paying'
-        };
-        return accreditationMap[accreditation] || accreditation;
-      }
-
-      togglePropertySelection(favorite) {
-        const property = favorite.property;
-        const index = this.selectedProperties.findIndex(p => p._id === property._id);
-        
-        if (index > -1) {
-          this.selectedProperties.splice(index, 1);
-        } else {
-          if (this.selectedProperties.length < this.maxSelection) {
-            this.selectedProperties.push(property);
-          } else {
-            this.showToast(`You can only compare up to ${this.maxSelection} properties at a time.`, 'warning');
-            return;
-          }
-        }
-        
-        this.renderSelection();
-        
-        const compareButton = document.getElementById('compare-button');
-        compareButton.disabled = this.selectedProperties.length < 2;
-        
-        if (this.selectedProperties.length >= 2) {
-          compareButton.innerHTML = `<i class="bi bi-bar-chart me-2"></i>Compare ${this.selectedProperties.length} Properties`;
-        } else {
-          compareButton.innerHTML = `<i class="bi bi-bar-chart me-2"></i>Compare Selected Properties`;
-        }
-      }
-
-      compareProperties() {
-        if (this.selectedProperties.length < 2) {
-          this.showToast('Please select at least 2 properties to compare.', 'warning');
-          return;
-        }
-
-        document.getElementById('selection-section').classList.add('d-none');
-        document.getElementById('comparison-section').classList.remove('d-none');
-        
+    // NEW: Listen for booking mode changes
+    window.addEventListener('bookingModeChanged', () => {
+      console.log('Booking mode changed, refreshing comparison...');
+      this.currentBookingMode = this.getCurrentBookingMode();
+      if (this.selectedProperties.length >= 2) {
         this.renderPropertyCards();
         this.renderComparisonTable();
         this.generateSummary();
-        
-        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
+    });
+  }
 
-      renderPropertyCards() {
-        const container = document.getElementById('property-cards');
-        container.innerHTML = '';
-        
-        this.selectedProperties.forEach((property, index) => {
-          const col = document.createElement('div');
-          col.className = `col-md-6 ${this.selectedProperties.length > 2 ? 'col-lg-3' : 'col-lg-6'} mb-4`;
-          
-          const priceDisplay = this.getRoleBasedPriceDisplay(property);
-          const genderText = this.getGenderText(property.genderPreference);
-          const accreditationText = this.getAccreditationText(property.accreditation);
-          const amenitiesCount = property.amenities ? property.amenities.length : 0;
-          
-          col.innerHTML = `
-            <div class="comparison-card">
-              <!-- FIXED: Consistent image container -->
-              <div class="property-image-container mb-3">
-                <img src="${property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/300x200/1e3a8a/ffffff?text=Property+Image'}" 
-                    alt="${property.title}" class="property-image">
-              </div>
-              <h5 class="property-title">${property.title}</h5>
-              <p class="property-location text-muted small mb-2">
-                <i class="bi bi-geo-alt"></i> ${property.location?.address || 'Location not specified'}
-              </p>
-              <p class="property-price fw-bold ${priceDisplay.className} mb-3">${priceDisplay.text}</p>
-              
-              <!-- Add short-term badge for tenants if applicable -->
-              ${this.userRole === 'tenant' && property.acceptsShortTerm ? 
-                '<span class="badge bg-success mb-2"><i class="bi bi-calendar-range me-1"></i>Short-term Available</span>' : 
-                ''
-              }
-              
-              <div class="property-features mb-3">
-                <div class="d-flex flex-wrap gap-2">
-                  <span class="badge bg-light text-dark">
-                    <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds
-                  </span>
-                  <span class="badge bg-light text-dark">
-                    <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths
-                  </span>
-                  ${this.userRole !== 'tenant' ? `
-                    <span class="badge bg-light text-dark">
-                      <i class="bi bi-people me-1"></i>${genderText}
-                    </span>
-                    <span class="badge bg-light text-dark">
-                      <i class="bi bi-award me-1"></i>${accreditationText}
-                    </span>
-                  ` : ''}
-                  <span class="badge amenity-count-badge">
-                    <i class="bi bi-grid-3x3 me-1"></i>${amenitiesCount} amenities
-                  </span>
-                </div>
-              </div>
-              
-              <div class="property-amenities mb-3">
-                <h6 class="text-navy mb-2"> Amenities</h6>
-                <div class="d-flex flex-wrap gap-1">
-                  ${property.amenities && property.amenities.length > 0 ? 
-                    property.amenities.map(amenity => `
-                      <span class="badge bg-primary">${amenity}</span>
-                    `).join('') : 
-                    '<small class="text-muted">No amenities listed</small>'
-                  }
-                </div>
-              </div>
-              
-              <div class="text-center mt-3">
-                <a href="property-details.html?id=${property._id}" class="btn btn-outline-primary btn-sm me-2">
-                  <i class="bi bi-eye me-1"></i>View Details
-                </a>
-                <button class="btn btn-outline-danger btn-sm remove-from-comparison" data-property-id="${property._id}">
-                  <i class="bi bi-x me-1"></i>Remove
-                </button>
-              </div>
-            </div>
-          `;
-          
-          col.querySelector('.remove-from-comparison').addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.removeFromComparison(property._id);
-          });
-          
-          container.appendChild(col);
-        });
-      }
-
-      renderComparisonTable() {
-        this.selectedProperties.forEach((property, index) => {
-          const header = document.getElementById(`property-${index+1}-header`);
-          if (header) {
-            header.classList.remove('d-none');
-            header.textContent = property.title.length > 20 ? 
-              property.title.substring(0, 20) + '...' : property.title;
-          }
-        });
-        
-        for (let i = this.selectedProperties.length + 1; i <= 4; i++) {
-          const header = document.getElementById(`property-${i}-header`);
-          if (header) header.classList.add('d-none');
+  async loadFavorites() {
+    this.showLoading();
+    
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'authorization.html';
+            return;
         }
+
+        // Get property IDs from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const propertyIds = urlParams.getAll('id');
         
-        const tableBody = document.getElementById('comparison-table-body');
-        tableBody.innerHTML = '';
+        // Fetch all favorites
+        let url = `${API_BASE_URL}/favorites?limit=50`;
         
-        // Role-based comparison features
-        const features = this.getRoleBasedComparisonFeatures();
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'authorization.html';
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch favorites: ${response.status}`);
+        }
+
+        const data = await response.json();
         
-        features.forEach(feature => {
-          const row = document.createElement('tr');
-          
-          const nameCell = document.createElement('td');
-          nameCell.className = 'feature-name';
-          nameCell.textContent = feature.name;
-          row.appendChild(nameCell);
-          
-          this.selectedProperties.forEach((property, index) => {
-            const valueCell = document.createElement('td');
-            valueCell.className = 'text-center';
+        if (data.success) {
+            let favorites = data.data || data.favorites || [];
+            console.log('Favorites data:', favorites);
             
-            const value = feature.getValue(property);
-            valueCell.textContent = value;
+            // FIX: Filter out favorites with null properties and ensure property has _id
+            favorites = favorites.filter(favorite => 
+                favorite && 
+                favorite.property && 
+                favorite.property._id && 
+                typeof favorite.property._id === 'string'
+            );
             
-            if (feature.type === 'numeric' && value !== 'N/A' && !isNaN(parseInt(value))) {
-              const numericValue = parseInt(value);
-              const values = this.selectedProperties.map(p => {
-                const val = feature.getValue(p);
-                return val !== 'N/A' && !isNaN(parseInt(val)) ? parseInt(val) : null;
-              }).filter(v => v !== null);
-              
-              if (values.length > 1) {
-                const bestValue = feature.better === 'higher' ? Math.max(...values) : Math.min(...values);
-                const worstValue = feature.better === 'higher' ? Math.min(...values) : Math.max(...values);
-                
-                if (numericValue === bestValue) {
-                  valueCell.innerHTML = `<span class="feature-value better">${value} <i class="bi bi-arrow-up-circle"></i></span>`;
-                } else if (numericValue === worstValue) {
-                  valueCell.innerHTML = `<span class="feature-value worse">${value} <i class="bi bi-arrow-down-circle"></i></span>`;
-                } else {
-                  valueCell.innerHTML = `<span class="feature-value equal">${value}</span>`;
-                }
-              }
+            console.log('Filtered favorites:', favorites);
+            
+            // Filter to matching IDs if provided in URL
+            if (propertyIds.length > 0) {
+                favorites = favorites.filter(favorite => 
+                    propertyIds.includes(favorite.property._id)
+                );
             }
             
-            row.appendChild(valueCell);
-          });
-          
-          tableBody.appendChild(row);
-        });
-      }
-
-      // FIXED: Role-based comparison features with proper negotiable handling
-getRoleBasedComparisonFeatures() {
-    const baseFeatures = [
-        {
-            name: 'Price',
-            getValue: (prop) => {
-                if (this.userRole === 'tenant' && prop.acceptsShortTerm) {
-                    if (prop.shortTermPricing === 'fixed' && prop.shortTermPrice > 0) {
-                        return `R${prop.shortTermPrice}/day`;
-                    } else if (prop.shortTermPricing === 'negotiable') {
-                        return 'Price negotiable';
-                    }
-                }
-                return `R${prop.price}/month`;
-            },
-            type: 'text' // Changed to text since we have mixed types
-        },
-        {
-            name: 'Bedrooms',
-            getValue: (prop) => this.getSafeNumber(prop.bedrooms),
-            type: 'numeric',
-            better: 'higher'
-        },
-        {
-            name: 'Bathrooms',
-            getValue: (prop) => this.getSafeNumber(prop.bathrooms),
-            type: 'numeric',
-            better: 'higher'
-        },
-        {
-            name: 'Amenities Count',
-            getValue: (prop) => prop.amenities ? prop.amenities.length : 0,
-            type: 'numeric',
-            better: 'higher'
-        },
-        {
-            name: 'Property Type',
-            getValue: (prop) => prop.propertyType ? prop.propertyType.charAt(0).toUpperCase() + prop.propertyType.slice(1) : 'Not specified',
-            type: 'text'
-        },
-        {
-            name: 'Location',
-            getValue: (prop) => prop.location?.address || 'Not specified',
-            type: 'text'
+            this.favorites = favorites;
+            this.renderSelection();
+            
+            // Auto-select properties from URL if provided
+            if (propertyIds.length > 0 && favorites.length > 0) {
+                this.autoSelectProperties(propertyIds);
+            }
+        } else {
+            throw new Error(data.message || 'Unknown error occurred');
         }
+    } catch (error) {
+        console.error('Error loading favorites:', error);
+        this.showError('Failed to load favorites. Please try again.');
+    }
+  }
+
+  autoSelectProperties(propertyIds) {
+    const idsToSelect = propertyIds.slice(0, this.maxSelection);
+    
+    idsToSelect.forEach(id => {
+      const favorite = this.favorites.find(f => f.property._id === id);
+      if (favorite && this.selectedProperties.length < this.maxSelection) {
+        this.selectedProperties.push(favorite.property);
+      }
+    });
+    
+    this.renderSelection();
+    
+    if (this.selectedProperties.length >= 2 && this.selectedProperties.length <= 4) {
+      document.getElementById('compare-button').disabled = false;
+      document.getElementById('compare-button').innerHTML = 
+        `<i class="bi bi-bar-chart me-2"></i>Compare ${this.selectedProperties.length} Properties`;
+      
+      setTimeout(() => {
+        this.compareProperties();
+      }, 300);
+    }
+  }
+
+  renderSelection() {
+    const container = document.getElementById('properties-selection');
+    const emptyState = document.getElementById('empty-state');
+    const loadingState = document.getElementById('loading-state');
+
+    container.innerHTML = '';
+    loadingState.classList.add('d-none');
+
+    if (this.favorites.length === 0) {
+      emptyState.classList.remove('d-none');
+      return;
+    }
+
+    emptyState.classList.add('d-none');
+
+    this.favorites.forEach(favorite => {
+      const property = favorite.property;
+      const isSelected = this.selectedProperties.some(p => p._id === property._id);
+      
+      const col = document.createElement('div');
+      col.className = 'col-md-6 col-lg-3 mb-4';
+      
+      // Get role-based price display
+      const priceDisplay = this.getRoleBasedPriceDisplay(property);
+      
+      col.innerHTML = `
+        <div class="selection-card ${isSelected ? 'selected' : ''}" data-property-id="${property._id}">
+          <!-- FIXED: Consistent image container -->
+          <div class="property-image-container mb-3">
+            <img src="${property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/300x200/1e3a8a/ffffff?text=Property+Image'}" 
+                alt="${property.title}" class="property-image">
+          </div>
+          <h5 class="property-title">${property.title}</h5>
+          <p class="property-location text-muted small mb-2">
+            <i class="bi bi-geo-alt"></i> ${property.location?.address || 'Location not specified'}
+          </p>
+          <p class="property-price fw-bold ${priceDisplay.className} mb-3">${priceDisplay.text}</p>
+          <div class="property-features mb-3">
+            <small class="text-muted">
+              ${this.getRoleBasedFeatures(property)}
+            </small>
+          </div>
+          <div class="selection-indicator">
+            ${isSelected ? 
+              '<span class="badge bg-success"><i class="bi bi-check-lg me-1"></i>Selected</span>' : 
+              '<span class="badge bg-light text-dark"><i class="bi bi-plus me-1"></i>Select to Compare</span>'
+            }
+          </div>
+        </div>
+      `;
+      
+      col.querySelector('.selection-card').addEventListener('click', () => {
+        this.togglePropertySelection(favorite);
+      });
+      
+      container.appendChild(col);
+    });
+  }
+
+  // UPDATED: Role-based price display with booking mode support
+  getRoleBasedPriceDisplay(property) {
+    // Use booking mode for display logic
+    const effectiveMode = this.currentBookingMode === 'tenant' ? 'tenant' : 'student';
+    
+    if (effectiveMode === 'tenant' && property.acceptsShortTerm) {
+      if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
+        return {
+          text: `R${property.shortTermPrice}/day`,
+          className: 'text-success'
+        };
+      } else if (property.shortTermPricing === 'negotiable') {
+        return {
+          text: 'Price negotiable (short-term)',
+          className: 'text-success'
+        };
+      } else {
+        // Fallback to monthly pricing if short-term details are incomplete
+        return {
+          text: `R${property.price}/month`,
+          className: 'text-primary'
+        };
+      }
+    } else {
+      return {
+        text: `R${property.price}/month`,
+        className: 'text-primary'
+      };
+    }
+  }
+
+  // UPDATED: Role-based features display with booking mode support
+  getRoleBasedFeatures(property) {
+    // Use booking mode for display logic
+    const effectiveMode = this.currentBookingMode === 'tenant' ? 'tenant' : 'student';
+    
+    if (effectiveMode === 'tenant') {
+      // Tenant view - focus on short-term availability
+      return `
+        <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds • 
+        <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths •
+        <i class="bi bi-calendar me-1"></i>Short-term available
+      `;
+    } else {
+      // Student view - include gender and accreditation
+      return `
+        <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds • 
+        <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths •
+        <i class="bi bi-people me-1"></i>${this.getGenderText(property.genderPreference)} •
+        <i class="bi bi-award me-1"></i>${this.getAccreditationText(property.accreditation)}
+      `;
+    }
+  }
+
+  getSafeNumber(value) {
+    return value !== undefined && value !== null ? value : 'N/A';
+  }
+
+  getGenderText(genderPreference) {
+    if (!genderPreference || genderPreference === 'undefined') return 'Unisex';
+    const genderMap = {
+      'unisex': 'Unisex',
+      'male': 'Male Only', 
+      'female': 'Female Only'
+    };
+    return genderMap[genderPreference] || genderPreference;
+  }
+
+  getAccreditationText(accreditation) {
+    if (!accreditation || accreditation === 'undefined') return 'Self-paying';
+    const accreditationMap = {
+      'accredited': 'University Accredited',
+      'self': 'Self-paying'
+    };
+    return accreditationMap[accreditation] || accreditation;
+  }
+
+  togglePropertySelection(favorite) {
+    const property = favorite.property;
+    const index = this.selectedProperties.findIndex(p => p._id === property._id);
+    
+    if (index > -1) {
+      this.selectedProperties.splice(index, 1);
+    } else {
+      if (this.selectedProperties.length < this.maxSelection) {
+        this.selectedProperties.push(property);
+      } else {
+        this.showToast(`You can only compare up to ${this.maxSelection} properties at a time.`, 'warning');
+        return;
+      }
+    }
+    
+    this.renderSelection();
+    
+    const compareButton = document.getElementById('compare-button');
+    compareButton.disabled = this.selectedProperties.length < 2;
+    
+    if (this.selectedProperties.length >= 2) {
+      compareButton.innerHTML = `<i class="bi bi-bar-chart me-2"></i>Compare ${this.selectedProperties.length} Properties`;
+    } else {
+      compareButton.innerHTML = `<i class="bi bi-bar-chart me-2"></i>Compare Selected Properties`;
+    }
+  }
+
+  compareProperties() {
+    if (this.selectedProperties.length < 2) {
+      this.showToast('Please select at least 2 properties to compare.', 'warning');
+      return;
+    }
+
+    document.getElementById('selection-section').classList.add('d-none');
+    document.getElementById('comparison-section').classList.remove('d-none');
+    
+    this.renderPropertyCards();
+    this.renderComparisonTable();
+    this.generateSummary();
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  renderPropertyCards() {
+    const container = document.getElementById('property-cards');
+    container.innerHTML = '';
+    
+    this.selectedProperties.forEach((property, index) => {
+      const col = document.createElement('div');
+      col.className = `col-md-6 ${this.selectedProperties.length > 2 ? 'col-lg-3' : 'col-lg-6'} mb-4`;
+      
+      const priceDisplay = this.getRoleBasedPriceDisplay(property);
+      const genderText = this.getGenderText(property.genderPreference);
+      const accreditationText = this.getAccreditationText(property.accreditation);
+      const amenitiesCount = property.amenities ? property.amenities.length : 0;
+      
+      col.innerHTML = `
+        <div class="comparison-card">
+          <!-- FIXED: Consistent image container -->
+          <div class="property-image-container mb-3">
+            <img src="${property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/300x200/1e3a8a/ffffff?text=Property+Image'}" 
+                alt="${property.title}" class="property-image">
+          </div>
+          <h5 class="property-title">${property.title}</h5>
+          <p class="property-location text-muted small mb-2">
+            <i class="bi bi-geo-alt"></i> ${property.location?.address || 'Location not specified'}
+          </p>
+          <p class="property-price fw-bold ${priceDisplay.className} mb-3">${priceDisplay.text}</p>
+          
+          <!-- Add short-term badge for tenants if applicable -->
+          ${this.currentBookingMode === 'tenant' && property.acceptsShortTerm ? 
+            '<span class="badge bg-success mb-2"><i class="bi bi-calendar-range me-1"></i>Short-term Available</span>' : 
+            ''
+          }
+          
+          <div class="property-features mb-3">
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge bg-light text-dark">
+                <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds
+              </span>
+              <span class="badge bg-light text-dark">
+                <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths
+              </span>
+              ${this.currentBookingMode !== 'tenant' ? `
+                <span class="badge bg-light text-dark">
+                  <i class="bi bi-people me-1"></i>${genderText}
+                </span>
+                <span class="badge bg-light text-dark">
+                  <i class="bi bi-award me-1"></i>${accreditationText}
+                </span>
+              ` : ''}
+              <span class="badge amenity-count-badge">
+                <i class="bi bi-grid-3x3 me-1"></i>${amenitiesCount} amenities
+              </span>
+            </div>
+          </div>
+          
+          <div class="property-amenities mb-3">
+            <h6 class="text-navy mb-2"> Amenities</h6>
+            <div class="d-flex flex-wrap gap-1">
+              ${property.amenities && property.amenities.length > 0 ? 
+                property.amenities.map(amenity => `
+                  <span class="badge bg-primary">${amenity}</span>
+                `).join('') : 
+                '<small class="text-muted">No amenities listed</small>'
+              }
+            </div>
+          </div>
+          
+          <div class="text-center mt-3">
+            <a href="property-details.html?id=${property._id}" class="btn btn-outline-primary btn-sm me-2">
+              <i class="bi bi-eye me-1"></i>View Details
+            </a>
+            <button class="btn btn-outline-danger btn-sm remove-from-comparison" data-property-id="${property._id}">
+              <i class="bi bi-x me-1"></i>Remove
+            </button>
+          </div>
+        </div>
+      `;
+      
+      col.querySelector('.remove-from-comparison').addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.removeFromComparison(property._id);
+      });
+      
+      container.appendChild(col);
+    });
+  }
+
+  renderComparisonTable() {
+    this.selectedProperties.forEach((property, index) => {
+      const header = document.getElementById(`property-${index+1}-header`);
+      if (header) {
+        header.classList.remove('d-none');
+        header.textContent = property.title.length > 20 ? 
+          property.title.substring(0, 20) + '...' : property.title;
+      }
+    });
+    
+    for (let i = this.selectedProperties.length + 1; i <= 4; i++) {
+      const header = document.getElementById(`property-${i}-header`);
+      if (header) header.classList.add('d-none');
+    }
+    
+    const tableBody = document.getElementById('comparison-table-body');
+    tableBody.innerHTML = '';
+    
+    // Role-based comparison features
+    const features = this.getRoleBasedComparisonFeatures();
+    
+    features.forEach(feature => {
+      const row = document.createElement('tr');
+      
+      const nameCell = document.createElement('td');
+      nameCell.className = 'feature-name';
+      nameCell.textContent = feature.name;
+      row.appendChild(nameCell);
+      
+      this.selectedProperties.forEach((property, index) => {
+        const valueCell = document.createElement('td');
+        valueCell.className = 'text-center';
+        
+        const value = feature.getValue(property);
+        valueCell.textContent = value;
+        
+        if (feature.type === 'numeric' && value !== 'N/A' && !isNaN(parseInt(value))) {
+          const numericValue = parseInt(value);
+          const values = this.selectedProperties.map(p => {
+            const val = feature.getValue(p);
+            return val !== 'N/A' && !isNaN(parseInt(val)) ? parseInt(val) : null;
+          }).filter(v => v !== null);
+          
+          if (values.length > 1) {
+            const bestValue = feature.better === 'higher' ? Math.max(...values) : Math.min(...values);
+            const worstValue = feature.better === 'higher' ? Math.min(...values) : Math.max(...values);
+            
+            if (numericValue === bestValue) {
+              valueCell.innerHTML = `<span class="feature-value better">${value} <i class="bi bi-arrow-up-circle"></i></span>`;
+            } else if (numericValue === worstValue) {
+              valueCell.innerHTML = `<span class="feature-value worse">${value} <i class="bi bi-arrow-down-circle"></i></span>`;
+            } else {
+              valueCell.innerHTML = `<span class="feature-value equal">${value}</span>`;
+            }
+          }
+        }
+        
+        row.appendChild(valueCell);
+      });
+      
+      tableBody.appendChild(row);
+    });
+  }
+
+  // UPDATED: Role-based comparison features with booking mode support
+  getRoleBasedComparisonFeatures() {
+    const baseFeatures = [
+      {
+        name: 'Price',
+        getValue: (prop) => {
+          if (this.currentBookingMode === 'tenant' && prop.acceptsShortTerm) {
+            if (prop.shortTermPricing === 'fixed' && prop.shortTermPrice > 0) {
+              return `R${prop.shortTermPrice}/day`;
+            } else if (prop.shortTermPricing === 'negotiable') {
+              return 'Price negotiable';
+            }
+          }
+          return `R${prop.price}/month`;
+        },
+        type: 'text'
+      },
+      {
+        name: 'Bedrooms',
+        getValue: (prop) => this.getSafeNumber(prop.bedrooms),
+        type: 'numeric',
+        better: 'higher'
+      },
+      {
+        name: 'Bathrooms',
+        getValue: (prop) => this.getSafeNumber(prop.bathrooms),
+        type: 'numeric',
+        better: 'higher'
+      },
+      {
+        name: 'Amenities Count',
+        getValue: (prop) => prop.amenities ? prop.amenities.length : 0,
+        type: 'numeric',
+        better: 'higher'
+      },
+      {
+        name: 'Property Type',
+        getValue: (prop) => prop.propertyType ? prop.propertyType.charAt(0).toUpperCase() + prop.propertyType.slice(1) : 'Not specified',
+        type: 'text'
+      },
+      {
+        name: 'Location',
+        getValue: (prop) => prop.location?.address || 'Not specified',
+        type: 'text'
+      }
     ];
 
-    // Add role-specific features
-    if (this.userRole === 'tenant') {
+    // Add role-specific features based on booking mode
+    if (this.currentBookingMode === 'tenant') {
+      baseFeatures.push({
+        name: 'Short-term Available',
+        getValue: (prop) => prop.acceptsShortTerm ? 'Yes' : 'No',
+        type: 'text'
+      });
+      
+      if (this.selectedProperties.some(p => p.acceptsShortTerm && p.shortTermMinStay)) {
         baseFeatures.push({
-            name: 'Short-term Available',
-            getValue: (prop) => prop.acceptsShortTerm ? 'Yes' : 'No',
-            type: 'text'
+          name: 'Minimum Stay',
+          getValue: (prop) => prop.acceptsShortTerm && prop.shortTermMinStay ? `${prop.shortTermMinStay} days` : 'N/A',
+          type: 'numeric',
+          better: 'lower'
         });
-        
-        if (this.selectedProperties.some(p => p.acceptsShortTerm && p.shortTermMinStay)) {
-            baseFeatures.push({
-                name: 'Minimum Stay',
-                getValue: (prop) => prop.acceptsShortTerm && prop.shortTermMinStay ? `${prop.shortTermMinStay} days` : 'N/A',
-                type: 'numeric',
-                better: 'lower'
-            });
-        }
-        
-        // Add pricing type for tenants
-        baseFeatures.push({
-            name: 'Pricing Type',
-            getValue: (prop) => {
-                if (prop.acceptsShortTerm) {
-                    return prop.shortTermPricing === 'fixed' ? 'Fixed daily rate' : 
-                           prop.shortTermPricing === 'negotiable' ? 'Negotiable' : 'Monthly only';
-                }
-                return 'Monthly only';
-            },
-            type: 'text'
-        });
+      }
+      
+      // Add pricing type for tenants
+      baseFeatures.push({
+        name: 'Pricing Type',
+        getValue: (prop) => {
+          if (prop.acceptsShortTerm) {
+            return prop.shortTermPricing === 'fixed' ? 'Fixed daily rate' : 
+                   prop.shortTermPricing === 'negotiable' ? 'Negotiable' : 'Monthly only';
+          }
+          return 'Monthly only';
+        },
+        type: 'text'
+      });
     } else {
-        // Student-specific features
-        baseFeatures.push(
-            {
-                name: 'Gender Preference',
-                getValue: (prop) => this.getGenderText(prop.genderPreference),
-                type: 'text'
-            },
-            {
-                name: 'Accreditation',
-                getValue: (prop) => this.getAccreditationText(prop.accreditation),
-                type: 'text'
-            }
-        );
+      // Student-specific features
+      baseFeatures.push(
+        {
+          name: 'Gender Preference',
+          getValue: (prop) => this.getGenderText(prop.genderPreference),
+          type: 'text'
+        },
+        {
+          name: 'Accreditation',
+          getValue: (prop) => this.getAccreditationText(prop.accreditation),
+          type: 'text'
+        }
+      );
     }
 
     baseFeatures.push({
-        name: 'All Amenities',
-        getValue: (prop) => prop.amenities ? prop.amenities.join(', ') : 'None',
-        type: 'text'
+      name: 'All Amenities',
+      getValue: (prop) => prop.amenities ? prop.amenities.join(', ') : 'None',
+      type: 'text'
     });
 
     return baseFeatures;
-}
+  }
 
-
-     // FIXED: Enhanced summary generation with proper price range calculation
-generateSummary() {
+  // UPDATED: Enhanced summary generation with booking mode support
+  generateSummary() {
     const insightsContainer = document.getElementById('key-insights');
     const summaryContainer = document.getElementById('comparison-summary');
     
@@ -1348,352 +1374,355 @@ generateSummary() {
     // Calculate key metrics with negotiable handling
     const cheapest = this.getCheapestProperty();
     const mostBedrooms = this.selectedProperties.reduce((prev, current) => {
-        const prevBedrooms = parseInt(prev.bedrooms) || 0;
-        const currentBedrooms = parseInt(current.bedrooms) || 0;
-        return prevBedrooms > currentBedrooms ? prev : current;
+      const prevBedrooms = parseInt(prev.bedrooms) || 0;
+      const currentBedrooms = parseInt(current.bedrooms) || 0;
+      return prevBedrooms > currentBedrooms ? prev : current;
     });
     
     const mostBathrooms = this.selectedProperties.reduce((prev, current) => {
-        const prevBathrooms = parseInt(prev.bathrooms) || 0;
-        const currentBathrooms = parseInt(current.bathrooms) || 0;
-        return prevBathrooms > currentBathrooms ? prev : current;
+      const prevBathrooms = parseInt(prev.bathrooms) || 0;
+      const currentBathrooms = parseInt(current.bathrooms) || 0;
+      return prevBathrooms > currentBathrooms ? prev : current;
     });
     
     const mostAmenities = this.selectedProperties.reduce((prev, current) => {
-        const prevAmenities = prev.amenities ? prev.amenities.length : 0;
-        const currentAmenities = current.amenities ? current.amenities.length : 0;
-        return prevAmenities > currentAmenities ? prev : current;
+      const prevAmenities = prev.amenities ? prev.amenities.length : 0;
+      const currentAmenities = current.amenities ? current.amenities.length : 0;
+      return prevAmenities > currentAmenities ? prev : current;
     });
 
     const accreditedProperties = this.selectedProperties.filter(p => p.accreditation === 'accredited');
     const shortTermProperties = this.selectedProperties.filter(p => p.acceptsShortTerm);
     const negotiableProperties = this.selectedProperties.filter(p => 
-        p.acceptsShortTerm && p.shortTermPricing === 'negotiable'
+      p.acceptsShortTerm && p.shortTermPricing === 'negotiable'
     );
     const fixedPriceProperties = this.selectedProperties.filter(p => 
-        p.acceptsShortTerm && p.shortTermPricing === 'fixed' && p.shortTermPrice > 0
+      p.acceptsShortTerm && p.shortTermPricing === 'fixed' && p.shortTermPrice > 0
     );
     const maleOnlyProperties = this.selectedProperties.filter(p => p.genderPreference === 'male');
     const femaleOnlyProperties = this.selectedProperties.filter(p => p.genderPreference === 'female');
     const unisexProperties = this.selectedProperties.filter(p => !p.genderPreference || p.genderPreference === 'unisex');
 
-    // FIXED: Calculate price range excluding negotiable properties
+    // Calculate price range excluding negotiable properties
     const pricesForRange = this.selectedProperties
-        .filter(p => !(this.userRole === 'tenant' && p.acceptsShortTerm && p.shortTermPricing === 'negotiable'))
-        .map(p => this.getPropertyPrice(p));
+      .filter(p => !(this.currentBookingMode === 'tenant' && p.acceptsShortTerm && p.shortTermPricing === 'negotiable'))
+      .map(p => this.getPropertyPrice(p));
     
     let priceRangeText = 'Varied (some negotiable)';
     if (pricesForRange.length > 0) {
-        const minPrice = Math.min(...pricesForRange);
-        const maxPrice = Math.max(...pricesForRange);
-        
-        if (this.userRole === 'tenant' && fixedPriceProperties.length > 0) {
-            priceRangeText = `R${minPrice} - R${maxPrice}/day`;
-        } else {
-            priceRangeText = `R${minPrice} - R${maxPrice}/month`;
-        }
+      const minPrice = Math.min(...pricesForRange);
+      const maxPrice = Math.max(...pricesForRange);
+      
+      if (this.currentBookingMode === 'tenant' && fixedPriceProperties.length > 0) {
+        priceRangeText = `R${minPrice} - R${maxPrice}/day`;
+      } else {
+        priceRangeText = `R${minPrice} - R${maxPrice}/month`;
+      }
     }
 
     const hasNegotiablePrices = negotiableProperties.length > 0;
     const hasSignificantPriceDifference = pricesForRange.length > 0 ? 
-        (Math.max(...pricesForRange) - Math.min(...pricesForRange)) > 1000 : false;
+      (Math.max(...pricesForRange) - Math.min(...pricesForRange)) > 1000 : false;
 
     // Generate role-based key insights
     insightsContainer.innerHTML = this.generateRoleBasedInsights(
-        cheapest, mostAmenities, mostBedrooms, accreditedProperties, 
-        shortTermProperties, negotiableProperties, fixedPriceProperties
+      cheapest, mostAmenities, mostBedrooms, accreditedProperties, 
+      shortTermProperties, negotiableProperties, fixedPriceProperties
     );
 
     // Generate detailed summary
     const recommendation = this.generateRoleBasedRecommendation(
-        cheapest, mostAmenities, hasSignificantPriceDifference, 
-        accreditedProperties, shortTermProperties, negotiableProperties,
-        hasNegotiablePrices
+      cheapest, mostAmenities, hasSignificantPriceDifference, 
+      accreditedProperties, shortTermProperties, negotiableProperties,
+      hasNegotiablePrices
     );
 
     summaryContainer.innerHTML = this.generateRoleBasedSummary(
-        recommendation, priceRangeText, unisexProperties, maleOnlyProperties, 
-        femaleOnlyProperties, accreditedProperties, shortTermProperties,
-        negotiableProperties, fixedPriceProperties, cheapest
+      recommendation, priceRangeText, unisexProperties, maleOnlyProperties, 
+      femaleOnlyProperties, accreditedProperties, shortTermProperties,
+      negotiableProperties, fixedPriceProperties, cheapest
     );
-}
+  }
 
-      // FIXED: Get cheapest property with negotiable handling
-getCheapestProperty() {
-    if (this.userRole === 'tenant') {
-        // For tenants, consider short-term pricing if available and fixed
-        const propertiesWithFixedShortTerm = this.selectedProperties.filter(p => 
-            p.acceptsShortTerm && p.shortTermPricing === 'fixed' && p.shortTermPrice > 0
+  // UPDATED: Get cheapest property with booking mode support
+  getCheapestProperty() {
+    if (this.currentBookingMode === 'tenant') {
+      // For tenants, consider short-term pricing if available and fixed
+      const propertiesWithFixedShortTerm = this.selectedProperties.filter(p => 
+        p.acceptsShortTerm && p.shortTermPricing === 'fixed' && p.shortTermPrice > 0
+      );
+      
+      if (propertiesWithFixedShortTerm.length > 0) {
+        return propertiesWithFixedShortTerm.reduce((prev, current) => 
+          prev.shortTermPrice < current.shortTermPrice ? prev : current
         );
-        
-        if (propertiesWithFixedShortTerm.length > 0) {
-            return propertiesWithFixedShortTerm.reduce((prev, current) => 
-                prev.shortTermPrice < current.shortTermPrice ? prev : current
-            );
-        }
+      }
     }
     
     // Default to monthly pricing for students or if no fixed short-term pricing available
     // Filter out properties with negotiable pricing for price comparison
     const propertiesWithMonthlyPricing = this.selectedProperties.filter(p => 
-        !(this.userRole === 'tenant' && p.acceptsShortTerm && p.shortTermPricing === 'negotiable')
+      !(this.currentBookingMode === 'tenant' && p.acceptsShortTerm && p.shortTermPricing === 'negotiable')
     );
     
     if (propertiesWithMonthlyPricing.length > 0) {
-        return propertiesWithMonthlyPricing.reduce((prev, current) => 
-            prev.price < current.price ? prev : current
-        );
+      return propertiesWithMonthlyPricing.reduce((prev, current) => 
+        prev.price < current.price ? prev : current
+      );
     }
     
     // Fallback: return first property if all are negotiable
     return this.selectedProperties[0];
-}
+  }
 
-      // FIXED: Enhanced role-based insights with negotiable info
-generateRoleBasedInsights(cheapest, mostAmenities, mostBedrooms, accreditedProperties, shortTermProperties, negotiableProperties, fixedPriceProperties) {
+  // UPDATED: Enhanced role-based insights with booking mode support
+  generateRoleBasedInsights(cheapest, mostAmenities, mostBedrooms, accreditedProperties, shortTermProperties, negotiableProperties, fixedPriceProperties) {
     const insights = [];
     
     // Always show best value insight
     const cheapestPriceDisplay = this.getRoleBasedPriceDisplay(cheapest);
     insights.push(`
-        <div class="col-md-6 mb-3">
-            <div class="comparison-insight d-flex align-items-center">
-                <div class="insight-icon bg-success">
-                    <i class="bi bi-currency-dollar text-white"></i>
-                </div>
-                <div>
-                    <h6 class="mb-1">Best Value</h6>
-                    <p class="mb-0 text-muted">${cheapest.title} at ${cheapestPriceDisplay.text}</p>
-                </div>
-            </div>
+      <div class="col-md-6 mb-3">
+        <div class="comparison-insight d-flex align-items-center">
+          <div class="insight-icon bg-success">
+            <i class="bi bi-currency-dollar text-white"></i>
+          </div>
+          <div>
+            <h6 class="mb-1">Best Value</h6>
+            <p class="mb-0 text-muted">${cheapest.title} at ${cheapestPriceDisplay.text}</p>
+          </div>
         </div>
+      </div>
     `);
 
     // Most amenities insight
     insights.push(`
-        <div class="col-md-6 mb-3">
-            <div class="comparison-insight d-flex align-items-center">
-                <div class="insight-icon bg-primary">
-                    <i class="bi bi-grid-3x3 text-white"></i>
-                </div>
-                <div>
-                    <h6 class="mb-1">Most Amenities</h6>
-                    <p class="mb-0 text-muted">${mostAmenities.title} with ${mostAmenities.amenities ? mostAmenities.amenities.length : 0} features</p>
-                </div>
-            </div>
+      <div class="col-md-6 mb-3">
+        <div class="comparison-insight d-flex align-items-center">
+          <div class="insight-icon bg-primary">
+            <i class="bi bi-grid-3x3 text-white"></i>
+          </div>
+          <div>
+            <h6 class="mb-1">Most Amenities</h6>
+            <p class="mb-0 text-muted">${mostAmenities.title} with ${mostAmenities.amenities ? mostAmenities.amenities.length : 0} features</p>
+          </div>
         </div>
+      </div>
     `);
 
     // Most spacious insight
     insights.push(`
-        <div class="col-md-6 mb-3">
-            <div class="comparison-insight d-flex align-items-center">
-                <div class="insight-icon bg-info">
-                    <i class="bi bi-door-closed text-white"></i>
-                </div>
-                <div>
-                    <h6 class="mb-1">Most Spacious</h6>
-                    <p class="mb-0 text-muted">${mostBedrooms.title} with ${this.getSafeNumber(mostBedrooms.bedrooms)} bedrooms</p>
-                </div>
-            </div>
+      <div class="col-md-6 mb-3">
+        <div class="comparison-insight d-flex align-items-center">
+          <div class="insight-icon bg-info">
+            <i class="bi bi-door-closed text-white"></i>
+          </div>
+          <div>
+            <h6 class="mb-1">Most Spacious</h6>
+            <p class="mb-0 text-muted">${mostBedrooms.title} with ${this.getSafeNumber(mostBedrooms.bedrooms)} bedrooms</p>
+          </div>
         </div>
+      </div>
     `);
 
-    // Role-specific insights
-    if (this.userRole === 'tenant') {
-        if (negotiableProperties.length > 0) {
-            insights.push(`
-                <div class="col-md-6 mb-3">
-                    <div class="comparison-insight d-flex align-items-center">
-                        <div class="insight-icon bg-warning">
-                            <i class="bi bi-chat-dots text-white"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1">Negotiable Prices</h6>
-                            <p class="mb-0 text-muted">${negotiableProperties.length} properties with negotiable rates</p>
-                        </div>
-                    </div>
-                </div>
-            `);
-        } else if (shortTermProperties.length > 0) {
-            insights.push(`
-                <div class="col-md-6 mb-3">
-                    <div class="comparison-insight d-flex align-items-center">
-                        <div class="insight-icon bg-warning">
-                            <i class="bi bi-calendar-range text-white"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1">Short-term Options</h6>
-                            <p class="mb-0 text-muted">${shortTermProperties.length} properties available</p>
-                        </div>
-                    </div>
-                </div>
-            `);
-        }
-    } else {
+    // Role-specific insights based on booking mode
+    if (this.currentBookingMode === 'tenant') {
+      if (negotiableProperties.length > 0) {
         insights.push(`
-            <div class="col-md-6 mb-3">
-                <div class="comparison-insight d-flex align-items-center">
-                    <div class="insight-icon bg-warning">
-                        <i class="bi bi-award text-white"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-1">Accredited Options</h6>
-                        <p class="mb-0 text-muted">${accreditedProperties.length} university accredited</p>
-                    </div>
-                </div>
+          <div class="col-md-6 mb-3">
+            <div class="comparison-insight d-flex align-items-center">
+              <div class="insight-icon bg-warning">
+                <i class="bi bi-chat-dots text-white"></i>
+              </div>
+              <div>
+                <h6 class="mb-1">Negotiable Prices</h6>
+                <p class="mb-0 text-muted">${negotiableProperties.length} properties with negotiable rates</p>
+              </div>
             </div>
+          </div>
         `);
+      } else if (shortTermProperties.length > 0) {
+        insights.push(`
+          <div class="col-md-6 mb-3">
+            <div class="comparison-insight d-flex align-items-center">
+              <div class="insight-icon bg-warning">
+                <i class="bi bi-calendar-range text-white"></i>
+              </div>
+              <div>
+                <h6 class="mb-1">Short-term Options</h6>
+                <p class="mb-0 text-muted">${shortTermProperties.length} properties available</p>
+              </div>
+            </div>
+          </div>
+        `);
+      }
+    } else {
+      insights.push(`
+        <div class="col-md-6 mb-3">
+          <div class="comparison-insight d-flex align-items-center">
+            <div class="insight-icon bg-warning">
+              <i class="bi bi-award text-white"></i>
+            </div>
+            <div>
+              <h6 class="mb-1">Accredited Options</h6>
+              <p class="mb-0 text-muted">${accreditedProperties.length} university accredited</p>
+            </div>
+          </div>
+        </div>
+      `);
     }
 
     return insights.join('');
-}
+  }
 
-      // NEW: Role-based recommendation generation
-      generateRoleBasedRecommendation(cheapest, mostAmenities, hasSignificantPriceDifference, priceRange, accreditedProperties, shortTermProperties) {
-        let recommendation = '';
-        
-        if (hasSignificantPriceDifference) {
-          recommendation += `There's a significant price difference of R${priceRange} between the properties. `;
-        }
-        
-        if (cheapest === mostAmenities) {
-          recommendation += `<strong>${cheapest.title}</strong> stands out as the best overall choice, offering both the best value and the most amenities.`;
-        } else if (this.getPropertyPrice(cheapest) < this.getPropertyPrice(mostAmenities) - 500) {
-          recommendation += `While <strong>${mostAmenities.title}</strong> has more amenities, <strong>${cheapest.title}</strong> offers better value for money with significant savings.`;
-        } else {
-          recommendation += `<strong>${cheapest.title}</strong> offers the best value at ${this.getRoleBasedPriceDisplay(cheapest).text}, while <strong>${mostAmenities.title}</strong> provides the most comprehensive amenities.`;
-        }
+  // UPDATED: Role-based recommendation generation with booking mode support
+  generateRoleBasedRecommendation(cheapest, mostAmenities, hasSignificantPriceDifference, accreditedProperties, shortTermProperties, negotiableProperties, hasNegotiablePrices) {
+    let recommendation = '';
+    
+    if (hasSignificantPriceDifference) {
+      recommendation += `There's a significant price difference between the properties. `;
+    }
+    
+    if (cheapest === mostAmenities) {
+      recommendation += `<strong>${cheapest.title}</strong> stands out as the best overall choice, offering both the best value and the most amenities.`;
+    } else if (this.getPropertyPrice(cheapest) < this.getPropertyPrice(mostAmenities) - 500) {
+      recommendation += `While <strong>${mostAmenities.title}</strong> has more amenities, <strong>${cheapest.title}</strong> offers better value for money with significant savings.`;
+    } else {
+      recommendation += `<strong>${cheapest.title}</strong> offers the best value at ${this.getRoleBasedPriceDisplay(cheapest).text}, while <strong>${mostAmenities.title}</strong> provides the most comprehensive amenities.`;
+    }
 
-        // Role-specific recommendations
-        if (this.userRole === 'student' && accreditedProperties.length > 0) {
-          recommendation += ` Consider ${accreditedProperties.map(p => p.title).join(', ')} for university-accredited options that may qualify for bursary funding.`;
-        } else if (this.userRole === 'tenant' && shortTermProperties.length > 0) {
-          recommendation += ` ${shortTermProperties.length} properties offer flexible short-term stays, perfect for temporary accommodation needs.`;
-        }
-
-        return recommendation;
-      }
-
-      // FIXED: Enhanced role-based summary with negotiable handling
-generateRoleBasedSummary(recommendation, priceRangeText, unisexProperties, maleOnlyProperties, femaleOnlyProperties, accreditedProperties, shortTermProperties, negotiableProperties, fixedPriceProperties, cheapest) {
-    return `
-        <div class="summary-highlight">
-            <h5 class="text-navy mb-3">🏆 Top Recommendation</h5>
-            <p class="mb-0">${recommendation}</p>
-        </div>
-        
-        <div class="row mt-4">
-            <div class="col-md-6">
-                <h6 class="text-navy mb-3">📊 Quick Stats</h6>
-                <ul class="list-unstyled">
-                    <li class="mb-2"><i class="bi bi-currency-dollar text-success me-2"></i>Price Range: ${priceRangeText}</li>
-                    <li class="mb-2"><i class="bi bi-grid-3x3 text-primary me-2"></i>Average Amenities: ${Math.round(this.selectedProperties.reduce((sum, p) => sum + (p.amenities ? p.amenities.length : 0), 0) / this.selectedProperties.length)}</li>
-                    ${this.userRole === 'student' ? `
-                        <li class="mb-2"><i class="bi bi-people text-info me-2"></i>Gender Options: ${unisexProperties.length} Unisex, ${maleOnlyProperties.length} Male-only, ${femaleOnlyProperties.length} Female-only</li>
-                        <li><i class="bi bi-award text-warning me-2"></i>Accredited: ${accreditedProperties.length} of ${this.selectedProperties.length}</li>
-                    ` : `
-                        <li class="mb-2"><i class="bi bi-calendar-range text-warning me-2"></i>Short-term: ${shortTermProperties.length} of ${this.selectedProperties.length}</li>
-                        ${negotiableProperties.length > 0 ? `<li><i class="bi bi-chat-dots text-info me-2"></i>Negotiable: ${negotiableProperties.length} properties</li>` : ''}
-                    `}
-                </ul>
-            </div>
-            <div class="col-md-6">
-                <h6 class="text-navy mb-3">💡 Decision Tips</h6>
-                <ul class="list-unstyled">
-                    <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Consider your budget and essential amenities</li>
-                    ${this.userRole === 'student' ? `
-                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Check proximity to your campus</li>
-                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Verify accreditation for bursary eligibility</li>
-                    ` : `
-                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Confirm short-term availability and minimum stay</li>
-                        ${negotiableProperties.length > 0 ? `<li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Contact owners for negotiable rates</li>` : ''}
-                    `}
-                    <li><i class="bi bi-check-circle text-success me-2"></i>Review amenities that matter most to you</li>
-                </ul>
-            </div>
-        </div>
-        
-        <div class="mt-4 p-3 bg-light rounded">
-            <h6 class="text-navy mb-2">Next Steps</h6>
-            <p class="mb-0">
-                Ready to make a decision? <a href="property-details.html?id=${cheapest._id}" class="text-primary">View details for ${cheapest.title}</a> or 
-                <a href="my-favorites.html" class="text-primary">review all your favorites</a> before booking a viewing.
-            </p>
-        </div>
-    `;
-}
-
-      // FIXED: Helper to get property price with negotiable handling
-      getPropertyPrice(property) {
-          if (this.userRole === 'tenant' && property.acceptsShortTerm) {
-              if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
-                  return property.shortTermPrice;
-              }
-              // Return a high number for negotiable properties so they're not considered "cheapest"
-              return 999999;
-          }
-          return property.price;
-      }
-
-      removeFromComparison(propertyId) {
-        this.selectedProperties = this.selectedProperties.filter(p => p._id !== propertyId);
-        
-        if (this.selectedProperties.length < 2) {
-          this.resetComparison();
-        } else {
-          this.renderPropertyCards();
-          this.renderComparisonTable();
-          this.generateSummary();
-        }
-      }
-
-      resetComparison() {
-        this.selectedProperties = [];
-        window.history.replaceState({}, document.title, window.location.pathname);
-        
-        document.getElementById('selection-section').classList.remove('d-none');
-        document.getElementById('comparison-section').classList.add('d-none');
-        document.getElementById('compare-button').disabled = true;
-        document.getElementById('compare-button').innerHTML = `<i class="bi bi-bar-chart me-2"></i>Compare Selected Properties`;
-        
-        this.renderSelection();
-      }
-
-      showLoading() {
-        document.getElementById('loading-state').classList.remove('d-none');
-        document.getElementById('empty-state').classList.add('d-none');
-        document.getElementById('selection-section').classList.add('d-none');
-        document.getElementById('comparison-section').classList.add('d-none');
-      }
-
-      showError(message) {
-        document.getElementById('loading-state').classList.add('d-none');
-        document.getElementById('empty-state').classList.remove('d-none');
-        document.getElementById('empty-state').querySelector('h3').textContent = 'Error Loading Properties';
-        document.getElementById('empty-state').querySelector('p').textContent = message;
-      }
-
-      showToast(message, type = 'info') {
-        const toast = document.createElement('div');
-        toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
-        toast.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
-        toast.innerHTML = `
-          ${message}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-          toast.remove();
-        }, 5000);
+    // Role-specific recommendations based on booking mode
+    if (this.currentBookingMode !== 'tenant' && accreditedProperties.length > 0) {
+      recommendation += ` Consider ${accreditedProperties.map(p => p.title).join(', ')} for university-accredited options that may qualify for bursary funding.`;
+    } else if (this.currentBookingMode === 'tenant' && shortTermProperties.length > 0) {
+      recommendation += ` ${shortTermProperties.length} properties offer flexible short-term stays, perfect for temporary accommodation needs.`;
+      if (hasNegotiablePrices) {
+        recommendation += ` Don't forget to negotiate rates for the best deal!`;
       }
     }
 
-    // Initialize when page loads
-    document.addEventListener('DOMContentLoaded', () => {
-      new PropertyComparator();
-    });
-  </script>
+    return recommendation;
+  }
+
+  // UPDATED: Enhanced role-based summary with booking mode support
+  generateRoleBasedSummary(recommendation, priceRangeText, unisexProperties, maleOnlyProperties, femaleOnlyProperties, accreditedProperties, shortTermProperties, negotiableProperties, fixedPriceProperties, cheapest) {
+    return `
+      <div class="summary-highlight">
+        <h5 class="text-navy mb-3">🏆 Top Recommendation</h5>
+        <p class="mb-0">${recommendation}</p>
+      </div>
+      
+      <div class="row mt-4">
+        <div class="col-md-6">
+          <h6 class="text-navy mb-3">📊 Quick Stats</h6>
+          <ul class="list-unstyled">
+            <li class="mb-2"><i class="bi bi-currency-dollar text-success me-2"></i>Price Range: ${priceRangeText}</li>
+            <li class="mb-2"><i class="bi bi-grid-3x3 text-primary me-2"></i>Average Amenities: ${Math.round(this.selectedProperties.reduce((sum, p) => sum + (p.amenities ? p.amenities.length : 0), 0) / this.selectedProperties.length)}</li>
+            ${this.currentBookingMode !== 'tenant' ? `
+              <li class="mb-2"><i class="bi bi-people text-info me-2"></i>Gender Options: ${unisexProperties.length} Unisex, ${maleOnlyProperties.length} Male-only, ${femaleOnlyProperties.length} Female-only</li>
+              <li><i class="bi bi-award text-warning me-2"></i>Accredited: ${accreditedProperties.length} of ${this.selectedProperties.length}</li>
+            ` : `
+              <li class="mb-2"><i class="bi bi-calendar-range text-warning me-2"></i>Short-term: ${shortTermProperties.length} of ${this.selectedProperties.length}</li>
+              ${negotiableProperties.length > 0 ? `<li><i class="bi bi-chat-dots text-info me-2"></i>Negotiable: ${negotiableProperties.length} properties</li>` : ''}
+            `}
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <h6 class="text-navy mb-3">💡 Decision Tips</h6>
+          <ul class="list-unstyled">
+            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Consider your budget and essential amenities</li>
+            ${this.currentBookingMode !== 'tenant' ? `
+              <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Check proximity to your campus</li>
+              <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Verify accreditation for bursary eligibility</li>
+            ` : `
+              <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Confirm short-term availability and minimum stay</li>
+              ${negotiableProperties.length > 0 ? `<li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Contact owners for negotiable rates</li>` : ''}
+            `}
+            <li><i class="bi bi-check-circle text-success me-2"></i>Review amenities that matter most to you</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="mt-4 p-3 bg-light rounded">
+        <h6 class="text-navy mb-2">Next Steps</h6>
+        <p class="mb-0">
+          Ready to make a decision? <a href="property-details.html?id=${cheapest._id}" class="text-primary">View details for ${cheapest.title}</a> or 
+          <a href="my-favorites.html" class="text-primary">review all your favorites</a> before booking a viewing.
+        </p>
+      </div>
+    `;
+  }
+
+  // UPDATED: Helper to get property price with booking mode support
+  getPropertyPrice(property) {
+    if (this.currentBookingMode === 'tenant' && property.acceptsShortTerm) {
+      if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
+        return property.shortTermPrice;
+      }
+      // Return a high number for negotiable properties so they're not considered "cheapest"
+      return 999999;
+    }
+    return property.price;
+  }
+
+  removeFromComparison(propertyId) {
+    this.selectedProperties = this.selectedProperties.filter(p => p._id !== propertyId);
+    
+    if (this.selectedProperties.length < 2) {
+      this.resetComparison();
+    } else {
+      this.renderPropertyCards();
+      this.renderComparisonTable();
+      this.generateSummary();
+    }
+  }
+
+  resetComparison() {
+    this.selectedProperties = [];
+    window.history.replaceState({}, document.title, window.location.pathname);
+    
+    document.getElementById('selection-section').classList.remove('d-none');
+    document.getElementById('comparison-section').classList.add('d-none');
+    document.getElementById('compare-button').disabled = true;
+    document.getElementById('compare-button').innerHTML = `<i class="bi bi-bar-chart me-2"></i>Compare Selected Properties`;
+    
+    this.renderSelection();
+  }
+
+  showLoading() {
+    document.getElementById('loading-state').classList.remove('d-none');
+    document.getElementById('empty-state').classList.add('d-none');
+    document.getElementById('selection-section').classList.add('d-none');
+    document.getElementById('comparison-section').classList.add('d-none');
+  }
+
+  showError(message) {
+    document.getElementById('loading-state').classList.add('d-none');
+    document.getElementById('empty-state').classList.remove('d-none');
+    document.getElementById('empty-state').querySelector('h3').textContent = 'Error Loading Properties';
+    document.getElementById('empty-state').querySelector('p').textContent = message;
+  }
+
+  showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+    toast.innerHTML = `
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.remove();
+    }, 5000);
+  }
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', () => {
+  new PropertyComparator();
+});
+</script>
 </body>
 </html>
