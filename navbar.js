@@ -493,7 +493,7 @@ function setupMobileDropdownFix() {
             dropdownMenu.style.right = '10px';
             dropdownMenu.style.left = 'auto';
             dropdownMenu.style.transform = 'none';
-            dropdownMenu.style.width = '240px'; // CHANGED FROM 280px TO 240px
+            dropdownMenu.style.width = '200px'; // CHANGED FROM 280px TO 240px
             dropdownMenu.style.maxWidth = 'calc(100vw - 20px)';
             dropdownMenu.style.maxHeight = Math.min(availableHeight, 500) + 'px';
             dropdownMenu.style.overflowY = 'auto';
