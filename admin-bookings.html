@@ -898,11 +898,75 @@ async function deleteBooking(bookingId) {
       }
     }
 
-    // In displayBookings method, update the actions column to include delete option:
-// Add these new helper functions to your script:
+// IMPROVED: Get display price with type - FIXED VERSION
+function getDisplayPrice(booking) {
+  // Use the data from aggregation if available, otherwise fall back
+  const negotiatedPrice = booking.negotiatedPrice || 0;
+  const totalPrice = booking.totalPrice || 0;
+  const basePrice = booking.property?.price || 0;
+  
+  // Use aggregation fields if available
+  const bookingSource = booking.bookingSource || getEnhancedBookingType(booking);
+  const priceType = booking.priceType || 'monthly';
+  const isNegotiable = booking.isNegotiable || false;
+  
+  let displayPrice = 0;
+  let finalPriceType = priceType;
+  let priceLabel = '/month';
 
-// Get booking type with pricing info
+  // Determine price and type based on booking source and available prices
+  if (negotiatedPrice > 0) {
+    displayPrice = negotiatedPrice;
+    finalPriceType = 'negotiated';
+    priceLabel = ' (negotiated)';
+  } else if (totalPrice > 0) {
+    displayPrice = totalPrice;
+    
+    // Determine label based on booking type
+    if (bookingSource === 'Short-term' || bookingSource === 'Tenant') {
+      finalPriceType = 'daily';
+      priceLabel = '/day';
+    } else {
+      finalPriceType = 'monthly';
+      priceLabel = '/month';
+    }
+  } else if (basePrice > 0) {
+    displayPrice = basePrice;
+    finalPriceType = 'base';
+    priceLabel = '/month (base)';
+  } else {
+    // If all prices are 0, it's negotiable
+    finalPriceType = 'negotiable';
+    priceLabel = ' (negotiable)';
+  }
+  
+  // Format the display based on price type
+  let formattedPrice = '';
+  if (finalPriceType === 'negotiable' || isNegotiable) {
+    formattedPrice = `<span class="text-warning">Negotiable</span>`;
+  } else if (displayPrice > 0) {
+    formattedPrice = `R${displayPrice}${priceLabel}`;
+  } else {
+    formattedPrice = `<span class="text-muted">To be discussed</span>`;
+  }
+  
+  return {
+    amount: displayPrice,
+    type: finalPriceType,
+    label: priceLabel,
+    formatted: formattedPrice,
+    isNegotiable: finalPriceType === 'negotiable' || isNegotiable || displayPrice === 0
+  };
+}
+
+// IMPROVED: Get enhanced booking type
 function getEnhancedBookingType(booking) {
+  // Use aggregation field if available
+  if (booking.bookingSource) {
+    return booking.bookingSource;
+  }
+  
+  // Fallback logic
   const baseType = booking.bookingType || 'student';
   const hasNegotiatedPrice = booking.negotiatedPrice > 0;
   const studentRole = booking.student?.role || 'student';
@@ -915,61 +979,6 @@ function getEnhancedBookingType(booking) {
   } else {
     return 'Student';
   }
-}
-
-// Get display price with type
-function getDisplayPrice(booking) {
-  const negotiatedPrice = booking.negotiatedPrice || 0;
-  const totalPrice = booking.totalPrice || 0;
-  const basePrice = booking.property?.price || 0;
-  
-  // IMPROVED: Better price selection logic
-  let displayPrice = 0;
-  let priceType = 'monthly';
-  let priceLabel = '/month';
-  
-  if (negotiatedPrice > 0) {
-    displayPrice = negotiatedPrice;
-    priceType = 'negotiated';
-    priceLabel = ' (negotiated)';
-  } else if (totalPrice > 0) {
-    displayPrice = totalPrice;
-    
-    // Determine if it's daily or monthly based on booking type
-    if (booking.bookingType === 'short-term' || booking.bookingType === 'tenant') {
-      priceType = 'daily';
-      priceLabel = '/day';
-    } else {
-      priceType = 'monthly';
-      priceLabel = '/month';
-    }
-  } else if (basePrice > 0) {
-    displayPrice = basePrice;
-    priceType = 'base';
-    priceLabel = '/month (base)';
-  } else {
-    // If all prices are 0, it's negotiable
-    priceType = 'negotiable';
-    priceLabel = ' (negotiable)';
-  }
-  
-  // Format the display based on price type
-  let formattedPrice = '';
-  if (priceType === 'negotiable') {
-    formattedPrice = `<span class="text-warning">Negotiable</span>`;
-  } else if (displayPrice > 0) {
-    formattedPrice = `R${displayPrice}${priceLabel}`;
-  } else {
-    formattedPrice = `<span class="text-muted">To be discussed</span>`;
-  }
-  
-  return {
-    amount: displayPrice,
-    type: priceType,
-    label: priceLabel,
-    formatted: formattedPrice,
-    isNegotiable: priceType === 'negotiable' || displayPrice === 0
-  };
 }
 
 // Get booking source badge HTML
