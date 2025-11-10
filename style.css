@@ -392,94 +392,59 @@ body {
   font-weight: bold;
 }
 
-/* Mobile dropdown optimizations */
+/* Mobile dropdown optimizations - STUDENT SPECIFIC ONLY */
 @media (max-width: 991.98px) {
-    /* Compact dropdown menu for all users */
-    .dropdown-menu.show {
-        max-height: 70vh !important;
-        overflow-y: auto;
-    }
-    
-    /* More compact dropdown items */
-    .dropdown-menu .dropdown-item {
-        padding: 0.4rem 0.75rem !important;
-        font-size: 0.9rem;
-        line-height: 1.3;
-    }
-    
-    /* Compact dropdown header */
-    .dropdown-menu .dropdown-header {
-        padding: 0.5rem 0.75rem !important;
-        line-height: 1.3;
-    }
-    
-    .dropdown-menu .dropdown-header small {
-        font-size: 0.8rem;
-    }
-    
-    /* Student-specific compact mode section */
-    .dropdown-menu .dropdown-item-text {
-        padding: 0.4rem 0.75rem !important;
-    }
-    
-    .dropdown-menu .dropdown-item-text .text-muted {
-        font-size: 0.75rem !important;
-        margin-bottom: 0.2rem !important;
-    }
-    
-    /* Very compact mode buttons for students */
-    .dropdown-menu .btn-group {
-        width: 100%;
-    }
-    
-    .dropdown-menu .btn-group .btn {
-        padding: 0.2rem 0.4rem !important;
-        font-size: 0.75rem !important;
-        line-height: 1.1;
-    }
-    
-    .dropdown-menu .btn-group .btn i {
-        margin-right: 0.15rem !important;
-        font-size: 0.7rem;
-    }
-    
-    /* Smaller dividers */
-    .dropdown-menu .dropdown-divider {
-        margin: 0.2rem 0 !important;
-    }
-    
-    /* Adjust badge in dropdown toggle */
-    .signup-login-buttons .dropdown-toggle .badge {
+    /* Only apply to student users - stack badge below username */
+    .bg-navy .signup-login-buttons .dropdown-toggle .badge.bg-primary,
+    .bg-navy .signup-login-buttons .dropdown-toggle .badge.bg-warning {
+        display: block !important;
+        margin: 0.1rem 0 0 0 !important;
         font-size: 0.65rem;
         padding: 0.15rem 0.4rem;
-        margin-left: 0.25rem !important;
+        width: fit-content;
+        align-self: center;
+    }
+    
+    /* Compact student dropdown menu */
+    .bg-navy .dropdown-menu .dropdown-item-text.px-3.py-2 {
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    .bg-navy .dropdown-menu .dropdown-item-text .text-muted {
+        font-size: 0.75rem;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    /* Compact student mode buttons */
+    .bg-navy .dropdown-menu .btn-group .btn {
+        padding: 0.3rem 0.5rem !important;
+        font-size: 0.75rem;
+        line-height: 1.2;
+    }
+    
+    .bg-navy .dropdown-menu .btn-group .btn i {
+        margin-right: 0.2rem !important;
+        font-size: 0.7rem;
     }
 }
 
-/* Extra small devices */
-@media (max-width: 400px) {
-    .dropdown-menu.show {
-        width: calc(100vw - 30px) !important;
-        right: 15px !important;
-        left: 15px !important;
+/* Additional mobile-specific fixes for STUDENT navbar only */
+@media (max-width: 576px) {
+    /* Stack student username and badge vertically */
+    .bg-navy .signup-login-buttons .dropdown-toggle {
+        flex-direction: column;
+        text-align: center;
+        min-height: auto;
     }
     
-    .signup-login-buttons .dropdown-toggle {
-        font-size: 0.9rem;
-    }
-    
-    .signup-login-buttons .dropdown-toggle .badge {
-        font-size: 0.6rem;
-        padding: 0.1rem 0.3rem;
+    .bg-navy .signup-login-buttons .dropdown-toggle .badge {
+        transform: scale(0.9);
+        margin-top: 0.1rem !important;
     }
 }
 
-/* Keep original styling for desktop */
+/* Keep original styling for all other users */
 @media (min-width: 992px) {
-    .dropdown-menu {
-        min-width: 280px;
-    }
-    
     .signup-login-buttons .dropdown-toggle .badge {
         margin-left: 0.35rem !important;
     }
