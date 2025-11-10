@@ -548,16 +548,18 @@
 </head>
 <body>
 
-  <!-- Redirect if not logged in -->
   <script>
-    const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    
-    if (!token) {
-      alert("Please log in to access this page.");
-      window.location.href = "authorization.html";
-    }
-  </script>
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  
+  if (!token) {
+    alert("Please log in to access this page.");
+    window.location.href = "authorization.html";
+  }
+  
+  // Add this here
+  const API_BASE_URL = window.API_BASE_URL || 'https://linqs-backend.onrender.com/api';
+</script>
 
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-navy">
@@ -1433,8 +1435,6 @@
   <script src="navbar.js"></script>
   
  <script>
-    // API base URL
-    const API_BASE_URL = window.API_BASE_URL || 'https://linqs-backend.onrender.com/api';
     
     // Verification toast tracking
     const VERIFICATION_TOAST_SHOWN_KEY = 'verificationToastShown';
