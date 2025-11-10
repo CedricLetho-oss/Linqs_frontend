@@ -898,64 +898,56 @@ async function deleteBooking(bookingId) {
       }
     }
 
-// IMPROVED: Get display price with proper tenant/student detection
+// SIMPLIFIED: Get display price with proper tenant/student detection
 function getDisplayPrice(booking) {
-  // Use the data from aggregation if available, otherwise fall back
   const negotiatedPrice = booking.negotiatedPrice || 0;
   const totalPrice = booking.totalPrice || 0;
   const basePrice = booking.property?.price || 0;
   
-  // Use aggregation fields if available
-  const bookingSource = booking.bookingSource || getEnhancedBookingType(booking);
-  const priceType = booking.priceType || 'monthly';
-  const isNegotiable = booking.isNegotiable || false;
-  
-  // Debug logging
-  console.log('Booking pricing debug:', {
+  // Debug logging to see what we're working with
+  console.log('Booking pricing data:', {
     bookingId: booking._id,
-    bookingSource,
-    priceType,
-    negotiatedPrice,
-    totalPrice,
-    basePrice,
-    userRole: booking.userRole,
-    userBookingMode: booking.userBookingMode,
-    bookingType: booking.bookingType
+    bookingType: booking.bookingType,
+    bookingSource: booking.bookingSource,
+    priceType: booking.priceType,
+    negotiatedPrice: negotiatedPrice,
+    totalPrice: totalPrice,
+    basePrice: basePrice,
+    studentRole: booking.student?.role,
+    bookingMode: booking.student?.booking_mode
   });
 
   let displayPrice = 0;
-  let finalPriceType = priceType;
+  let priceType = booking.priceType || 'monthly';
   let priceLabel = '/month';
 
-  // Determine price and type based on booking source and available prices
+  // Determine price and type based on available prices
   if (negotiatedPrice > 0) {
     displayPrice = negotiatedPrice;
-    finalPriceType = 'negotiated';
+    priceType = 'negotiated';
     priceLabel = ' (negotiated)';
   } else if (totalPrice > 0) {
     displayPrice = totalPrice;
     
-    // Determine label based on booking type and user role
-    if (bookingSource === 'Short-term' || bookingSource === 'Tenant') {
-      finalPriceType = 'daily';
+    // Use the priceType from backend aggregation
+    if (priceType === 'daily') {
       priceLabel = '/day';
     } else {
-      finalPriceType = 'monthly';
       priceLabel = '/month';
     }
   } else if (basePrice > 0) {
     displayPrice = basePrice;
-    finalPriceType = 'base';
+    priceType = 'base';
     priceLabel = '/month (base)';
   } else {
     // If all prices are 0, it's negotiable
-    finalPriceType = 'negotiable';
+    priceType = 'negotiable';
     priceLabel = ' (negotiable)';
   }
   
-  // Format the display based on price type
+  // Format the display
   let formattedPrice = '';
-  if (finalPriceType === 'negotiable' || isNegotiable) {
+  if (priceType === 'negotiable') {
     formattedPrice = `<span class="text-warning">Negotiable</span>`;
   } else if (displayPrice > 0) {
     formattedPrice = `R${displayPrice}${priceLabel}`;
@@ -965,35 +957,27 @@ function getDisplayPrice(booking) {
   
   return {
     amount: displayPrice,
-    type: finalPriceType,
+    type: priceType,
     label: priceLabel,
     formatted: formattedPrice,
-    isNegotiable: finalPriceType === 'negotiable' || isNegotiable || displayPrice === 0
+    isNegotiable: priceType === 'negotiable' || displayPrice === 0
   };
 }
 
-// IMPROVED: Get enhanced booking type with proper tenant detection
+// SIMPLIFIED: Get enhanced booking type
 function getEnhancedBookingType(booking) {
-  // Use aggregation field if available
+  // Use the backend aggregation field if available
   if (booking.bookingSource) {
     return booking.bookingSource;
   }
   
-  // Fallback logic - check multiple sources for tenant identification
+  // Fallback: Check booking type and user info
   const baseType = booking.bookingType || 'student';
-  const hasNegotiatedPrice = booking.negotiatedPrice > 0;
   const studentRole = booking.student?.role || 'student';
   const bookingMode = booking.student?.booking_mode || 'student';
   
-  // Check if it's a tenant booking
-  const isTenant = baseType === 'tenant' || 
-                  studentRole === 'tenant' || 
-                  bookingMode === 'tenant' ||
-                  booking.userRole === 'tenant' ||
-                  booking.userBookingMode === 'tenant';
-
-  if (isTenant) {
-    return hasNegotiatedPrice ? 'Tenant (Negotiated)' : 'Tenant';
+  if (baseType === 'tenant' || studentRole === 'tenant' || bookingMode === 'tenant') {
+    return 'Tenant';
   } else if (baseType === 'short-term') {
     return 'Short-term';
   } else {
@@ -2129,38 +2113,50 @@ function generateCardActionButtons(booking) {
       `;
     }
 
-    async function viewBooking(bookingId) {
-      try {
-        const token = localStorage.getItem('token');
-        
-        // Use admin endpoint for booking details
-        const response = await fetch(`${API_BASE_URL}/admin/bookings/${bookingId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch booking details');
-        }
-
-        const data = await response.json();
-        const booking = data.data?.booking || data.booking || data;
-
-        // Create modal content
-        const modalContent = createBookingModalContent(booking);
-        document.getElementById('bookingDetails').innerHTML = modalContent;
-        
-        // Show modal
-        const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
-        modal.show();
-        
-      } catch (error) {
-        console.error('Error loading booking details:', error);
-        alert('Failed to load booking details: ' + error.message);
+  // FIXED: View booking details function
+async function viewBooking(bookingId) {
+  try {
+    const token = localStorage.getItem('token');
+    
+    // Use admin endpoint for booking details
+    const response = await fetch(`${API_BASE_URL}/admin/bookings/${bookingId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch booking details');
     }
+
+    const data = await response.json();
+    const booking = data.data?.booking || data.booking || data;
+
+    // Debug the booking data to see what we're getting
+    console.log('Booking details for modal:', {
+      bookingId: booking._id,
+      bookingType: booking.bookingType,
+      studentRole: booking.student?.role,
+      bookingMode: booking.student?.booking_mode,
+      negotiatedPrice: booking.negotiatedPrice,
+      totalPrice: booking.totalPrice,
+      propertyPrice: booking.property?.price
+    });
+
+    // Create modal content
+    const modalContent = createBookingModalContent(booking);
+    document.getElementById('bookingDetails').innerHTML = modalContent;
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
+    modal.show();
+    
+  } catch (error) {
+    console.error('Error loading booking details:', error);
+    alert('Failed to load booking details: ' + error.message);
+  }
+}
 
     // Update createBookingModalContent to show delete option and indicate deleted entities
 // Update createBookingModalContent to show tenant/student info and pricing// Update the booking modal to show detailed pricing information
