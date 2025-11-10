@@ -200,6 +200,25 @@
       align-items: center;
       justify-content: center;
     }
+
+    /* Add to your existing CSS */
+.short-term-pricing-section {
+  border-left: 4px solid #059669 !important;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important;
+}
+
+.property-type-badge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+}
+
+.daily-rate-badge {
+  background: #10b981;
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.5rem;
+}
   </style>
 </head>
 <body>
@@ -725,62 +744,73 @@
         return;
       }
 
-      tbody.innerHTML = properties.map(property => `
-        <tr>
-          <td>
-            <input type="checkbox" class="form-check-input property-checkbox" value="${property._id || property.id}">
-          </td>
-          <td>
-            <div class="d-flex align-items-center">
-              <img src="${getPropertyImage(property)}" 
-                   class="rounded me-3" width="40" height="40" style="object-fit: cover;">
-              <div>
-                <h6 class="mb-0">${property.title || 'Untitled Property'}</h6>
-                <small class="text-muted">${getPropertyLocation(property)}</small>
+      // In the displayProperties function, update the table row HTML
+      tbody.innerHTML = properties.map(property => {
+        const hasShortTerm = property.acceptsShortTerm || false;
+        
+        return `
+          <tr>
+            <td>
+              <input type="checkbox" class="form-check-input property-checkbox" value="${property._id || property.id}">
+            </td>
+            <td>
+              <div class="d-flex align-items-center">
+                <img src="${getPropertyImage(property)}" 
+                    class="rounded me-3" width="40" height="40" style="object-fit: cover;">
+                <div>
+                  <h6 class="mb-0">${property.title || 'Untitled Property'}</h6>
+                  <small class="text-muted">${getPropertyLocation(property)}</small>
+                </div>
               </div>
-            </div>
-          </td>
-          <td>
-            <div>${getLandlordName(property)}</div>
-            <small class="text-muted">${getLandlordEmail(property)}</small>
-          </td>
-          <td>${property.propertyType || 'N/A'}</td>
-          <td>R${property.price || 0}/month</td>
-          <td>
-            <span class="status-badge status-${property.status || 'pending'}">
-              ${(property.status || 'pending').charAt(0).toUpperCase() + (property.status || 'pending').slice(1)}
-            </span>
-          </td>
-          <td>${property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'N/A'}</td>
-          <td>
-            <div class="dropdown">
-              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                Actions
-              </button>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#" onclick="viewPropertyDetails('${property._id || property.id}')">
-                  <i class="bi bi-eye me-2"></i>View Details
-                </a></li>
-                ${property.status !== 'approved' ? `
-                <li><a class="dropdown-item" href="#" onclick="updatePropertyStatus('${property._id || property.id}', 'approved')">
-                  <i class="bi bi-check-circle me-2"></i>Approve
-                </a></li>
-                ` : ''}
-                ${property.status !== 'rejected' ? `
-                <li><a class="dropdown-item" href="#" onclick="updatePropertyStatus('${property._id || property.id}', 'rejected')">
-                  <i class="bi bi-x-circle me-2"></i>Reject
-                </a></li>
-                ` : ''}
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="#" onclick="deleteProperty('${property._id || property.id}')">
-                  <i class="bi bi-trash me-2"></i>Delete
-                </a></li>
-              </ul>
-            </div>
-          </td>
-        </tr>
-      `).join('');
-    }
+            </td>
+            <td>
+              <div>${getLandlordName(property)}</div>
+              <small class="text-muted">${getLandlordEmail(property)}</small>
+            </td>
+            <td>
+              ${property.propertyType || 'N/A'}
+              ${hasShortTerm ? '<br><small class="text-success">Short-term</small>' : ''}
+            </td>
+            <td>
+              R${property.price || 0}/month
+              ${hasShortTerm && property.shortTermPrice ? `<br><small class="text-success">R${property.shortTermPrice}/day</small>` : ''}
+            </td>
+            <td>
+              <span class="status-badge status-${property.status || 'pending'}">
+                ${(property.status || 'pending').charAt(0).toUpperCase() + (property.status || 'pending').slice(1)}
+              </span>
+            </td>
+            <td>${property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'N/A'}</td>
+            <td>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                  Actions
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#" onclick="viewPropertyDetails('${property._id || property.id}')">
+                    <i class="bi bi-eye me-2"></i>View Details
+                  </a></li>
+                  ${property.status !== 'approved' ? `
+                  <li><a class="dropdown-item" href="#" onclick="updatePropertyStatus('${property._id || property.id}', 'approved')">
+                    <i class="bi bi-check-circle me-2"></i>Approve
+                  </a></li>
+                  ` : ''}
+                  ${property.status !== 'rejected' ? `
+                  <li><a class="dropdown-item" href="#" onclick="updatePropertyStatus('${property._id || property.id}', 'rejected')">
+                    <i class="bi bi-x-circle me-2"></i>Reject
+                  </a></li>
+                  ` : ''}
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item text-danger" href="#" onclick="deleteProperty('${property._id || property.id}')">
+                    <i class="bi bi-trash me-2"></i>Delete
+                  </a></li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      }
 
     // Helper functions for property data
     function getPropertyImage(property) {
@@ -868,8 +898,7 @@
       return 'Email not available';
     }
 
-    // Update property status
-    // Update property status - FIXED VERSION
+// Enhanced updatePropertyStatus function
 async function updatePropertyStatus(propertyId, status) {
   // Only allow approved/rejected for admin
   if (!['approved', 'rejected'].includes(status)) {
@@ -904,13 +933,23 @@ async function updatePropertyStatus(propertyId, status) {
     }
     
     console.log('Status update successful:', responseData);
-    alert(`Property ${status} successfully`);
+    
+    // Show enhanced success message with property type info
+    const property = responseData.data?.property;
+    if (property) {
+      const propertyType = property.acceptsShortTerm ? 'short-term enabled property' : 'long-term property';
+      alert(`Property ${status} successfully! This ${propertyType} is now ${status === 'approved' ? 'live on the platform' : 'rejected'}.`);
+    } else {
+      alert(`Property ${status} successfully`);
+    }
+    
     loadProperties();
   } catch (error) {
     console.error('Error updating property status:', error);
     alert('Failed to update property status: ' + error.message);
   }
 }
+
 
     // Update statistics display
     function updateStats(stats) {
@@ -926,233 +965,223 @@ async function updatePropertyStatus(propertyId, status) {
       document.getElementById('tableInfo').textContent = `Showing ${count} properties`;
     }
 
-    // FIXED: View property details function
-    // FIXED: View property details function
-async function viewPropertyDetails(propertyId) {
-  try {
-    console.log('Viewing details for property ID:', propertyId);
-    
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('No authentication token found');
-    }
-
-    let property = null;
-    
-    // Try multiple endpoints to get property details
-    try {
-      // Try admin endpoint first
-      const adminResponse = await fetch(`${API_BASE_URL}/admin/properties/${propertyId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (adminResponse.ok) {
-        const adminData = await adminResponse.json();
-        console.log('Admin endpoint response:', adminData);
+// Enhanced property details display with short-term pricing
+function displayPropertyDetails(property) {
+  const statusConfig = {
+    pending: { class: 'warning', text: 'Pending' },
+    approved: { class: 'success', text: 'Approved' },
+    rejected: { class: 'danger', text: 'Rejected' },
+    available: { class: 'info', text: 'Available' }
+  };
+  
+  const status = property.status || 'pending';
+  const statusInfo = statusConfig[status] || statusConfig.pending;
+  
+  const landlordName = getLandlordName(property);
+  const landlordEmail = getLandlordEmail(property);
+  
+  console.log('Displaying property details - Landlord:', { landlordName, landlordEmail });
+  
+  // Determine short-term availability and pricing
+  const hasShortTerm = property.acceptsShortTerm || false;
+  const shortTermPrice = property.shortTermPrice || 0;
+  const shortTermMinStay = property.shortTermMinStay || 1;
+  const shortTermPricing = property.shortTermPricing || 'negotiable';
+  const shortTermDescription = property.shortTermDescription || '';
+  
+  const modalContent = `
+    <div class="row">
+      <div class="col-md-6">
+        <img src="${getPropertyImage(property)}" class="img-fluid rounded" alt="${property.title}" style="max-height: 300px; width: 100%; object-fit: cover;">
+        ${property.images && property.images.length > 1 ? `
+          <div class="mt-2">
+            <small class="text-muted">+${property.images.length - 1} more images</small>
+          </div>
+        ` : ''}
+      </div>
+      <div class="col-md-6">
+        <h4>${property.title || 'Untitled Property'}</h4>
+        <p class="text-muted">${getPropertyLocation(property)}</p>
         
-        // FIX: Extract property from the correct location
-        if (adminData.success && adminData.data) {
-          property = adminData.data.property; // Get property from data.property, not just data
-          console.log('Admin endpoint property details:', property);
-        }
-      }
-    } catch (adminError) {
-      console.log('Admin details endpoint failed:', adminError);
-    }
-    
-    // If admin endpoint failed, try regular endpoint
-    if (!property) {
-      try {
-        const regularResponse = await fetch(`${API_BASE_URL}/properties/${propertyId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        <div class="mb-3">
+          <span class="badge bg-${statusInfo.class}">${statusInfo.text}</span>
+          <span class="badge bg-secondary ms-2">${property.propertyType || 'N/A'}</span>
+          ${hasShortTerm ? `<span class="badge bg-success ms-2">Short-term Available</span>` : ''}
+        </div>
         
-        if (regularResponse.ok) {
-          const regularData = await regularResponse.json();
-          property = regularData.property || regularData.data || regularData;
-          console.log('Regular endpoint property details:', property);
-        } else {
-          throw new Error(`HTTP error! status: ${regularResponse.status}`);
-        }
-      } catch (regularError) {
-        console.log('Regular endpoint failed:', regularError);
-      }
-    }
-
-    // If still no property, throw error
-    if (!property) {
-      throw new Error('Could not fetch property details from any endpoint');
-    }
+        <div class="row mb-3">
+          <div class="col-6">
+            <strong>Monthly Rent:</strong><br>
+            <h5 class="text-primary">R${property.price || 0}</h5>
+          </div>
+          <div class="col-6">
+            <strong>Rooms:</strong><br>
+            <h6>${property.bedrooms || 0} beds • ${property.bathrooms || 0} baths</h6>
+          </div>
+        </div>
+        
+        <!-- SHORT-TERM PRICING SECTION -->
+        ${hasShortTerm ? `
+        <div class="short-term-pricing-section border rounded p-3 bg-light mb-3">
+          <h6 class="text-success mb-2">
+            <i class="bi bi-lightning-charge me-1"></i>Short-term Stays Available
+          </h6>
+          <div class="row">
+            <div class="col-6">
+              <strong>Daily Rate:</strong><br>
+              <h6 class="text-success">R${shortTermPrice}/day</h6>
+            </div>
+            <div class="col-6">
+              <strong>Min Stay:</strong><br>
+              <h6>${shortTermMinStay} days</h6>
+            </div>
+          </div>
+          ${shortTermPricing !== 'negotiable' ? `
+          <div class="mt-2">
+            <strong>Pricing Type:</strong> 
+            <span class="badge bg-info">${shortTermPricing.charAt(0).toUpperCase() + shortTermPricing.slice(1)}</span>
+          </div>
+          ` : ''}
+          ${shortTermDescription ? `
+          <div class="mt-2">
+            <strong>Short-term Description:</strong><br>
+            <small class="text-muted">${shortTermDescription}</small>
+          </div>
+          ` : ''}
+        </div>
+        ` : `
+        <div class="alert alert-warning mb-3">
+          <i class="bi bi-info-circle me-1"></i>
+          This property only accepts long-term student accommodation
+        </div>
+        `}
+        
+        ${property.genderPreference ? `
+        <div class="mb-2">
+          <strong>Gender Preference:</strong> 
+          <span class="badge bg-info">${property.genderPreference}</span>
+        </div>
+        ` : ''}
+        
+        ${property.accreditation ? `
+        <div class="mb-2">
+          <strong>Accreditation:</strong> 
+          <span class="badge bg-success">${property.accreditation}</span>
+        </div>
+        ` : ''}
+      </div>
+    </div>
     
-    // Display the property details
-    displayPropertyDetails(property);
+    <div class="row mt-3">
+      <div class="col-12">
+        <h5>Description</h5>
+        <p class="border p-3 rounded bg-light">${property.description || 'No description provided.'}</p>
+      </div>
+    </div>
     
-  } catch (error) {
-    console.error('Error viewing property:', error);
-    alert('Failed to load property details: ' + error.message);
-  }
+    ${property.amenities && property.amenities.length > 0 ? `
+    <div class="row mt-3">
+      <div class="col-12">
+        <h5>Amenities</h5>
+        <div class="d-flex flex-wrap gap-2">
+          ${property.amenities.map(amenity => `
+            <span class="badge bg-primary">
+              <i class="bi bi-check me-1"></i>${amenity.charAt(0).toUpperCase() + amenity.slice(1)}
+            </span>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+    ` : ''}
+    
+    <!-- PROPERTY TYPE BADGES -->
+    <div class="row mt-3">
+      <div class="col-12">
+        <h5>Property Type & Availability</h5>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="badge bg-secondary">${property.propertyType || 'N/A'}</span>
+          <span class="badge ${property.isAvailable ? 'bg-success' : 'bg-danger'}">
+            ${property.isAvailable ? 'Available' : 'Not Available'}
+          </span>
+          <span class="badge ${hasShortTerm ? 'bg-success' : 'bg-secondary'}">
+            ${hasShortTerm ? 'Short-term Stays' : 'Long-term Only'}
+          </span>
+          <span class="badge bg-info">${property.accreditation || 'Self-accredited'}</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row mt-3">
+      <div class="col-12">
+        <h5>Landlord Information</h5>
+        <div class="card">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <strong>Name:</strong> ${landlordName}
+              </div>
+              <div class="col-md-6">
+                <strong>Email:</strong> ${landlordEmail}
+              </div>
+            </div>
+            ${property.contactInfo && property.contactInfo.phone ? `
+            <div class="row mt-2">
+              <div class="col-12">
+                <strong>Phone:</strong> ${property.contactInfo.phone}
+              </div>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row mt-3">
+      <div class="col-6">
+        <strong>Created:</strong> ${property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'N/A'}
+      </div>
+      <div class="col-6">
+        <strong>Updated:</strong> ${property.updatedAt ? new Date(property.updatedAt).toLocaleDateString() : 'N/A'}
+      </div>
+    </div>
+    
+    ${property.adminNotes ? `
+    <div class="row mt-3">
+      <div class="col-12">
+        <h5>Admin Notes</h5>
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>
+          ${property.adminNotes}
+        </div>
+      </div>
+    </div>
+    ` : ''}
+    
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="d-flex justify-content-end gap-2">
+          ${property.status !== 'approved' ? `
+          <button class="btn btn-success" onclick="updatePropertyStatus('${property._id || property.id}', 'approved')">
+            <i class="bi bi-check-circle me-1"></i>Approve
+          </button>
+          ` : ''}
+          ${property.status !== 'rejected' ? `
+          <button class="btn btn-danger" onclick="updatePropertyStatus('${property._id || property.id}', 'rejected')">
+            <i class="bi bi-x-circle me-1"></i>Reject
+          </button>
+          ` : ''}
+          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('propertyDetails').innerHTML = modalContent;
+  const modal = new bootstrap.Modal(document.getElementById('propertyModal'));
+  modal.show();
 }
-
-    // Enhanced property details display
-    function displayPropertyDetails(property) {
-      const statusConfig = {
-        pending: { class: 'warning', text: 'Pending' },
-        approved: { class: 'success', text: 'Approved' },
-        rejected: { class: 'danger', text: 'Rejected' },
-        available: { class: 'info', text: 'Available' }
-      };
-      
-      const status = property.status || 'pending';
-      const statusInfo = statusConfig[status] || statusConfig.pending;
-      
-      const landlordName = getLandlordName(property);
-      const landlordEmail = getLandlordEmail(property);
-      
-      console.log('Displaying property details - Landlord:', { landlordName, landlordEmail });
-      
-      const modalContent = `
-        <div class="row">
-          <div class="col-md-6">
-            <img src="${getPropertyImage(property)}" class="img-fluid rounded" alt="${property.title}" style="max-height: 300px; width: 100%; object-fit: cover;">
-            ${property.images && property.images.length > 1 ? `
-              <div class="mt-2">
-                <small class="text-muted">+${property.images.length - 1} more images</small>
-              </div>
-            ` : ''}
-          </div>
-          <div class="col-md-6">
-            <h4>${property.title || 'Untitled Property'}</h4>
-            <p class="text-muted">${getPropertyLocation(property)}</p>
-            
-            <div class="mb-3">
-              <span class="badge bg-${statusInfo.class}">${statusInfo.text}</span>
-              <span class="badge bg-secondary ms-2">${property.propertyType || 'N/A'}</span>
-            </div>
-            
-            <div class="row mb-3">
-              <div class="col-6">
-                <strong>Monthly Rent:</strong><br>
-                <h5 class="text-primary">R${property.price || 0}</h5>
-              </div>
-              <div class="col-6">
-                <strong>Rooms:</strong><br>
-                <h6>${property.bedrooms || 0} beds • ${property.bathrooms || 0} baths</h6>
-              </div>
-            </div>
-            
-            ${property.genderPreference ? `
-            <div class="mb-2">
-              <strong>Gender Preference:</strong> 
-              <span class="badge bg-info">${property.genderPreference}</span>
-            </div>
-            ` : ''}
-            
-            ${property.accreditation ? `
-            <div class="mb-2">
-              <strong>Accreditation:</strong> 
-              <span class="badge bg-success">${property.accreditation}</span>
-            </div>
-            ` : ''}
-          </div>
-        </div>
-        
-        <div class="row mt-3">
-          <div class="col-12">
-            <h5>Description</h5>
-            <p class="border p-3 rounded bg-light">${property.description || 'No description provided.'}</p>
-          </div>
-        </div>
-        
-        ${property.amenities && property.amenities.length > 0 ? `
-        <div class="row mt-3">
-          <div class="col-12">
-            <h5>Amenities</h5>
-            <div class="d-flex flex-wrap gap-2">
-              ${property.amenities.map(amenity => `
-                <span class="badge bg-primary">
-                  <i class="bi bi-check me-1"></i>${amenity.charAt(0).toUpperCase() + amenity.slice(1)}
-                </span>
-              `).join('')}
-            </div>
-          </div>
-        </div>
-        ` : ''}
-        
-        <div class="row mt-3">
-          <div class="col-12">
-            <h5>Landlord Information</h5>
-            <div class="card">
-              <div class="card-body">
-                <div class="row">
-                  <div class="col-md-6">
-                    <strong>Name:</strong> ${landlordName}
-                  </div>
-                  <div class="col-md-6">
-                    <strong>Email:</strong> ${landlordEmail}
-                  </div>
-                </div>
-                ${property.contactInfo && property.contactInfo.phone ? `
-                <div class="row mt-2">
-                  <div class="col-12">
-                    <strong>Phone:</strong> ${property.contactInfo.phone}
-                  </div>
-                </div>
-                ` : ''}
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="row mt-3">
-          <div class="col-6">
-            <strong>Created:</strong> ${property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'N/A'}
-          </div>
-          <div class="col-6">
-            <strong>Updated:</strong> ${property.updatedAt ? new Date(property.updatedAt).toLocaleDateString() : 'N/A'}
-          </div>
-        </div>
-        
-        ${property.adminNotes ? `
-        <div class="row mt-3">
-          <div class="col-12">
-            <h5>Admin Notes</h5>
-            <div class="alert alert-info">
-              <i class="bi bi-info-circle me-2"></i>
-              ${property.adminNotes}
-            </div>
-          </div>
-        </div>
-        ` : ''}
-        
-        <div class="row mt-4">
-          <div class="col-12">
-            <div class="d-flex justify-content-end gap-2">
-              ${property.status !== 'approved' ? `
-              <button class="btn btn-success" onclick="updatePropertyStatus('${property._id || property.id}', 'approved')">
-                <i class="bi bi-check-circle me-1"></i>Approve
-              </button>
-              ` : ''}
-              ${property.status !== 'rejected' ? `
-              <button class="btn btn-danger" onclick="updatePropertyStatus('${property._id || property.id}', 'rejected')">
-                <i class="bi bi-x-circle me-1"></i>Reject
-              </button>
-              ` : ''}
-              <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-      
-      document.getElementById('propertyDetails').innerHTML = modalContent;
-      const modal = new bootstrap.Modal(document.getElementById('propertyModal'));
-      modal.show();
-    }
 
     // Delete property
     async function deleteProperty(propertyId) {
@@ -1318,32 +1347,46 @@ async function viewPropertyDetails(propertyId) {
     }
 
     // Helper function to convert properties to CSV
-    function convertToCSV(properties) {
-      if (!properties || properties.length === 0) {
-        return 'No properties to export';
-      }
-      
-      const headers = [
-        'ID', 'Title', 'Type', 'Status', 'Price', 'Bedrooms', 'Bathrooms',
-        'Location', 'Landlord Name', 'Landlord Email', 'Created Date'
-      ];
-      
-      const rows = properties.map(property => [
-        property._id || property.id,
-        `"${(property.title || '').replace(/"/g, '""')}"`,
-        property.propertyType || 'N/A',
-        property.status || 'pending',
-        property.price || 0,
-        property.bedrooms || 0,
-        property.bathrooms || 0,
-        `"${getPropertyLocation(property).replace(/"/g, '""')}"`,
-        `"${getLandlordName(property).replace(/"/g, '""')}"`,
-        `"${getLandlordEmail(property).replace(/"/g, '""')}"`,
-        property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'N/A'
-      ]);
-      
-      return [headers, ...rows].map(row => row.join(',')).join('\n');
-    }
+    // Enhanced CSV export function
+function convertToCSV(properties) {
+  if (!properties || properties.length === 0) {
+    return 'No properties to export';
+  }
+  
+  const headers = [
+    'ID', 'Title', 'Type', 'Status', 'Monthly Price', 'Daily Price', 
+    'Short-term Available', 'Min Stay (Days)', 'Pricing Type',
+    'Bedrooms', 'Bathrooms', 'Location', 'Landlord Name', 
+    'Landlord Email', 'Created Date'
+  ];
+  
+  const rows = properties.map(property => {
+    const hasShortTerm = property.acceptsShortTerm || false;
+    const shortTermPrice = property.shortTermPrice || 0;
+    const shortTermMinStay = property.shortTermMinStay || 1;
+    const shortTermPricing = property.shortTermPricing || 'negotiable';
+    
+    return [
+      property._id || property.id,
+      `"${(property.title || '').replace(/"/g, '""')}"`,
+      property.propertyType || 'N/A',
+      property.status || 'pending',
+      property.price || 0,
+      hasShortTerm ? shortTermPrice : 'N/A',
+      hasShortTerm ? 'Yes' : 'No',
+      hasShortTerm ? shortTermMinStay : 'N/A',
+      hasShortTerm ? shortTermPricing : 'N/A',
+      property.bedrooms || 0,
+      property.bathrooms || 0,
+      `"${getPropertyLocation(property).replace(/"/g, '""')}"`,
+      `"${getLandlordName(property).replace(/"/g, '""')}"`,
+      `"${getLandlordEmail(property).replace(/"/g, '""')}"`,
+      property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'N/A'
+    ];
+  });
+  
+  return [headers, ...rows].map(row => row.join(',')).join('\n');
+}
 
     // Helper function to download CSV
     function downloadCSV(csv, filename) {
