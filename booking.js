@@ -1,6 +1,3 @@
-// booking.js - FIXED with proper URL parameter handling
-const API_BASE_URL = 'https://linqs-backend.onrender.com/api';
-
 // Booking Management
 let bookingSteps = [];
 let steps = [];
