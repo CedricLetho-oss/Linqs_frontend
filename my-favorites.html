@@ -1010,46 +1010,51 @@
     }
 
     bindEvents() {
-        // Sort and filter events
-        document.getElementById('sort-select').addEventListener('change', (e) => {
-            this.sortBy = e.target.value;
-            this.applyFiltersAndSort();
-        });
+    // Sort and filter events
+    document.getElementById('sort-select').addEventListener('change', (e) => {
+        this.sortBy = e.target.value;
+        this.applyFiltersAndSort();
+    });
 
-        document.getElementById('priority-filter').addEventListener('change', (e) => {
-            this.priorityFilter = e.target.value;
-            this.applyFiltersAndSort();
-        });
+    document.getElementById('priority-filter').addEventListener('change', (e) => {
+        this.priorityFilter = e.target.value;
+        this.applyFiltersAndSort();
+    });
 
-        document.getElementById('clear-filters').addEventListener('click', () => {
-            this.sortBy = 'createdAt-desc';
-            this.priorityFilter = 'all';
-            document.getElementById('sort-select').value = this.sortBy;
-            document.getElementById('priority-filter').value = this.priorityFilter;
-            this.applyFiltersAndSort();
-        });
+    document.getElementById('clear-filters').addEventListener('click', () => {
+        this.sortBy = 'createdAt-desc';
+        this.priorityFilter = 'all';
+        document.getElementById('sort-select').value = this.sortBy;
+        document.getElementById('priority-filter').value = this.priorityFilter;
+        this.applyFiltersAndSort();
+    });
 
-        // View mode toggle
-        document.querySelectorAll('[data-view]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                this.viewMode = e.target.dataset.view;
-                this.updateViewMode();
-            });
+    // View mode toggle
+    document.querySelectorAll('[data-view]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            this.viewMode = e.target.dataset.view;
+            this.updateViewMode();
         });
+    });
 
-        // Compare favorites
-        document.getElementById('compare-favorites').addEventListener('click', () => {
-            this.compareFavorites();
-        });
+    // Compare favorites
+    document.getElementById('compare-favorites').addEventListener('click', () => {
+        this.compareFavorites();
+    });
 
-        // Notes modal events
-        document.getElementById('saveFavorite').addEventListener('click', () => {
-            this.saveFavorite();
-        });
-    }
+    // Notes modal events
+    document.getElementById('saveFavorite').addEventListener('click', () => {
+        this.saveFavorite();
+    });
 
+    // NEW: Listen for booking mode changes
+    window.addEventListener('bookingModeChanged', () => {
+        console.log('Booking mode changed, refreshing favorites display...');
+        this.renderFavorites(); // Re-render to update pricing
+    });
+}
     async loadFavorites() {
         this.showLoading();
         
@@ -1175,9 +1180,12 @@
 
     emptyState.classList.add('d-none');
 
-    // Get current user role
+    // Get current user role AND booking mode
     const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
     const userRole = currentUser.role || 'student';
+    const currentBookingMode = this.getCurrentBookingMode();
+
+    console.log(`Rendering favorites for: ${userRole} in ${currentBookingMode} mode`);
 
     this.favorites.forEach((favorite, index) => {
         const clone = template.content.cloneNode(true);
@@ -1197,7 +1205,7 @@
         priorityBadge.textContent = favorite.priority.charAt(0).toUpperCase() + favorite.priority.slice(1);
         priorityBadge.className = `badge priority-badge bg-${this.getPriorityColor(favorite.priority)}`;
 
-        // Add recent badge if applicable - ONLY ONCE HERE
+        // Add recent badge if applicable
         if (this.isRecent(favorite.createdAt)) {
             const recentBadge = document.createElement('span');
             recentBadge.className = 'badge recent-badge';
@@ -1205,7 +1213,7 @@
             card.querySelector('.favorite-badge').after(recentBadge);
         }
 
-        // CALL THE NEW METHOD: Set property details based on user role
+        // CALL THE UPDATED METHOD: Set property details based on user role AND booking mode
         this.setPropertyDetails(card, property, userRole, favorite);
 
         // Render amenities
@@ -1261,7 +1269,16 @@
     this.hideLoading();
 }
 
-// FIXED: Set property details based on user role
+// ADD THIS HELPER METHOD to check current booking mode
+getCurrentBookingMode() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.role !== 'student') {
+        return 'student'; // Non-students always use student mode
+    }
+    return localStorage.getItem('booking_mode') || 'student';
+}
+
+// UPDATED: Set property details based on user role AND booking mode
 setPropertyDetails(card, property, userRole, favorite) {
     const imageContainer = card.querySelector('.image-container');
     const img = card.querySelector('.favorite-image');
@@ -1279,14 +1296,17 @@ setPropertyDetails(card, property, userRole, favorite) {
     card.querySelector('.property-title').textContent = property.title;
     card.querySelector('.location-text').textContent = property.location?.address || 'Location not specified';
     
-    // ROLE-BASED PRICING DISPLAY
+    // GET CURRENT BOOKING MODE
+    const currentBookingMode = this.getCurrentBookingMode();
+    
+    // ROLE-BASED PRICING DISPLAY WITH BOOKING MODE SUPPORT
     const priceElement = card.querySelector('.property-price');
     
-    // FIX: Make short-term properties green for tenants
-    if (userRole === 'tenant' && property.acceptsShortTerm) {
+    // FIX: Show short-term pricing when in tenant mode OR when property accepts short-term and user is tenant role
+    if ((userRole === 'tenant' || currentBookingMode === 'tenant') && property.acceptsShortTerm) {
         if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
             priceElement.textContent = `R${property.shortTermPrice}/day`;
-            priceElement.className = 'property-price fw-bold text-success mb-3'; // CHANGED to text-success
+            priceElement.className = 'property-price fw-bold text-success mb-3';
             
             // Add minimum stay info
             const minStayInfo = document.createElement('small');
@@ -1295,21 +1315,29 @@ setPropertyDetails(card, property, userRole, favorite) {
             priceElement.parentNode.appendChild(minStayInfo);
         } else {
             priceElement.textContent = 'Price negotiable (short-term)';
-            priceElement.className = 'property-price fw-bold text-success mb-3'; // CHANGED to text-success
+            priceElement.className = 'property-price fw-bold text-success mb-3';
         }
         
         // Add short-term badge with green color
         const shortTermBadge = document.createElement('span');
-        shortTermBadge.className = 'badge bg-success ms-2'; // CHANGED to bg-success
+        shortTermBadge.className = 'badge bg-success ms-2';
         shortTermBadge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term';
         card.querySelector('.property-title').parentNode.appendChild(shortTermBadge);
     } else {
-        // Student pricing (original behavior)
+        // Student pricing (original behavior) - monthly pricing
         priceElement.textContent = `R${property.price}/month`;
         priceElement.className = 'property-price fw-bold text-primary mb-3';
+        
+        // If property accepts short-term but user is in student mode, show both options
+        if (property.acceptsShortTerm) {
+            const shortTermInfo = document.createElement('small');
+            shortTermInfo.className = 'text-success d-block';
+            shortTermInfo.innerHTML = '<i class="bi bi-info-circle me-1"></i>Short-term stays available';
+            priceElement.parentNode.appendChild(shortTermInfo);
+        }
     }
 
-    // Set property features (hide gender and accreditation for tenants)
+    // Set property features (adapt based on booking mode)
     const bedroomsCount = card.querySelector('.bedrooms-count');
     const bathroomsCount = card.querySelector('.bathrooms-count');
     const genderPreference = card.querySelector('.gender-preference');
@@ -1317,10 +1345,10 @@ setPropertyDetails(card, property, userRole, favorite) {
     bedroomsCount.textContent = property.bedrooms || 'N/A';
     bathroomsCount.textContent = property.bathrooms || 'N/A';
     
-    if (userRole === 'tenant') {
-        // Hide gender preference and show short-term info for tenants
+    if (userRole === 'tenant' || currentBookingMode === 'tenant') {
+        // Hide gender preference and show short-term info for tenants/tenant mode
         genderPreference.style.display = 'none';
-        // Modify the features section for tenants
+        // Modify the features section for short-term stays
         card.querySelector('.property-features').innerHTML = `
             <small class="text-muted">
                 <i class="bi bi-door-closed me-1"></i>${property.bedrooms || 'N/A'} beds • 
