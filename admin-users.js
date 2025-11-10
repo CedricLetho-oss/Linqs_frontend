@@ -1,4 +1,4 @@
-// Admin Users Management Manager - UPDATED with tenant support and edit functionality
+// Admin Users Management Manager - FIXED VERSION
 class AdminUsersManager {
     constructor() {
         this.token = localStorage.getItem("token");
@@ -38,43 +38,58 @@ class AdminUsersManager {
 
     setupEventListeners() {
         // Sidebar toggle
-        document.getElementById('sidebarToggle').addEventListener('click', () => {
-            document.getElementById('adminSidebar').classList.toggle('collapsed');
-            document.getElementById('adminMain').classList.toggle('expanded');
-        });
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                document.getElementById('adminSidebar').classList.toggle('collapsed');
+                document.getElementById('adminMain').classList.toggle('expanded');
+            });
+        }
 
         // Search input with debounce
-        let searchTimeout;
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                this.filters.search = e.target.value;
-                this.currentPage = 1;
-                this.loadUsers();
-            }, 500);
-        });
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            let searchTimeout;
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    this.filters.search = e.target.value;
+                    this.currentPage = 1;
+                    this.loadUsers();
+                }, 500);
+            });
+        }
 
         // Filter changes
-        document.getElementById('roleFilter').addEventListener('change', (e) => {
-            this.filters.role = e.target.value;
-            this.currentPage = 1;
-            this.loadUsers();
-        });
+        const roleFilter = document.getElementById('roleFilter');
+        if (roleFilter) {
+            roleFilter.addEventListener('change', (e) => {
+                this.filters.role = e.target.value;
+                this.currentPage = 1;
+                this.loadUsers();
+            });
+        }
 
-        document.getElementById('statusFilter').addEventListener('change', (e) => {
-            this.filters.status = e.target.value;
-            this.currentPage = 1;
-            this.loadUsers();
-        });
+        const statusFilter = document.getElementById('statusFilter');
+        if (statusFilter) {
+            statusFilter.addEventListener('change', (e) => {
+                this.filters.status = e.target.value;
+                this.currentPage = 1;
+                this.loadUsers();
+            });
+        }
 
         // Select all checkbox
-        document.getElementById('selectAll').addEventListener('change', (e) => {
-            const checkboxes = document.querySelectorAll('.user-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = e.target.checked;
-                this.toggleUserSelection(checkbox.value, e.target.checked);
+        const selectAll = document.getElementById('selectAll');
+        if (selectAll) {
+            selectAll.addEventListener('change', (e) => {
+                const checkboxes = document.querySelectorAll('.user-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = e.target.checked;
+                    this.toggleUserSelection(checkbox.value, e.target.checked);
+                });
             });
-        });
+        }
 
         // Global event delegation for all buttons with data-action
         document.addEventListener('click', (e) => {
@@ -141,6 +156,9 @@ class AdminUsersManager {
                 case 'deleteUser':
                     this.deleteUser(userId);
                     break;
+                case 'sendVerificationReminder':
+                    this.sendVerificationReminder(userId);
+                    break;
                 case 'goToPage':
                     const page = parseInt(button.getAttribute('data-page'));
                     this.goToPage(page);
@@ -176,10 +194,7 @@ class AdminUsersManager {
             ...this.filters
         });
 
-        // Get the token and ensure it has Bearer prefix
         let token = localStorage.getItem("token");
-        
-        // If token doesn't start with "Bearer ", add it
         if (token && !token.startsWith('Bearer ')) {
             token = `Bearer ${token}`;
         }
@@ -206,17 +221,24 @@ class AdminUsersManager {
         const totalUsers = users.length;
         const landlords = users.filter(u => u.role === 'landlord').length;
         const students = users.filter(u => u.role === 'student').length;
-        const tenants = users.filter(u => u.role === 'tenant').length; // NEW
+        const tenants = users.filter(u => u.role === 'tenant').length;
         const pending = users.filter(u => u.status === 'pending').length;
 
-        document.getElementById('totalUsersCount').textContent = totalUsers;
-        document.getElementById('landlordCount').textContent = landlords;
-        document.getElementById('studentCount').textContent = students;
-        document.getElementById('pendingCount').textContent = pending;
+        // Safe element updates
+        this.safeUpdateElementText('totalUsersCount', totalUsers);
+        this.safeUpdateElementText('landlordCount', landlords);
+        this.safeUpdateElementText('studentCount', students);
+        this.safeUpdateElementText('pendingCount', pending);
 
-        // Update analytics grid to include tenants
         this.updateAnalyticsGrid(totalUsers, landlords, students, tenants, pending);
         this.updateNotificationBadges(pending);
+    }
+
+    safeUpdateElementText(elementId, text) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = text;
+        }
     }
 
     updateAnalyticsGrid(total, landlords, students, tenants, pending) {
@@ -264,6 +286,8 @@ class AdminUsersManager {
 
     updateUsersTable(data) {
         const tableBody = document.getElementById('usersTableBody');
+        if (!tableBody) return;
+
         const users = data.users || [];
 
         if (users.length === 0) {
@@ -348,7 +372,7 @@ class AdminUsersManager {
         const total = data.total || users.length;
         const start = (this.currentPage - 1) * this.limit + 1;
         const end = Math.min(this.currentPage * this.limit, total);
-        document.getElementById('tableInfo').textContent = `Showing ${start}-${end} of ${total} users`;
+        this.safeUpdateElementText('tableInfo', `Showing ${start}-${end} of ${total} users`);
     }
 
     getStatusActions(user) {
@@ -377,6 +401,8 @@ class AdminUsersManager {
 
     showEmptyState() {
         const tableBody = document.getElementById('usersTableBody');
+        if (!tableBody) return;
+
         tableBody.innerHTML = `
             <tr>
                 <td colspan="9" class="text-center py-4 text-muted">
@@ -386,13 +412,15 @@ class AdminUsersManager {
             </tr>
         `;
         
-        document.getElementById('tableInfo').textContent = 'Showing 0-0 of 0 users';
-        document.getElementById('pagination').innerHTML = '';
+        this.safeUpdateElementText('tableInfo', 'Showing 0-0 of 0 users');
         
-        document.getElementById('totalUsersCount').textContent = '0';
-        document.getElementById('landlordCount').textContent = '0';
-        document.getElementById('studentCount').textContent = '0';
-        document.getElementById('pendingCount').textContent = '0';
+        const pagination = document.getElementById('pagination');
+        if (pagination) pagination.innerHTML = '';
+        
+        this.safeUpdateElementText('totalUsersCount', '0');
+        this.safeUpdateElementText('landlordCount', '0');
+        this.safeUpdateElementText('studentCount', '0');
+        this.safeUpdateElementText('pendingCount', '0');
     }
 
     getUserInitials(firstName, lastName) {
@@ -403,6 +431,8 @@ class AdminUsersManager {
 
     updatePagination(data) {
         const pagination = document.getElementById('pagination');
+        if (!pagination) return;
+
         const totalPages = data.totalPages || 1;
         const total = data.total || 0;
 
@@ -494,7 +524,7 @@ class AdminUsersManager {
             if (role === '') title.textContent = 'All Users';
             else if (role === 'landlord') title.textContent = 'Landlords';
             else if (role === 'student') title.textContent = 'Students';
-            else if (role === 'tenant') title.textContent = 'Tenants'; // NEW
+            else if (role === 'tenant') title.textContent = 'Tenants';
             else title.textContent = `${role.charAt(0).toUpperCase() + role.slice(1)} Users`;
         }
     }
@@ -516,7 +546,8 @@ class AdminUsersManager {
             this.selectedUsers.add(userId);
         } else {
             this.selectedUsers.delete(userId);
-            document.getElementById('selectAll').checked = false;
+            const selectAll = document.getElementById('selectAll');
+            if (selectAll) selectAll.checked = false;
         }
     }
 
@@ -554,6 +585,44 @@ class AdminUsersManager {
         }
     }
 
+    // Enhanced sendVerificationReminder method in admin-users.js
+async sendVerificationReminder(userId) {
+    if (!confirm('Send verification reminder email to this user? They will receive instructions on how to complete their account verification.')) return;
+    
+    try {
+        let token = localStorage.getItem("token");
+        if (token && !token.startsWith('Bearer ')) {
+            token = `Bearer ${token}`;
+        }
+
+        this.showInfo('Sending verification reminder...');
+
+        const response = await fetch(`${this.API_BASE_URL}/admin/users/${userId}/send-verification-reminder`, {
+            method: 'POST',
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                this.showSuccess('Verification reminder sent successfully! The user will receive an email with verification instructions.');
+                console.log('Email details:', result.data.email);
+            } else {
+                throw new Error(result.error || 'Failed to send verification reminder');
+            }
+        } else {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error sending verification reminder:', error);
+        this.showError('Failed to send verification reminder: ' + error.message);
+    }
+}
+
     // Bulk actions
     async bulkAction(action) {
         if (this.selectedUsers.size === 0) {
@@ -588,7 +657,8 @@ class AdminUsersManager {
             }
             
             this.selectedUsers.clear();
-            document.getElementById('selectAll').checked = false;
+            const selectAll = document.getElementById('selectAll');
+            if (selectAll) selectAll.checked = false;
             await this.loadUsers();
         } catch (error) {
             this.showError(`Failed to ${action} users. Please try again.`);
@@ -687,6 +757,7 @@ class AdminUsersManager {
 
     displayUserModal(user, statistics) {
         const modalContent = document.getElementById('userDetails');
+        if (!modalContent) return;
         
         const firstName = user.firstName || 'Unknown';
         const lastName = user.lastName || 'User';
@@ -705,8 +776,8 @@ class AdminUsersManager {
         const university = user.university || 'Not specified';
         const course = user.course || 'Not specified';
         const propertyName = user.propertyName || 'Not specified';
-        const occupation = user.occupation || 'Not specified'; // NEW: Tenant field
-        const reasonForStay = user.reasonForStay || 'Not specified'; // NEW: Tenant field
+        const occupation = user.occupation || 'Not specified';
+        const reasonForStay = user.reasonForStay || 'Not specified';
         
         modalContent.innerHTML = `
             <div class="row">
@@ -727,8 +798,10 @@ class AdminUsersManager {
                             ${status.charAt(0).toUpperCase() + status.slice(1)}
                         </span>
                     </div>
-                    ${isVerified ? '<span class="badge bg-success"><i class="bi bi-patch-check me-1"></i>Verified</span>' : 
-                    '<span class="badge bg-warning"><i class="bi bi-clock me-1"></i>Not Verified</span>'}
+                    ${isVerified ? 
+                        '<span class="badge bg-success"><i class="bi bi-patch-check me-1"></i>Verified</span>' : 
+                        '<span class="badge bg-warning"><i class="bi bi-clock me-1"></i>Not Verified</span>'
+                    }
                 </div>
                 <div class="col-md-8">
                     <h5>Contact Information</h5>
@@ -804,6 +877,17 @@ class AdminUsersManager {
                     
                     <h5>Bio</h5>
                     <p>${bio}</p>
+
+                    <!-- Verification Reminder Button -->
+                    ${!isVerified ? `
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6><i class="bi bi-envelope-exclamation me-2"></i>Verification Reminder</h6>
+                        <p class="small text-muted mb-2">This user hasn't verified their account yet. Send them a reminder email about the importance of verification for platform safety.</p>
+                        <button class="btn btn-outline-primary btn-sm" data-action="sendVerificationReminder" data-user-id="${user._id || user.id}">
+                            <i class="bi bi-send me-1"></i>Send Verification Reminder
+                        </button>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -812,7 +896,7 @@ class AdminUsersManager {
         modal.show();
     }
 
-    // EDIT USER FUNCTIONALITY - IMPLEMENTED
+    // EDIT USER FUNCTIONALITY - FIXED
     async editUserModal(userId) {
         try {
             let token = localStorage.getItem("token");
@@ -866,6 +950,9 @@ class AdminUsersManager {
         document.getElementById('editOccupation').value = user.occupation || '';
         document.getElementById('editReasonForStay').value = user.reasonForStay || '';
         document.getElementById('editPropertyName').value = user.propertyName || '';
+
+        // Show/hide role-specific fields
+        this.toggleRoleSpecificFields(user.role);
 
         const modal = new bootstrap.Modal(editModal);
         modal.show();
@@ -934,7 +1021,7 @@ class AdminUsersManager {
                                 </div>
                                 
                                 <!-- Student-specific fields -->
-                                <div id="studentFields">
+                                <div id="studentFields" style="display: none;">
                                     <h6>Student Information</h6>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
@@ -949,7 +1036,7 @@ class AdminUsersManager {
                                 </div>
                                 
                                 <!-- Tenant-specific fields -->
-                                <div id="tenantFields">
+                                <div id="tenantFields" style="display: none;">
                                     <h6>Tenant Information</h6>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
@@ -964,7 +1051,7 @@ class AdminUsersManager {
                                 </div>
                                 
                                 <!-- Landlord-specific fields -->
-                                <div id="landlordFields">
+                                <div id="landlordFields" style="display: none;">
                                     <h6>Landlord Information</h6>
                                     <div class="mb-3">
                                         <label class="form-label">Property Name</label>
@@ -1022,6 +1109,12 @@ class AdminUsersManager {
             return;
         }
 
+        const userId = this.currentEditingUser._id || this.currentEditingUser.id;
+        if (!userId) {
+            this.showError('Invalid user ID.');
+            return;
+        }
+
         const userData = {
             firstName: document.getElementById('editFirstName').value,
             lastName: document.getElementById('editLastName').value,
@@ -1050,9 +1143,8 @@ class AdminUsersManager {
                 token = `Bearer ${token}`;
             }
 
-            // Since we don't have a dedicated admin update endpoint, we'll use the regular profile update
-            // In a real implementation, you'd want to create an admin update endpoint
-            const response = await fetch(`${this.API_BASE_URL}/users/profile`, {
+            // FIXED: Use admin update endpoint instead of regular profile update
+            const response = await fetch(`${this.API_BASE_URL}/admin/users/${userId}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': token,
@@ -1063,14 +1155,10 @@ class AdminUsersManager {
 
             if (response.ok) {
                 const result = await response.json();
-                if (result.message) {
-                    this.showSuccess('User updated successfully! Changes have been saved.');
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
-                    modal.hide();
-                    await this.loadUsers();
-                } else {
-                    throw new Error(result.error || 'Failed to update user');
-                }
+                this.showSuccess('User updated successfully! Changes have been saved.');
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
+                if (modal) modal.hide();
+                await this.loadUsers();
             } else {
                 const errorData = await response.json();
                 throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
@@ -1101,6 +1189,8 @@ class AdminUsersManager {
 
     async addUser() {
         const form = document.getElementById('addUserForm');
+        if (!form) return;
+
         const formData = new FormData(form);
         
         const userData = {
@@ -1142,7 +1232,7 @@ class AdminUsersManager {
             if (response.ok) {
                 this.showSuccess('User created successfully! The new user can now log in to the system.');
                 const modal = bootstrap.Modal.getInstance(document.getElementById('addUserModal'));
-                modal.hide();
+                if (modal) modal.hide();
                 form.reset();
                 await this.loadUsers();
             } else {
