@@ -1436,7 +1436,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="navbar.js"></script>
   
-  <script>
+ <script>
     // API base URL
     const API_BASE_URL = window.API_BASE_URL || 'https://linqs-backend.onrender.com/api';
     
@@ -1618,6 +1618,7 @@
             email: user.email || '',
             phone: user.phone || '',
             role: user.role || 'student',
+            booking_mode: user.booking_mode || 'student', // NEW: Add booking mode
             avatar: user.avatar || user.profilePicture || 'https://via.placeholder.com/120',
             bio: user.bio || '',
             streetAddress: user.streetAddress || user.address?.street || '',
@@ -1631,16 +1632,16 @@
             propertyName: user.propertyName || '',
             propertyAddress: user.propertyAddress || '',
             roomCount: user.roomCount || '',
+            occupation: user.occupation || '',
+            reasonForStay: user.reasonForStay || '',
+            tenantNotes: user.tenantNotes || '',
             isVerified: user.isVerified || user.verified || false,
             verificationStatus: user.verificationStatus || null,
             verifiedAt: user.verifiedAt || null,
             memberSince: user.memberSince || user.createdAt || new Date().toISOString(),
             lastLogin: user.lastLogin || new Date().toISOString(),
             preferences: user.preferences || getDefaultPreferences(),
-            stats: user.stats || getDefaultStats(user.role || 'student'),
-            occupation: user.occupation || '',
-            reasonForStay: user.reasonForStay || '',
-            tenantNotes: user.tenantNotes || '',
+            stats: user.stats || getDefaultStats(user.role || 'student')
         };
 
         return defaultUser;
@@ -1925,7 +1926,7 @@
         updateStatsDisplay();
     }
 
-    // Add these helper functions for tenant stats
+    // Helper functions for counting various items
     async function countShortTermBookings() {
         try {
             const token = localStorage.getItem("token");
@@ -2018,7 +2019,6 @@
         }
     }
 
-    // Helper functions for counting various items
     async function countActiveBookings() {
         try {
             const token = localStorage.getItem("token");
@@ -2468,7 +2468,7 @@
         document.getElementById('memberSince').textContent = `Member since ${memberSince}`;
         document.getElementById('memberSinceDisplay').textContent = new Date(currentUser.memberSince).toLocaleDateString();
 
-        // FIXED: Proper account type display for tenant
+        // Proper account type display for tenant
         if (currentUser.role === 'admin') {
             document.getElementById('accountTypeDisplay').textContent = 'Administrator Account';
         } else if (currentUser.role === 'tenant') {
@@ -2530,7 +2530,7 @@
             document.getElementById('tenantInfoSection').style.display = 'none';
             document.getElementById('switchToLandlordBtn').style.display = 'none';
         } else if (isTenant) {
-            // FIXED: Show tenant stats and hide others
+            // Show tenant stats and hide others
             document.getElementById('landlordStats').style.display = 'none';
             document.getElementById('userStats').style.display = 'none';
             document.getElementById('tenantStats').style.display = 'flex';
@@ -2562,7 +2562,7 @@
         } else if (currentUser.role === 'admin') {
             // Admin stats are handled separately in loadAdminStats()
         } else if (currentUser.role === 'tenant') {
-            // FIXED: Show tenant-specific stats
+            // Show tenant-specific stats
             setElementText('shortTermBookings', currentUser.stats.shortTermBookings || 0);
             setElementText('upcomingStays', currentUser.stats.upcomingStays || 0);
             setElementText('tenantReviews', currentUser.stats.tenantReviews || 0);
@@ -2593,7 +2593,7 @@
         setValue('phone', currentUser.phone);
         setValue('bio', currentUser.bio);
         
-        // FIXED: Proper role display for tenant
+        // Proper role display for tenant
         if (currentUser.role === 'admin') {
             setValue('roleDisplay', 'Administrator');
         } else if (currentUser.role === 'tenant') {
@@ -2961,14 +2961,14 @@
         }
     }
 
-    // FIXED VERIFICATION FUNCTION - Only shows toast once for verified/pending users
+    // VERIFICATION FUNCTION - Only shows toast once for verified/pending users
     async function verifyAccount() {
         if (confirm('Start account verification process? You will need to upload verification documents.')) {
             // Reset the toast shown flag when user starts a new verification
             localStorage.removeItem(VERIFICATION_TOAST_SHOWN_KEY);
             
             try {
-                // FIXED: Handle tenant verification type - only ID card required
+                // Handle tenant verification type - only ID card required
                 let verificationType;
                 let requiredFields = [];
                 
@@ -3074,7 +3074,7 @@
         }
     }
 
-    // FIXED VERIFICATION STATUS CHECK - Only shows toast once
+    // VERIFICATION STATUS CHECK - Only shows toast once
     async function checkVerificationStatus() {
         try {
             const token = localStorage.getItem("token");
@@ -3120,7 +3120,7 @@
         localStorage.removeItem(VERIFICATION_TOAST_SHOWN_KEY);
     }
 
-    // SIMPLIFIED document upload modal - removing the complex broken function
+    // SIMPLIFIED document upload modal
     async function showEnhancedDocumentUploadModal(verificationType, requiredFields = []) {
         return new Promise((resolve) => {
             // Determine modal title and description based on verification type
@@ -3745,6 +3745,6 @@
             }
         }
     }
-  </script>
+</script>
 </body>
 </html>
