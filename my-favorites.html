@@ -600,6 +600,36 @@
 #logoutModal .modal-body i.bi-person-check {
   color: var(--primary) !important;
 }
+
+/* Add these styles to your existing CSS */
+.compare-selection-item {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.compare-selection-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.compare-selection-item .form-check-input:checked ~ label {
+    background: rgba(30, 58, 138, 0.05);
+    border-color: var(--primary);
+}
+
+.compare-selection-item .form-check-input:disabled ~ label {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Enhanced badge styles for comparison */
+.badge.bg-success {
+    background: linear-gradient(135deg, var(--success) 0%, #047857 100%) !important;
+}
+
+.badge.bg-secondary {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%) !important;
+}
   </style>
 </head>
 <body>
@@ -1039,8 +1069,24 @@
         });
     });
 
-    // Compare favorites
+    // Compare favorites - with enhanced validation
     document.getElementById('compare-favorites').addEventListener('click', () => {
+        const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const userRole = currentUser.role || 'student';
+        const currentBookingMode = this.getCurrentBookingMode();
+        
+        // Check if we have enough available properties for the current mode
+        const availableProperties = this.getAvailablePropertiesForComparison(currentBookingMode);
+        
+        if (availableProperties.length < 2) {
+            if (currentBookingMode === 'tenant') {
+                this.showToast('You need at least 2 properties that accept short-term stays to compare. Switch to student mode or add more short-term properties to favorites.', 'warning');
+            } else {
+                this.showToast('Please add at least 2 properties to favorites to compare.', 'warning');
+            }
+            return;
+        }
+        
         this.compareFavorites();
     });
 
@@ -1049,7 +1095,7 @@
         this.saveFavorite();
     });
 
-    // NEW: Listen for booking mode changes
+    // Listen for booking mode changes
     window.addEventListener('bookingModeChanged', () => {
         console.log('Booking mode changed, refreshing favorites display...');
         this.renderFavorites(); // Re-render to update pricing
@@ -1559,125 +1605,185 @@ setPropertyDetails(card, property, userRole, favorite) {
     }
 }
 
-    compareFavorites() {
-        if (this.favorites.length < 2) {
-            this.showToast('Please add at least 2 properties to compare.', 'warning');
-            return;
-        }
-
-        if (this.favorites.length === 2) {
-            const favoriteIds = this.favorites.map(f => f.property._id);
-            const queryString = favoriteIds.map(id => `id=${id}`).join('&');
-            window.location.href = `compare.html?${queryString}`;
-        } else {
-            this.showSelectionModal();
-        }
+    // Replace the existing compareFavorites method with this updated version
+compareFavorites() {
+    if (this.favorites.length < 2) {
+        this.showToast('Please add at least 2 properties to compare.', 'warning');
+        return;
     }
 
-    showSelectionModal() {
-        // Create a modal for selecting properties to compare
-        const modalHtml = `
-            <div class="modal fade" id="compareSelectionModal" tabindex="-1">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Select Properties to Compare</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    // Get current user role and booking mode
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const userRole = currentUser.role || 'student';
+    const currentBookingMode = this.getCurrentBookingMode();
+    
+    console.log(`Compare initiated: ${userRole} in ${currentBookingMode} mode`);
+
+    if (this.favorites.length === 2) {
+        const favoriteIds = this.favorites.map(f => f.property._id);
+        const queryString = favoriteIds.map(id => `id=${id}`).join('&');
+        // Pass booking mode to compare page
+        window.location.href = `compare.html?${queryString}&mode=${currentBookingMode}`;
+    } else {
+        this.showSelectionModal(currentBookingMode);
+    }
+}
+
+// Update the showSelectionModal method to accept booking mode
+showSelectionModal(bookingMode) {
+    // Create a modal for selecting properties to compare
+    const modalHtml = `
+        <div class="modal fade" id="compareSelectionModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-bar-chart me-2"></i>Select Properties to Compare
+                            ${bookingMode === 'tenant' ? '<span class="badge bg-success ms-2">Short-term Mode</span>' : ''}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info d-flex align-items-center">
+                            <i class="bi bi-info-circle me-2 fs-5"></i>
+                            <div>
+                                <strong>Comparison Mode:</strong> ${bookingMode === 'tenant' ? 'Short-term stays (daily pricing)' : 'Student accommodation (monthly pricing)'}
+                                ${bookingMode === 'tenant' ? 
+                                    '<br><small>Showing properties that accept short-term bookings with daily rates</small>' : 
+                                    '<br><small>Showing monthly rental prices for student accommodation</small>'
+                                }
+                            </div>
                         </div>
-                        <div class="modal-body">
-                            <p class="text-muted mb-3">Choose 2-4 properties to compare:</p>
-                            <div class="row" id="compare-selection-container">
-                                ${this.favorites.map((favorite, index) => `
+                        <p class="text-muted mb-3">Choose 2-4 properties to compare:</p>
+                        <div class="row" id="compare-selection-container">
+                            ${this.favorites.map((favorite, index) => {
+                                const property = favorite.property;
+                                const isShortTermEligible = bookingMode === 'tenant' && property.acceptsShortTerm;
+                                const price = bookingMode === 'tenant' && isShortTermEligible ? 
+                                    (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0 ? 
+                                        `R${property.shortTermPrice}/day` : 'Price negotiable') : 
+                                    `R${property.price}/month`;
+                                
+                                return `
                                     <div class="col-md-6 mb-3">
-                                        <div class="form-check compare-selection-item p-3 border rounded">
+                                        <div class="form-check compare-selection-item p-3 border rounded ${isShortTermEligible ? 'border-success' : ''}">
                                             <input class="form-check-input" type="checkbox" 
-                                                  value="${favorite.property._id}" 
-                                                  id="compare-prop-${index}">
-                                            <label class="form-check-label w-100" for="compare-prop-${index}">
+                                                  value="${property._id}" 
+                                                  id="compare-prop-${index}"
+                                                  ${bookingMode === 'tenant' && !isShortTermEligible ? 'disabled' : ''}>
+                                            <label class="form-check-label w-100 ${bookingMode === 'tenant' && !isShortTermEligible ? 'text-muted' : ''}" for="compare-prop-${index}">
                                                 <div class="d-flex align-items-center">
-                                                    <img src="${favorite.property.images && favorite.property.images.length > 0 ? favorite.property.images[0] : 'images/placeholder-property.jpg'}" 
-                                                        alt="${favorite.property.title}" 
+                                                    <img src="${property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/400x300?text=No+Image'}" 
+                                                        alt="${property.title}" 
                                                         class="rounded me-3" 
                                                         style="width: 60px; height: 60px; object-fit: cover;">
-                                                    <div>
-                                                        <h6 class="mb-1">${favorite.property.title}</h6>
-                                                        <small class="text-muted">R${favorite.property.price}/month</small>
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-1 d-flex align-items-center">
+                                                            ${property.title}
+                                                            ${isShortTermEligible ? '<span class="badge bg-success ms-2"><i class="bi bi-calendar-range me-1"></i>Short-term</span>' : ''}
+                                                            ${bookingMode === 'tenant' && !isShortTermEligible ? '<span class="badge bg-secondary ms-2"><i class="bi bi-calendar-x me-1"></i>Long-term only</span>' : ''}
+                                                        </h6>
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <small class="text-muted">${price}</small>
+                                                            <small class="text-muted">
+                                                                <i class="bi bi-door-closed me-1"></i>${property.bedrooms || 'N/A'} • 
+                                                                <i class="bi bi-badge-wc me-1"></i>${property.bathrooms || 'N/A'}
+                                                            </small>
+                                                        </div>
+                                                        ${bookingMode === 'tenant' && !isShortTermEligible ? 
+                                                            '<small class="text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Not available for short-term</small>' : ''}
                                                     </div>
                                                 </div>
                                             </label>
                                         </div>
                                     </div>
-                                `).join('')}
-                            </div>
-                            <div class="mt-3">
-                                <small class="text-muted" id="selection-count">Selected: 0/4 properties</small>
-                            </div>
+                                `;
+                            }).join('')}
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-gradient" id="confirm-compare" disabled>
-                                <i class="bi bi-bar-chart me-2"></i>Compare Selected
-                            </button>
+                        <div class="mt-3">
+                            <small class="text-muted" id="selection-count">Selected: 0/4 properties</small>
+                            ${bookingMode === 'tenant' ? 
+                                '<div class="mt-2"><small class="text-info"><i class="bi bi-lightbulb me-1"></i>Only properties accepting short-term stays are selectable</small></div>' : 
+                                ''
+                            }
                         </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-gradient" id="confirm-compare" disabled>
+                            <i class="bi bi-bar-chart me-2"></i>Compare Selected
+                        </button>
                     </div>
                 </div>
             </div>
-        `;
+        </div>
+    `;
 
-        // Remove existing modal if any
-        const existingModal = document.getElementById('compareSelectionModal');
-        if (existingModal) {
-            existingModal.remove();
-        }
-
-        // Add modal to body
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-        // Get modal instance
-        const modal = new bootstrap.Modal(document.getElementById('compareSelectionModal'));
-        
-        // Set up event listeners
-        const checkboxes = document.querySelectorAll('.compare-selection-item input[type="checkbox"]');
-        const confirmBtn = document.getElementById('confirm-compare');
-        const selectionCount = document.getElementById('selection-count');
-
-        const updateSelection = () => {
-            const selected = Array.from(checkboxes).filter(cb => cb.checked);
-            const count = selected.length;
-            
-            selectionCount.textContent = `Selected: ${count}/4 properties`;
-            confirmBtn.disabled = count < 2 || count > 4;
-            
-            if (count >= 2) {
-                confirmBtn.innerHTML = `<i class="bi bi-bar-chart me-2"></i>Compare ${count} Properties`;
-            } else {
-                confirmBtn.innerHTML = `<i class="bi bi-bar-chart me-2"></i>Compare Selected`;
-            }
-        };
-
-        checkboxes.forEach(cb => {
-            cb.addEventListener('change', updateSelection);
-        });
-
-        confirmBtn.addEventListener('click', () => {
-            const selectedIds = Array.from(checkboxes)
-                .filter(cb => cb.checked)
-                .map(cb => cb.value);
-            
-            if (selectedIds.length >= 2 && selectedIds.length <= 4) {
-                const queryString = selectedIds.map(id => `id=${id}`).join('&');
-                window.location.href = `compare.html?${queryString}`;
-            }
-        });
-
-        // Show modal
-        modal.show();
-        
-        // Clean up modal when hidden
-        document.getElementById('compareSelectionModal').addEventListener('hidden.bs.modal', function() {
-            this.remove();
-        });
+    // Remove existing modal if any
+    const existingModal = document.getElementById('compareSelectionModal');
+    if (existingModal) {
+        existingModal.remove();
     }
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Get modal instance
+    const modal = new bootstrap.Modal(document.getElementById('compareSelectionModal'));
+    
+    // Set up event listeners
+    const checkboxes = document.querySelectorAll('.compare-selection-item input[type="checkbox"]:not(:disabled)');
+    const confirmBtn = document.getElementById('confirm-compare');
+    const selectionCount = document.getElementById('selection-count');
+
+    const updateSelection = () => {
+        const selected = Array.from(checkboxes).filter(cb => cb.checked);
+        const count = selected.length;
+        
+        selectionCount.textContent = `Selected: ${count}/4 properties`;
+        confirmBtn.disabled = count < 2 || count > 4;
+        
+        if (count >= 2) {
+            confirmBtn.innerHTML = `<i class="bi bi-bar-chart me-2"></i>Compare ${count} Properties`;
+        } else {
+            confirmBtn.innerHTML = `<i class="bi bi-bar-chart me-2"></i>Compare Selected`;
+        }
+    };
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateSelection);
+    });
+
+    confirmBtn.addEventListener('click', () => {
+        const selectedIds = Array.from(checkboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+        
+        if (selectedIds.length >= 2 && selectedIds.length <= 4) {
+            const queryString = selectedIds.map(id => `id=${id}`).join('&');
+            // Pass the current booking mode to the compare page
+            window.location.href = `compare.html?${queryString}&mode=${bookingMode}`;
+        }
+    });
+
+    // Show modal
+    modal.show();
+    
+    // Clean up modal when hidden
+    document.getElementById('compareSelectionModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+// Add this helper method to check available properties for comparison
+getAvailablePropertiesForComparison(bookingMode) {
+    if (bookingMode === 'tenant') {
+        return this.favorites.filter(favorite => 
+            favorite.property && favorite.property.acceptsShortTerm
+        );
+    }
+    return this.favorites; // All properties available for student mode
+}
 
     showLoading() {
         document.getElementById('loading-state').classList.remove('d-none');
