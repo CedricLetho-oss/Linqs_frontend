@@ -1992,36 +1992,53 @@ async performFavoriteDeletion(favoriteId, deleteBtn, originalText) {
                 this.favorites[filteredIndex] = { ...this.allFavorites[index] };
             }
 
-            // Re-render and update counts
-            this.renderFavorites();
-            this.updateCounts();
-            
-            // FIXED: Mobile-compatible modal closing
+            // FIXED: Close modal FIRST using the most reliable method
             const modalElement = document.getElementById('editFavoriteModal');
             
-            // Method 1: Use Bootstrap's hide method
+            // Method 1: Use Bootstrap's hide method with fallbacks
+            let modalClosed = false;
+            
+            // Try Bootstrap method first
             const modal = bootstrap.Modal.getInstance(modalElement);
             if (modal) {
                 modal.hide();
-            } else {
-                // Method 2: Direct DOM manipulation for mobile
+                modalClosed = true;
+            }
+            
+            // If Bootstrap method didn't work, use direct DOM manipulation
+            if (!modalClosed) {
                 modalElement.classList.remove('show');
                 modalElement.style.display = 'none';
                 modalElement.setAttribute('aria-hidden', 'true');
+                modalElement.removeAttribute('aria-modal');
+                modalElement.removeAttribute('role');
+                modalElement.style.paddingRight = '';
                 
                 // Remove backdrop
-                const backdrop = document.querySelector('.modal-backdrop');
-                if (backdrop) {
-                    backdrop.remove();
-                }
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(backdrop => backdrop.remove());
                 
                 // Re-enable body scroll
                 document.body.classList.remove('modal-open');
                 document.body.style.overflow = '';
                 document.body.style.paddingRight = '';
+                
+                modalClosed = true;
             }
 
-            this.showToast('Favorite updated successfully', 'success');
+            // FIXED: Use setTimeout to ensure modal is fully closed before DOM updates
+            setTimeout(() => {
+                try {
+                    // Safe DOM updates with comprehensive null checks
+                    this.renderFavorites();
+                    this.updateCounts();
+                    this.showToast('Favorite updated successfully', 'success');
+                } catch (error) {
+                    console.error('Error during post-save UI update:', error);
+                    // Still show success message even if UI update fails
+                    this.showToast('Favorite updated successfully', 'success');
+                }
+            }, 150); // Increased delay for mobile
 
         } else {
             // Enhanced error handling with specific messages
