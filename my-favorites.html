@@ -1609,9 +1609,16 @@ setPropertyDetails(card, property, userRole, favorite) {
             this.showToast('Favorite updated successfully', 'success');
             
             // FIXED: Close modal properly
+            // Close modal - get the instance properly
             const modalElement = document.getElementById('editFavoriteModal');
-            const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-            modal.hide();
+            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+            if (modalInstance) {
+                modalInstance.hide();
+            } else {
+                // Fallback: if instance not found, hide manually
+                const modal = new bootstrap.Modal(modalElement);
+                modal.hide();
+            }
         } else {
             throw new Error('Failed to update favorite');
         }
