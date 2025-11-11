@@ -725,6 +725,32 @@
         font-size: 16px; /* Prevent zoom on iOS */
     }
 }
+
+/* Add this to your existing mobile CSS */
+@media (max-width: 768px) {
+    /* Ensure modal animations work properly on mobile */
+    .modal.fade .modal-dialog {
+        transition: transform 0.3s ease-out;
+        transform: translate(0, 0);
+    }
+    
+    /* Fix modal backdrop on mobile */
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1040;
+        width: 100vw;
+        height: 100vh;
+        background-color: #000;
+    }
+    
+    /* Ensure modal content is properly sized on mobile */
+    .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
   </style>
 </head>
 <body>
