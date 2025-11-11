@@ -691,6 +691,83 @@
     height: 100vh;
     background-color: #000;
 }
+
+/* Add to your existing mobile CSS */
+@media (max-width: 768px) {
+    /* Ensure all interactive elements are touch-friendly */
+    .btn, 
+    .mobile-nav-item, 
+    [data-view], 
+    .form-check-input, 
+    .page-link,
+    .view-property,
+    .edit-favorite,
+    .remove-favorite,
+    #compare-favorites,
+    #clear-filters {
+        min-height: 44px;
+        min-width: 44px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+    
+    /* Improve button spacing for touch */
+    .btn-group .btn {
+        padding: 0.75rem 1rem;
+        margin: 2px;
+    }
+    
+    /* Ensure form elements are touch-friendly */
+    .form-select, 
+    .form-control {
+        min-height: 44px;
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    /* Improve card interaction */
+    .favorite-card {
+        padding: 1rem;
+    }
+    
+    /* Make sure buttons in cards are easily tappable */
+    .favorite-card .btn-group .btn {
+        padding: 0.5rem 0.75rem;
+        margin: 1px;
+    }
+    
+    /* Mobile bottom nav improvements */
+    .mobile-nav-item {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .mobile-nav-item i {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+    }
+}
+
+/* Additional mobile fixes */
+@media (max-width: 576px) {
+    .filter-section .d-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .filter-section .form-select {
+        width: 100% !important;
+    }
+    
+    .hero-button .booking-icon {
+        width: 60px !important;
+        height: 60px !important;
+    }
+    
+    .hero-button .bi-heart-fill {
+        font-size: 1.5rem !important;
+    }
+}
   </style>
 </head>
 <body>
@@ -1167,15 +1244,8 @@
 }
 
 // Add to your FavoritesManager class
+// Replace the bindMobileEvents method with this fixed version
 bindMobileEvents() {
-    // Handle touch events for mobile
-    document.addEventListener('touchstart', (e) => {
-        // Prevent double-tap zoom on buttons
-        if (e.target.classList.contains('btn') || e.target.closest('.btn')) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-
     // Handle orientation changes
     window.addEventListener('orientationchange', () => {
         // Re-render on orientation change to fix layout issues
@@ -1196,6 +1266,119 @@ bindMobileEvents() {
     window.addEventListener('offline', () => {
         this.showToast('You are offline', 'warning');
     });
+
+    // Fix for mobile button clicks - remove the problematic touchstart listener
+    // and add proper mobile touch handling
+    this.fixMobileButtonClicks();
+}
+
+// Add this new method to fix mobile button clicks
+fixMobileButtonClicks() {
+    // Add touch-friendly styles to all buttons
+    document.addEventListener('DOMContentLoaded', () => {
+        // Ensure all interactive elements have proper touch targets
+        const style = document.createElement('style');
+        style.textContent = `
+            @media (max-width: 768px) {
+                .btn, .mobile-nav-item, [data-view], .form-check-input, .page-link {
+                    min-height: 44px;
+                    min-width: 44px;
+                }
+                .btn-group .btn {
+                    padding: 0.75rem 1rem;
+                }
+                .mobile-nav-item {
+                    padding: 0.75rem 0.5rem;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    });
+
+    // Fix for view property buttons
+    document.addEventListener('click', (e) => {
+        // Check if click is on a view property button
+        if (e.target.closest('.view-property')) {
+            const button = e.target.closest('.view-property');
+            const card = button.closest('.favorite-card');
+            const propertyId = card.querySelector('.view-property')?.getAttribute('data-property-id');
+            if (propertyId) {
+                window.location.href = `property-details.html?id=${propertyId}`;
+            }
+        }
+    });
+
+    // Fix for edit favorite buttons
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.edit-favorite')) {
+            const button = e.target.closest('.edit-favorite');
+            const card = button.closest('.favorite-card');
+            // Find the favorite data from the card
+            const favorite = this.findFavoriteByCard(card);
+            if (favorite) {
+                this.editFavorite(favorite);
+            }
+        }
+    });
+
+    // Fix for remove favorite buttons
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.remove-favorite')) {
+            const button = e.target.closest('.remove-favorite');
+            const card = button.closest('.favorite-card');
+            const favorite = this.findFavoriteByCard(card);
+            if (favorite) {
+                this.removeFavorite(favorite._id);
+            }
+        }
+    });
+
+    // Fix for compare favorites button
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('#compare-favorites')) {
+            this.compareFavorites();
+        }
+    });
+
+    // Fix for filter buttons
+    document.addEventListener('change', (e) => {
+        if (e.target.id === 'sort-select' || e.target.id === 'priority-filter') {
+            this.applyFiltersAndSort();
+        }
+    });
+
+    // Fix for clear filters button
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('#clear-filters')) {
+            this.sortBy = 'createdAt-desc';
+            this.priorityFilter = 'all';
+            document.getElementById('sort-select').value = this.sortBy;
+            document.getElementById('priority-filter').value = this.priorityFilter;
+            this.applyFiltersAndSort();
+        }
+    });
+
+    // Fix for view mode buttons
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('[data-view]')) {
+            const button = e.target.closest('[data-view]');
+            document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('active'));
+            button.classList.add('active');
+            this.viewMode = button.dataset.view;
+            this.updateViewMode();
+        }
+    });
+}
+
+// Add this helper method to find favorite by card
+findFavoriteByCard(card) {
+    const propertyTitle = card.querySelector('.property-title')?.textContent;
+    const propertyLocation = card.querySelector('.location-text')?.textContent;
+    
+    return this.favorites.find(favorite => 
+        favorite.property?.title === propertyTitle && 
+        favorite.property?.location?.address === propertyLocation
+    );
 }
 
 
@@ -1398,6 +1581,27 @@ bindMobileEvents() {
                 amenitiesContainer.appendChild(span);
             });
         }
+
+        // In the renderFavorites method, update the event listener section:
+        // Add event listeners
+        const viewPropertyBtn = card.querySelector('.view-property');
+        viewPropertyBtn.setAttribute('data-property-id', property._id);
+        viewPropertyBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = `property-details.html?id=${property._id}`;
+        });
+
+        const editFavoriteBtn = card.querySelector('.edit-favorite');
+        editFavoriteBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.editFavorite(favorite);
+        });
+
+        const removeFavoriteBtn = card.querySelector('.remove-favorite');
+        removeFavoriteBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.removeFavorite(favorite._id);
+        });
 
         // Render tags
         const tagsContainer = card.querySelector('.tags-section');
