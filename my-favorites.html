@@ -643,6 +643,16 @@
 #favorites-grid:not(.d-none) ~ #empty-state {
     display: none !important;
 }
+
+/* Add to your existing CSS */
+.toast-container {
+    z-index: 9999;
+}
+
+.toast {
+    backdrop-filter: blur(10px);
+    border-radius: 0.75rem;
+}
   </style>
 </head>
 <body>
@@ -1834,13 +1844,6 @@ getAvailablePropertiesForComparison(bookingMode) {
     }
 
     showError(message) {
-        this.hideLoading();
-        document.getElementById('empty-state').classList.remove('d-none');
-        document.getElementById('empty-state').querySelector('h3').textContent = 'Error Loading Favorites';
-        document.getElementById('empty-state').querySelector('p').textContent = message;
-    }
-
-    showError(message) {
         console.error('Favorites Error:', message);
         
         // Hide loading immediately
@@ -1871,7 +1874,44 @@ getAvailablePropertiesForComparison(bookingMode) {
         }
     }
 
-    
+    // Add this method to your FavoritesManager class
+    showToast(message, type = 'info') {
+        // Create toast element if it doesn't exist
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+
+        const toastId = 'toast-' + Date.now();
+        const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center text-bg-${type} border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        
+        const toastElement = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastElement, {
+            autohide: true,
+            delay: 3000
+        });
+        
+        toast.show();
+        
+        // Remove toast from DOM after it's hidden
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
+    }
   }
 
   
