@@ -1216,17 +1216,14 @@
     renderFavorites() {
     const grid = document.getElementById('favorites-grid');
     const emptyState = document.getElementById('empty-state');
-    const loadingState = document.getElementById('loading-state');
+    const template = document.getElementById('favorite-template');
 
-    // Ensure loading is hidden first
-    loadingState.classList.add('d-none');
-    
     grid.innerHTML = '';
 
     if (this.favorites.length === 0) {
-        grid.classList.add('d-none');
         emptyState.classList.remove('d-none');
         
+        // Show appropriate empty state message based on filter
         const emptyTitle = emptyState.querySelector('h3');
         const emptyText = emptyState.querySelector('p');
         
@@ -1238,16 +1235,10 @@
             emptyText.textContent = 'Start exploring properties and save your favorites to compare them later.';
         }
         
-        // Remove any retry button that might have been added
-        const retryButton = document.getElementById('retry-button');
-        if (retryButton) retryButton.remove();
-        
         return;
     }
 
-    // We have favorites, so hide empty state and show grid
     emptyState.classList.add('d-none');
-    grid.classList.remove('d-none');
 
     // Get current user role AND booking mode
     const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
