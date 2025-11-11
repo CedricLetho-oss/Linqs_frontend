@@ -513,6 +513,7 @@ validateFile(file) {
 
     // In handleFormSubmission method, update the form data preparation:
 // In handleFormSubmission method, update to handle evidence uploads:
+// In handleFormSubmission method, update to handle evidence uploads:
 async handleFormSubmission(e) {
     e.preventDefault();
     console.log('Handling form submission...');
@@ -520,9 +521,9 @@ async handleFormSubmission(e) {
     try {
         const isAnonymous = document.getElementById('anonymous').checked;
         
-        // Upload evidence files first
+        // Upload evidence files first - CHANGE const TO let HERE
         const evidenceFiles = document.getElementById('evidenceFiles').files;
-        const evidenceUrls = [];
+        let evidenceUrls = []; // CHANGE const TO let
         
         if (evidenceFiles.length > 0) {
             console.log('Uploading evidence files:', evidenceFiles.length);
