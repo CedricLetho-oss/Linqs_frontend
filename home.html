@@ -1043,19 +1043,32 @@
             this.featuredProperties = [];
         }
 
-        // Get user context with booking mode
+        // Get user context with booking mode - UPDATED
         getUserContext() {
             const user = JSON.parse(localStorage.getItem("user") || "{}");
-            const bookingMode = localStorage.getItem('booking_mode') || 'student';
+            let bookingMode = localStorage.getItem('booking_mode');
+            
+            // FIX 1: Default to student mode for logged-out users
+            if (!user.role && !bookingMode) {
+                bookingMode = 'student';
+                localStorage.setItem('booking_mode', 'student');
+            }
+            
+            // FIX 2: Force tenant mode for actual tenant users
+            if (user.role === 'tenant' && bookingMode !== 'tenant') {
+                bookingMode = 'tenant';
+                localStorage.setItem('booking_mode', 'tenant');
+            }
             
             return {
                 user,
                 role: user.role,
-                bookingMode,
+                bookingMode: bookingMode || 'student',
                 isTenantMode: bookingMode === 'tenant',
                 isStudentMode: bookingMode === 'student',
                 isActualTenant: user.role === 'tenant',
-                isActualStudent: user.role === 'student'
+                isActualStudent: user.role === 'student',
+                isLoggedIn: !!user.role
             };
         }
 
@@ -1113,15 +1126,18 @@
             return score;
         }
 
-        // Select featured properties based on user mode
+        // Select featured properties based on user mode - UPDATED
         selectFeaturedProperties(properties) {
             const context = this.getUserContext();
             const isTenantMode = context.isTenantMode;
+            
+            console.log('Selecting featured properties for mode:', isTenantMode ? 'TENANT' : 'STUDENT');
             
             // Filter properties based on user mode
             let availableProperties;
             if (isTenantMode) {
                 availableProperties = this.filterPropertiesForTenants(properties);
+                console.log('Tenant mode - available properties:', availableProperties.length);
             } else {
                 // For students, filter only available and approved properties
                 availableProperties = properties.filter(property => {
@@ -1129,6 +1145,7 @@
                     const adminStatus = this.getAdminStatus(property);
                     return propertyStatus === 'available' && adminStatus === 'approved';
                 });
+                console.log('Student mode - available properties:', availableProperties.length);
             }
 
             if (availableProperties.length === 0) {
@@ -1152,13 +1169,18 @@
             return scoredProperties.slice(0, 4);
         }
 
-        // Filter properties for tenants
+        // Filter properties for tenants - UPDATED with seasonal logic
         filterPropertiesForTenants(properties) {
+            const context = this.getUserContext();
             const currentMonth = new Date().getMonth() + 1;
             const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
             
-            if (!isNovemberToJanuary) {
-                return []; // No properties outside Nov-Jan for tenants
+            console.log('Current month:', currentMonth, 'Is Nov-Jan:', isNovemberToJanuary);
+            
+            // If it's not Nov-Jan and user is not an actual tenant, return empty
+            if (!isNovemberToJanuary && !context.isActualTenant) {
+                console.log('Not in tenant season and not actual tenant - no properties');
+                return [];
             }
 
             return properties.filter(property => {
@@ -1166,7 +1188,10 @@
                 const isApproved = this.getAdminStatus(property) === 'approved';
                 const isAvailable = this.getPropertyStatus(property) === 'available';
                 
-                return acceptsShortTerm && isApproved && isAvailable;
+                const shouldShow = acceptsShortTerm && isApproved && isAvailable;
+                console.log(`Property ${property.title}: acceptsShortTerm=${acceptsShortTerm}, approved=${isApproved}, available=${isAvailable}, show=${shouldShow}`);
+                
+                return shouldShow;
             });
         }
 
@@ -1214,10 +1239,12 @@
             }
         }
 
-        // Get price display for property based on user type
+        // Get price display for property based on user type - UPDATED
         getPriceDisplay(property) {
             const context = this.getUserContext();
             const isTenantMode = context.isTenantMode;
+            
+            console.log('Getting price display for tenant mode:', isTenantMode);
             
             if (isTenantMode && property.acceptsShortTerm) {
                 if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
@@ -1611,7 +1638,7 @@
         }
     }
 
-    // Booking Mode Manager
+    // Booking Mode Manager - UPDATED
     class HomepageBookingModeManager {
         constructor() {
             this.API_BASE_URL = window.API_BASE_URL || 'https://linqs-backend.onrender.com/api';
@@ -1620,6 +1647,18 @@
         async syncBookingMode() {
             try {
                 const user = JSON.parse(localStorage.getItem("user") || "{}");
+                
+                // FIX 1: Default to student mode for logged-out users
+                if (!user.role) {
+                    localStorage.setItem('booking_mode', 'student');
+                    return false;
+                }
+                
+                // FIX 2: Force tenant mode for actual tenant users
+                if (user.role === 'tenant') {
+                    localStorage.setItem('booking_mode', 'tenant');
+                    return true;
+                }
                 
                 if (user.role === 'student') {
                     const token = localStorage.getItem("token");
@@ -1664,26 +1703,41 @@
         }
     }
 
-    // UI Update Functions
+    // UI Update Functions - UPDATED with seasonal logic
     function getUserContext() {
         const user = JSON.parse(localStorage.getItem("user") || "{}");
-        const bookingMode = localStorage.getItem('booking_mode') || 'student';
+        let bookingMode = localStorage.getItem('booking_mode');
+        
+        // FIX 1: Default to student mode for logged-out users
+        if (!user.role && !bookingMode) {
+            bookingMode = 'student';
+            localStorage.setItem('booking_mode', 'student');
+        }
+        
+        // FIX 2: Force tenant mode for actual tenant users
+        if (user.role === 'tenant' && bookingMode !== 'tenant') {
+            bookingMode = 'tenant';
+            localStorage.setItem('booking_mode', 'tenant');
+        }
         
         return {
             user,
             role: user.role,
             username: user.username,
-            bookingMode,
+            bookingMode: bookingMode || 'student',
             isTenantMode: bookingMode === 'tenant',
             isStudentMode: bookingMode === 'student',
             isActualTenant: user.role === 'tenant',
-            isActualStudent: user.role === 'student'
+            isActualStudent: user.role === 'student',
+            isLoggedIn: !!user.role
         };
     }
 
     function updateHeroSectionForUserType() {
         const context = getUserContext();
         const isTenantMode = context.isTenantMode;
+        const currentMonth = new Date().getMonth() + 1;
+        const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
         
         const heroSubtitle = document.querySelector('.hero-section .hero-subtitle');
         const searchTitle = document.querySelector('.search-container h5');
@@ -1693,7 +1747,11 @@
         if (isTenantMode) {
             // Tenant version
             if (heroSubtitle) {
-                heroSubtitle.textContent = 'Discover affordable short-term accommodations available during student holidays. Perfect for temporary stays from November to January.';
+                if (isNovemberToJanuary || context.isActualTenant) {
+                    heroSubtitle.textContent = 'Discover affordable short-term accommodations available during student holidays. Perfect for temporary stays from November to January.';
+                } else {
+                    heroSubtitle.textContent = 'Short-term accommodation available during student holidays (November-January). Browse verified properties for your temporary stay needs.';
+                }
             }
             if (searchTitle) {
                 searchTitle.innerHTML = '<i class="bi bi-search me-2"></i>Find Short-term Accommodation';
@@ -1740,6 +1798,8 @@
     function updateFeaturesSectionForUserType() {
         const context = getUserContext();
         const isTenantMode = context.isTenantMode;
+        const currentMonth = new Date().getMonth() + 1;
+        const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
         
         const featuresTitle = document.querySelector('.features-section h2');
         const featuresSubtitle = document.querySelector('.features-section .text-muted.fs-5');
@@ -1751,7 +1811,11 @@
                 featuresTitle.innerHTML = 'Perfect for <span class="gradient-text">Short-term Stays</span>';
             }
             if (featuresSubtitle) {
-                featuresSubtitle.textContent = 'Everything you need for comfortable holiday accommodation';
+                if (isNovemberToJanuary || context.isActualTenant) {
+                    featuresSubtitle.textContent = 'Everything you need for comfortable holiday accommodation';
+                } else {
+                    featuresSubtitle.textContent = 'Available during student holidays (November to January)';
+                }
             }
             
             // Update feature items for tenants
@@ -1884,6 +1948,8 @@
     function updateFeaturedSectionForUserType() {
         const context = getUserContext();
         const isTenantMode = context.isTenantMode;
+        const currentMonth = new Date().getMonth() + 1;
+        const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
         
         const featuredTitle = document.querySelector('#listingContainer').previousElementSibling.querySelector('h2');
         const featuredSubtitle = document.querySelector('#listingContainer').previousElementSibling.querySelector('p');
@@ -1894,7 +1960,11 @@
                 featuredTitle.textContent = 'Available Short-term Accommodations';
             }
             if (featuredSubtitle) {
-                featuredSubtitle.textContent = 'Verified properties available during student holidays (November-January)';
+                if (isNovemberToJanuary || context.isActualTenant) {
+                    featuredSubtitle.textContent = 'Verified properties available during student holidays (November-January)';
+                } else {
+                    featuredSubtitle.textContent = 'Short-term accommodation available during student holidays';
+                }
             }
         } else {
             // Student version
@@ -2014,7 +2084,7 @@
         });
     }
 
-    // Main initialization function
+    // Main initialization function - UPDATED
     async function initializeHomepage() {
         // Initialize AOS animations
         AOS.init({
@@ -2022,6 +2092,17 @@
             once: true,
             offset: 100
         });
+
+        // FIX 1: Ensure default mode is student for logged-out users
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (!user.role) {
+            localStorage.setItem('booking_mode', 'student');
+        }
+        
+        // FIX 2: Force tenant mode for actual tenant users
+        if (user.role === 'tenant') {
+            localStorage.setItem('booking_mode', 'tenant');
+        }
 
         // Initialize booking mode manager and sync
         const bookingModeManager = new HomepageBookingModeManager();
