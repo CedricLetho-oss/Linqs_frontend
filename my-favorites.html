@@ -630,6 +630,19 @@
 .badge.bg-secondary {
     background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%) !important;
 }
+
+/* Ensure loading states are properly managed */
+#loading-state,
+#empty-state,
+#favorites-grid {
+    transition: opacity 0.3s ease;
+}
+
+/* Hide error state when content is loading */
+#loading-state:not(.d-none) ~ #empty-state,
+#favorites-grid:not(.d-none) ~ #empty-state {
+    display: none !important;
+}
   </style>
 </head>
 <body>
@@ -1024,6 +1037,7 @@
         this.checkForSuccessMessage();
     }
 
+    
     // NEW: Check if we came from a successful favorite addition
     checkForSuccessMessage() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -1202,14 +1216,17 @@
     renderFavorites() {
     const grid = document.getElementById('favorites-grid');
     const emptyState = document.getElementById('empty-state');
-    const template = document.getElementById('favorite-template');
+    const loadingState = document.getElementById('loading-state');
 
+    // Ensure loading is hidden first
+    loadingState.classList.add('d-none');
+    
     grid.innerHTML = '';
 
     if (this.favorites.length === 0) {
+        grid.classList.add('d-none');
         emptyState.classList.remove('d-none');
         
-        // Show appropriate empty state message based on filter
         const emptyTitle = emptyState.querySelector('h3');
         const emptyText = emptyState.querySelector('p');
         
@@ -1221,10 +1238,16 @@
             emptyText.textContent = 'Start exploring properties and save your favorites to compare them later.';
         }
         
+        // Remove any retry button that might have been added
+        const retryButton = document.getElementById('retry-button');
+        if (retryButton) retryButton.remove();
+        
         return;
     }
 
+    // We have favorites, so hide empty state and show grid
     emptyState.classList.add('d-none');
+    grid.classList.remove('d-none');
 
     // Get current user role AND booking mode
     const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -1790,11 +1813,24 @@ getAvailablePropertiesForComparison(bookingMode) {
         document.getElementById('favorites-grid').classList.add('d-none');
         document.getElementById('empty-state').classList.add('d-none');
         document.getElementById('pagination').classList.add('d-none');
+        
+        // Force reflow to ensure proper display
+        void document.getElementById('loading-state').offsetHeight;
     }
 
     hideLoading() {
+        // Hide loading first
         document.getElementById('loading-state').classList.add('d-none');
-        document.getElementById('favorites-grid').classList.remove('d-none');
+        
+        // Small delay to ensure loading is hidden before showing content
+        setTimeout(() => {
+            document.getElementById('favorites-grid').classList.remove('d-none');
+            
+            // Only show empty state if truly empty
+            if (this.favorites.length === 0) {
+                document.getElementById('empty-state').classList.remove('d-none');
+            }
+        }, 50);
     }
 
     showError(message) {
@@ -1804,21 +1840,41 @@ getAvailablePropertiesForComparison(bookingMode) {
         document.getElementById('empty-state').querySelector('p').textContent = message;
     }
 
-    showToast(message, type = 'info') {
-        const toast = document.createElement('div');
-        toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
-        toast.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
-        toast.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.body.appendChild(toast);
+    showError(message) {
+        console.error('Favorites Error:', message);
         
-        setTimeout(() => {
-            toast.remove();
-        }, 5000);
+        // Hide loading immediately
+        this.hideLoading();
+        
+        // Only show error if we don't have any favorites
+        if (this.favorites.length === 0) {
+            document.getElementById('empty-state').classList.remove('d-none');
+            const emptyTitle = document.getElementById('empty-state').querySelector('h3');
+            const emptyText = document.getElementById('empty-state').querySelector('p');
+            
+            emptyTitle.textContent = 'Error Loading Favorites';
+            emptyText.textContent = message || 'Failed to load properties. Please try again.';
+            
+            // Add retry button
+            const existingButton = document.getElementById('empty-state').querySelector('a');
+            if (existingButton && !document.getElementById('retry-button')) {
+                const retryButton = document.createElement('button');
+                retryButton.id = 'retry-button';
+                retryButton.className = 'btn btn-outline-primary mt-2';
+                retryButton.innerHTML = '<i class="bi bi-arrow-clockwise me-2"></i>Retry';
+                retryButton.addEventListener('click', () => this.loadFavorites());
+                document.getElementById('empty-state').querySelector('.d-flex').appendChild(retryButton);
+            }
+        } else {
+            // If we have favorites but got an error, just show a subtle toast
+            this.showToast('Some favorites may not have loaded completely', 'warning');
+        }
     }
-}
+
+    
+  }
+
+  
 
     // Initialize the favorites manager when the page loads
     document.addEventListener('DOMContentLoaded', () => {
