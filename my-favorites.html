@@ -691,6 +691,40 @@
     height: 100vh;
     background-color: #000;
 }
+
+/* Add this to your existing CSS - mobile touch fixes only */
+@media (max-width: 768px) {
+    /* Ensure all interactive elements are touch-friendly */
+    .btn, 
+    .mobile-nav-item, 
+    [data-view], 
+    .form-check-input, 
+    .page-link,
+    .view-property,
+    .edit-favorite,
+    .remove-favorite,
+    #compare-favorites,
+    #clear-filters {
+        min-height: 44px;
+        min-width: 44px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+    
+    /* Improve button spacing for touch */
+    .btn-group .btn {
+        padding: 0.75rem 1rem;
+        margin: 2px;
+    }
+    
+    /* Ensure form elements are touch-friendly */
+    .form-select, 
+    .form-control {
+        min-height: 44px;
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+}
   </style>
 </head>
 <body>
@@ -1166,16 +1200,8 @@
     });
 }
 
-// Add to your FavoritesManager class
+// Add to your FavoritesManager class 
 bindMobileEvents() {
-    // Handle touch events for mobile
-    document.addEventListener('touchstart', (e) => {
-        // Prevent double-tap zoom on buttons
-        if (e.target.classList.contains('btn') || e.target.closest('.btn')) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-
     // Handle orientation changes
     window.addEventListener('orientationchange', () => {
         // Re-render on orientation change to fix layout issues
@@ -1196,6 +1222,9 @@ bindMobileEvents() {
     window.addEventListener('offline', () => {
         this.showToast('You are offline', 'warning');
     });
+
+    // Remove the problematic touchstart listener completely
+    // No touchstart event listener that prevents default behavior
 }
 
 
