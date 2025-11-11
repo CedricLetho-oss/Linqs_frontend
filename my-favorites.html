@@ -892,6 +892,26 @@
     min-height: 44px;
   }
 }
+
+/* Mobile-specific select styling */
+@media (max-width: 768px) {
+    #priority-filter {
+        min-width: 180px; /* Ensure enough width for the text */
+    }
+    
+    /* Ensure select options are visible */
+    .form-select option {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    /* Better touch targets for mobile */
+    .form-select-sm {
+        min-height: 44px;
+        padding: 0.5rem 2rem 0.5rem 0.75rem;
+    }
+}
+
   </style>
 </head>
 <body>
@@ -1381,7 +1401,7 @@
         priorityFilter.value = this.priorityFilter;
         this.applyFiltersAndSort();
     });
-    
+
     // Sort and filter events
     document.getElementById('sort-select').addEventListener('change', (e) => {
         this.sortBy = e.target.value;
@@ -1559,48 +1579,48 @@ bindMobileEvents() {
 
     // NEW: Apply filters and sorting
     applyFiltersAndSort() {
-        let filteredFavorites = [...this.allFavorites];
+    let filteredFavorites = [...this.allFavorites];
 
-        // Apply priority filter
-        if (this.priorityFilter !== 'all') {
-            filteredFavorites = filteredFavorites.filter(favorite => 
-                favorite.priority === this.priorityFilter
-            );
-            console.log(`Filtered by ${this.priorityFilter}:`, filteredFavorites.length, 'items');
+    // Apply priority filter
+    if (this.priorityFilter !== 'all') {
+        filteredFavorites = filteredFavorites.filter(favorite => 
+            favorite.priority === this.priorityFilter
+        );
+        console.log(`Filtered by ${this.priorityFilter}:`, filteredFavorites.length, 'items');
+    }
+
+    // Apply sorting
+    const [sortField, sortOrder] = this.sortBy.split('-');
+    filteredFavorites.sort((a, b) => {
+        let aValue, bValue;
+
+        switch (sortField) {
+            case 'createdAt':
+                aValue = new Date(a.createdAt);
+                bValue = new Date(b.createdAt);
+                break;
+            case 'priority':
+                // Priority order: high > medium > low
+                const priorityOrder = { high: 3, medium: 2, low: 1 };
+                aValue = priorityOrder[a.priority] || 0;
+                bValue = priorityOrder[b.priority] || 0;
+                break;
+            default:
+                aValue = a[sortField];
+                bValue = b[sortField];
         }
 
-        // Apply sorting
-        const [sortField, sortOrder] = this.sortBy.split('-');
-        filteredFavorites.sort((a, b) => {
-            let aValue, bValue;
+        if (sortOrder === 'desc') {
+            return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+        } else {
+            return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+        }
+    });
 
-            switch (sortField) {
-                case 'createdAt':
-                    aValue = new Date(a.createdAt);
-                    bValue = new Date(b.createdAt);
-                    break;
-                case 'priority':
-                    // Priority order: high > medium > low
-                    const priorityOrder = { high: 3, medium: 2, low: 1 };
-                    aValue = priorityOrder[a.priority] || 0;
-                    bValue = priorityOrder[b.priority] || 0;
-                    break;
-                default:
-                    aValue = a[sortField];
-                    bValue = b[sortField];
-            }
-
-            if (sortOrder === 'desc') {
-                return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-            } else {
-                return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-            }
-        });
-
-        this.favorites = filteredFavorites;
-        this.renderFavorites();
-        this.updateCounts();
-    }
+    this.favorites = filteredFavorites;
+    this.renderFavorites();
+    this.updateCounts(); // Ensure counts are updated after filtering
+}
 
     renderFavorites() {
     const grid = document.getElementById('favorites-grid');
@@ -1842,21 +1862,51 @@ setPropertyDetails(card, property, userRole, favorite) {
     }
 
     updateCounts() {
-        const total = this.allFavorites.length;
-        const recent = this.allFavorites.filter(f => this.isRecent(f.createdAt)).length;
-        const highPriority = this.allFavorites.filter(f => f.priority === 'high').length;
-        const mediumPriority = this.allFavorites.filter(f => f.priority === 'medium').length;
-        const lowPriority = this.allFavorites.filter(f => f.priority === 'low').length;
+    const total = this.allFavorites.length;
+    const recent = this.allFavorites.filter(f => this.isRecent(f.createdAt)).length;
+    const highPriority = this.allFavorites.filter(f => f.priority === 'high').length;
+    const mediumPriority = this.allFavorites.filter(f => f.priority === 'medium').length;
+    const lowPriority = this.allFavorites.filter(f => f.priority === 'low').length;
 
-        document.getElementById('favorites-count').textContent = `${total} Properties`;
-        document.getElementById('recent-count').textContent = `${recent} Recent`;
-        document.getElementById('high-priority-count').textContent = `${highPriority} High Priority`;
-        
-        // Update filter dropdown counts (show counts from ALL favorites)
-        document.getElementById('high-count').textContent = highPriority;
-        document.getElementById('medium-count').textContent = mediumPriority;
-        document.getElementById('low-count').textContent = lowPriority;
+    // Update the main badge counts
+    document.getElementById('favorites-count').textContent = `${total} Properties`;
+    document.getElementById('recent-count').textContent = `${recent} Recent`;
+    document.getElementById('high-priority-count').textContent = `${highPriority} High Priority`;
+    
+    // Update filter dropdown counts - FIXED FOR MOBILE
+    document.getElementById('high-count').textContent = highPriority;
+    document.getElementById('medium-count').textContent = mediumPriority;
+    document.getElementById('low-count').textContent = lowPriority;
+    
+    // MOBILE FIX: Also update the actual option text content
+    this.updatePriorityFilterOptions(highPriority, mediumPriority, lowPriority);
+}
+
+// NEW METHOD: Update the actual option text for mobile visibility
+updatePriorityFilterOptions(highCount, mediumCount, lowCount) {
+    const priorityFilter = document.getElementById('priority-filter');
+    if (!priorityFilter) return;
+    
+    // Update the text content of each option
+    const options = priorityFilter.options;
+    
+    // Option 1: All Priorities (keep as is)
+    
+    // Option 2: High Priority
+    if (options[1]) {
+        options[1].textContent = `High Priority (${highCount})`;
     }
+    
+    // Option 3: Medium Priority  
+    if (options[2]) {
+        options[2].textContent = `Medium Priority (${mediumCount})`;
+    }
+    
+    // Option 4: Low Priority
+    if (options[3]) {
+        options[3].textContent = `Low Priority (${lowCount})`;
+    }
+}
 
     updatePagination() {
         // Since we're doing client-side filtering, pagination might not be needed
