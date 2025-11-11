@@ -899,56 +899,67 @@ async function deleteBooking(bookingId) {
     }
 
 // IMPROVED: Get display price with better fallbacks
+// FIXED: Get display price with proper tenant/student detection
 function getDisplayPrice(booking) {
-  console.log('Booking pricing data:', {
-    bookingId: booking._id,
-    studentRole: booking.student?.role,
-    bookingMode: booking.student?.booking_mode,
-    bookingSource: booking.bookingSource,
-    priceType: booking.priceType,
-    negotiatedPrice: booking.negotiatedPrice,
-    totalPrice: booking.totalPrice,
-    propertyPrice: booking.property?.price
-  });
-
-  // Use the backend-calculated values if available
-  const priceType = booking.priceType || 'monthly';
   const negotiatedPrice = booking.negotiatedPrice || 0;
   const totalPrice = booking.totalPrice || 0;
   const basePrice = booking.property?.price || 0;
-
+  
+  // Get the actual booking source from backend aggregation
+  const bookingSource = booking.bookingSource || getEnhancedBookingType(booking);
+  const isTenantBooking = bookingSource.includes('Tenant') || bookingSource === 'Short-term';
+  
   let displayPrice = 0;
+  let priceType = booking.priceType || 'monthly';
   let priceLabel = '/month';
 
+  // Determine price and type based on booking type
   if (negotiatedPrice > 0) {
     displayPrice = negotiatedPrice;
+    priceType = 'negotiated';
     priceLabel = ' (negotiated)';
   } else if (totalPrice > 0) {
     displayPrice = totalPrice;
-    priceLabel = priceType === 'daily' ? '/day' : '/month';
+    
+    // Use tenant-specific pricing for tenant bookings
+    if (isTenantBooking && priceType === 'daily') {
+      priceLabel = '/day';
+    } else {
+      priceLabel = '/month';
+    }
   } else if (basePrice > 0) {
     displayPrice = basePrice;
-    priceLabel = '/month (base)';
+    // For tenant bookings without specific price, show as negotiable
+    if (isTenantBooking) {
+      priceType = 'negotiable';
+      priceLabel = ' (negotiable)';
+    } else {
+      priceType = 'base';
+      priceLabel = '/month (base)';
+    }
   } else {
-    return {
-      amount: 0,
-      type: 'negotiable',
-      label: ' (negotiable)',
-      formatted: '<span class="text-warning">Negotiable</span>',
-      isNegotiable: true
-    };
+    // If all prices are 0, it's negotiable (common for tenants)
+    priceType = 'negotiable';
+    priceLabel = ' (negotiable)';
   }
-
-  const formattedPrice = displayPrice > 0 ? 
-    `R${displayPrice}${priceLabel}` : 
-    '<span class="text-warning">Negotiable</span>';
-
+  
+  // Format the display
+  let formattedPrice = '';
+  if (priceType === 'negotiable') {
+    formattedPrice = `<span class="text-warning">Negotiable</span>`;
+  } else if (displayPrice > 0) {
+    formattedPrice = `R${displayPrice}${priceLabel}`;
+  } else {
+    formattedPrice = `<span class="text-muted">To be discussed</span>`;
+  }
+  
   return {
     amount: displayPrice,
     type: priceType,
     label: priceLabel,
     formatted: formattedPrice,
-    isNegotiable: displayPrice === 0
+    isNegotiable: priceType === 'negotiable' || displayPrice === 0,
+    isTenant: isTenantBooking
   };
 }
 
@@ -973,7 +984,7 @@ function getEnhancedBookingType(booking) {
   }
 }
 
-// IMPROVED: Get booking source badge with better tenant detection
+// FIXED: Get booking source badge with better tenant detection
 function getBookingSourceBadge(booking) {
   const source = booking.bookingSource || getEnhancedBookingType(booking);
   const priceInfo = getDisplayPrice(booking);
@@ -981,15 +992,15 @@ function getBookingSourceBadge(booking) {
   const badges = {
     'Student': { class: 'bg-primary', text: 'Student', icon: 'bi-person' },
     'Tenant': { class: 'bg-success', text: 'Tenant', icon: 'bi-house' },
-    'Tenant (Negotiated)': { class: 'bg-warning', text: 'Tenant (Negotiated)', icon: 'bi-currency-exchange' },
     'Tenant (Student Mode)': { class: 'bg-info', text: 'Tenant Mode', icon: 'bi-arrow-repeat' },
+    'Tenant (Negotiated)': { class: 'bg-warning', text: 'Tenant (Negotiated)', icon: 'bi-currency-exchange' },
     'Short-term': { class: 'bg-secondary', text: 'Short-term', icon: 'bi-calendar-week' }
   };
   
   const config = badges[source] || badges['Student'];
   
-  // Add negotiable indicator
-  const negotiableBadge = priceInfo.isNegotiable ? 
+  // Add negotiable indicator for tenant bookings
+  const negotiableBadge = priceInfo.isNegotiable && priceInfo.isTenant ? 
     `<span class="badge bg-warning ms-1" title="Price is negotiable">
       <i class="bi bi-question-circle me-1"></i>Negotiable
     </span>` : '';
