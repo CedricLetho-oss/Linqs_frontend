@@ -898,69 +898,57 @@ async function deleteBooking(bookingId) {
       }
     }
 
-// SIMPLIFIED: Get display price with proper tenant/student detection
+// IMPROVED: Get display price with better fallbacks
 function getDisplayPrice(booking) {
+  console.log('Booking pricing data:', {
+    bookingId: booking._id,
+    studentRole: booking.student?.role,
+    bookingMode: booking.student?.booking_mode,
+    bookingSource: booking.bookingSource,
+    priceType: booking.priceType,
+    negotiatedPrice: booking.negotiatedPrice,
+    totalPrice: booking.totalPrice,
+    propertyPrice: booking.property?.price
+  });
+
+  // Use the backend-calculated values if available
+  const priceType = booking.priceType || 'monthly';
   const negotiatedPrice = booking.negotiatedPrice || 0;
   const totalPrice = booking.totalPrice || 0;
   const basePrice = booking.property?.price || 0;
-  
-  // Debug logging to see what we're working with
-  console.log('Booking pricing data:', {
-    bookingId: booking._id,
-    bookingType: booking.bookingType,
-    bookingSource: booking.bookingSource,
-    priceType: booking.priceType,
-    negotiatedPrice: negotiatedPrice,
-    totalPrice: totalPrice,
-    basePrice: basePrice,
-    studentRole: booking.student?.role,
-    bookingMode: booking.student?.booking_mode
-  });
 
   let displayPrice = 0;
-  let priceType = booking.priceType || 'monthly';
   let priceLabel = '/month';
 
-  // Determine price and type based on available prices
   if (negotiatedPrice > 0) {
     displayPrice = negotiatedPrice;
-    priceType = 'negotiated';
     priceLabel = ' (negotiated)';
   } else if (totalPrice > 0) {
     displayPrice = totalPrice;
-    
-    // Use the priceType from backend aggregation
-    if (priceType === 'daily') {
-      priceLabel = '/day';
-    } else {
-      priceLabel = '/month';
-    }
+    priceLabel = priceType === 'daily' ? '/day' : '/month';
   } else if (basePrice > 0) {
     displayPrice = basePrice;
-    priceType = 'base';
     priceLabel = '/month (base)';
   } else {
-    // If all prices are 0, it's negotiable
-    priceType = 'negotiable';
-    priceLabel = ' (negotiable)';
+    return {
+      amount: 0,
+      type: 'negotiable',
+      label: ' (negotiable)',
+      formatted: '<span class="text-warning">Negotiable</span>',
+      isNegotiable: true
+    };
   }
-  
-  // Format the display
-  let formattedPrice = '';
-  if (priceType === 'negotiable') {
-    formattedPrice = `<span class="text-warning">Negotiable</span>`;
-  } else if (displayPrice > 0) {
-    formattedPrice = `R${displayPrice}${priceLabel}`;
-  } else {
-    formattedPrice = `<span class="text-muted">To be discussed</span>`;
-  }
-  
+
+  const formattedPrice = displayPrice > 0 ? 
+    `R${displayPrice}${priceLabel}` : 
+    '<span class="text-warning">Negotiable</span>';
+
   return {
     amount: displayPrice,
     type: priceType,
     label: priceLabel,
     formatted: formattedPrice,
-    isNegotiable: priceType === 'negotiable' || displayPrice === 0
+    isNegotiable: displayPrice === 0
   };
 }
 
