@@ -653,6 +653,44 @@
     backdrop-filter: blur(10px);
     border-radius: 0.75rem;
 }
+
+/* Mobile-specific modal fixes */
+@media (max-width: 768px) {
+    .notes-modal .modal-dialog {
+        margin: 10px;
+    }
+    
+    .notes-modal .modal-content {
+        border-radius: 1rem;
+    }
+    
+    .notes-modal .modal-body {
+        padding: 1.5rem 1rem;
+    }
+    
+    /* Larger touch targets for mobile */
+    .btn-group .btn,
+    .priority-selector .btn {
+        min-height: 44px;
+        padding: 0.75rem 1rem;
+    }
+    
+    /* Prevent zoom on input focus */
+    input, textarea, select {
+        font-size: 16px !important;
+    }
+}
+
+/* Ensure modal backdrop works on mobile */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1040;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+}
   </style>
 </head>
 <body>
@@ -1058,8 +1096,10 @@
         }
     }
 
+    // Update your init method to call this:
     init() {
         this.bindEvents();
+        this.bindMobileEvents(); // Add this line
         this.loadFavorites();
     }
 
@@ -1125,58 +1165,120 @@
         this.renderFavorites(); // Re-render to update pricing
     });
 }
+
+// Add to your FavoritesManager class
+bindMobileEvents() {
+    // Handle touch events for mobile
+    document.addEventListener('touchstart', (e) => {
+        // Prevent double-tap zoom on buttons
+        if (e.target.classList.contains('btn') || e.target.closest('.btn')) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    // Handle orientation changes
+    window.addEventListener('orientationchange', () => {
+        // Re-render on orientation change to fix layout issues
+        setTimeout(() => {
+            this.renderFavorites();
+        }, 300);
+    });
+
+    // Handle online/offline events for mobile
+    window.addEventListener('online', () => {
+        this.showToast('Connection restored', 'success');
+        // Optionally reload favorites when connection is restored
+        setTimeout(() => {
+            this.loadFavorites();
+        }, 1000);
+    });
+
+    window.addEventListener('offline', () => {
+        this.showToast('You are offline', 'warning');
+    });
+}
+
+
     async loadFavorites() {
-        this.showLoading();
+    this.showLoading();
+    
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'authorization.html';
+            return;
+        }
+
+        // Add timeout and retry logic for mobile
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout for mobile
         
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.href = 'authorization.html';
-                return;
-            }
+        const response = await fetch(`${API_BASE_URL}/favorites`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            signal: controller.signal
+        });
 
-            // Load ALL favorites first (we'll filter client-side)
-            const response = await fetch(`${API_BASE_URL}/favorites`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+        clearTimeout(timeoutId);
 
-            if (response.status === 401) {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = 'authorization.html';
-                return;
-            }
+        if (response.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'authorization.html';
+            return;
+        }
 
-            if (!response.ok) {
+        if (!response.ok) {
+            // More specific error handling
+            if (response.status === 0) {
+                throw new Error('Network error. Please check your connection.');
+            } else if (response.status >= 500) {
+                throw new Error('Server is temporarily unavailable.');
+            } else {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-
-            const data = await response.json();
-            
-            console.log('Favorites API response:', data);
-            
-            if (data.success) {
-                // Store all favorites for filtering
-                let favoritesData = data.data || data.favorites || [];
-                this.allFavorites = Array.isArray(favoritesData) 
-                    ? favoritesData.filter(fav => fav.property && fav.property._id) 
-                    : [];
-                
-                console.log('All favorites loaded:', this.allFavorites);
-                
-                // Apply initial filters and sort
-                this.applyFiltersAndSort();
-            } else {
-                throw new Error(data.message || 'Unknown error occurred');
-            }
-        } catch (error) {
-            console.error('Error loading favorites:', error);
-            this.showError('Failed to load favorites. Please try again.');
         }
+
+        const data = await response.json();
+        
+        console.log('Favorites API response:', data);
+        
+        if (data.success) {
+            let favoritesData = data.data || data.favorites || [];
+            this.allFavorites = Array.isArray(favoritesData) 
+                ? favoritesData.filter(fav => fav.property && fav.property._id) 
+                : [];
+            
+            console.log('All favorites loaded:', this.allFavorites.length);
+            
+            // Apply initial filters and sort
+            this.applyFiltersAndSort();
+            
+            // Clear any previous errors since we successfully loaded
+            this.hideLoading();
+        } else {
+            throw new Error(data.message || 'Unknown error occurred');
+        }
+    } catch (error) {
+        console.error('Error loading favorites:', error);
+        
+        // More user-friendly error messages for mobile
+        let userMessage = 'Failed to load favorites. ';
+        if (error.name === 'AbortError') {
+            userMessage += 'Request timed out. Please check your internet connection.';
+        } else if (error.message.includes('Network error')) {
+            userMessage += 'No internet connection. Please check your network settings.';
+        } else if (error.message.includes('Server is temporarily unavailable')) {
+            userMessage += 'Server is busy. Please try again in a moment.';
+        } else {
+            userMessage += 'Please try again.';
+        }
+        
+        this.showError(userMessage);
     }
+}
 
     // NEW: Apply filters and sorting
     applyFiltersAndSort() {
@@ -1555,12 +1657,23 @@ setPropertyDetails(card, property, userRole, favorite) {
     async saveFavorite() {
     if (!this.currentFavorite) return;
 
+    // Disable button to prevent double-tap on mobile
+    const saveBtn = document.getElementById('saveFavorite');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Saving...';
+    saveBtn.disabled = true;
+
     const newNotes = document.getElementById('notesTextarea').value;
     const newTags = document.getElementById('tagsInput').value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
     const newPriority = document.querySelector('input[name="priority"]:checked').value;
     
     try {
         const token = localStorage.getItem('token');
+        
+        // Add timeout for mobile network issues
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
         const response = await fetch(`${API_BASE_URL}/favorites/${this.currentFavorite._id}`, {
             method: 'PUT',
             headers: {
@@ -1571,8 +1684,11 @@ setPropertyDetails(card, property, userRole, favorite) {
                 notes: newNotes,
                 tags: newTags,
                 priority: newPriority
-            })
+            }),
+            signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         if (response.ok) {
             const result = await response.json();
@@ -1580,26 +1696,21 @@ setPropertyDetails(card, property, userRole, favorite) {
             // FIX: Properly handle the API response structure
             let updatedFavorite;
             if (result.data) {
-                // If response has data property
                 updatedFavorite = result.data;
             } else if (result.favorite) {
-                // If response has favorite property  
                 updatedFavorite = result.favorite;
             } else {
-                // If response is the favorite object directly
                 updatedFavorite = result;
             }
 
             // Update the local data immediately
             const index = this.allFavorites.findIndex(fav => fav._id === this.currentFavorite._id);
             if (index !== -1) {
-                // Merge the updated fields while preserving the property data
                 this.allFavorites[index] = { 
                     ...this.allFavorites[index], 
                     notes: newNotes,
                     tags: newTags,
                     priority: newPriority,
-                    // Preserve other important fields
                     _id: this.allFavorites[index]._id,
                     property: this.allFavorites[index].property,
                     createdAt: this.allFavorites[index].createdAt,
@@ -1616,25 +1727,68 @@ setPropertyDetails(card, property, userRole, favorite) {
             // Re-render immediately without full reload
             this.renderFavorites();
             this.updateCounts();
+            
+            // FIXED: More robust modal closing for mobile
+            const modalElement = document.getElementById('editFavoriteModal');
+            
+            // Multiple approaches to ensure modal closes on mobile
+            setTimeout(() => {
+                // Method 1: Use Bootstrap's hide method
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) {
+                    modalInstance.hide();
+                } else {
+                    // Method 2: Direct DOM manipulation as fallback
+                    modalElement.classList.remove('show');
+                    modalElement.style.display = 'none';
+                    document.body.classList.remove('modal-open');
+                    const backdrop = document.querySelector('.modal-backdrop');
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
+                }
+                
+                // Method 3: Trigger click on close button
+                const closeBtn = modalElement.querySelector('[data-bs-dismiss="modal"]');
+                if (closeBtn) {
+                    closeBtn.click();
+                }
+            }, 100);
+            
             this.showToast('Favorite updated successfully', 'success');
             
-            // FIXED: Close modal properly
-            // Close modal - get the instance properly
-            const modalElement = document.getElementById('editFavoriteModal');
-            const modalInstance = bootstrap.Modal.getInstance(modalElement);
-            if (modalInstance) {
-                modalInstance.hide();
-            } else {
-                // Fallback: if instance not found, hide manually
-                const modal = new bootstrap.Modal(modalElement);
-                modal.hide();
-            }
         } else {
-            throw new Error('Failed to update favorite');
+            // Handle specific HTTP errors
+            if (response.status === 401) {
+                throw new Error('Session expired. Please log in again.');
+            } else if (response.status >= 500) {
+                throw new Error('Server error. Please try again later.');
+            } else {
+                throw new Error(`Failed to update favorite: ${response.status}`);
+            }
         }
     } catch (error) {
         console.error('Error updating favorite:', error);
-        this.showToast('Failed to update favorite', 'error');
+        
+        // More specific error messages for mobile
+        let errorMessage = 'Failed to update favorite';
+        if (error.name === 'AbortError') {
+            errorMessage = 'Request timed out. Please check your connection and try again.';
+        } else if (error.message.includes('Session expired')) {
+            errorMessage = error.message;
+            // Redirect to login if session expired
+            setTimeout(() => {
+                window.location.href = 'authorization.html';
+            }, 2000);
+        } else if (error.message.includes('Server error')) {
+            errorMessage = error.message;
+        }
+        
+        this.showToast(errorMessage, 'error');
+    } finally {
+        // Re-enable button
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
     }
 }
 
@@ -1844,35 +1998,46 @@ getAvailablePropertiesForComparison(bookingMode) {
     }
 
     showError(message) {
-        console.error('Favorites Error:', message);
+    console.error('Favorites Error:', message);
+    
+    // Hide loading immediately
+    this.hideLoading();
+    
+    // Check if we're on mobile
+    const isMobile = window.innerWidth <= 768;
+    
+    // Only show error state if we don't have any favorites
+    if (this.favorites.length === 0) {
+        document.getElementById('empty-state').classList.remove('d-none');
+        const emptyTitle = document.getElementById('empty-state').querySelector('h3');
+        const emptyText = document.getElementById('empty-state').querySelector('p');
         
-        // Hide loading immediately
-        this.hideLoading();
+        emptyTitle.textContent = isMobile ? 'Connection Issue' : 'Error Loading Favorites';
+        emptyText.textContent = message;
         
-        // Only show error if we don't have any favorites
-        if (this.favorites.length === 0) {
-            document.getElementById('empty-state').classList.remove('d-none');
-            const emptyTitle = document.getElementById('empty-state').querySelector('h3');
-            const emptyText = document.getElementById('empty-state').querySelector('p');
-            
-            emptyTitle.textContent = 'Error Loading Favorites';
-            emptyText.textContent = message || 'Failed to load properties. Please try again.';
-            
-            // Add retry button
-            const existingButton = document.getElementById('empty-state').querySelector('a');
-            if (existingButton && !document.getElementById('retry-button')) {
-                const retryButton = document.createElement('button');
-                retryButton.id = 'retry-button';
-                retryButton.className = 'btn btn-outline-primary mt-2';
-                retryButton.innerHTML = '<i class="bi bi-arrow-clockwise me-2"></i>Retry';
-                retryButton.addEventListener('click', () => this.loadFavorites());
-                document.getElementById('empty-state').querySelector('.d-flex').appendChild(retryButton);
-            }
-        } else {
-            // If we have favorites but got an error, just show a subtle toast
+        // Add retry button with mobile-friendly styling
+        let retryButton = document.getElementById('retry-button');
+        if (!retryButton) {
+            retryButton = document.createElement('button');
+            retryButton.id = 'retry-button';
+            retryButton.className = 'btn btn-outline-primary mt-2';
+            retryButton.innerHTML = '<i class="bi bi-arrow-clockwise me-2"></i>Try Again';
+            retryButton.addEventListener('click', () => this.loadFavorites());
+            document.getElementById('empty-state').querySelector('.d-flex').appendChild(retryButton);
+        }
+        
+        // Make button larger on mobile
+        if (isMobile) {
+            retryButton.className = 'btn btn-outline-primary mt-2 py-2 px-4';
+        }
+    } else {
+        // If we have favorites but got an error, just show a subtle toast
+        // Don't show this warning on mobile if we successfully loaded some data
+        if (!isMobile || this.favorites.length === 0) {
             this.showToast('Some favorites may not have loaded completely', 'warning');
         }
     }
+}
 
     // Add this method to your FavoritesManager class
     showToast(message, type = 'info') {
@@ -1913,8 +2078,6 @@ getAvailablePropertiesForComparison(bookingMode) {
         });
     }
   }
-
-  
 
     // Initialize the favorites manager when the page loads
     document.addEventListener('DOMContentLoaded', () => {
