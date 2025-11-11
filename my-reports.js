@@ -180,6 +180,30 @@ prefillUserData() {
     }
 }
 
+// Add to ReportForm class in my-reports.js
+validateFile(file) {
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = [
+        'image/jpeg', 
+        'image/jpg', 
+        'image/png', 
+        'image/gif',
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    
+    if (file.size > maxSize) {
+        return { valid: false, error: `File ${file.name} is too large. Maximum size is 5MB.` };
+    }
+    
+    if (!allowedTypes.includes(file.type)) {
+        return { valid: false, error: `File ${file.name} is not a supported type. Please upload images or documents.` };
+    }
+    
+    return { valid: true };
+}
+
     setupComplaintCards() {
         console.log('Setting up complaint cards...');
         const complaintCards = document.querySelectorAll('.complaint-card');
@@ -488,6 +512,7 @@ prefillUserData() {
     }
 
     // In handleFormSubmission method, update the form data preparation:
+// In handleFormSubmission method, update to handle evidence uploads:
 async handleFormSubmission(e) {
     e.preventDefault();
     console.log('Handling form submission...');
@@ -495,12 +520,25 @@ async handleFormSubmission(e) {
     try {
         const isAnonymous = document.getElementById('anonymous').checked;
         
-        // Prepare form data for submission - ONLY include valid values
+        // Upload evidence files first
+        const evidenceFiles = document.getElementById('evidenceFiles').files;
+        const evidenceUrls = [];
+        
+        if (evidenceFiles.length > 0) {
+            console.log('Uploading evidence files:', evidenceFiles.length);
+            evidenceUrls = await this.uploadEvidenceFiles(evidenceFiles);
+            console.log('Evidence URLs:', evidenceUrls);
+        }
+
+        // Prepare form data for submission
         const formData = {
             reportType: this.mapCategoryToReportType(document.getElementById('category').value),
             title: `Complaint: ${document.getElementById('category').value}`,
             description: document.getElementById('description').value,
-            isAnonymous: isAnonymous // Add this flag
+            evidence: evidenceUrls, // Add uploaded evidence URLs
+            isAnonymous: isAnonymous,
+            issueDate: document.getElementById('issueDate').value,
+            issueFrequency: document.getElementById('issueFrequency').value
         };
 
         // Only add IDs if they are valid strings
@@ -513,7 +551,7 @@ async handleFormSubmission(e) {
         }
 
         // Add user type information
-        formData.reporterType = this.user.role; // 'student' or 'tenant'
+        formData.reporterType = this.user.role;
         
         // For anonymous submissions, don't include personal info
         if (!isAnonymous) {
@@ -521,17 +559,16 @@ async handleFormSubmission(e) {
             formData.email = document.getElementById('email').value;
             formData.phone = document.getElementById('phone').value;
             
-            // Only include student number for students
             if (this.user.role === 'student') {
                 formData.studentNumber = document.getElementById('studentNumber').value;
             } else if (this.user.role === 'tenant') {
-                formData.idNumber = document.getElementById('studentNumber').value; // Reuse field for tenants
+                formData.idNumber = document.getElementById('studentNumber').value;
             }
         }
 
         console.log('Submitting form data:', formData);
 
-        // Validate final form data - at least one ID must be provided
+        // Validate final form data
         if (!formData.reportedUserId && !formData.reportedPropertyId) {
             alert('Please provide either a landlord or property to report. Use the manual entry fields if needed.');
             return;
@@ -560,6 +597,63 @@ async handleFormSubmission(e) {
         console.error('Error submitting report:', error);
         alert('Failed to submit report. Please try again.');
     }
+}
+
+// Add this new method to upload evidence files
+async uploadEvidenceFiles(files) {
+    const urls = [];
+    
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // Validate file size and type
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const allowedTypes = [
+            'image/jpeg', 
+            'image/jpg', 
+            'image/png', 
+            'image/gif',
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+        
+        if (file.size > maxSize) {
+            alert(`File ${file.name} is too large. Maximum size is 5MB.`);
+            continue;
+        }
+        
+        if (!allowedTypes.includes(file.type)) {
+            alert(`File ${file.name} is not a supported type. Please upload images or documents.`);
+            continue;
+        }
+        
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            const response = await fetch(`${API_BASE_URL}/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                if (result.url || result.secure_url) {
+                    urls.push(result.url || result.secure_url);
+                    console.log(`Successfully uploaded: ${file.name}`);
+                } else {
+                    console.error('No URL returned for file:', file.name);
+                }
+            } else {
+                console.error('Upload failed for file:', file.name);
+            }
+        } catch (error) {
+            console.error('Error uploading file:', file.name, error);
+        }
+    }
+    
+    return urls;
 }
 
     mapCategoryToReportType(category) {
@@ -610,6 +704,8 @@ async handleFormSubmission(e) {
 
 
 
+
+
 // Global function for manual entry toggle
 function toggleManualEntry() {
     if (window.reportFormInstance) {
@@ -625,3 +721,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Add debug helper to check if script is loaded
 console.log('my-reports.js loaded successfully');
+

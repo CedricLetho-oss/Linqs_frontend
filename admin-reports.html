@@ -1268,14 +1268,61 @@ displayAllReportsTable(reports) {
     }
 
     // Update the displayReportModal method to include delete button
+// In admin-reports.js - UPDATE the displayReportModal method
 displayReportModal(report) {
     const modalContent = document.getElementById('reportDetails');
     
-    // Determine which action buttons to show based on report status
     const isResolved = report.status === 'resolved';
     const isDismissed = report.status === 'dismissed';
     const isUserDeleted = !report.reporter || report.reporter.email === 'deleted@user.com' || report.reporter.firstName === '[Deleted User]';
     
+    // Create evidence display HTML
+    let evidenceHTML = '';
+    if (report.evidence && report.evidence.length > 0) {
+        evidenceHTML = `
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h6>Evidence Files</h6>
+                    <div class="evidence-gallery">
+                        ${report.evidence.map((evidenceUrl, index) => {
+                            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(evidenceUrl);
+                            const isPDF = /\.pdf$/i.test(evidenceUrl);
+                            const fileName = evidenceUrl.split('/').pop() || `evidence-${index + 1}`;
+                            
+                            if (isImage) {
+                                return `
+                                    <div class="evidence-item">
+                                        <img src="${evidenceUrl}" class="evidence-img" alt="Evidence ${index + 1}" 
+                                             onclick="window.open('${evidenceUrl}', '_blank')">
+                                        <small class="d-block text-center mt-1">Image ${index + 1}</small>
+                                    </div>
+                                `;
+                            } else if (isPDF) {
+                                return `
+                                    <div class="evidence-item">
+                                        <div class="evidence-file pdf-file" onclick="window.open('${evidenceUrl}', '_blank')">
+                                            <i class="bi bi-file-earmark-pdf fs-1 text-danger"></i>
+                                        </div>
+                                        <small class="d-block text-center mt-1">PDF ${index + 1}</small>
+                                    </div>
+                                `;
+                            } else {
+                                return `
+                                    <div class="evidence-item">
+                                        <div class="evidence-file document-file" onclick="window.open('${evidenceUrl}', '_blank')">
+                                            <i class="bi bi-file-earmark-text fs-1 text-primary"></i>
+                                        </div>
+                                        <small class="d-block text-center mt-1">Document ${index + 1}</small>
+                                    </div>
+                                `;
+                            }
+                        }).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     modalContent.innerHTML = `
         <div class="row">
             <div class="col-md-6">
@@ -1285,6 +1332,8 @@ displayReportModal(report) {
                 <p><strong>Priority:</strong> <span class="priority-badge priority-${report.priority}">${report.priority}</span></p>
                 <p><strong>Status:</strong> <span class="status-badge status-${report.status}">${report.status.replace('_', ' ')}</span></p>
                 <p><strong>Created:</strong> ${new Date(report.createdAt).toLocaleString()}</p>
+                ${report.issueDate ? `<p><strong>Issue Date:</strong> ${new Date(report.issueDate).toLocaleDateString()}</p>` : ''}
+                ${report.issueFrequency ? `<p><strong>Frequency:</strong> ${report.issueFrequency}</p>` : ''}
                 ${report.resolvedAt ? `<p><strong>Resolved:</strong> ${new Date(report.resolvedAt).toLocaleString()}</p>` : ''}
                 ${isUserDeleted ? `<p class="text-danger"><strong><i class="bi bi-exclamation-triangle"></i> Reporter Account Deleted</strong></p>` : ''}
             </div>
@@ -1293,6 +1342,7 @@ displayReportModal(report) {
                 <p><strong>Name:</strong> ${report.reporter?.firstName || 'Anonymous'} ${report.reporter?.surname || ''}</p>
                 <p><strong>Email:</strong> ${report.reporter?.email || 'Not provided'}</p>
                 <p><strong>Phone:</strong> ${report.reporter?.phone || 'Not provided'}</p>
+                <p><strong>User Type:</strong> ${report.reporterType || report.reporter?.role || 'Unknown'}</p>
                 ${isUserDeleted ? `<div class="alert alert-warning mt-2">
                     <i class="bi bi-exclamation-triangle me-2"></i>
                     This reporter's account has been deleted
@@ -1312,18 +1362,7 @@ displayReportModal(report) {
             </div>
         </div>
         
-        ${report.evidence && report.evidence.length > 0 ? `
-        <div class="row mt-3">
-            <div class="col-12">
-                <h6>Evidence</h6>
-                <div class="evidence-gallery">
-                    ${report.evidence.map(evidence => `
-                        <img src="${evidence}" class="evidence-img" alt="Evidence" onclick="window.open('${evidence}', '_blank')">
-                    `).join('')}
-                </div>
-            </div>
-        </div>
-        ` : ''}
+        ${evidenceHTML}
         
         ${report.adminNotes ? `
         <div class="row mt-3">
@@ -1337,13 +1376,57 @@ displayReportModal(report) {
         ` : ''}
     `;
 
+    // Add CSS for evidence display
+    const style = document.createElement('style');
+    style.textContent = `
+        .evidence-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .evidence-item {
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .evidence-item:hover {
+            transform: scale(1.05);
+        }
+        .evidence-img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+        }
+        .evidence-file {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .pdf-file:hover {
+            background: #fff5f5;
+            border-color: #dc2626;
+        }
+        .document-file:hover {
+            background: #f0f9ff;
+            border-color: #3b82f6;
+        }
+    `;
+    document.head.appendChild(style);
+
     const modal = new bootstrap.Modal(document.getElementById('reportModal'));
     
-    // Update modal footer based on report status and user deletion
+    // Update modal footer based on report status
     const modalFooter = document.querySelector('#reportModal .modal-footer');
     if (modalFooter) {
         if (isResolved || isDismissed) {
-            // For resolved/dismissed reports, show Close and Delete buttons
             modalFooter.innerHTML = `
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-danger" onclick="adminReportsManager.deleteReport('${report._id}')">
@@ -1351,7 +1434,6 @@ displayReportModal(report) {
                 </button>
             `;
         } else if (isUserDeleted) {
-            // For reports from deleted users, show delete option prominently
             modalFooter.innerHTML = `
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-warning" onclick="startReview('${report._id}')">
@@ -1365,7 +1447,6 @@ displayReportModal(report) {
                 </button>
             `;
         } else {
-            // For pending/under review reports, show action buttons
             modalFooter.innerHTML = `
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-warning" onclick="startReview('${report._id}')">
