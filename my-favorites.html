@@ -1757,35 +1757,23 @@ setPropertyDetails(card, property, userRole, favorite) {
             this.renderFavorites();
             this.updateCounts();
             
-            // FIXED: More robust modal closing for mobile
+            // FIXED: Simple modal closing that works on both mobile and desktop
             const modalElement = document.getElementById('editFavoriteModal');
-            
-            // Multiple approaches to ensure modal closes on mobile
-            setTimeout(() => {
-                // Method 1: Use Bootstrap's hide method
-                const modalInstance = bootstrap.Modal.getInstance(modalElement);
-                if (modalInstance) {
-                    modalInstance.hide();
-                } else {
-                    // Method 2: Direct DOM manipulation as fallback
-                    modalElement.classList.remove('show');
-                    modalElement.style.display = 'none';
-                    document.body.classList.remove('modal-open');
-                    const backdrop = document.querySelector('.modal-backdrop');
-                    if (backdrop) {
-                        backdrop.remove();
-                    }
-                }
-                
-                // Method 3: Trigger click on close button
+            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+
+            // Simple, reliable modal closing
+            if (modalInstance) {
+                modalInstance.hide();
+            } else {
+                // Fallback: use the close button click
                 const closeBtn = modalElement.querySelector('[data-bs-dismiss="modal"]');
                 if (closeBtn) {
                     closeBtn.click();
                 }
-            }, 100);
-            
+            }
+
             this.showToast('Favorite updated successfully', 'success');
-            
+
         } else {
             // Handle specific HTTP errors
             if (response.status === 401) {
