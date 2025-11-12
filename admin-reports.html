@@ -850,6 +850,38 @@ getStatusBreakdown(reports) {
       return 'pending';
   }
 
+  // Add this method to AdminReportsManager class
+getSelectedReports() {
+    // For now, we'll send reminders for all visible pending reports
+    // You can enhance this later with checkboxes for individual selection
+    const currentTab = this.getCurrentTab();
+    if (currentTab !== 'pending') {
+        this.showError('Bulk reminders can only be sent for pending reports');
+        return [];
+    }
+    
+    // Get all visible pending report IDs
+    const reportRows = document.querySelectorAll('#pendingReportsTable tr');
+    const reportIds = [];
+    
+    reportRows.forEach(row => {
+        const reportIdCell = row.querySelector('td:first-child strong');
+        if (reportIdCell) {
+            const reportIdText = reportIdCell.textContent;
+            // Extract the report ID from the display text (e.g., "#abc123")
+            const reportId = reportIdText.replace('#', '').trim();
+            if (reportId && reportId !== 'N/A') {
+                // We need to get the actual full report ID from the data
+                // For now, we'll use a different approach
+            }
+        }
+    });
+    
+    // Since we don't have the full IDs easily accessible, 
+    // we'll modify the bulk reminders to work without specific IDs
+    return []; // Empty array means "all visible reports"
+}
+
   // UPDATED METHOD: Display pending reports in table
   // In displayPendingReportsTable method, update the dropdown menu:
 displayPendingReportsTable(reports) {
@@ -896,6 +928,20 @@ displayPendingReportsTable(reports) {
                 <td>
                     <div>${new Date(report.createdAt).toLocaleDateString()}</div>
                     <small class="text-muted">${new Date(report.createdAt).toLocaleTimeString()}</small>
+                    ${report.reminderCount > 0 ? `
+                        <div class="mt-1">
+                            <small class="text-info">
+                                <i class="bi bi-envelope me-1"></i>${report.reminderCount} reminder${report.reminderCount > 1 ? 's' : ''} sent
+                            </small>
+                        </div>
+                    ` : ''}
+                    ${report.lastReminderSent ? `
+                        <div class="mt-1">
+                            <small class="text-muted">
+                                <i class="bi bi-clock me-1"></i>Last: ${new Date(report.lastReminderSent).toLocaleDateString()}
+                            </small>
+                        </div>
+                    ` : ''}
                 </td>
                 <td>
                     ${isResolved || isDismissed ? `
@@ -1502,34 +1548,53 @@ async sendReminder(reportId) {
 
 async sendBulkReminders() {
     try {
-        // Get selected reports or all visible pending reports
-        const selectedReports = this.getSelectedReports(); // You'll need to implement this
         const priorityFilter = document.getElementById('priorityFilter').value;
+        const currentTab = this.getCurrentTab();
         
-        if (!confirm(`Send reminder emails for ${selectedReports.length} pending reports?`)) {
+        if (currentTab !== 'pending') {
+            this.showError('Bulk reminders can only be sent for pending reports. Please switch to the Pending tab.');
+            return;
+        }
+        
+        // Get count of pending reports that match current filter
+        const response = await fetch(`${API_BASE_URL}/admin/reports?status=pending&limit=1${priorityFilter ? `&priority=${priorityFilter}` : ''}`, {
+            headers: {
+                'Authorization': `Bearer ${this.token}`
+            }
+        });
+        
+        const data = await response.json();
+        const reportCount = data.data?.total || 0;
+        
+        if (reportCount === 0) {
+            this.showError('No pending reports found matching the current filter');
+            return;
+        }
+        
+        if (!confirm(`Send reminder emails for ${reportCount} pending reports${priorityFilter ? ` with ${priorityFilter} priority` : ''}?`)) {
             return;
         }
 
-        const response = await fetch(`${API_BASE_URL}/admin/reports/send-bulk-reminders`, {
+        const bulkResponse = await fetch(`${API_BASE_URL}/admin/reports/send-bulk-reminders`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${this.token}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                reportIds: selectedReports,
+                reportIds: [], // Empty array means "all matching reports"
                 priorityFilter: priorityFilter
             })
         });
 
-        const data = await response.json();
+        const bulkData = await bulkResponse.json();
         
-        if (data.success) {
-            this.showSuccess(`Bulk reminders sent: ${data.data.successful} successful, ${data.data.failed} failed`);
+        if (bulkData.success) {
+            this.showSuccess(`Bulk reminders sent: ${bulkData.data.successful} successful, ${bulkData.data.failed} failed`);
             await this.loadPendingReports();
             await this.loadReportStats();
         } else {
-            throw new Error(data.error || 'Failed to send bulk reminders');
+            throw new Error(bulkData.error || 'Failed to send bulk reminders');
         }
     } catch (error) {
         console.error('Error sending bulk reminders:', error);
