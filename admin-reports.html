@@ -905,46 +905,47 @@ displayPendingReportsTable(reports) {
         const isDismissed = report.status === 'dismissed';
         const isUserDeleted = !report.reporter || report.reporter.email === 'deleted@user.com' || report.reporter.firstName === '[Deleted User]';
         
-        return `
-            <tr>
-                <td>
-                    <strong>#${report._id ? report._id.slice(-6) : 'N/A'}</strong>
-                    ${isUserDeleted ? '<br><small class="text-danger">User Deleted</small>' : ''}
-                </td>
-                <td>
-                    <span class="report-type-badge">${this.formatReportType(report.reportType)}</span>
-                </td>
-                <td>
-                    <div class="fw-semibold">${report.reporter?.firstName || 'Anonymous'} ${report.reporter?.surname || ''}</div>
-                    <small class="text-muted">${report.reporter?.email || 'No email'}</small>
-                    ${isUserDeleted ? '<small class="text-danger d-block"><i class="bi bi-exclamation-triangle"></i> Account Deleted</small>' : ''}
-                </td>
-                <td>
-                    ${this.getReportTarget(report)}
-                </td>
-                <td>
-                    <span class="priority-badge priority-${report.priority}">${report.priority}</span>
-                </td>
-                <td>
-                    <div>${new Date(report.createdAt).toLocaleDateString()}</div>
-                    <small class="text-muted">${new Date(report.createdAt).toLocaleTimeString()}</small>
-                    ${report.reminderCount > 0 ? `
-                        <div class="mt-1">
-                            <small class="text-info">
-                                <i class="bi bi-envelope me-1"></i>${report.reminderCount} reminder${report.reminderCount > 1 ? 's' : ''} sent
-                            </small>
-                        </div>
-                    ` : ''}
-                    ${report.lastReminderSent ? `
-                        <div class="mt-1">
-                            <small class="text-muted">
-                                <i class="bi bi-clock me-1"></i>Last: ${new Date(report.lastReminderSent).toLocaleDateString()}
-                            </small>
-                        </div>
-                    ` : ''}
-                </td>
-                <td>
-                    ${isResolved || isDismissed ? `
+        // For RESOLVED or DISMISSED reports - show limited actions
+        if (isResolved || isDismissed) {
+            return `
+                <tr>
+                    <td>
+                        <strong>#${report._id ? report._id.slice(-6) : 'N/A'}</strong>
+                        ${isUserDeleted ? '<br><small class="text-danger">User Deleted</small>' : ''}
+                    </td>
+                    <td>
+                        <span class="report-type-badge">${this.formatReportType(report.reportType)}</span>
+                    </td>
+                    <td>
+                        <div class="fw-semibold">${report.reporter?.firstName || 'Anonymous'} ${report.reporter?.surname || ''}</div>
+                        <small class="text-muted">${report.reporter?.email || 'No email'}</small>
+                        ${isUserDeleted ? '<small class="text-danger d-block"><i class="bi bi-exclamation-triangle"></i> Account Deleted</small>' : ''}
+                    </td>
+                    <td>
+                        ${this.getReportTarget(report)}
+                    </td>
+                    <td>
+                        <span class="priority-badge priority-${report.priority}">${report.priority}</span>
+                    </td>
+                    <td>
+                        <div>${new Date(report.createdAt).toLocaleDateString()}</div>
+                        <small class="text-muted">${new Date(report.createdAt).toLocaleTimeString()}</small>
+                        ${report.reminderCount > 0 ? `
+                            <div class="mt-1">
+                                <small class="text-info">
+                                    <i class="bi bi-envelope me-1"></i>${report.reminderCount} reminder${report.reminderCount > 1 ? 's' : ''} sent
+                                </small>
+                            </div>
+                        ` : ''}
+                        ${report.lastReminderSent ? `
+                            <div class="mt-1">
+                                <small class="text-muted">
+                                    <i class="bi bi-clock me-1"></i>Last: ${new Date(report.lastReminderSent).toLocaleDateString()}
+                                </small>
+                            </div>
+                        ` : ''}
+                    </td>
+                    <td>
                         <div class="dropdown">
                             <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
                                 Actions
@@ -959,7 +960,51 @@ displayPendingReportsTable(reports) {
                                 </a></li>
                             </ul>
                         </div>
-                    ` : `
+                    </td>
+                </tr>
+            `;
+        } 
+        // For PENDING reports - show full actions including SEND REMINDER
+        else {
+            return `
+                <tr>
+                    <td>
+                        <strong>#${report._id ? report._id.slice(-6) : 'N/A'}</strong>
+                        ${isUserDeleted ? '<br><small class="text-danger">User Deleted</small>' : ''}
+                    </td>
+                    <td>
+                        <span class="report-type-badge">${this.formatReportType(report.reportType)}</span>
+                    </td>
+                    <td>
+                        <div class="fw-semibold">${report.reporter?.firstName || 'Anonymous'} ${report.reporter?.surname || ''}</div>
+                        <small class="text-muted">${report.reporter?.email || 'No email'}</small>
+                        ${isUserDeleted ? '<small class="text-danger d-block"><i class="bi bi-exclamation-triangle"></i> Account Deleted</small>' : ''}
+                    </td>
+                    <td>
+                        ${this.getReportTarget(report)}
+                    </td>
+                    <td>
+                        <span class="priority-badge priority-${report.priority}">${report.priority}</span>
+                    </td>
+                    <td>
+                        <div>${new Date(report.createdAt).toLocaleDateString()}</div>
+                        <small class="text-muted">${new Date(report.createdAt).toLocaleTimeString()}</small>
+                        ${report.reminderCount > 0 ? `
+                            <div class="mt-1">
+                                <small class="text-info">
+                                    <i class="bi bi-envelope me-1"></i>${report.reminderCount} reminder${report.reminderCount > 1 ? 's' : ''} sent
+                                </small>
+                            </div>
+                        ` : ''}
+                        ${report.lastReminderSent ? `
+                            <div class="mt-1">
+                                <small class="text-muted">
+                                    <i class="bi bi-clock me-1"></i>Last: ${new Date(report.lastReminderSent).toLocaleDateString()}
+                                </small>
+                            </div>
+                        ` : ''}
+                    </td>
+                    <td>
                         <div class="dropdown">
                             <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
                                 Actions
@@ -973,7 +1018,8 @@ displayPendingReportsTable(reports) {
                                 </a></li>
                                 <li><a class="dropdown-item" href="#" onclick="adminReportsManager.updateReportStatus('${report._id}', 'resolved')">
                                     <i class="bi bi-check-circle me-2"></i>Mark Resolved
-                                </a></li>                                
+                                </a></li>
+                                <!-- SEND REMINDER OPTION - This is what was missing -->
                                 <li><a class="dropdown-item text-info" href="#" onclick="adminReportsManager.sendReminder('${report._id}')">
                                     <i class="bi bi-envelope me-2"></i>Send Reminder
                                 </a></li>
@@ -988,10 +1034,10 @@ displayPendingReportsTable(reports) {
                                 ` : ''}
                             </ul>
                         </div>
-                    `}
-                </td>
-            </tr>
-        `;
+                    </td>
+                </tr>
+            `;
+        }
     }).join('');
 }
 
