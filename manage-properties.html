@@ -2861,22 +2861,43 @@ function toggleShortTermPricingSection() {
         pricingSection.style.display = 'none';
     }
 }
+// Add this function to handle short-term pricing validation
+function validateShortTermPricing() {
+    const acceptsShortTerm = document.getElementById('acceptsShortTerm').checked;
+    const pricingType = document.getElementById('shortTermPricing').value;
+    const priceField = document.getElementById('shortTermPrice');
+    
+    if (acceptsShortTerm && pricingType === 'fixed') {
+        priceField.required = true;
+        if (!priceField.value || priceField.value <= 0) {
+            priceField.setCustomValidity('Please enter a valid daily rate for short-term stays');
+            return false;
+        }
+    } else {
+        priceField.required = false;
+        priceField.setCustomValidity('');
+    }
+    return true;
+}
 
-// Toggle price field based on pricing type
+
+
+// Update the pricing type change handler
 function toggleShortTermPriceField() {
     const pricingType = document.getElementById('shortTermPricing').value;
     const priceField = document.getElementById('shortTermPriceField');
     
     if (pricingType === 'fixed') {
         priceField.style.display = 'block';
-        document.getElementById('shortTermPrice').required = true;
+        // Don't set required here - let the validation function handle it
     } else {
         priceField.style.display = 'none';
-        document.getElementById('shortTermPrice').required = false;
+        // Clear any validation errors
+        document.getElementById('shortTermPrice').setCustomValidity('');
     }
 }
 
-// Update your existing toggleShortTermMessage function
+// Update the short-term toggle handler
 function toggleShortTermMessage() {
     const acceptsShortTerm = document.getElementById('acceptsShortTerm').checked;
     const messageDiv = document.getElementById('shortTermMessage');
@@ -2901,8 +2922,12 @@ function toggleShortTermMessage() {
         noMessage.style.display = 'block';
         descriptionSection.style.display = 'none';
         messageDiv.className = 'alert alert-info';
+        
+        // Clear any validation errors when disabling short-term
+        document.getElementById('shortTermPrice').setCustomValidity('');
     }
 }
+
 
 // Toggle short-term pricing section for EDIT form
 function toggleEditShortTermPricingSection() {
@@ -3548,6 +3573,12 @@ document.head.appendChild(toastStyles);
 async function addNewProperty() {
     const form = document.getElementById('addPropertyForm');
     const addBtn = document.getElementById('addPropertyBtn');
+    
+    // Validate short-term pricing first
+    if (!validateShortTermPricing()) {
+        form.classList.add('was-validated');
+        return;
+    }
     
     if (!form.checkValidity()) {
         form.classList.add('was-validated');
