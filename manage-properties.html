@@ -1436,92 +1436,92 @@
 </div>
 
   <!-- Enhanced Add Property Modal -->
-<div class="modal fade" id="addPropertyModal" tabindex="-1" aria-labelledby="addPropertyModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title" id="addPropertyModalLabel">
-          <i class="bi bi-plus-circle me-2"></i>Add New Property
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+  <div class="modal fade" id="addPropertyModal" tabindex="-1" aria-labelledby="addPropertyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="addPropertyModalLabel">
+            <i class="bi bi-plus-circle me-2"></i>Add New Property
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addPropertyForm" class="needs-validation" novalidate>
+            <!-- Property Basic Information -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary mb-3 border-bottom pb-2">
+                  <i class="bi bi-info-circle me-2"></i>Basic Information
+                </h6>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Property Title *</label>
+                  <input type="text" class="form-control form-control-lg" name="title" required placeholder="e.g., Modern Apartment near UFS">
+                  <div class="invalid-feedback">Please provide a property title.</div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Property Type *</label>
+                  <select class="form-select form-select-lg" name="propertyType" required>
+                    <option value="">Select Property Type</option>
+                    <option value="apartment">Apartment</option>
+                    <option value="house">House</option>
+                    <option value="condo">Condo</option>
+                    <option value="townhouse">Townhouse</option>
+                    <option value="studio">Studio</option>
+                  </select>
+                  <div class="invalid-feedback">Please select a property type.</div>
+                </div>
+                <!-- Enhanced Monthly Rent Section with NSFAS Option -->
+  <div class="mb-3">
+      <label class="form-label fw-semibold">Monthly Rent (ZAR) *</label>
+      
+      <!-- Rent Type Selection -->
+      <div class="mb-3">
+          <label class="form-label small">Rent Type *</label>
+          <div class="form-check">
+              <input class="form-check-input" type="radio" name="rentType" id="fixedRent" value="fixed" checked onchange="toggleRentType()">
+              <label class="form-check-label" for="fixedRent">
+                  Fixed Monthly Rent
+              </label>
+          </div>
+          <div class="form-check">
+              <input class="form-check-input" type="radio" name="rentType" id="nsfasRent" value="nsfas" onchange="toggleRentType()">
+              <label class="form-check-label" for="nsfasRent">
+                  We Offer NSFAS Rates
+              </label>
+          </div>
       </div>
-      <div class="modal-body">
-        <form id="addPropertyForm" class="needs-validation" novalidate>
-          <!-- Property Basic Information -->
-          <div class="row mb-4">
-            <div class="col-12">
-              <h6 class="text-primary mb-3 border-bottom pb-2">
-                <i class="bi bi-info-circle me-2"></i>Basic Information
-              </h6>
-            </div>
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label fw-semibold">Property Title *</label>
-                <input type="text" class="form-control form-control-lg" name="title" required placeholder="e.g., Modern Apartment near UFS">
-                <div class="invalid-feedback">Please provide a property title.</div>
-              </div>
-              <div class="mb-3">
-                <label class="form-label fw-semibold">Property Type *</label>
-                <select class="form-select form-select-lg" name="propertyType" required>
-                  <option value="">Select Property Type</option>
-                  <option value="apartment">Apartment</option>
-                  <option value="house">House</option>
-                  <option value="condo">Condo</option>
-                  <option value="townhouse">Townhouse</option>
-                  <option value="studio">Studio</option>
-                </select>
-                <div class="invalid-feedback">Please select a property type.</div>
-              </div>
-              <!-- Enhanced Monthly Rent Section with NSFAS Option -->
-              <div class="mb-3">
-                  <label class="form-label fw-semibold">Monthly Rent (ZAR) *</label>
-                  
-                  <!-- Rent Type Selection -->
-                  <div class="mb-3">
-                      <label class="form-label small">Rent Type *</label>
-                      <div class="form-check">
-                          <input class="form-check-input" type="radio" name="rentType" id="fixedRent" value="fixed" checked onchange="toggleRentType()">
-                          <label class="form-check-label" for="fixedRent">
-                              Fixed Monthly Rent
-                          </label>
-                      </div>
-                      <div class="form-check">
-                          <input class="form-check-input" type="radio" name="rentType" id="nsfasRent" value="nsfas" onchange="toggleRentType()">
-                          <label class="form-check-label" for="nsfasRent">
-                              We Offer NSFAS Rates
-                          </label>
-                      </div>
+      
+      <!-- Fixed Rent Input -->
+      <div id="fixedRentSection">
+          <div class="input-group">
+              <span class="input-group-text bg-light">R</span>
+              <input type="number" class="form-control form-control-lg" name="price" id="fixedRentInput" required min="0" placeholder="3500" value="3500">
+          </div>
+          <div class="invalid-feedback">Please provide a valid rent amount.</div>
+      </div>
+      
+      <!-- NSFAS Rent Display -->
+      <div id="nsfasRentSection" style="display: none;">
+          <div class="alert alert-info">
+              <div class="d-flex align-items-center">
+                  <i class="bi bi-info-circle me-2"></i>
+                  <div>
+                      <strong>NSFAS Rates Selected</strong>
+                      <p class="mb-0 small">This property will be shown as offering NSFAS-accredited accommodation rates. Students will contact you for specific pricing details.</p>
                   </div>
-                  
-                  <!-- Fixed Rent Input -->
-                  <div id="fixedRentSection">
-                      <div class="input-group">
-                          <span class="input-group-text bg-light">R</span>
-                          <input type="number" class="form-control form-control-lg" name="price" id="fixedRentInput" required min="0" placeholder="3500">
-                      </div>
-                      <div class="invalid-feedback">Please provide a valid rent amount.</div>
-                  </div>
-                  
-                  <!-- NSFAS Rent Display -->
-                  <div id="nsfasRentSection" style="display: none;">
-                      <div class="alert alert-info">
-                          <div class="d-flex align-items-center">
-                              <i class="bi bi-info-circle me-2"></i>
-                              <div>
-                                  <strong>NSFAS Rates Selected</strong>
-                                  <p class="mb-0 small">This property will be shown as offering NSFAS-accredited accommodation rates. Students will contact you for specific pricing details.</p>
-                              </div>
-                          </div>
-                      </div>
-                      <!-- Hidden input to maintain backend compatibility -->
-                      <input type="hidden" name="price" id="nsfasRentInput" value="0">
-                  </div>
-                  
-                  <small class="text-muted">
-                      <span id="fixedRentHelp">Enter the monthly rental amount in South African Rand</span>
-                      <span id="nsfasRentHelp" style="display: none;">Perfect for NSFAS-accredited accommodations - students will contact you for rate details</span>
-                  </small>
               </div>
+          </div>
+          <!-- Hidden input to maintain backend compatibility -->
+          <input type="hidden" name="price" id="nsfasRentInput" value="0">
+      </div>
+      
+      <small class="text-muted">
+          <span id="fixedRentHelp">Enter the monthly rental amount in South African Rand</span>
+          <span id="nsfasRentHelp" style="display: none;">Perfect for NSFAS-accredited accommodations - students will contact you for rate details</span>
+      </small>
+  </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
@@ -2707,6 +2707,8 @@ function toggleRentType() {
     const nsfasRentSection = document.getElementById('nsfasRentSection');
     const fixedRentHelp = document.getElementById('fixedRentHelp');
     const nsfasRentHelp = document.getElementById('nsfasRentHelp');
+    const fixedRentInput = document.getElementById('fixedRentInput');
+    const nsfasRentInput = document.getElementById('nsfasRentInput');
     
     if (fixedRentRadio.checked) {
         fixedRentSection.style.display = 'block';
@@ -2714,19 +2716,29 @@ function toggleRentType() {
         fixedRentHelp.style.display = 'inline';
         nsfasRentHelp.style.display = 'none';
         
-        // Make fixed rent input required
-        document.getElementById('fixedRentInput').required = true;
-        document.getElementById('nsfasRentInput').required = false;
+        // Make fixed rent input required and set proper value
+        fixedRentInput.required = true;
+        fixedRentInput.disabled = false;
+        nsfasRentInput.disabled = true;
+        
+        // Clear the NSFAS hidden input
+        nsfasRentInput.value = '';
     } else {
         fixedRentSection.style.display = 'none';
         nsfasRentSection.style.display = 'block';
         fixedRentHelp.style.display = 'none';
         nsfasRentHelp.style.display = 'inline';
         
-        // Make NSFAS input required (hidden field)
-        document.getElementById('fixedRentInput').required = false;
-        document.getElementById('nsfasRentInput').required = true;
-        document.getElementById('nsfasRentInput').value = '0'; // NSFAS properties have 0 price
+        // Make fixed rent input not required and disable it
+        fixedRentInput.required = false;
+        fixedRentInput.disabled = true;
+        nsfasRentInput.disabled = false;
+        
+        // Set NSFAS price to 0
+        nsfasRentInput.value = '0';
+        
+        // Also set the fixed rent input to 0 for form consistency
+        fixedRentInput.value = '0';
     }
 }
 
@@ -3552,10 +3564,22 @@ async function addNewProperty() {
         const formData = new FormData(form);
         const amenities = formData.getAll('amenities');
         
+        // FIX: Get the correct price based on rent type
+        const rentType = document.querySelector('input[name="rentType"]:checked').value;
+        let finalPrice;
+        
+        if (rentType === 'nsfas') {
+            // For NSFAS, use the hidden input value
+            finalPrice = parseInt(document.getElementById('nsfasRentInput').value);
+        } else {
+            // For fixed rent, use the visible input
+            finalPrice = parseInt(document.getElementById('fixedRentInput').value);
+        }
+
         const propertyData = {
             title: formData.get('title'),
             description: formData.get('description'),
-            price: parseInt(formData.get('price')),
+            price: finalPrice, // Use the correctly determined price
             location: {
                 address: formData.get('address'),
                 city: formData.get('city'),
@@ -3569,7 +3593,7 @@ async function addNewProperty() {
             genderPreference: formData.get('genderPreference'),
             accreditation: formData.get('accreditation'),
             availability: formData.get('availability'),
-            rentType: document.querySelector('input[name="rentType"]:checked').value,
+            rentType: rentType, // This is now properly set
             acceptsShortTerm: formData.get('acceptsShortTerm') === 'on',
             shortTermDescription: formData.get('shortTermDescription') || '',
             shortTermPricing: formData.get('shortTermPricing'),
@@ -3579,7 +3603,7 @@ async function addNewProperty() {
                 phone: JSON.parse(localStorage.getItem("user")).phone || '',
                 email: JSON.parse(localStorage.getItem("user")).email || ''
             },
-            images: [] // Start with empty array
+            images: []
         };
 
         // ✅ FIXED: Upload all images to Cloudinary first
