@@ -1163,6 +1163,15 @@
     font-size: 0.9rem;
   }
 }
+
+.nsfas-badge {
+    background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+    color: white;
+}
+
+.nsfas-property {
+    border-left: 4px solid #ff6b00 !important;
+}
 </style>
 </head>
 <body>
@@ -1463,13 +1472,55 @@
                 </select>
                 <div class="invalid-feedback">Please select a property type.</div>
               </div>
+              <!-- Enhanced Monthly Rent Section with NSFAS Option -->
               <div class="mb-3">
-                <label class="form-label fw-semibold">Monthly Rent (ZAR) *</label>
-                <div class="input-group">
-                  <span class="input-group-text bg-light">R</span>
-                  <input type="number" class="form-control form-control-lg" name="price" required min="0" placeholder="3500">
-                </div>
-                <div class="invalid-feedback">Please provide a valid rent amount.</div>
+                  <label class="form-label fw-semibold">Monthly Rent (ZAR) *</label>
+                  
+                  <!-- Rent Type Selection -->
+                  <div class="mb-3">
+                      <label class="form-label small">Rent Type *</label>
+                      <div class="form-check">
+                          <input class="form-check-input" type="radio" name="rentType" id="fixedRent" value="fixed" checked onchange="toggleRentType()">
+                          <label class="form-check-label" for="fixedRent">
+                              Fixed Monthly Rent
+                          </label>
+                      </div>
+                      <div class="form-check">
+                          <input class="form-check-input" type="radio" name="rentType" id="nsfasRent" value="nsfas" onchange="toggleRentType()">
+                          <label class="form-check-label" for="nsfasRent">
+                              We Offer NSFAS Rates
+                          </label>
+                      </div>
+                  </div>
+                  
+                  <!-- Fixed Rent Input -->
+                  <div id="fixedRentSection">
+                      <div class="input-group">
+                          <span class="input-group-text bg-light">R</span>
+                          <input type="number" class="form-control form-control-lg" name="price" id="fixedRentInput" required min="0" placeholder="3500">
+                      </div>
+                      <div class="invalid-feedback">Please provide a valid rent amount.</div>
+                  </div>
+                  
+                  <!-- NSFAS Rent Display -->
+                  <div id="nsfasRentSection" style="display: none;">
+                      <div class="alert alert-info">
+                          <div class="d-flex align-items-center">
+                              <i class="bi bi-info-circle me-2"></i>
+                              <div>
+                                  <strong>NSFAS Rates Selected</strong>
+                                  <p class="mb-0 small">This property will be shown as offering NSFAS-accredited accommodation rates. Students will contact you for specific pricing details.</p>
+                              </div>
+                          </div>
+                      </div>
+                      <!-- Hidden input to maintain backend compatibility -->
+                      <input type="hidden" name="price" id="nsfasRentInput" value="0">
+                  </div>
+                  
+                  <small class="text-muted">
+                      <span id="fixedRentHelp">Enter the monthly rental amount in South African Rand</span>
+                      <span id="nsfasRentHelp" style="display: none;">Perfect for NSFAS-accredited accommodations - students will contact you for rate details</span>
+                  </small>
               </div>
             </div>
             <div class="col-md-6">
@@ -1842,9 +1893,39 @@
                     <option value="studio">Studio</option>
                   </select>
                 </div>
+                <!-- In Edit Property Modal, add this section -->
                 <div class="mb-3">
-                  <label class="form-label">Monthly Rent (ZAR) *</label>
-                  <input type="number" class="form-control" id="editPropertyPrice" required min="0">
+                    <label class="form-label fw-semibold">Rent Type *</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="editRentType" id="editFixedRent" value="fixed" onchange="toggleEditRentType()">
+                        <label class="form-check-label" for="editFixedRent">
+                            Fixed Monthly Rent
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="editRentType" id="editNsfasRent" value="nsfas" onchange="toggleEditRentType()">
+                        <label class="form-check-label" for="editNsfasRent">
+                            We Offer NSFAS Rates
+                        </label>
+                    </div>
+                </div>
+
+                <div id="editFixedRentSection">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Monthly Rent (ZAR) *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">R</span>
+                            <input type="number" class="form-control" id="editPropertyPrice" required min="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="editNsfasRentSection" style="display: none;">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>NSFAS Rates Selected</strong>
+                        <p class="mb-0 small">This property will be shown as offering NSFAS-accredited accommodation rates.</p>
+                    </div>
                 </div>
                 <div class="mb-3">
                   <label class="form-label">Address *</label>
@@ -2174,9 +2255,36 @@
                       <label class="form-label">Room Number/Name</label>
                       <input type="text" class="form-control" id="roomNumber" placeholder="e.g., Room 1, Cottage A">
                     </div>
+                    <!-- In room management form, add rent type -->
                     <div class="mb-3">
-                      <label class="form-label">Monthly Rent (ZAR) *</label>
-                      <input type="number" class="form-control" id="roomPrice" required min="0">
+                        <label class="form-label fw-semibold">Room Rent Type *</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="roomRentType" id="roomFixedRent" value="fixed" checked onchange="toggleRoomRentType()">
+                            <label class="form-check-label" for="roomFixedRent">
+                                Fixed Monthly Rent
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="roomRentType" id="roomNsfasRent" value="nsfas" onchange="toggleRoomRentType()">
+                            <label class="form-check-label" for="roomNsfasRent">
+                                NSFAS Rates
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="roomFixedRentSection">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Monthly Rent (ZAR) *</label>
+                            <input type="number" class="form-control" id="roomPrice" required min="0">
+                        </div>
+                    </div>
+
+                    <div id="roomNsfasRentSection" style="display: none;">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>NSFAS Rates Selected</strong>
+                            <p class="mb-0 small">This room will be shown as offering NSFAS rates.</p>
+                        </div>
                     </div>
                     <div class="mb-3">
                       <label class="form-label">Room Size</label>
@@ -2591,12 +2699,99 @@
         return icons[amenity] || 'check';
     }
 
-    // Function to proceed to add property form
-// Function to proceed to add property form
-// Completely separate the modal triggers - FIXED VERSION
-// FIXED: Proper photography modal handling
-// FIXED: Proper photography modal handling for ALL add property buttons
-// FIXED: Proper photography modal handling for ALL add property buttons
+    // Update the toggleRentType function to properly handle NSFAS
+function toggleRentType() {
+    const fixedRentRadio = document.getElementById('fixedRent');
+    const nsfasRentRadio = document.getElementById('nsfasRent');
+    const fixedRentSection = document.getElementById('fixedRentSection');
+    const nsfasRentSection = document.getElementById('nsfasRentSection');
+    const fixedRentHelp = document.getElementById('fixedRentHelp');
+    const nsfasRentHelp = document.getElementById('nsfasRentHelp');
+    
+    if (fixedRentRadio.checked) {
+        fixedRentSection.style.display = 'block';
+        nsfasRentSection.style.display = 'none';
+        fixedRentHelp.style.display = 'inline';
+        nsfasRentHelp.style.display = 'none';
+        
+        // Make fixed rent input required
+        document.getElementById('fixedRentInput').required = true;
+        document.getElementById('nsfasRentInput').required = false;
+    } else {
+        fixedRentSection.style.display = 'none';
+        nsfasRentSection.style.display = 'block';
+        fixedRentHelp.style.display = 'none';
+        nsfasRentHelp.style.display = 'inline';
+        
+        // Make NSFAS input required (hidden field)
+        document.getElementById('fixedRentInput').required = false;
+        document.getElementById('nsfasRentInput').required = true;
+        document.getElementById('nsfasRentInput').value = '0'; // NSFAS properties have 0 price
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleRentType(); // Set initial state
+});
+
+function toggleEditRentType() {
+    const fixedRentRadio = document.getElementById('editFixedRent');
+    const nsfasRentRadio = document.getElementById('editNsfasRent');
+    const fixedRentSection = document.getElementById('editFixedRentSection');
+    const nsfasRentSection = document.getElementById('editNsfasRentSection');
+    
+    if (fixedRentRadio.checked) {
+        fixedRentSection.style.display = 'block';
+        nsfasRentSection.style.display = 'none';
+        document.getElementById('editPropertyPrice').required = true;
+    } else {
+        fixedRentSection.style.display = 'none';
+        nsfasRentSection.style.display = 'block';
+        document.getElementById('editPropertyPrice').required = false;
+        document.getElementById('editPropertyPrice').value = '0';
+    }
+}
+
+function toggleRoomRentType() {
+    const fixedRentRadio = document.getElementById('roomFixedRent');
+    const nsfasRentRadio = document.getElementById('roomNsfasRent');
+    const fixedRentSection = document.getElementById('roomFixedRentSection');
+    const nsfasRentSection = document.getElementById('roomNsfasRentSection');
+    
+    if (fixedRentRadio.checked) {
+        fixedRentSection.style.display = 'block';
+        nsfasRentSection.style.display = 'none';
+        document.getElementById('roomPrice').required = true;
+    } else {
+        fixedRentSection.style.display = 'none';
+        nsfasRentSection.style.display = 'block';
+        document.getElementById('roomPrice').required = false;
+        document.getElementById('roomPrice').value = '0';
+    }
+}
+
+function generateRentDisplay(property) {
+    if (property.rentType === 'nsfas') {
+        return `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="text-navy mb-0">NSFAS Rates</h6>
+                <small class="text-muted">Contact for details</small>
+            </div>
+            <div class="alert alert-info small p-2 mb-2">
+                <i class="bi bi-award me-1"></i>NSFAS Accredited Accommodation
+            </div>
+        `;
+    } else {
+        return `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="text-navy mb-0">R${property.price || 0}</h6>
+                <small class="text-muted">/month</small>
+            </div>
+        `;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   // Function to handle add property clicks
   function handleAddPropertyClick(e) {
@@ -3374,6 +3569,7 @@ async function addNewProperty() {
             genderPreference: formData.get('genderPreference'),
             accreditation: formData.get('accreditation'),
             availability: formData.get('availability'),
+            rentType: document.querySelector('input[name="rentType"]:checked').value,
             acceptsShortTerm: formData.get('acceptsShortTerm') === 'on',
             shortTermDescription: formData.get('shortTermDescription') || '',
             shortTermPricing: formData.get('shortTermPricing'),
@@ -3494,6 +3690,7 @@ async function updateProperty() {
             genderPreference: document.getElementById('editPropertyGenderPreference').value,
             accreditation: document.getElementById('editPropertyAccreditation').value,
             availability: document.getElementById('editPropertyAvailability').value,
+            rentType: document.querySelector('input[name="editRentType"]:checked').value,
             images: allImages
         };
 
@@ -3586,191 +3783,232 @@ async function uploadMultipleToCloudinary(files) {
 
     // Generate property card for grid view
     function generatePropertyCard(property) {
-        const approvalStatus = property.status || 'pending';
-        const availabilityStatus = property.availability || 'available';
-        
-        const approvalInfo = statusConfig[approvalStatus] || statusConfig.pending;
-        const availabilityInfo = statusConfig[availabilityStatus] || statusConfig.available;
-        
-        const type = typeConfig[property.propertyType] || typeConfig.apartment;
-        const gender = genderConfig[property.genderPreference] || genderConfig.unisex;
-        const accreditation = accreditationConfig[property.accreditation] || accreditationConfig.self;
-        const imageUrl = property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/400x250/007bff/ffffff?text=Property+Image';
-        
-        return `
-            <div class="property-card ${availabilityStatus}">
-                <img src="${imageUrl}" class="property-image" alt="${property.title}">
-                <div class="card-body p-3">
-                    <!-- Approval Status (Admin) -->
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="badge bg-${approvalInfo.class} status-badge">
-                            <i class="${approvalInfo.icon} me-1"></i>${approvalInfo.text}
-                        </span>
-                        <span class="badge bg-${gender.class} status-badge">
-                            <i class="${gender.icon} me-1"></i>${gender.text}
-                        </span>
-                    </div>
-                    
-                    <!-- Availability Status (Landlord) -->
-                    <div class="mb-2">
-                        <span class="badge bg-${availabilityInfo.class} status-badge">
-                            <i class="${availabilityInfo.icon} me-1"></i>${availabilityInfo.text}
-                        </span>
-
-                        ${property.acceptsShortTerm ? `
-                            <span class="badge bg-warning status-badge short-term-badge">
-                                <i class="bi bi-calendar-range me-1"></i>Short-term Available
-                            </span>
-                        ` : ''}
-
-                        ${property.acceptsShortTerm ? `
-                            <div class="mt-2">
-                                <small class="text-muted">Short-term: </small>
-                                ${property.shortTermPricing === 'fixed' ? `
-                                    <strong class="short-term-pricing-text">R${property.shortTermPrice}/day</strong>
-                                    <small class="text-muted"> (min ${property.shortTermMinStay} days)</small>
-                                ` : `
-                                    <strong class="short-term-pricing-text">Price Negotiable</strong>
-                                `}
-                            </div>
-                        ` : ''}
-                    </div>
-                    
-                    <h6 class="card-title text-navy text-truncate">${property.title}</h6>
-                    <p class="text-muted small mb-2 text-truncate">
-                        <i class="bi bi-geo-alt me-1"></i>${property.location.address}, ${property.location.city}
-                    </p>
-                    <p class="text-muted small mb-2">
-                        <i class="bi bi-door-closed me-1"></i>${property.bedrooms} beds • ${property.bathrooms} baths
-                    </p>
-                    
-                    <div class="mb-2">
-                        <span class="badge bg-${accreditation.class} status-badge">
-                            <i class="${accreditation.icon} me-1"></i>${accreditation.text}
-                        </span>
-                    </div>
-                    
-                    ${property.adminNotes && approvalStatus === 'rejected' ? `
-                        <div class="alert alert-danger small p-2 mb-2">
-                            <strong>Admin Note:</strong> ${property.adminNotes}
-                        </div>
-                    ` : ''}
-                    
-                    ${approvalStatus === 'pending' ? `
-                        <div class="alert alert-warning small p-2 mb-2">
-                            <i class="bi bi-info-circle me-1"></i>Waiting for admin approval
-                        </div>
-                    ` : ''}
-                    
-                    <div class="mb-2">
-                        ${(property.amenities || []).slice(0, 3).map(amenity => `
-                            <span class="feature-badge d-inline-block">
-                                <i class="bi bi-${getAmenityIcon(amenity)} me-1"></i>${amenity}
-                            </span>
-                        `).join('')}
-                        ${(property.amenities || []).length > 3 ? `<span class="feature-badge">+${(property.amenities || []).length - 3}</span>` : ''}
-                    </div>
-                    
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-navy mb-0">R${property.price || 0}</h6>
-                        <small class="text-muted">/month</small>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between small text-muted">
-                        <span>
-                            <i class="bi bi-calendar-check me-1"></i>${property.reviewCount || 0} reviews
-                        </span>
-                        <span>
-                            Added: ${property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'Unknown'}
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="card-footer bg-transparent p-2">
-                    <div class="action-buttons d-flex justify-content-between">
-                        <button class="btn btn-sm btn-outline-primary" onclick="viewPropertyDetails('${property._id}')">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-warning" onclick="editProperty('${property._id}')" 
-                            ${approvalStatus !== 'approved' ? 'disabled title="Edit after approval"' : ''}>
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-info" onclick="viewPropertyStats('${property._id}')">
-                            <i class="bi bi-graph-up"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-info" onclick="manageRooms('${property._id}')" 
-                            ${approvalStatus !== 'approved' ? 'disabled title="Add rooms after approval"' : ''}>
-                            <i class="bi bi-door-closed"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteProperty('${property._id}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                </div>
+    const approvalStatus = property.status || 'pending';
+    const availabilityStatus = property.availability || 'available';
+    
+    const approvalInfo = statusConfig[approvalStatus] || statusConfig.pending;
+    const availabilityInfo = statusConfig[availabilityStatus] || statusConfig.available;
+    
+    const type = typeConfig[property.propertyType] || typeConfig.apartment;
+    const gender = genderConfig[property.genderPreference] || genderConfig.unisex;
+    const accreditation = accreditationConfig[property.accreditation] || accreditationConfig.self;
+    const imageUrl = property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/400x250/007bff/ffffff?text=Property+Image';
+    
+    // === ADD THIS: Determine rent display based on rentType ===
+    let rentDisplay;
+    if (property.rentType === 'nsfas') {
+        rentDisplay = `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="text-navy mb-0">NSFAS Rates</h6>
+                <small class="text-muted">Contact for details</small>
+            </div>
+            <div class="alert alert-info small p-2 mb-2">
+                <i class="bi bi-award me-1"></i>NSFAS Accredited Accommodation
+            </div>
+        `;
+    } else {
+        rentDisplay = `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="text-navy mb-0">R${property.price || 0}</h6>
+                <small class="text-muted">/month</small>
             </div>
         `;
     }
-
-    // Generate table row for list view
-    function generatePropertyRow(property) {
-        const status = getPropertyStatus(property);
-        const statusInfo = statusConfig[status] || statusConfig.available;
-        const type = typeConfig[property.propertyType] || typeConfig.apartment;
-        const gender = genderConfig[property.genderPreference] || genderConfig.unisex;
-        const accreditation = accreditationConfig[property.accreditation] || accreditationConfig.self;
-        const imageUrl = property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/400x250/007bff/ffffff?text=Property+Image';
-        
-        return `
-            <tr>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <img src="${imageUrl}" class="rounded me-2" width="40" height="40" alt="${property.title}">
-                        <div>
-                            <div class="fw-bold small">${property.title}</div>
-                            <small class="text-muted">${type.text}</small>
-                        </div>
-                    </div>
-                </td>
-                <td class="small">${property.location.city}</td>
-                <td class="small">${type.text}</td>
-                <td class="small">R${property.price || 0}</td>
-                <td>
-                    <span class="badge bg-${statusInfo.class} small">
-                        <i class="${statusInfo.icon} me-1"></i>${statusInfo.text}
+    // === END OF ADDITION ===
+    
+    return `
+        <div class="property-card ${availabilityStatus}">
+            <img src="${imageUrl}" class="property-image" alt="${property.title}">
+            <div class="card-body p-3">
+                <!-- Approval Status (Admin) -->
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge bg-${approvalInfo.class} status-badge">
+                        <i class="${approvalInfo.icon} me-1"></i>${approvalInfo.text}
                     </span>
-                </td>
-                <td>
-                    <span class="badge bg-${gender.class} small">
+                    <span class="badge bg-${gender.class} status-badge">
                         <i class="${gender.icon} me-1"></i>${gender.text}
                     </span>
-                </td>
-                <td>
-                    <span class="badge bg-${accreditation.class} small">
+                </div>
+                
+                <!-- Availability Status (Landlord) -->
+                <div class="mb-2">
+                    <span class="badge bg-${availabilityInfo.class} status-badge">
+                        <i class="${availabilityInfo.icon} me-1"></i>${availabilityInfo.text}
+                    </span>
+
+                    ${property.acceptsShortTerm ? `
+                        <span class="badge bg-warning status-badge short-term-badge">
+                            <i class="bi bi-calendar-range me-1"></i>Short-term Available
+                        </span>
+                    ` : ''}
+
+                    ${property.acceptsShortTerm ? `
+                        <div class="mt-2">
+                            <small class="text-muted">Short-term: </small>
+                            ${property.shortTermPricing === 'fixed' ? `
+                                <strong class="short-term-pricing-text">R${property.shortTermPrice}/day</strong>
+                                <small class="text-muted"> (min ${property.shortTermMinStay} days)</small>
+                            ` : `
+                                <strong class="short-term-pricing-text">Price Negotiable</strong>
+                            `}
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <h6 class="card-title text-navy text-truncate">${property.title}</h6>
+                <p class="text-muted small mb-2 text-truncate">
+                    <i class="bi bi-geo-alt me-1"></i>${property.location.address}, ${property.location.city}
+                </p>
+                <p class="text-muted small mb-2">
+                    <i class="bi bi-door-closed me-1"></i>${property.bedrooms} beds • ${property.bathrooms} baths
+                </p>
+                
+                <div class="mb-2">
+                    <span class="badge bg-${accreditation.class} status-badge">
                         <i class="${accreditation.icon} me-1"></i>${accreditation.text}
                     </span>
-                </td>
-                <td>
-                    <div class="action-buttons d-flex gap-1">
-                        <button class="btn btn-sm btn-outline-primary" onclick="viewPropertyDetails('${property._id}')" title="View Details">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-warning" onclick="editProperty('${property._id}')" title="Edit Property">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-info" onclick="viewPropertyStats('${property._id}')" title="View Stats">
-                            <i class="bi bi-graph-up"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-info" onclick="manageRooms('${property._id}')" title="Manage Rooms">
-                            <i class="bi bi-door-closed"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteProperty('${property._id}')" title="Delete Property">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                    
+                    <!-- === ADD THIS: NSFAS Badge if applicable === -->
+                    ${property.rentType === 'nsfas' ? `
+                        <span class="badge bg-info status-badge">
+                            <i class="bi bi-award me-1"></i>NSFAS Rates
+                        </span>
+                    ` : ''}
+                </div>
+                
+                ${property.adminNotes && approvalStatus === 'rejected' ? `
+                    <div class="alert alert-danger small p-2 mb-2">
+                        <strong>Admin Note:</strong> ${property.adminNotes}
                     </div>
-                </td>
-            </tr>
+                ` : ''}
+                
+                ${approvalStatus === 'pending' ? `
+                    <div class="alert alert-warning small p-2 mb-2">
+                        <i class="bi bi-info-circle me-1"></i>Waiting for admin approval
+                    </div>
+                ` : ''}
+                
+                <div class="mb-2">
+                    ${(property.amenities || []).slice(0, 3).map(amenity => `
+                        <span class="feature-badge d-inline-block">
+                            <i class="bi bi-${getAmenityIcon(amenity)} me-1"></i>${amenity}
+                        </span>
+                    `).join('')}
+                    ${(property.amenities || []).length > 3 ? `<span class="feature-badge">+${(property.amenities || []).length - 3}</span>` : ''}
+                </div>
+                
+                <!-- === REPLACE THIS SECTION with the rentDisplay variable === -->
+                ${rentDisplay}
+                
+                <div class="d-flex justify-content-between small text-muted">
+                    <span>
+                        <i class="bi bi-calendar-check me-1"></i>${property.reviewCount || 0} reviews
+                    </span>
+                    <span>
+                        Added: ${property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'Unknown'}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="card-footer bg-transparent p-2">
+                <div class="action-buttons d-flex justify-content-between">
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewPropertyDetails('${property._id}')">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="editProperty('${property._id}')" 
+                        ${approvalStatus !== 'approved' ? 'disabled title="Edit after approval"' : ''}>
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-info" onclick="viewPropertyStats('${property._id}')">
+                        <i class="bi bi-graph-up"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-info" onclick="manageRooms('${property._id}')" 
+                        ${approvalStatus !== 'approved' ? 'disabled title="Add rooms after approval"' : ''}>
+                        <i class="bi bi-door-closed"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteProperty('${property._id}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Generate table row for list view
+function generatePropertyRow(property) {
+    const status = getPropertyStatus(property);
+    const statusInfo = statusConfig[status] || statusConfig.available;
+    const type = typeConfig[property.propertyType] || typeConfig.apartment;
+    const gender = genderConfig[property.genderPreference] || genderConfig.unisex;
+    const accreditation = accreditationConfig[property.accreditation] || accreditationConfig.self;
+    const imageUrl = property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/400x250/007bff/ffffff?text=Property+Image';
+    
+    // === ADD THIS: Determine price display for table ===
+    let priceDisplay;
+    if (property.rentType === 'nsfas') {
+        priceDisplay = `
+            <span class="badge bg-info small">NSFAS Rates</span>
         `;
+    } else {
+        priceDisplay = `R${property.price || 0}`;
     }
+    // === END OF ADDITION ===
+    
+    return `
+        <tr>
+            <td>
+                <div class="d-flex align-items-center">
+                    <img src="${imageUrl}" class="rounded me-2" width="40" height="40" alt="${property.title}">
+                    <div>
+                        <div class="fw-bold small">${property.title}</div>
+                        <small class="text-muted">${type.text}</small>
+                    </div>
+                </div>
+            </td>
+            <td class="small">${property.location.city}</td>
+            <td class="small">${type.text}</td>
+            
+            <!-- === REPLACE THIS TD with the priceDisplay variable === -->
+            <td class="small">${priceDisplay}</td>
+            
+            <td>
+                <span class="badge bg-${statusInfo.class} small">
+                    <i class="${statusInfo.icon} me-1"></i>${statusInfo.text}
+                </span>
+            </td>
+            <td>
+                <span class="badge bg-${gender.class} small">
+                    <i class="${gender.icon} me-1"></i>${gender.text}
+                </span>
+            </td>
+            <td>
+                <span class="badge bg-${accreditation.class} small">
+                    <i class="${accreditation.icon} me-1"></i>${accreditation.text}
+                </span>
+            </td>
+            <td>
+                <div class="action-buttons d-flex gap-1">
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewPropertyDetails('${property._id}')" title="View Details">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="editProperty('${property._id}')" title="Edit Property">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-info" onclick="viewPropertyStats('${property._id}')" title="View Stats">
+                        <i class="bi bi-graph-up"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-info" onclick="manageRooms('${property._id}')" title="Manage Rooms">
+                        <i class="bi bi-door-closed"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteProperty('${property._id}')" title="Delete Property">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `;
+}
 
     // Filter properties function
     function filterProperties() {
@@ -4179,6 +4417,13 @@ function editProperty(propertyId) {
         document.getElementById('editPropertyDescription').value = property.description;
         document.getElementById('editPropertyGenderPreference').value = property.genderPreference || 'unisex';
         document.getElementById('editPropertyAccreditation').value = property.accreditation || 'self';
+
+        if (property.rentType === 'nsfas') {
+            document.getElementById('editNsfasRent').checked = true;
+        } else {
+            document.getElementById('editFixedRent').checked = true;
+        }
+        toggleEditRentType(); 
 
         document.getElementById('editAcceptsShortTerm').checked = property.acceptsShortTerm || false;
         document.getElementById('editShortTermDescription').value = property.shortTermDescription || '';
