@@ -16,6 +16,12 @@ class ListingsManager {
             rejected: { class: 'danger', text: 'Rejected', icon: 'bi-x-circle' }
         };
 
+        // Add NSFAS configuration
+        this.rentTypeConfig = {
+            fixed: { icon: 'bi-currency-dollar', text: 'Fixed Price', class: 'primary' },
+            nsfas: { icon: 'bi-award', text: 'NSFAS Rates', class: 'warning' }
+        };
+
         // Gender preference configuration
         this.genderConfig = {
             unisex: { icon: 'bi-people', text: 'Unisex', class: 'info' },
@@ -335,41 +341,59 @@ class ListingsManager {
     }
 
     // Get price display based on user type
-    getPriceDisplay(property) {
-        const context = this.getUserContext();
-        const isTenantMode = context.isTenantMode;
-        
-        if (isTenantMode && property.acceptsShortTerm) {
-            if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
-                return {
-                    price: `R${property.shortTermPrice}`,
-                    label: '/day',
-                    dataPrice: property.shortTermPrice
-                };
-            } else {
-                return {
-                    price: 'Negotiable',
-                    label: '/day',
-                    dataPrice: 0
-                };
-            }
+    // Get price display based on user type and NSFAS status
+getPriceDisplay(property) {
+    const context = this.getUserContext();
+    const isTenantMode = context.isTenantMode;
+    const isNsfasProperty = property.rentType === 'nsfas';
+    
+    // Handle NSFAS properties first
+    if (isNsfasProperty) {
+        return {
+            price: 'NSFAS',
+            label: 'Rates',
+            dataPrice: 0
+        };
+    }
+    
+    // Handle tenant short-term pricing
+    if (isTenantMode && property.acceptsShortTerm) {
+        if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
+            return {
+                price: `R${property.shortTermPrice}`,
+                label: '/day',
+                dataPrice: property.shortTermPrice
+            };
         } else {
             return {
-                price: `R${property.price}`,
-                label: '/month',
-                dataPrice: property.price
+                price: 'Negotiable',
+                label: '/day',
+                dataPrice: 0
             };
         }
     }
+    
+    // Default student pricing
+    return {
+        price: `R${property.price}`,
+        label: '/month',
+        dataPrice: property.price
+    };
+}
 
-    // Get property description based on user type
     getPropertyDescription(property) {
         const context = this.getUserContext();
         const isTenantMode = context.isTenantMode;
+        const isNsfasProperty = property.rentType === 'nsfas';
         
         let propertyDescription = property.description;
         
-        if (isTenantMode && property.acceptsShortTerm && property.shortTermDescription) {
+        // NSFAS property description
+        if (isNsfasProperty) {
+            propertyDescription = "NSFAS-accredited accommodation. Contact for specific pricing and eligibility requirements.";
+        }
+        // Tenant short-term description
+        else if (isTenantMode && property.acceptsShortTerm && property.shortTermDescription) {
             propertyDescription = property.shortTermDescription;
         } else if (isTenantMode && property.acceptsShortTerm) {
             propertyDescription = "Short-term accommodation available during student holidays. Perfect for temporary stays.";
@@ -379,337 +403,376 @@ class ListingsManager {
     }
 
     // Create property card
-    createPropertyCard(property) {
-        const context = this.getUserContext();
-        const isTenantMode = context.isTenantMode;
-        
-        // Get price display
-        const priceDisplay = this.getPriceDisplay(property);
-        
-        // Get min stay info for tenants
-        let minStayInfo = '';
-        if (isTenantMode && property.acceptsShortTerm && property.shortTermMinStay > 1) {
-            minStayInfo = `min ${property.shortTermMinStay} days`;
+    // Create property card with NSFAS support
+createPropertyCard(property) {
+    const context = this.getUserContext();
+    const isTenantMode = context.isTenantMode;
+    
+    // Get price display
+    const priceDisplay = this.getPriceDisplay(property);
+    
+    // Get min stay info for tenants
+    let minStayInfo = '';
+    if (isTenantMode && property.acceptsShortTerm && property.shortTermMinStay > 1) {
+        minStayInfo = `min ${property.shortTermMinStay} days`;
+    }
+    
+    // Get property description
+    const propertyDescription = this.getPropertyDescription(property);
+    
+    const accreditation = property.accreditation || 'self';
+    const accreditationInfo = this.accreditationConfig[accreditation] || this.accreditationConfig.self;
+    
+    const genderPreference = property.genderPreference || 'unisex';
+    const genderInfo = this.genderConfig[genderPreference] || this.genderConfig.unisex;
+    
+    // Get status info
+    const propertyStatus = this.getPropertyStatus(property);
+    const statusInfo = this.statusConfig[propertyStatus] || this.statusConfig.available;
+    
+    const adminStatus = this.getAdminStatus(property);
+    const adminInfo = this.statusConfig[adminStatus] || this.statusConfig.approved;
+    
+    const mainImage = property.images && property.images.length > 0 
+        ? property.images[0] 
+        : 'https://via.placeholder.com/400x300/1e3a8a/ffffff?text=Property+Image';
+    
+    const amenities = property.amenities ? property.amenities.slice(0, 4) : [];
+    
+    // Handle NSFAS display
+    const isNsfasProperty = property.rentType === 'nsfas';
+    const nsfasBadge = isNsfasProperty ? `
+        <div class="nsfas-badge-listing">
+            <i class="bi bi-award me-1"></i>NSFAS Rates
+        </div>
+    ` : '';
+    
+    // Button logic
+    let buttonText, buttonClass, isDisabled, buttonTitle = '';
+    
+    if (adminStatus !== 'approved') {
+        buttonText = 'Not Available';
+        buttonClass = 'btn-outline-secondary';
+        isDisabled = true;
+        buttonTitle = 'Property pending approval';
+    } else {
+        switch (propertyStatus) {
+            case 'available':
+                buttonText = isNsfasProperty ? 'Inquire' : 'View Details';
+                buttonClass = isNsfasProperty ? 'btn-nsfas' : 'btn-primary';
+                isDisabled = false;
+                buttonTitle = isNsfasProperty ? 'Inquire about NSFAS rates' : 'View property details';
+                break;
+            case 'occupied':
+                buttonText = 'View Details';
+                buttonClass = 'btn-outline-primary';
+                isDisabled = false;
+                buttonTitle = 'View property details (Currently occupied)';
+                break;
+            case 'maintenance':
+                buttonText = 'Under Maintenance';
+                buttonClass = 'btn-outline-secondary';
+                isDisabled = true;
+                buttonTitle = 'Property under maintenance';
+                break;
+            default:
+                buttonText = 'View Details';
+                buttonClass = 'btn-primary';
+                isDisabled = false;
+                buttonTitle = 'View property details';
         }
-        
-        // Get property description
-        const propertyDescription = this.getPropertyDescription(property);
-        
-        const accreditation = property.accreditation || 'self';
-        const accreditationInfo = this.accreditationConfig[accreditation] || this.accreditationConfig.self;
-        
-        const genderPreference = property.genderPreference || 'unisex';
-        const genderInfo = this.genderConfig[genderPreference] || this.genderConfig.unisex;
-        
-        // Get status info
-        const propertyStatus = this.getPropertyStatus(property);
-        const statusInfo = this.statusConfig[propertyStatus] || this.statusConfig.available;
-        
-        const adminStatus = this.getAdminStatus(property);
-        const adminInfo = this.statusConfig[adminStatus] || this.statusConfig.approved;
-        
-        const mainImage = property.images && property.images.length > 0 
-            ? property.images[0] 
-            : 'https://via.placeholder.com/400x300/1e3a8a/ffffff?text=Property+Image';
-        
-        const amenities = property.amenities ? property.amenities.slice(0, 4) : [];
-        
-        // Button logic
-        let buttonText, buttonClass, isDisabled, buttonTitle = '';
-        
-        if (adminStatus !== 'approved') {
-            buttonText = 'Not Available';
-            buttonClass = 'btn-outline-secondary';
-            isDisabled = true;
-            buttonTitle = 'Property pending approval';
-        } else {
-            switch (propertyStatus) {
-                case 'available':
-                    buttonText = 'View Details';
-                    buttonClass = 'btn-primary';
-                    isDisabled = false;
-                    buttonTitle = 'View property details';
-                    break;
-                case 'occupied':
-                    buttonText = 'View Details';
-                    buttonClass = 'btn-outline-primary';
-                    isDisabled = false;
-                    buttonTitle = 'View property details (Currently occupied)';
-                    break;
-                case 'maintenance':
-                    buttonText = 'Under Maintenance';
-                    buttonClass = 'btn-outline-secondary';
-                    isDisabled = true;
-                    buttonTitle = 'Property under maintenance';
-                    break;
-                default:
-                    buttonText = 'View Details';
-                    buttonClass = 'btn-primary';
-                    isDisabled = false;
-                    buttonTitle = 'View property details';
-            }
-        }
-        
-        return `
-        <div class="col-md-6 col-lg-4 mb-4" 
-             data-price="${priceDisplay.dataPrice}" 
-             data-accreditation="${accreditation}"
-             data-location="${property.location.city.toLowerCase()}"
-             data-status="${propertyStatus}"
-             data-admin-status="${adminStatus}">
-            <div class="card listing-card h-100 ${propertyStatus !== 'available' ? propertyStatus : ''}">
+    }
+    
+    return `
+    <div class="col-md-6 col-lg-4 mb-4" 
+         data-price="${priceDisplay.dataPrice}" 
+         data-accreditation="${accreditation}"
+         data-location="${property.location.city.toLowerCase()}"
+         data-status="${propertyStatus}"
+         data-admin-status="${adminStatus}"
+         data-rent-type="${property.rentType || 'fixed'}">
+        <div class="card listing-card h-100 ${propertyStatus !== 'available' ? propertyStatus : ''} ${isNsfasProperty ? 'nsfas-listing' : ''}">
 
-                <!-- Price Tag -->
-                <div class="price-tag">
-                    <div class="d-flex flex-column align-items-center">
-                        <div class="price-main">${priceDisplay.price}<small>${priceDisplay.label}</small></div>
-                        ${minStayInfo ? `<div class="price-min-stay">${minStayInfo}</div>` : ''}
-                    </div>
-                </div>
-                
-                <!-- Location Badge -->
-                <div class="location-badge" style="top: ${minStayInfo ? '4.2rem' : '3.5rem'};">
-                    <i class="bi bi-geo-alt me-1"></i>${property.location.city}
-                </div>
-                
-                <!-- Status Badge -->
-                <div class="status-badge bg-${statusInfo.class}">
-                    <i class="bi ${statusInfo.icon} me-1"></i>${statusInfo.text}
-                </div>
-                
-                <!-- Admin Approval Badge (only show if not approved) -->
-                ${adminStatus !== 'approved' ? `
-                    <div class="status-badge bg-${adminInfo.class}" style="top: ${minStayInfo ? '6.7rem' : '6rem'};">
-                        <i class="bi ${adminInfo.icon} me-1"></i>${adminInfo.text}
-                    </div>
-                ` : ''}
-                
-                <!-- Property Image -->
-                <img src="${mainImage}" class="card-img-top" alt="${property.title}" 
-                     style="height: 200px; object-fit: cover; width: 100%; cursor: pointer;"
-                     onclick="listingsManager.viewPropertyDetails('${property._id}')">
-                
-                <div class="card-body">
-                    <!-- Property Title -->
-                    <h5 class="card-title text-navy mb-2" 
-                        onclick="listingsManager.viewPropertyDetails('${property._id}')" 
-                        style="cursor: pointer;">
-                        ${property.title}
-                    </h5>
-                    
-                    <!-- Property Description -->
-                    <p class="card-text text-muted small mb-3">
-                        ${propertyDescription.substring(0, 100)}...
-                    </p>
-                    
-                    <!-- Property Details -->
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="text-muted small">
-                            <i class="bi bi-door-closed me-1"></i>${property.bedrooms} beds
-                        </div>
-                        <div class="text-muted small">
-                            <i class="bi bi-droplet me-1"></i>${property.bathrooms} baths
-                        </div>
-                        <div class="text-muted small">
-                            <i class="bi bi-building me-1"></i>${property.propertyType}
-                        </div>
-                    </div>
-                    
-                    <!-- Accreditation & Gender Badges - HIDDEN FOR TENANTS -->
-                    ${!isTenantMode ? `
-                    <div class="d-flex gap-2 mb-3">
-                        <span class="badge bg-${accreditationInfo.class} accreditation-badge">
-                            <i class="bi ${accreditationInfo.icon} me-1"></i>${accreditationInfo.text}
-                        </span>
-                        <span class="badge bg-${genderInfo.class} accreditation-badge">
-                            <i class="bi ${genderInfo.icon} me-1"></i>${genderInfo.text}
-                        </span>
-                    </div>
-                    ` : ''}
-                    
-                    <!-- Amenities -->
-                    ${amenities.length > 0 ? `
-                    <div class="amenities-list mb-3">
-                        ${amenities.map(amenity => `
-                            <li><i class="bi bi-${this.getAmenityIcon(amenity)} me-1"></i>${this.formatAmenity(amenity)}</li>
-                        `).join('')}
-                    </div>
-                    ` : ''}
-                    
-                    <!-- Rating -->
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="rating">
-                            ${this.generateStarRating(property.averageRating || 0)}
-                            <small class="text-muted ms-1">(${property.reviewCount || 0})</small>
-                        </div>
-                        <!-- Button with proper status handling -->
-                        <button class="btn btn-sm ${buttonClass}" 
-                                onclick="listingsManager.viewPropertyDetails('${property._id}')"
-                                ${isDisabled ? 'disabled' : ''}
-                                title="${buttonTitle}">
-                            ${buttonText}
-                        </button>
-                    </div>
+            <!-- Price Tag -->
+            <div class="price-tag">
+                <div class="d-flex flex-column align-items-center">
+                    <div class="price-main">${priceDisplay.price}<small>${priceDisplay.label}</small></div>
+                    ${minStayInfo ? `<div class="price-min-stay">${minStayInfo}</div>` : ''}
                 </div>
             </div>
-        </div>`;
-    }
+            
+            <!-- NSFAS Badge -->
+            ${nsfasBadge}
+            
+            <!-- Location Badge -->
+            <div class="location-badge" style="top: ${minStayInfo ? '4.2rem' : '3.5rem'};">
+                <i class="bi bi-geo-alt me-1"></i>${property.location.city}
+            </div>
+            
+            <!-- Status Badge -->
+            <div class="status-badge bg-${statusInfo.class}">
+                <i class="bi ${statusInfo.icon} me-1"></i>${statusInfo.text}
+            </div>
+            
+            <!-- Admin Approval Badge (only show if not approved) -->
+            ${adminStatus !== 'approved' ? `
+                <div class="status-badge bg-${adminInfo.class}" style="top: ${minStayInfo ? '6.7rem' : '6rem'};">
+                    <i class="bi ${adminInfo.icon} me-1"></i>${adminInfo.text}
+                </div>
+            ` : ''}
+            
+            <!-- Property Image -->
+            <img src="${mainImage}" class="card-img-top" alt="${property.title}" 
+                 style="height: 200px; object-fit: cover; width: 100%; cursor: pointer;"
+                 onclick="listingsManager.viewPropertyDetails('${property._id}')">
+            
+            <div class="card-body">
+                <!-- Property Title -->
+                <h5 class="card-title text-navy mb-2" 
+                    onclick="listingsManager.viewPropertyDetails('${property._id}')" 
+                    style="cursor: pointer;">
+                    ${property.title}
+                </h5>
+                
+                <!-- Property Description -->
+                <p class="card-text text-muted small mb-3">
+                    ${propertyDescription.substring(0, 100)}...
+                </p>
+                
+                <!-- Property Details -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="text-muted small">
+                        <i class="bi bi-door-closed me-1"></i>${property.bedrooms} beds
+                    </div>
+                    <div class="text-muted small">
+                        <i class="bi bi-droplet me-1"></i>${property.bathrooms} baths
+                    </div>
+                    <div class="text-muted small">
+                        <i class="bi bi-building me-1"></i>${property.propertyType}
+                    </div>
+                </div>
+                
+                <!-- Accreditation & Gender Badges - HIDDEN FOR TENANTS -->
+                ${!isTenantMode ? `
+                <div class="d-flex gap-2 mb-3">
+                    <span class="badge bg-${accreditationInfo.class} accreditation-badge">
+                        <i class="bi ${accreditationInfo.icon} me-1"></i>${accreditationInfo.text}
+                    </span>
+                    <span class="badge bg-${genderInfo.class} accreditation-badge">
+                        <i class="bi ${genderInfo.icon} me-1"></i>${genderInfo.text}
+                    </span>
+                </div>
+                ` : ''}
+                
+                <!-- Amenities -->
+                ${amenities.length > 0 ? `
+                <div class="amenities-list mb-3">
+                    ${amenities.map(amenity => `
+                        <li><i class="bi bi-${this.getAmenityIcon(amenity)} me-1"></i>${this.formatAmenity(amenity)}</li>
+                    `).join('')}
+                </div>
+                ` : ''}
+                
+                <!-- Rating -->
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="rating">
+                        ${this.generateStarRating(property.averageRating || 0)}
+                        <small class="text-muted ms-1">(${property.reviewCount || 0})</small>
+                    </div>
+                    <!-- Button with proper status handling -->
+                    <button class="btn btn-sm ${buttonClass}" 
+                            onclick="listingsManager.viewPropertyDetails('${property._id}')"
+                            ${isDisabled ? 'disabled' : ''}
+                            title="${buttonTitle}">
+                        ${buttonText}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
 
     // Apply filters with user type awareness
-    applyFilters() {
-        const context = this.getUserContext();
-        const isTenantMode = context.isTenantMode;
-        
-        const currentMonth = new Date().getMonth() + 1;
-        const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
-        
-        // For tenants outside Nov-Jan, show empty state
-        if (isTenantMode && !isNovemberToJanuary) {
-            this.filteredProperties = [];
-            this.renderProperties();
-            this.updateResultsCount();
-            return;
-        }
-
-        // Get filter values
-        const accFilter = document.getElementById('filterAccreditation').value;
-        const priceFilterRaw = document.getElementById('filterPrice').value;
-        const priceFilter = priceFilterRaw === '' ? null : Number(priceFilterRaw);
-        const locationFilter = (document.getElementById('filterLocation').value || '').trim().toLowerCase();
-        const searchQuery = (document.getElementById('searchBar').value || '').trim().toLowerCase();
-        const availabilityFilter = document.getElementById('filterAvailability') ? document.getElementById('filterAvailability').value : 'all';
-
-        this.currentFilters = {
-            accreditation: accFilter,
-            maxPrice: priceFilter,
-            location: locationFilter,
-            search: searchQuery,
-            availability: availabilityFilter
-        };
-
-        this.filteredProperties = this.properties.filter(property => {
-            // For tenants, add additional safety checks
-            if (isTenantMode) {
-                const acceptsShortTerm = property.acceptsShortTerm === true;
-                const propertyStatus = this.getPropertyStatus(property);
-                const adminStatus = this.getAdminStatus(property);
-                
-                if (!acceptsShortTerm || propertyStatus !== 'available' || adminStatus !== 'approved') {
-                    return false;
-                }
-            }
-
-            const accreditation = property.accreditation || 'self';
-            const location = property.location.city.toLowerCase();
-            const title = property.title.toLowerCase();
-            const description = property.description.toLowerCase();
-            const propertyStatus = this.getPropertyStatus(property);
-            const adminStatus = this.getAdminStatus(property);
-
-            let visible = true;
-
-            // Accreditation filter - skip for tenants
-            if (!isTenantMode && accFilter !== 'all' && accreditation !== accFilter) {
-                visible = false;
-            }
-
-            // Price filter - use appropriate price for tenants vs students
-            if (priceFilter !== null) {
-                let priceToCheck = property.price;
-                if (isTenantMode && property.acceptsShortTerm) {
-                    if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
-                        priceToCheck = property.shortTermPrice;
-                    } else {
-                        // For negotiable properties, show them regardless of price filter
-                        priceToCheck = 0;
-                    }
-                }
-                
-                if (priceToCheck > priceFilter) {
-                    visible = false;
-                }
-            }
-
-            // Location filter
-            if (locationFilter && !location.includes(locationFilter)) {
-                visible = false;
-            }
-
-            // Search filter
-            if (searchQuery && !title.includes(searchQuery) && !description.includes(searchQuery)) {
-                visible = false;
-            }
-
-            // Availability filter - only show approved properties
-            if (adminStatus !== 'approved') {
-                visible = false;
-            } else if (availabilityFilter !== 'all') {
-                if (availabilityFilter === 'available' && propertyStatus !== 'available') {
-                    visible = false;
-                } else if (availabilityFilter === 'occupied' && propertyStatus !== 'occupied') {
-                    visible = false;
-                }
-            }
-
-            return visible;
-        });
-
-        this.applySorting();
+    // Apply filters with user type awareness and NSFAS support
+applyFilters() {
+    const context = this.getUserContext();
+    const isTenantMode = context.isTenantMode;
+    
+    const currentMonth = new Date().getMonth() + 1;
+    const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
+    
+    // For tenants outside Nov-Jan, show empty state
+    if (isTenantMode && !isNovemberToJanuary) {
+        this.filteredProperties = [];
         this.renderProperties();
         this.updateResultsCount();
+        return;
     }
+
+    // Get filter values
+    const accFilter = document.getElementById('filterAccreditation').value;
+    const priceFilterRaw = document.getElementById('filterPrice').value;
+    const priceFilter = priceFilterRaw === '' ? null : Number(priceFilterRaw);
+    const locationFilter = (document.getElementById('filterLocation').value || '').trim().toLowerCase();
+    const searchQuery = (document.getElementById('searchBar').value || '').trim().toLowerCase();
+    const availabilityFilter = document.getElementById('filterAvailability') ? document.getElementById('filterAvailability').value : 'all';
+
+    this.currentFilters = {
+        accreditation: accFilter,
+        maxPrice: priceFilter,
+        location: locationFilter,
+        search: searchQuery,
+        availability: availabilityFilter
+    };
+
+    this.filteredProperties = this.properties.filter(property => {
+        // For tenants, add additional safety checks
+        if (isTenantMode) {
+            const acceptsShortTerm = property.acceptsShortTerm === true;
+            const propertyStatus = this.getPropertyStatus(property);
+            const adminStatus = this.getAdminStatus(property);
+            
+            if (!acceptsShortTerm || propertyStatus !== 'available' || adminStatus !== 'approved') {
+                return false;
+            }
+        }
+
+        const accreditation = property.accreditation || 'self';
+        const location = property.location.city.toLowerCase();
+        const title = property.title.toLowerCase();
+        const description = property.description.toLowerCase();
+        const propertyStatus = this.getPropertyStatus(property);
+        const adminStatus = this.getAdminStatus(property);
+        const isNsfasProperty = property.rentType === 'nsfas';
+
+        let visible = true;
+
+        // Accreditation filter - skip for tenants
+        if (!isTenantMode && accFilter !== 'all' && accreditation !== accFilter) {
+            visible = false;
+        }
+
+        // Price filter - handle NSFAS and tenant pricing
+        if (priceFilter !== null && !isNsfasProperty) {
+            let priceToCheck = property.price;
+            if (isTenantMode && property.acceptsShortTerm) {
+                if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
+                    priceToCheck = property.shortTermPrice;
+                } else {
+                    // For negotiable properties, show them regardless of price filter
+                    priceToCheck = 0;
+                }
+            }
+            
+            if (priceToCheck > priceFilter) {
+                visible = false;
+            }
+        }
+
+        // Location filter
+        if (locationFilter && !location.includes(locationFilter)) {
+            visible = false;
+        }
+
+        // Search filter
+        if (searchQuery && !title.includes(searchQuery) && !description.includes(searchQuery)) {
+            visible = false;
+        }
+
+        // Availability filter - only show approved properties
+        if (adminStatus !== 'approved') {
+            visible = false;
+        } else if (availabilityFilter !== 'all') {
+            if (availabilityFilter === 'available' && propertyStatus !== 'available') {
+                visible = false;
+            } else if (availabilityFilter === 'occupied' && propertyStatus !== 'occupied') {
+                visible = false;
+            }
+        }
+
+        return visible;
+    });
+
+    this.applySorting();
+    this.renderProperties();
+    this.updateResultsCount();
+}
 
     // Apply sorting
-    applySorting() {
-        const sortValue = document.getElementById('sortOptions').value;
+    // Apply sorting with NSFAS support
+applySorting() {
+    const sortValue = document.getElementById('sortOptions').value;
 
-        switch (sortValue) {
-            case 'priceLow':
-                this.filteredProperties.sort((a, b) => {
-                    const statusA = this.getPropertyStatus(a);
-                    const statusB = this.getPropertyStatus(b);
-                    
-                    if (statusA === 'available' && statusB !== 'available') return -1;
-                    if (statusA !== 'available' && statusB === 'available') return 1;
-                    
-                    return a.price - b.price;
-                });
-                break;
-            case 'priceHigh':
-                this.filteredProperties.sort((a, b) => {
-                    const statusA = this.getPropertyStatus(a);
-                    const statusB = this.getPropertyStatus(b);
-                    
-                    if (statusA === 'available' && statusB !== 'available') return -1;
-                    if (statusA !== 'available' && statusB === 'available') return 1;
-                    
-                    return b.price - a.price;
-                });
-                break;
-            case 'default':
-            default:
-                // Sort by availability first, then by rating, then by creation date
-                this.filteredProperties.sort((a, b) => {
-                    const statusA = this.getPropertyStatus(a);
-                    const statusB = this.getPropertyStatus(b);
-                    
-                    // Available properties first
-                    if (statusA === 'available' && statusB !== 'available') return -1;
-                    if (statusA !== 'available' && statusB === 'available') return 1;
-                    
-                    // Then by rating (higher first)
-                    const ratingA = a.averageRating || 0;
-                    const ratingB = b.averageRating || 0;
-                    if (ratingB !== ratingA) return ratingB - ratingA;
-                    
-                    // Then by review count (more reviews first)
-                    const reviewsA = a.reviewCount || 0;
-                    const reviewsB = b.reviewCount || 0;
-                    return reviewsB - reviewsA;
-                });
-                break;
-        }
+    switch (sortValue) {
+        case 'priceLow':
+            this.filteredProperties.sort((a, b) => {
+                const statusA = this.getPropertyStatus(a);
+                const statusB = this.getPropertyStatus(b);
+                
+                // Available properties first
+                if (statusA === 'available' && statusB !== 'available') return -1;
+                if (statusA !== 'available' && statusB === 'available') return 1;
+                
+                // Handle NSFAS properties (always show first in price sorting)
+                const isNsfasA = a.rentType === 'nsfas';
+                const isNsfasB = b.rentType === 'nsfas';
+                
+                if (isNsfasA && !isNsfasB) return -1;
+                if (!isNsfasA && isNsfasB) return 1;
+                
+                // For non-NSFAS properties, sort by price
+                return a.price - b.price;
+            });
+            break;
+        case 'priceHigh':
+            this.filteredProperties.sort((a, b) => {
+                const statusA = this.getPropertyStatus(a);
+                const statusB = this.getPropertyStatus(b);
+                
+                if (statusA === 'available' && statusB !== 'available') return -1;
+                if (statusA !== 'available' && statusB === 'available') return 1;
+                
+                // Handle NSFAS properties
+                const isNsfasA = a.rentType === 'nsfas';
+                const isNsfasB = b.rentType === 'nsfas';
+                
+                if (isNsfasA && !isNsfasB) return -1;
+                if (!isNsfasA && isNsfasB) return 1;
+                
+                return b.price - a.price;
+            });
+            break;
+        case 'default':
+        default:
+            // Sort by availability first, then NSFAS, then by rating, then by creation date
+            this.filteredProperties.sort((a, b) => {
+                const statusA = this.getPropertyStatus(a);
+                const statusB = this.getPropertyStatus(b);
+                
+                // Available properties first
+                if (statusA === 'available' && statusB !== 'available') return -1;
+                if (statusA !== 'available' && statusB === 'available') return 1;
+                
+                // NSFAS properties next
+                const isNsfasA = a.rentType === 'nsfas';
+                const isNsfasB = b.rentType === 'nsfas';
+                
+                if (isNsfasA && !isNsfasB) return -1;
+                if (!isNsfasA && isNsfasB) return 1;
+                
+                // Then by rating (higher first)
+                const ratingA = a.averageRating || 0;
+                const ratingB = b.averageRating || 0;
+                if (ratingB !== ratingA) return ratingB - ratingA;
+                
+                // Then by review count (more reviews first)
+                const reviewsA = a.reviewCount || 0;
+                const reviewsB = b.reviewCount || 0;
+                return reviewsB - reviewsA;
+            });
+            break;
     }
+}
 
     // Render properties
     renderProperties() {
@@ -726,56 +789,74 @@ class ListingsManager {
     }
 
     // Get no results HTML with user type awareness
-    getNoResultsHTML() {
-        const context = this.getUserContext();
-        const isTenantMode = context.isTenantMode;
-        const currentMonth = new Date().getMonth() + 1;
-        const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
-        
-        if (isTenantMode && !isNovemberToJanuary) {
-            return `
-            <div class="col-12 text-center py-5">
-                <i class="bi bi-calendar-x display-1 text-muted"></i>
-                <h3 class="text-navy mt-3">Short-term Accommodation Not Available</h3>
-                <p class="text-muted">Short-term student accommodation is only available during November to January.</p>
-                <p class="text-muted small">This period covers when students are away for holidays. Please check back during these months for available properties.</p>
-                <div class="mt-3">
-                    <small class="text-info">
-                        <i class="bi bi-info-circle me-1"></i>
-                        Current month: ${new Date().toLocaleString('default', { month: 'long' })} (Month ${currentMonth})
-                    </small>
-                </div>
-            </div>`;
-        }
+    // Get no results HTML with user type awareness
+getNoResultsHTML() {
+    const context = this.getUserContext();
+    const isTenantMode = context.isTenantMode;
+    const currentMonth = new Date().getMonth() + 1;
+    const isNovemberToJanuary = currentMonth === 11 || currentMonth === 12 || currentMonth === 1;
+    
+    // Check if we have NSFAS properties but they're filtered out
+    const hasNsfasProperties = this.properties.some(p => p.rentType === 'nsfas');
+    const showingNsfasProperties = this.filteredProperties.some(p => p.rentType === 'nsfas');
+    
+    if (isTenantMode && !isNovemberToJanuary) {
+        return `
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-calendar-x display-1 text-muted"></i>
+            <h3 class="text-navy mt-3">Short-term Accommodation Not Available</h3>
+            <p class="text-muted">Short-term student accommodation is only available during November to January.</p>
+            <p class="text-muted small">This period covers when students are away for holidays. Please check back during these months for available properties.</p>
+            <div class="mt-3">
+                <small class="text-info">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Current month: ${new Date().toLocaleString('default', { month: 'long' })} (Month ${currentMonth})
+                </small>
+            </div>
+        </div>`;
+    }
 
-        // Check if there are no properties available for tenants during season
-        if (isTenantMode && isNovemberToJanuary && this.properties.length === 0) {
-            return `
-            <div class="col-12 text-center py-5">
-                <i class="bi bi-house display-1 text-muted"></i>
-                <h3 class="text-navy mt-3">No Short-term Properties Available</h3>
-                <p class="text-muted">There are currently no properties available for short-term accommodation.</p>
-                <p class="text-muted small">Landlords may not have enabled short-term availability yet. Please check back later.</p>
-                <div class="mt-3">
-                    <small class="text-info">
-                        <i class="bi bi-info-circle me-1"></i>
-                        Available season: November to January (Current: ${new Date().toLocaleString('default', { month: 'long' })})
-                    </small>
-                </div>
-            </div>`;
-        }
-
-        // Regular no results message for students/non-tenants
+    // NSFAS-specific messaging
+    if (hasNsfasProperties && !showingNsfasProperties) {
         return `
         <div class="col-12 text-center py-5">
             <i class="bi bi-search display-1 text-muted"></i>
-            <h3 class="text-navy mt-3">No properties found</h3>
-            <p class="text-muted">Try adjusting your filters or search terms</p>
+            <h3 class="text-navy mt-3">No matching NSFAS properties found</h3>
+            <p class="text-muted">Try adjusting your filters to see NSFAS-accredited accommodations.</p>
             <button class="btn btn-navy" onclick="listingsManager.clearAllFilters()">
                 Clear All Filters
             </button>
         </div>`;
     }
+
+    // Check if there are no properties available for tenants during season
+    if (isTenantMode && isNovemberToJanuary && this.properties.length === 0) {
+        return `
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-house display-1 text-muted"></i>
+            <h3 class="text-navy mt-3">No Short-term Properties Available</h3>
+            <p class="text-muted">There are currently no properties available for short-term accommodation.</p>
+            <p class="text-muted small">Landlords may not have enabled short-term availability yet. Please check back later.</p>
+            <div class="mt-3">
+                <small class="text-info">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Available season: November to January (Current: ${new Date().toLocaleString('default', { month: 'long' })})
+                </small>
+            </div>
+        </div>`;
+    }
+
+    // Regular no results message for students/non-tenants
+    return `
+    <div class="col-12 text-center py-5">
+        <i class="bi bi-search display-1 text-muted"></i>
+        <h3 class="text-navy mt-3">No properties found</h3>
+        <p class="text-muted">Try adjusting your filters or search terms</p>
+        <button class="btn btn-navy" onclick="listingsManager.clearAllFilters()">
+            Clear All Filters
+        </button>
+    </div>`;
+}
 
     // Utility methods (keep your existing ones)
     viewPropertyDetails(propertyId) {

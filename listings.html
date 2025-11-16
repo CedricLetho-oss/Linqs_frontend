@@ -781,6 +781,60 @@
     }
 }
 
+/* NSFAS Listing Styles */
+.nsfas-listing {
+    border-left: 4px solid #ff6b00 !important;
+}
+
+.nsfas-badge-listing {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(255, 107, 0, 0.3);
+}
+
+.btn-nsfas {
+    background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+    border: none;
+    color: white;
+    font-weight: 500;
+}
+
+.btn-nsfas:hover {
+    background: linear-gradient(135deg, #e55a00 0%, #e57c00 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+}
+
+/* Ensure NSFAS price tags stand out */
+.nsfas-listing .price-tag {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border: 1px solid #ffb74d;
+}
+
+.nsfas-listing .price-tag .price-main {
+    color: #ff6b00;
+    font-weight: 700;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .nsfas-badge-listing {
+        top: 0.5rem;
+        right: 0.5rem;
+        padding: 0.3rem 0.6rem;
+        font-size: 0.7rem;
+    }
+}
+
   </style>
 </head>
 <body>
