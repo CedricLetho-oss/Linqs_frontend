@@ -1052,6 +1052,7 @@ updateHeroSection() {
   }
 
   // UPDATED: Role-based price display with proper tenant handling
+// UPDATED: Role-based price display with proper NSFAS handling for students
 getRoleBasedPriceDisplay(property) {
   // For tenants, ALWAYS show short-term pricing if available
   if (this.userRole === 'tenant') {
@@ -1090,7 +1091,15 @@ getRoleBasedPriceDisplay(property) {
     }
   }
   
-  // Default to monthly pricing for students in student mode
+  // FOR STUDENTS IN STUDENT MODE: Show NSFAS Rates for NSFAS properties
+  if (property.rentType === 'nsfas') {
+    return {
+      text: 'NSFAS Rates',
+      className: 'text-nsfas fw-bold'
+    };
+  }
+  
+  // Default to monthly pricing for non-NSFAS properties
   return {
     text: `R${property.price}/month`,
     className: 'text-primary'
@@ -1137,7 +1146,6 @@ getRoleBasedFeatures(property) {
   `;
 }
 
-// UPDATED: Property cards rendering with proper tenant badge display
 renderPropertyCards() {
   const container = document.getElementById('property-cards');
   container.innerHTML = '';
@@ -1151,12 +1159,12 @@ renderPropertyCards() {
     const accreditationText = this.getAccreditationText(property.accreditation);
     const amenitiesCount = property.amenities ? property.amenities.length : 0;
     
-    // Determine if we should show short-term badge
+    // Determine badges to show
     const showShortTermBadge = (this.userRole === 'tenant' || this.currentBookingMode === 'tenant') && property.acceptsShortTerm;
+    const showNsfasBadge = property.rentType === 'nsfas' && (this.userRole !== 'tenant' && this.currentBookingMode !== 'tenant');
     
     col.innerHTML = `
       <div class="comparison-card">
-        <!-- FIXED: Consistent image container -->
         <div class="property-image-container mb-3">
           <img src="${property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/300x200/1e3a8a/ffffff?text=Property+Image'}" 
               alt="${property.title}" class="property-image">
@@ -1167,8 +1175,10 @@ renderPropertyCards() {
         </p>
         <p class="property-price fw-bold ${priceDisplay.className} mb-3">${priceDisplay.text}</p>
         
-        <!-- UPDATED: Short-term badge logic - show for tenants OR tenant mode -->
-        ${showShortTermBadge ? 
+        <!-- UPDATED: Badge logic - NSFAS for students, Short-term for tenants -->
+        ${showNsfasBadge ? 
+          '<span class="badge nsfas-badge mb-2"><i class="bi bi-award me-1"></i>NSFAS Accredited</span>' : 
+          showShortTermBadge ? 
           '<span class="badge bg-success mb-2"><i class="bi bi-calendar-range me-1"></i>Short-term Available</span>' : 
           ''
         }
@@ -1251,6 +1261,7 @@ getCurrentBookingMode() {
 }
 
 // UPDATED: Helper to get property price with tenant priority
+// UPDATED: Get property price for comparison with NSFAS handling
 getPropertyPrice(property) {
   // For tenants, ALWAYS use short-term pricing if available
   if (this.userRole === 'tenant' && property.acceptsShortTerm) {
@@ -1269,11 +1280,17 @@ getPropertyPrice(property) {
     return 999999;
   }
   
-  // Default to monthly pricing
+  // FOR STUDENTS IN STUDENT MODE: NSFAS properties get special pricing (0 for comparison)
+  if (property.rentType === 'nsfas') {
+    return 0; // NSFAS properties are always considered "cheapest" for students
+  }
+  
+  // Default to monthly pricing for non-NSFAS properties
   return property.price;
 }
 
 // UPDATED: Enhanced role-based comparison features with tenant priority
+// UPDATED: Enhanced role-based comparison features with NSFAS support
 getRoleBasedComparisonFeatures() {
   const isTenantView = this.userRole === 'tenant' || this.currentBookingMode === 'tenant';
   
@@ -1292,13 +1309,23 @@ getRoleBasedComparisonFeatures() {
           }
           return `R${prop.price}/month`;
         }
+        
+        // For students: Show NSFAS Rates for NSFAS properties
+        if (prop.rentType === 'nsfas') {
+          return 'NSFAS Rates';
+        }
+        
         return `R${prop.price}/month`;
       },
       type: 'text'
     },
     {
-      name: 'Short-term Available',
-      getValue: (prop) => prop.acceptsShortTerm ? 'Yes' : 'No',
+      name: 'Rent Type',
+      getValue: (prop) => {
+        if (prop.rentType === 'nsfas') return 'NSFAS';
+        if (prop.acceptsShortTerm) return 'Short-term Available';
+        return 'Standard';
+      },
       type: 'text'
     },
     {
@@ -1365,6 +1392,11 @@ getRoleBasedComparisonFeatures() {
         name: 'Accreditation',
         getValue: (prop) => this.getAccreditationText(prop.accreditation),
         type: 'text'
+      },
+      {
+        name: 'Funding Type',
+        getValue: (prop) => prop.rentType === 'nsfas' ? 'NSFAS' : 'Self-paying',
+        type: 'text'
       }
     );
   }
@@ -1377,8 +1409,6 @@ getRoleBasedComparisonFeatures() {
 
   return baseFeatures;
 }
-
-
 
   getSafeNumber(value) {
     return value !== undefined && value !== null ? value : 'N/A';
@@ -1605,35 +1635,48 @@ detectBookingModeFromURL() {
   }
 
   // UPDATED: Get cheapest property with booking mode support
-  getCheapestProperty() {
-    if (this.currentBookingMode === 'tenant') {
-      // For tenants, consider short-term pricing if available and fixed
-      const propertiesWithFixedShortTerm = this.selectedProperties.filter(p => 
-        p.acceptsShortTerm && p.shortTermPricing === 'fixed' && p.shortTermPrice > 0
-      );
-      
-      if (propertiesWithFixedShortTerm.length > 0) {
-        return propertiesWithFixedShortTerm.reduce((prev, current) => 
-          prev.shortTermPrice < current.shortTermPrice ? prev : current
-        );
-      }
-    }
-    
-    // Default to monthly pricing for students or if no fixed short-term pricing available
-    // Filter out properties with negotiable pricing for price comparison
-    const propertiesWithMonthlyPricing = this.selectedProperties.filter(p => 
-      !(this.currentBookingMode === 'tenant' && p.acceptsShortTerm && p.shortTermPricing === 'negotiable')
+  // UPDATED: Get cheapest property with NSFAS priority for students
+getCheapestProperty() {
+  // For tenants, consider short-term pricing if available and fixed
+  if (this.currentBookingMode === 'tenant' || this.userRole === 'tenant') {
+    const propertiesWithFixedShortTerm = this.selectedProperties.filter(p => 
+      p.acceptsShortTerm && p.shortTermPricing === 'fixed' && p.shortTermPrice > 0
     );
     
-    if (propertiesWithMonthlyPricing.length > 0) {
-      return propertiesWithMonthlyPricing.reduce((prev, current) => 
-        prev.price < current.price ? prev : current
+    if (propertiesWithFixedShortTerm.length > 0) {
+      return propertiesWithFixedShortTerm.reduce((prev, current) => 
+        prev.shortTermPrice < current.shortTermPrice ? prev : current
       );
     }
-    
-    // Fallback: return first property if all are negotiable
-    return this.selectedProperties[0];
   }
+  
+  // FOR STUDENTS: NSFAS properties are always considered cheapest
+  const nsfasProperties = this.selectedProperties.filter(p => p.rentType === 'nsfas');
+  if (nsfasProperties.length > 0) {
+    // If multiple NSFAS properties, choose the one with most amenities
+    return nsfasProperties.reduce((prev, current) => {
+      const prevAmenities = prev.amenities ? prev.amenities.length : 0;
+      const currentAmenities = current.amenities ? current.amenities.length : 0;
+      return currentAmenities > prevAmenities ? current : prev;
+    });
+  }
+  
+  // Default to monthly pricing for non-NSFAS properties
+  // Filter out properties with negotiable pricing for price comparison
+  const propertiesWithMonthlyPricing = this.selectedProperties.filter(p => 
+    !((this.currentBookingMode === 'tenant' || this.userRole === 'tenant') && 
+      p.acceptsShortTerm && p.shortTermPricing === 'negotiable')
+  );
+  
+  if (propertiesWithMonthlyPricing.length > 0) {
+    return propertiesWithMonthlyPricing.reduce((prev, current) => 
+      prev.price < current.price ? prev : current
+    );
+  }
+  
+  // Fallback: return first property if all are negotiable
+  return this.selectedProperties[0];
+}
 
   // UPDATED: Enhanced role-based insights with booking mode support
   generateRoleBasedInsights(cheapest, mostAmenities, mostBedrooms, accreditedProperties, shortTermProperties, negotiableProperties, fixedPriceProperties) {
@@ -1736,9 +1779,29 @@ detectBookingModeFromURL() {
   }
 
   // UPDATED: Role-based recommendation generation with booking mode support
-  generateRoleBasedRecommendation(cheapest, mostAmenities, hasSignificantPriceDifference, accreditedProperties, shortTermProperties, negotiableProperties, hasNegotiablePrices) {
-    let recommendation = '';
+  // UPDATED: Enhanced role-based recommendation generation with NSFAS priority
+generateRoleBasedRecommendation(cheapest, mostAmenities, hasSignificantPriceDifference, accreditedProperties, shortTermProperties, negotiableProperties, hasNegotiablePrices) {
+  let recommendation = '';
+  
+  const nsfasProperties = this.selectedProperties.filter(p => p.rentType === 'nsfas');
+  const hasNsfasProperties = nsfasProperties.length > 0;
+  
+  // NSFAS properties get highest priority for students
+  if (hasNsfasProperties && (this.userRole !== 'tenant' && this.currentBookingMode !== 'tenant')) {
+    if (nsfasProperties.length === 1) {
+      recommendation += `<strong>${nsfasProperties[0].title}</strong> is NSFAS accredited, making it the top choice for students with NSFAS funding. `;
+    } else {
+      recommendation += `Multiple NSFAS accredited properties available. <strong>${nsfasProperties.map(p => p.title).join('</strong> and <strong>')}</strong> are excellent options for NSFAS students. `;
+    }
     
+    // If cheapest is also NSFAS, highlight the value
+    if (nsfasProperties.includes(cheapest)) {
+      recommendation += `It also offers the best value among NSFAS options.`;
+    } else {
+      recommendation += `Consider <strong>${cheapest.title}</strong> for the most affordable option.`;
+    }
+  } else {
+    // Standard recommendation logic for non-NSFAS comparisons
     if (hasSignificantPriceDifference) {
       recommendation += `There's a significant price difference between the properties. `;
     }
@@ -1750,19 +1813,20 @@ detectBookingModeFromURL() {
     } else {
       recommendation += `<strong>${cheapest.title}</strong> offers the best value at ${this.getRoleBasedPriceDisplay(cheapest).text}, while <strong>${mostAmenities.title}</strong> provides the most comprehensive amenities.`;
     }
-
-    // Role-specific recommendations based on booking mode
-    if (this.currentBookingMode !== 'tenant' && accreditedProperties.length > 0) {
-      recommendation += ` Consider ${accreditedProperties.map(p => p.title).join(', ')} for university-accredited options that may qualify for bursary funding.`;
-    } else if (this.currentBookingMode === 'tenant' && shortTermProperties.length > 0) {
-      recommendation += ` ${shortTermProperties.length} properties offer flexible short-term stays, perfect for temporary accommodation needs.`;
-      if (hasNegotiablePrices) {
-        recommendation += ` Don't forget to negotiate rates for the best deal!`;
-      }
-    }
-
-    return recommendation;
   }
+
+  // Role-specific recommendations
+  if (this.currentBookingMode !== 'tenant' && accreditedProperties.length > 0 && !hasNsfasProperties) {
+    recommendation += ` Consider ${accreditedProperties.map(p => p.title).join(', ')} for university-accredited options that may qualify for bursary funding.`;
+  } else if (this.currentBookingMode === 'tenant' && shortTermProperties.length > 0) {
+    recommendation += ` ${shortTermProperties.length} properties offer flexible short-term stays, perfect for temporary accommodation needs.`;
+    if (hasNegotiablePrices) {
+      recommendation += ` Don't forget to negotiate rates for the best deal!`;
+    }
+  }
+
+  return recommendation;
+}
 
   // UPDATED: Enhanced role-based summary with booking mode support
   generateRoleBasedSummary(recommendation, priceRangeText, unisexProperties, maleOnlyProperties, femaleOnlyProperties, accreditedProperties, shortTermProperties, negotiableProperties, fixedPriceProperties, cheapest) {
