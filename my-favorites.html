@@ -2240,45 +2240,7 @@ async performFavoriteDeletion(favoriteId, deleteBtn, originalText) {
     }
 }
 
-    // Replace the existing compareFavorites method with this updated version
-// UPDATED: Compare favorites with NSFAS validation
-compareFavorites() {
-    if (this.favorites.length < 2) {
-        this.showToast('Please add at least 2 properties to compare.', 'warning');
-        return;
-    }
-
-    // Get current user role and booking mode
-    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-    const userRole = currentUser.role || 'student';
-    const currentBookingMode = this.getCurrentBookingMode();
-    
-    console.log(`Compare initiated: ${userRole} in ${currentBookingMode} mode`);
-
-    // Check if we have enough available properties for the current mode
-    const availableProperties = this.getAvailablePropertiesForComparison(currentBookingMode);
-    
-    if (availableProperties.length < 2) {
-        if (currentBookingMode === 'tenant') {
-            this.showToast('You need at least 2 properties that accept short-term stays or NSFAS rates to compare. Switch to student mode or add more eligible properties to favorites.', 'warning');
-        } else {
-            this.showToast('Please add at least 2 properties to favorites to compare.', 'warning');
-        }
-        return;
-    }
-
-    if (this.favorites.length === 2) {
-        const favoriteIds = this.favorites.map(f => f.property._id);
-        const queryString = favoriteIds.map(id => `id=${id}`).join('&');
-        // Pass booking mode to compare page
-        window.location.href = `compare.html?${queryString}&mode=${currentBookingMode}`;
-    } else {
-        this.showSelectionModal(currentBookingMode);
-    }
-}
-
-// Update the showSelectionModal method to accept booking mode
-// UPDATED: Show selection modal with proper pricing display
+  // CORRECTED: Show selection modal with proper pricing display - NSFAS excluded in tenant mode
 showSelectionModal(bookingMode) {
     // Create a modal for selecting properties to compare
     const modalHtml = `
@@ -2298,7 +2260,7 @@ showSelectionModal(bookingMode) {
                             <div>
                                 <strong>Comparison Mode:</strong> ${bookingMode === 'tenant' ? 'Short-term stays (daily pricing)' : 'Student accommodation (monthly pricing)'}
                                 ${bookingMode === 'tenant' ? 
-                                    '<br><small>Showing properties that accept short-term bookings with daily rates</small>' : 
+                                    '<br><small>Showing only properties that accept short-term bookings with daily rates</small>' : 
                                     '<br><small>Showing monthly rental prices for student accommodation</small>'
                                 }
                             </div>
@@ -2310,13 +2272,14 @@ showSelectionModal(bookingMode) {
                                 const isShortTermEligible = bookingMode === 'tenant' && property.acceptsShortTerm;
                                 const isNsfasProperty = property.rentType === 'nsfas';
                                 
-                                // DETERMINE PRICING DISPLAY
+                                // DETERMINE PRICING DISPLAY - FIXED: NSFAS should NOT be selectable in tenant mode
                                 let priceDisplay, priceBadge, isSelectable = true;
                                 
                                 if (isNsfasProperty) {
                                     priceDisplay = 'NSFAS Rates';
                                     priceBadge = '<span class="badge nsfas-badge ms-2"><i class="bi bi-award me-1"></i>NSFAS</span>';
-                                    isSelectable = true; // NSFAS properties are always selectable
+                                    // FIX: NSFAS properties are NOT selectable in tenant mode
+                                    isSelectable = bookingMode !== 'tenant';
                                 } else if (bookingMode === 'tenant' && isShortTermEligible) {
                                     if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
                                         priceDisplay = `R${property.shortTermPrice}/day`;
@@ -2324,6 +2287,7 @@ showSelectionModal(bookingMode) {
                                         priceDisplay = 'Price negotiable';
                                     }
                                     priceBadge = '<span class="badge bg-success ms-2"><i class="bi bi-calendar-range me-1"></i>Short-term</span>';
+                                    isSelectable = true;
                                 } else {
                                     priceDisplay = `R${property.price}/month`;
                                     priceBadge = bookingMode === 'tenant' ? 
@@ -2361,8 +2325,11 @@ showSelectionModal(bookingMode) {
                                                         </div>
                                                         ${bookingMode === 'tenant' && !isShortTermEligible && !isNsfasProperty ? 
                                                             '<small class="text-danger d-block mt-1"><i class="bi bi-exclamation-triangle me-1"></i>Not available for short-term</small>' : ''}
-                                                        ${isNsfasProperty ? 
-                                                            '<small class="text-nsfas d-block mt-1"><i class="bi bi-info-circle me-1"></i>NSFAS accredited - contact for rates</small>' : ''}
+                                                        ${isNsfasProperty && bookingMode === 'tenant' ? 
+                                                            '<small class="text-warning d-block mt-1"><i class="bi bi-info-circle me-1"></i>NSFAS properties not available for short-term stays</small>' : 
+                                                            (isNsfasProperty ? 
+                                                                '<small class="text-nsfas d-block mt-1"><i class="bi bi-info-circle me-1"></i>NSFAS accredited - contact for rates</small>' : '')
+                                                        }
                                                     </div>
                                                 </div>
                                             </label>
@@ -2374,7 +2341,7 @@ showSelectionModal(bookingMode) {
                         <div class="mt-3">
                             <small class="text-muted" id="selection-count">Selected: 0/4 properties</small>
                             ${bookingMode === 'tenant' ? 
-                                '<div class="mt-2"><small class="text-info"><i class="bi bi-lightbulb me-1"></i>Properties accepting short-term stays and NSFAS properties are selectable</small></div>' : 
+                                '<div class="mt-2"><small class="text-info"><i class="bi bi-lightbulb me-1"></i>Only properties accepting short-term stays are selectable</small></div>' : 
                                 '<div class="mt-2"><small class="text-info"><i class="bi bi-lightbulb me-1"></i>All properties are selectable in student mode</small></div>'
                             }
                         </div>
@@ -2446,14 +2413,51 @@ showSelectionModal(bookingMode) {
     });
 }
 
-// Add this helper method to check available properties for comparison
+// CORRECTED: Check available properties for comparison - NSFAS excluded in tenant mode
 getAvailablePropertiesForComparison(bookingMode) {
     if (bookingMode === 'tenant') {
         return this.favorites.filter(favorite => 
             favorite.property && favorite.property.acceptsShortTerm
+            // REMOVED: NSFAS properties from tenant mode comparison
         );
     }
     return this.favorites; // All properties available for student mode
+}
+
+// CORRECTED: Compare favorites with NSFAS validation - updated message
+compareFavorites() {
+    if (this.favorites.length < 2) {
+        this.showToast('Please add at least 2 properties to compare.', 'warning');
+        return;
+    }
+
+    // Get current user role and booking mode
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const userRole = currentUser.role || 'student';
+    const currentBookingMode = this.getCurrentBookingMode();
+    
+    console.log(`Compare initiated: ${userRole} in ${currentBookingMode} mode`);
+
+    // Check if we have enough available properties for the current mode
+    const availableProperties = this.getAvailablePropertiesForComparison(currentBookingMode);
+    
+    if (availableProperties.length < 2) {
+        if (currentBookingMode === 'tenant') {
+            this.showToast('You need at least 2 properties that accept short-term stays to compare. Switch to student mode or add more short-term properties to favorites.', 'warning');
+        } else {
+            this.showToast('Please add at least 2 properties to favorites to compare.', 'warning');
+        }
+        return;
+    }
+
+    if (this.favorites.length === 2) {
+        const favoriteIds = this.favorites.map(f => f.property._id);
+        const queryString = favoriteIds.map(id => `id=${id}`).join('&');
+        // Pass booking mode to compare page
+        window.location.href = `compare.html?${queryString}&mode=${currentBookingMode}`;
+    } else {
+        this.showSelectionModal(currentBookingMode);
+    }
 }
 
     showLoading() {
