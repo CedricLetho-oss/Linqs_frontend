@@ -1780,6 +1780,7 @@ getCurrentBookingMode() {
 
 // UPDATED: Set property details based on user role AND booking mode
 // UPDATED: Set property details based on user role AND booking mode
+// UPDATED: Set property details based on user role AND booking mode
 setPropertyDetails(card, property, userRole, favorite) {
     const imageContainer = card.querySelector('.image-container');
     const img = card.querySelector('.favorite-image');
@@ -1803,8 +1804,39 @@ setPropertyDetails(card, property, userRole, favorite) {
     // ROLE-BASED PRICING DISPLAY WITH BOOKING MODE SUPPORT
     const priceElement = card.querySelector('.property-price');
     
-    // CHECK FOR NSFAS PRICING FIRST
-    if (property.rentType === 'nsfas') {
+    // CHECK FOR TENANT MODE FIRST (shows short-term pricing for all properties)
+    if (userRole === 'tenant' || currentBookingMode === 'tenant') {
+        // TENANT MODE: Show short-term pricing if available, otherwise show as unavailable
+        if (property.acceptsShortTerm) {
+            if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
+                priceElement.textContent = `R${property.shortTermPrice}/day`;
+                priceElement.className = 'property-price fw-bold text-success mb-3';
+                
+                // Add minimum stay info
+                const minStayInfo = document.createElement('small');
+                minStayInfo.className = 'text-muted d-block';
+                minStayInfo.textContent = `Minimum ${property.shortTermMinStay || 1} days`;
+                priceElement.parentNode.appendChild(minStayInfo);
+            } else {
+                priceElement.textContent = 'Price negotiable (short-term)';
+                priceElement.className = 'property-price fw-bold text-success mb-3';
+            }
+            
+            // Add short-term badge - combine with NSFAS if applicable
+            const shortTermBadge = document.createElement('span');
+            shortTermBadge.className = property.rentType === 'nsfas' ? 'badge nsfas-badge ms-2' : 'badge bg-success ms-2';
+            shortTermBadge.innerHTML = property.rentType === 'nsfas' ? 
+                '<i class="bi bi-award me-1"></i>NSFAS + Short-term' : 
+                '<i class="bi bi-calendar-range me-1"></i>Short-term';
+            card.querySelector('.property-title').parentNode.appendChild(shortTermBadge);
+        } else {
+            // Property doesn't accept short-term stays
+            priceElement.textContent = 'Not available for short-term';
+            priceElement.className = 'property-price fw-bold text-secondary mb-3';
+        }
+    }
+    // STUDENT MODE: Show appropriate pricing
+    else if (property.rentType === 'nsfas') {
         priceElement.textContent = 'NSFAS Rates';
         priceElement.className = 'property-price fw-bold text-nsfas mb-3';
         
@@ -1814,34 +1846,12 @@ setPropertyDetails(card, property, userRole, favorite) {
         nsfasBadge.innerHTML = '<i class="bi bi-award me-1"></i>NSFAS';
         card.querySelector('.property-title').parentNode.appendChild(nsfasBadge);
         
-    } 
-    // FIX: Show short-term pricing when in tenant mode OR when property accepts short-term and user is tenant role
-    else if ((userRole === 'tenant' || currentBookingMode === 'tenant') && property.acceptsShortTerm) {
-        if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
-            priceElement.textContent = `R${property.shortTermPrice}/day`;
-            priceElement.className = 'property-price fw-bold text-success mb-3';
-            
-            // Add minimum stay info
-            const minStayInfo = document.createElement('small');
-            minStayInfo.className = 'text-muted d-block';
-            minStayInfo.textContent = `Minimum ${property.shortTermMinStay || 1} days`;
-            priceElement.parentNode.appendChild(minStayInfo);
-        } else {
-            priceElement.textContent = 'Price negotiable (short-term)';
-            priceElement.className = 'property-price fw-bold text-success mb-3';
-        }
-        
-        // Add short-term badge with green color
-        const shortTermBadge = document.createElement('span');
-        shortTermBadge.className = 'badge bg-success ms-2';
-        shortTermBadge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term';
-        card.querySelector('.property-title').parentNode.appendChild(shortTermBadge);
     } else {
-        // Student pricing (original behavior) - monthly pricing
+        // Regular student pricing
         priceElement.textContent = `R${property.price}/month`;
         priceElement.className = 'property-price fw-bold text-primary mb-3';
         
-        // If property accepts short-term but user is in student mode, show both options
+        // If property accepts short-term, show info
         if (property.acceptsShortTerm) {
             const shortTermInfo = document.createElement('small');
             shortTermInfo.className = 'text-success d-block';
@@ -1866,7 +1876,7 @@ setPropertyDetails(card, property, userRole, favorite) {
             <small class="text-muted">
                 <i class="bi bi-door-closed me-1"></i>${property.bedrooms || 'N/A'} beds • 
                 <i class="bi bi-badge-wc me-1"></i>${property.bathrooms || 'N/A'} baths •
-                <i class="bi bi-calendar me-1"></i>Short-term available
+                <i class="bi bi-calendar me-1"></i>${property.acceptsShortTerm ? 'Short-term available' : 'Long-term only'}
             </small>
         `;
     } else {
@@ -2241,6 +2251,7 @@ async performFavoriteDeletion(favoriteId, deleteBtn, originalText) {
 }
 
   // CORRECTED: Show selection modal with proper pricing display - NSFAS excluded in tenant mode
+// CORRECTED: Show selection modal with proper pricing display - NSFAS shows short-term pricing in tenant mode
 showSelectionModal(bookingMode) {
     // Create a modal for selecting properties to compare
     const modalHtml = `
@@ -2260,7 +2271,7 @@ showSelectionModal(bookingMode) {
                             <div>
                                 <strong>Comparison Mode:</strong> ${bookingMode === 'tenant' ? 'Short-term stays (daily pricing)' : 'Student accommodation (monthly pricing)'}
                                 ${bookingMode === 'tenant' ? 
-                                    '<br><small>Showing only properties that accept short-term bookings with daily rates</small>' : 
+                                    '<br><small>Showing properties that accept short-term bookings with daily rates</small>' : 
                                     '<br><small>Showing monthly rental prices for student accommodation</small>'
                                 }
                             </div>
@@ -2269,31 +2280,44 @@ showSelectionModal(bookingMode) {
                         <div class="row" id="compare-selection-container">
                             ${this.favorites.map((favorite, index) => {
                                 const property = favorite.property;
-                                const isShortTermEligible = bookingMode === 'tenant' && property.acceptsShortTerm;
                                 const isNsfasProperty = property.rentType === 'nsfas';
+                                const isShortTermEligible = property.acceptsShortTerm;
                                 
-                                // DETERMINE PRICING DISPLAY - FIXED: NSFAS should NOT be selectable in tenant mode
+                                // DETERMINE PRICING DISPLAY - FIXED: NSFAS properties show short-term pricing in tenant mode
                                 let priceDisplay, priceBadge, isSelectable = true;
                                 
-                                if (isNsfasProperty) {
-                                    priceDisplay = 'NSFAS Rates';
-                                    priceBadge = '<span class="badge nsfas-badge ms-2"><i class="bi bi-award me-1"></i>NSFAS</span>';
-                                    // FIX: NSFAS properties are NOT selectable in tenant mode
-                                    isSelectable = bookingMode !== 'tenant';
-                                } else if (bookingMode === 'tenant' && isShortTermEligible) {
-                                    if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
-                                        priceDisplay = `R${property.shortTermPrice}/day`;
+                                if (bookingMode === 'tenant') {
+                                    // TENANT MODE: Show short-term pricing for all properties that accept short-term
+                                    if (isShortTermEligible) {
+                                        if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
+                                            priceDisplay = `R${property.shortTermPrice}/day`;
+                                        } else {
+                                            priceDisplay = 'Price negotiable';
+                                        }
+                                        priceBadge = '<span class="badge bg-success ms-2"><i class="bi bi-calendar-range me-1"></i>Short-term</span>';
+                                        isSelectable = true;
                                     } else {
-                                        priceDisplay = 'Price negotiable';
+                                        priceDisplay = `R${property.price}/month`;
+                                        priceBadge = '<span class="badge bg-secondary ms-2"><i class="bi bi-calendar-x me-1"></i>Long-term only</span>';
+                                        isSelectable = false;
                                     }
-                                    priceBadge = '<span class="badge bg-success ms-2"><i class="bi bi-calendar-range me-1"></i>Short-term</span>';
-                                    isSelectable = true;
+                                    
+                                    // Add NSFAS badge if applicable (but still show short-term pricing)
+                                    if (isNsfasProperty) {
+                                        priceBadge = '<span class="badge nsfas-badge ms-2"><i class="bi bi-award me-1"></i>NSFAS + Short-term</span>';
+                                    }
                                 } else {
-                                    priceDisplay = `R${property.price}/month`;
-                                    priceBadge = bookingMode === 'tenant' ? 
-                                        '<span class="badge bg-secondary ms-2"><i class="bi bi-calendar-x me-1"></i>Long-term only</span>' : 
-                                        '';
-                                    isSelectable = bookingMode !== 'tenant'; // Only selectable if not in tenant mode
+                                    // STUDENT MODE: Show appropriate pricing based on property type
+                                    if (isNsfasProperty) {
+                                        priceDisplay = 'NSFAS Rates';
+                                        priceBadge = '<span class="badge nsfas-badge ms-2"><i class="bi bi-award me-1"></i>NSFAS</span>';
+                                    } else {
+                                        priceDisplay = `R${property.price}/month`;
+                                        priceBadge = isShortTermEligible ? 
+                                            '<span class="badge bg-success ms-2"><i class="bi bi-calendar-range me-1"></i>Short-term available</span>' : 
+                                            '';
+                                    }
+                                    isSelectable = true;
                                 }
                                 
                                 return `
@@ -2313,22 +2337,25 @@ showSelectionModal(bookingMode) {
                                                         <h6 class="mb-1 d-flex align-items-center">
                                                             ${property.title}
                                                             ${isNsfasProperty ? '<span class="badge nsfas-badge ms-2"><i class="bi bi-award me-1"></i>NSFAS</span>' : ''}
-                                                            ${isShortTermEligible ? '<span class="badge bg-success ms-2"><i class="bi bi-calendar-range me-1"></i>Short-term</span>' : ''}
-                                                            ${bookingMode === 'tenant' && !isShortTermEligible && !isNsfasProperty ? '<span class="badge bg-secondary ms-2"><i class="bi bi-calendar-x me-1"></i>Long-term only</span>' : ''}
+                                                            ${isShortTermEligible && bookingMode === 'tenant' ? '<span class="badge bg-success ms-2"><i class="bi bi-calendar-range me-1"></i>Short-term</span>' : ''}
+                                                            ${!isShortTermEligible && bookingMode === 'tenant' ? '<span class="badge bg-secondary ms-2"><i class="bi bi-calendar-x me-1"></i>Long-term only</span>' : ''}
                                                         </h6>
                                                         <div class="d-flex justify-content-between align-items-center">
-                                                            <small class="${isNsfasProperty ? 'text-nsfas fw-bold' : 'text-muted'}">${priceDisplay}</small>
+                                                            <small class="${isNsfasProperty && bookingMode !== 'tenant' ? 'text-nsfas fw-bold' : 'text-muted'}">${priceDisplay}</small>
                                                             <small class="text-muted">
                                                                 <i class="bi bi-door-closed me-1"></i>${property.bedrooms || 'N/A'} • 
                                                                 <i class="bi bi-badge-wc me-1"></i>${property.bathrooms || 'N/A'}
                                                             </small>
                                                         </div>
-                                                        ${bookingMode === 'tenant' && !isShortTermEligible && !isNsfasProperty ? 
+                                                        ${!isShortTermEligible && bookingMode === 'tenant' ? 
                                                             '<small class="text-danger d-block mt-1"><i class="bi bi-exclamation-triangle me-1"></i>Not available for short-term</small>' : ''}
-                                                        ${isNsfasProperty && bookingMode === 'tenant' ? 
-                                                            '<small class="text-warning d-block mt-1"><i class="bi bi-info-circle me-1"></i>NSFAS properties not available for short-term stays</small>' : 
-                                                            (isNsfasProperty ? 
+                                                        ${isNsfasProperty && bookingMode === 'tenant' && isShortTermEligible ? 
+                                                            '<small class="text-info d-block mt-1"><i class="bi bi-info-circle me-1"></i>Also offers NSFAS rates for students</small>' : 
+                                                            (isNsfasProperty && bookingMode !== 'tenant' ? 
                                                                 '<small class="text-nsfas d-block mt-1"><i class="bi bi-info-circle me-1"></i>NSFAS accredited - contact for rates</small>' : '')
+                                                        }
+                                                        ${isShortTermEligible && property.shortTermMinStay && bookingMode === 'tenant' ? 
+                                                            `<small class="text-muted d-block mt-1"><i class="bi bi-calendar-check me-1"></i>Min. stay: ${property.shortTermMinStay} days</small>` : ''
                                                         }
                                                     </div>
                                                 </div>
