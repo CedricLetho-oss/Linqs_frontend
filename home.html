@@ -1005,6 +1005,11 @@
                 rejected: { class: 'danger', text: 'Rejected', icon: 'bi-x-circle' }
             };
 
+            this.rentTypeConfig = {
+                fixed: { icon: 'bi-currency-dollar', text: 'Fixed Price', class: 'primary' },
+                nsfas: { icon: 'bi-award', text: 'NSFAS Rates', class: 'warning' }
+            };
+
             // Gender preference configuration
             this.genderConfig = {
                 unisex: { icon: 'bi-people', text: 'Unisex', class: 'info' },
@@ -1127,47 +1132,56 @@
         }
 
         // Select featured properties based on user mode - UPDATED
-        selectFeaturedProperties(properties) {
-            const context = this.getUserContext();
-            const isTenantMode = context.isTenantMode;
-            
-            console.log('Selecting featured properties for mode:', isTenantMode ? 'TENANT' : 'STUDENT');
-            
-            // Filter properties based on user mode
-            let availableProperties;
-            if (isTenantMode) {
-                availableProperties = this.filterPropertiesForTenants(properties);
-                console.log('Tenant mode - available properties:', availableProperties.length);
-            } else {
-                // For students, filter only available and approved properties
-                availableProperties = properties.filter(property => {
-                    const propertyStatus = this.getPropertyStatus(property);
-                    const adminStatus = this.getAdminStatus(property);
-                    return propertyStatus === 'available' && adminStatus === 'approved';
-                });
-                console.log('Student mode - available properties:', availableProperties.length);
-            }
+        // Select featured properties based on user mode - UPDATED with NSFAS support
+selectFeaturedProperties(properties) {
+    const context = this.getUserContext();
+    const isTenantMode = context.isTenantMode;
+    
+    console.log('Selecting featured properties for mode:', isTenantMode ? 'TENANT' : 'STUDENT');
+    
+    // Filter properties based on user mode
+    let availableProperties;
+    if (isTenantMode) {
+        availableProperties = this.filterPropertiesForTenants(properties);
+        console.log('Tenant mode - available properties:', availableProperties.length);
+    } else {
+        // For students, filter only available and approved properties
+        // Include both fixed price and NSFAS properties
+        availableProperties = properties.filter(property => {
+            const propertyStatus = this.getPropertyStatus(property);
+            const adminStatus = this.getAdminStatus(property);
+            return propertyStatus === 'available' && adminStatus === 'approved';
+        });
+        console.log('Student mode - available properties:', availableProperties.length);
+        
+        // Log NSFAS properties for debugging
+        const nsfasProperties = availableProperties.filter(p => p.rentType === 'nsfas');
+        console.log('NSFAS properties found:', nsfasProperties.length);
+        nsfasProperties.forEach(p => {
+            console.log('NSFAS Property:', p.title, 'Rent Type:', p.rentType);
+        });
+    }
 
-            if (availableProperties.length === 0) {
-                return [];
-            }
+    if (availableProperties.length === 0) {
+        return [];
+    }
 
-            // Calculate scores for all available properties
-            const scoredProperties = availableProperties.map(property => ({
-                ...property,
-                score: this.calculatePropertyScore(property)
-            }));
+    // Calculate scores for all available properties
+    const scoredProperties = availableProperties.map(property => ({
+        ...property,
+        score: this.calculatePropertyScore(property)
+    }));
 
-            // Sort by score (highest first), then by rating, then by review count
-            scoredProperties.sort((a, b) => {
-                if (b.score !== a.score) return b.score - a.score;
-                if (b.averageRating !== a.averageRating) return (b.averageRating || 0) - (a.averageRating || 0);
-                return (b.reviewCount || 0) - (a.reviewCount || 0);
-            });
+    // Sort by score (highest first), then by rating, then by review count
+    scoredProperties.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        if (b.averageRating !== a.averageRating) return (b.averageRating || 0) - (a.averageRating || 0);
+        return (b.reviewCount || 0) - (a.reviewCount || 0);
+    });
 
-            // Return top 4 properties
-            return scoredProperties.slice(0, 4);
-        }
+    // Return top 4 properties
+    return scoredProperties.slice(0, 4);
+}
 
         // Filter properties for tenants - UPDATED with seasonal logic
         filterPropertiesForTenants(properties) {
@@ -1239,35 +1253,68 @@
             }
         }
 
-        // Get price display for property based on user type - UPDATED
-        getPriceDisplay(property) {
-            const context = this.getUserContext();
-            const isTenantMode = context.isTenantMode;
-            
-            console.log('Getting price display for tenant mode:', isTenantMode);
-            
-            if (isTenantMode && property.acceptsShortTerm) {
-                if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
-                    return {
-                        price: `R${property.shortTermPrice}`,
-                        label: '/day',
-                        dataPrice: property.shortTermPrice
-                    };
-                } else {
-                    return {
-                        price: 'Price Negotiable',
-                        label: '/day',
-                        dataPrice: 0
-                    };
-                }
+getPriceDisplay(property) {
+    const context = this.getUserContext();
+    const isTenantMode = context.isTenantMode;
+    const isNsfasProperty = property.rentType === 'nsfas';
+    
+    console.log('Getting price display for:', {
+        title: property.title,
+        isTenantMode,
+        isNsfasProperty,
+        rentType: property.rentType
+    });
+    
+    // Handle NSFAS properties - check if in tenant mode first
+    if (isNsfasProperty) {
+        // In tenant mode, NSFAS properties should show short-term pricing
+        if (isTenantMode && property.acceptsShortTerm) {
+            if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
+                return {
+                    price: `R${property.shortTermPrice}`,
+                    label: '/day',
+                    dataPrice: property.shortTermPrice
+                };
             } else {
                 return {
-                    price: `R${property.price}`,
-                    label: '/month',
-                    dataPrice: property.price
+                    price: 'Negotiable',
+                    label: '/day',
+                    dataPrice: 0
                 };
             }
         }
+        // In student mode, show NSFAS rates
+        return {
+            price: 'NSFAS',
+            label: 'Rates',
+            dataPrice: 0
+        };
+    }
+    
+    // Handle tenant short-term pricing for non-NSFAS properties
+    if (isTenantMode && property.acceptsShortTerm) {
+        if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
+            return {
+                price: `R${property.shortTermPrice}`,
+                label: '/day',
+                dataPrice: property.shortTermPrice
+            };
+        } else {
+            return {
+                price: 'Negotiable',
+                label: '/day',
+                dataPrice: 0
+            };
+        }
+    }
+    
+    // Default student pricing
+    return {
+        price: `R${property.price}`,
+        label: '/month',
+        dataPrice: property.price
+    };
+}
 
         // Demo properties data
         getEnhancedDemoFeatured() {
@@ -1394,127 +1441,149 @@
         }
 
         // Create property card HTML
-        createEnhancedPropertyCard(property, priceDisplay) {
-            const accreditation = property.accreditation || 'self';
-            const accreditationInfo = this.accreditationConfig[accreditation] || this.accreditationConfig.self;
+        // Create property card HTML with NSFAS support
+createEnhancedPropertyCard(property, priceDisplay) {
+    const accreditation = property.accreditation || 'self';
+    const accreditationInfo = this.accreditationConfig[accreditation] || this.accreditationConfig.self;
+    
+    const genderPreference = property.genderPreference || 'unisex';
+    const genderInfo = this.genderConfig[genderPreference] || this.genderConfig.unisex;
+    
+    const context = this.getUserContext();
+    const isTenantMode = context.isTenantMode;
+    const isNsfasProperty = property.rentType === 'nsfas';
+    
+    // Determine description based on user type
+    let propertyDescription = property.description;
+    if (isNsfasProperty) {
+        // NSFAS property description
+        if (isTenantMode && property.acceptsShortTerm && property.shortTermDescription) {
+            propertyDescription = property.shortTermDescription;
+        } else if (property.description && property.description.trim() !== '') {
+            propertyDescription = property.description;
+        } else {
+            propertyDescription = "NSFAS-accredited accommodation. Contact for specific pricing and eligibility requirements.";
+        }
+    } else if (isTenantMode && property.acceptsShortTerm && property.shortTermDescription) {
+        propertyDescription = property.shortTermDescription;
+    } else if (isTenantMode && property.acceptsShortTerm) {
+        propertyDescription = property.description || "Short-term accommodation available during student holidays. Perfect for temporary stays.";
+    }
+    
+    // NSFAS Badge - ONLY SHOW IN STUDENT MODE
+    const nsfasBadge = (isNsfasProperty && !isTenantMode) ? `
+        <div class="position-absolute top-0 start-50 translate-middle-x m-2">
+            <span class="badge bg-warning text-dark">
+                <i class="bi bi-award me-1"></i>NSFAS Rates
+            </span>
+        </div>
+    ` : '';
+    
+    return `
+    <div class="card feature-card h-100">
+        <div class="position-relative">
+            <img src="${property.images[0]}" class="card-img-top" alt="${property.title}" 
+                 style="height: 200px; object-fit: cover; width: 100%;">
             
-            const genderPreference = property.genderPreference || 'unisex';
-            const genderInfo = this.genderConfig[genderPreference] || this.genderConfig.unisex;
+            <!-- Status Badge - Always Available since we filtered -->
+            <div class="position-absolute top-0 start-0 m-2">
+                <span class="badge bg-success">
+                    <i class="bi bi-check-circle-fill me-1"></i>Available
+                </span>
+            </div>
             
-            const context = this.getUserContext();
-            const isTenantMode = context.isTenantMode;
+            <!-- Price Tag -->
+            <div class="position-absolute top-0 end-0 m-2">
+                <span class="badge bg-success fs-6">
+                    ${priceDisplay.price}<small>${priceDisplay.label}</small>
+                </span>
+            </div>
             
-            // Determine description based on user type
-            let propertyDescription = property.description;
-            if (isTenantMode && property.acceptsShortTerm && property.shortTermDescription) {
-                propertyDescription = property.shortTermDescription;
-            } else if (isTenantMode && property.acceptsShortTerm) {
-                propertyDescription = "Short-term accommodation available during student holidays. Perfect for temporary stays.";
-            }
+            <!-- NSFAS Badge - ONLY SHOWS IN STUDENT MODE -->
+            ${nsfasBadge}
             
-            return `
-            <div class="card feature-card h-100">
-                <div class="position-relative">
-                    <img src="${property.images[0]}" class="card-img-top" alt="${property.title}" 
-                         style="height: 200px; object-fit: cover; width: 100%;">
-                    
-                    <!-- Status Badge - Always Available since we filtered -->
-                    <div class="position-absolute top-0 start-0 m-2">
-                        <span class="badge bg-success">
-                            <i class="bi bi-check-circle-fill me-1"></i>Available
-                        </span>
+            <!-- Accreditation Badge - HIDDEN FOR TENANTS -->
+            ${!isTenantMode ? `
+            <div class="position-absolute bottom-0 start-0 m-2">
+                <span class="badge bg-${accreditationInfo.class}">
+                    <i class="bi ${accreditationInfo.icon} me-1"></i>${accreditationInfo.text}
+                </span>
+            </div>
+            ` : ''}
+        </div>
+
+        <div class="card-body">
+            <!-- Property Title & Location -->
+            <div class="mb-2">
+                <h6 class="card-title text-navy fw-bold mb-1">${property.title}</h6>
+                <div class="d-flex align-items-center text-muted small">
+                    <i class="bi bi-geo-alt-fill me-1"></i>
+                    <span>${property.location.city}</span>
+                </div>
+            </div>
+
+            <!-- Property Description -->
+            <p class="card-text text-muted small mb-3">
+                ${propertyDescription.substring(0, 80)}...
+            </p>
+
+            <!-- Property Details -->
+            <div class="row text-center mb-3">
+                <div class="col-4">
+                    <div class="text-primary">
+                        <i class="bi bi-door-closed-fill fs-5"></i>
+                        <div class="small">${property.bedrooms} Bed</div>
                     </div>
-                    
-                    <!-- Price Tag -->
-                    <div class="position-absolute top-0 end-0 m-2">
-                        <span class="badge bg-success fs-6">
-                            ${priceDisplay.price}<small>${priceDisplay.label}</small>
-                        </span>
+                </div>
+                <div class="col-4">
+                    <div class="text-info">
+                        <i class="bi bi-droplet-fill fs-5"></i>
+                        <div class="small">${property.bathrooms} Bath</div>
                     </div>
-                    
-                    <!-- Accreditation Badge - HIDDEN FOR TENANTS -->
-                    ${!isTenantMode ? `
-                    <div class="position-absolute bottom-0 start-0 m-2">
-                        <span class="badge bg-${accreditationInfo.class}">
-                            <i class="bi ${accreditationInfo.icon} me-1"></i>${accreditationInfo.text}
-                        </span>
+                </div>
+                <div class="col-4">
+                    <div class="text-warning">
+                        <i class="bi ${genderInfo.icon} fs-5"></i>
+                        <div class="small">${genderInfo.text}</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Amenities with Icons -->
+            <div class="mb-3">
+                <div class="amenities-grid">
+                    ${property.amenities.slice(0, 4).map(amenity => `
+                        <div class="amenity-item">
+                            <i class="bi ${this.amenityIcons[amenity.toLowerCase()] || 'bi-check-circle'} text-primary"></i>
+                            <span class="small">${amenity}</span>
+                        </div>
+                    `).join('')}
+                    ${property.amenities.length > 4 ? `
+                        <div class="amenity-item bg-primary text-white">
+                            <i class="bi bi-plus-circle"></i>
+                            <span class="small">+${property.amenities.length - 4} more</span>
+                        </div>
                     ` : ''}
                 </div>
+            </div>
 
-                <div class="card-body">
-                    <!-- Property Title & Location -->
-                    <div class="mb-2">
-                        <h6 class="card-title text-navy fw-bold mb-1">${property.title}</h6>
-                        <div class="d-flex align-items-center text-muted small">
-                            <i class="bi bi-geo-alt-fill me-1"></i>
-                            <span>${property.location.city}</span>
-                        </div>
-                    </div>
-
-                    <!-- Property Description -->
-                    <p class="card-text text-muted small mb-3">
-                        ${propertyDescription.substring(0, 80)}...
-                    </p>
-
-                    <!-- Property Details -->
-                    <div class="row text-center mb-3">
-                        <div class="col-4">
-                            <div class="text-primary">
-                                <i class="bi bi-door-closed-fill fs-5"></i>
-                                <div class="small">${property.bedrooms} Bed</div>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="text-info">
-                                <i class="bi bi-droplet-fill fs-5"></i>
-                                <div class="small">${property.bathrooms} Bath</div>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="text-warning">
-                                <i class="bi ${genderInfo.icon} fs-5"></i>
-                                <div class="small">${property.genderPreference}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Enhanced Amenities with Icons -->
-                    <div class="mb-3">
-                        <div class="amenities-grid">
-                            ${property.amenities.slice(0, 4).map(amenity => `
-                                <div class="amenity-item">
-                                    <i class="bi ${this.amenityIcons[amenity.toLowerCase()] || 'bi-check-circle'} text-primary"></i>
-                                    <span class="small">${amenity}</span>
-                                </div>
-                            `).join('')}
-                            ${property.amenities.length > 4 ? `
-                                <div class="amenity-item bg-primary text-white">
-                                    <i class="bi bi-plus-circle"></i>
-                                    <span class="small">+${property.amenities.length - 4} more</span>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-
-                    <!-- Rating -->
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="rating">
-                            ${this.generateStarRating(property.averageRating || 0)}
-                            <small class="text-muted ms-1">(${property.reviewCount || 0})</small>
-                        </div>
-                    </div>
-
-                    <!-- Action Button -->
-                    <div class="d-grid">
-                        <a href="property-details.html?id=${property._id}" class="btn btn-primary btn-sm">
-                            <i class="bi bi-eye me-1"></i>View Details
-                        </a>
-                    </div>
+            <!-- Rating -->
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="rating">
+                    ${this.generateStarRating(property.averageRating || 0)}
+                    <small class="text-muted ms-1">(${property.reviewCount || 0})</small>
                 </div>
-            </div>`;
-        }
+            </div>
 
+            <!-- Action Button -->
+            <div class="d-grid">
+                <a href="property-details.html?id=${property._id}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-eye me-1"></i>View Details
+                </a>
+            </div>
+        </div>
+    </div>`;
+}
         // Generate star rating HTML
         generateStarRating(rating) {
             let stars = '';
