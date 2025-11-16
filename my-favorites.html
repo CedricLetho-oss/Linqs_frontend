@@ -2241,6 +2241,7 @@ async performFavoriteDeletion(favoriteId, deleteBtn, originalText) {
 }
 
     // Replace the existing compareFavorites method with this updated version
+// UPDATED: Compare favorites with NSFAS validation
 compareFavorites() {
     if (this.favorites.length < 2) {
         this.showToast('Please add at least 2 properties to compare.', 'warning');
@@ -2254,6 +2255,18 @@ compareFavorites() {
     
     console.log(`Compare initiated: ${userRole} in ${currentBookingMode} mode`);
 
+    // Check if we have enough available properties for the current mode
+    const availableProperties = this.getAvailablePropertiesForComparison(currentBookingMode);
+    
+    if (availableProperties.length < 2) {
+        if (currentBookingMode === 'tenant') {
+            this.showToast('You need at least 2 properties that accept short-term stays or NSFAS rates to compare. Switch to student mode or add more eligible properties to favorites.', 'warning');
+        } else {
+            this.showToast('Please add at least 2 properties to favorites to compare.', 'warning');
+        }
+        return;
+    }
+
     if (this.favorites.length === 2) {
         const favoriteIds = this.favorites.map(f => f.property._id);
         const queryString = favoriteIds.map(id => `id=${id}`).join('&');
@@ -2265,6 +2278,7 @@ compareFavorites() {
 }
 
 // Update the showSelectionModal method to accept booking mode
+// UPDATED: Show selection modal with proper pricing display
 showSelectionModal(bookingMode) {
     // Create a modal for selecting properties to compare
     const modalHtml = `
@@ -2294,19 +2308,38 @@ showSelectionModal(bookingMode) {
                             ${this.favorites.map((favorite, index) => {
                                 const property = favorite.property;
                                 const isShortTermEligible = bookingMode === 'tenant' && property.acceptsShortTerm;
-                                const price = bookingMode === 'tenant' && isShortTermEligible ? 
-                                    (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0 ? 
-                                        `R${property.shortTermPrice}/day` : 'Price negotiable') : 
-                                    `R${property.price}/month`;
+                                const isNsfasProperty = property.rentType === 'nsfas';
+                                
+                                // DETERMINE PRICING DISPLAY
+                                let priceDisplay, priceBadge, isSelectable = true;
+                                
+                                if (isNsfasProperty) {
+                                    priceDisplay = 'NSFAS Rates';
+                                    priceBadge = '<span class="badge nsfas-badge ms-2"><i class="bi bi-award me-1"></i>NSFAS</span>';
+                                    isSelectable = true; // NSFAS properties are always selectable
+                                } else if (bookingMode === 'tenant' && isShortTermEligible) {
+                                    if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
+                                        priceDisplay = `R${property.shortTermPrice}/day`;
+                                    } else {
+                                        priceDisplay = 'Price negotiable';
+                                    }
+                                    priceBadge = '<span class="badge bg-success ms-2"><i class="bi bi-calendar-range me-1"></i>Short-term</span>';
+                                } else {
+                                    priceDisplay = `R${property.price}/month`;
+                                    priceBadge = bookingMode === 'tenant' ? 
+                                        '<span class="badge bg-secondary ms-2"><i class="bi bi-calendar-x me-1"></i>Long-term only</span>' : 
+                                        '';
+                                    isSelectable = bookingMode !== 'tenant'; // Only selectable if not in tenant mode
+                                }
                                 
                                 return `
                                     <div class="col-md-6 mb-3">
-                                        <div class="form-check compare-selection-item p-3 border rounded ${isShortTermEligible ? 'border-success' : ''}">
+                                        <div class="form-check compare-selection-item p-3 border rounded ${isNsfasProperty ? 'nsfas-property border-warning' : (isShortTermEligible ? 'border-success' : '')}">
                                             <input class="form-check-input" type="checkbox" 
                                                   value="${property._id}" 
                                                   id="compare-prop-${index}"
-                                                  ${bookingMode === 'tenant' && !isShortTermEligible ? 'disabled' : ''}>
-                                            <label class="form-check-label w-100 ${bookingMode === 'tenant' && !isShortTermEligible ? 'text-muted' : ''}" for="compare-prop-${index}">
+                                                  ${!isSelectable ? 'disabled' : ''}>
+                                            <label class="form-check-label w-100 ${!isSelectable ? 'text-muted' : ''}" for="compare-prop-${index}">
                                                 <div class="d-flex align-items-center">
                                                     <img src="${property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/400x300?text=No+Image'}" 
                                                         alt="${property.title}" 
@@ -2315,18 +2348,21 @@ showSelectionModal(bookingMode) {
                                                     <div class="flex-grow-1">
                                                         <h6 class="mb-1 d-flex align-items-center">
                                                             ${property.title}
+                                                            ${isNsfasProperty ? '<span class="badge nsfas-badge ms-2"><i class="bi bi-award me-1"></i>NSFAS</span>' : ''}
                                                             ${isShortTermEligible ? '<span class="badge bg-success ms-2"><i class="bi bi-calendar-range me-1"></i>Short-term</span>' : ''}
-                                                            ${bookingMode === 'tenant' && !isShortTermEligible ? '<span class="badge bg-secondary ms-2"><i class="bi bi-calendar-x me-1"></i>Long-term only</span>' : ''}
+                                                            ${bookingMode === 'tenant' && !isShortTermEligible && !isNsfasProperty ? '<span class="badge bg-secondary ms-2"><i class="bi bi-calendar-x me-1"></i>Long-term only</span>' : ''}
                                                         </h6>
                                                         <div class="d-flex justify-content-between align-items-center">
-                                                            <small class="text-muted">${price}</small>
+                                                            <small class="${isNsfasProperty ? 'text-nsfas fw-bold' : 'text-muted'}">${priceDisplay}</small>
                                                             <small class="text-muted">
                                                                 <i class="bi bi-door-closed me-1"></i>${property.bedrooms || 'N/A'} • 
                                                                 <i class="bi bi-badge-wc me-1"></i>${property.bathrooms || 'N/A'}
                                                             </small>
                                                         </div>
-                                                        ${bookingMode === 'tenant' && !isShortTermEligible ? 
-                                                            '<small class="text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Not available for short-term</small>' : ''}
+                                                        ${bookingMode === 'tenant' && !isShortTermEligible && !isNsfasProperty ? 
+                                                            '<small class="text-danger d-block mt-1"><i class="bi bi-exclamation-triangle me-1"></i>Not available for short-term</small>' : ''}
+                                                        ${isNsfasProperty ? 
+                                                            '<small class="text-nsfas d-block mt-1"><i class="bi bi-info-circle me-1"></i>NSFAS accredited - contact for rates</small>' : ''}
                                                     </div>
                                                 </div>
                                             </label>
@@ -2338,8 +2374,8 @@ showSelectionModal(bookingMode) {
                         <div class="mt-3">
                             <small class="text-muted" id="selection-count">Selected: 0/4 properties</small>
                             ${bookingMode === 'tenant' ? 
-                                '<div class="mt-2"><small class="text-info"><i class="bi bi-lightbulb me-1"></i>Only properties accepting short-term stays are selectable</small></div>' : 
-                                ''
+                                '<div class="mt-2"><small class="text-info"><i class="bi bi-lightbulb me-1"></i>Properties accepting short-term stays and NSFAS properties are selectable</small></div>' : 
+                                '<div class="mt-2"><small class="text-info"><i class="bi bi-lightbulb me-1"></i>All properties are selectable in student mode</small></div>'
                             }
                         </div>
                     </div>
@@ -2366,7 +2402,7 @@ showSelectionModal(bookingMode) {
     // Get modal instance
     const modal = new bootstrap.Modal(document.getElementById('compareSelectionModal'));
     
-    // Set up event listeners
+    // Set up event listeners - ONLY FOR SELECTABLE CHECKBOXES
     const checkboxes = document.querySelectorAll('.compare-selection-item input[type="checkbox"]:not(:disabled)');
     const confirmBtn = document.getElementById('confirm-compare');
     const selectionCount = document.getElementById('selection-count');
