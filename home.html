@@ -677,6 +677,132 @@
       overflow-x: hidden;
       position: relative;
     }
+
+    /* NSFAS Listing Styles - ADDED FROM LISTINGS.CSS */
+    .nsfas-listing {
+        border-left: 4px solid #ff6b00 !important;
+    }
+
+    .nsfas-badge-listing {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        z-index: 10;
+        box-shadow: 0 2px 8px rgba(255, 107, 0, 0.3);
+    }
+
+    .btn-nsfas {
+        background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+        border: none;
+        color: white;
+        font-weight: 500;
+    }
+
+    .btn-nsfas:hover {
+        background: linear-gradient(135deg, #e55a00 0%, #e57c00 100%);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+    }
+
+    /* Ensure NSFAS price tags stand out */
+    .nsfas-listing .price-tag {
+        background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+        border: 1px solid #ffb74d;
+    }
+
+    .nsfas-listing .price-tag .price-main {
+        color: #ff6b00;
+        font-weight: 700;
+    }
+
+    /* Mobile responsive adjustments */
+    @media (max-width: 768px) {
+        .nsfas-badge-listing {
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.7rem;
+        }
+    }
+
+    /* Fix for price tag layout on desktop - SMALLER TEXT */
+    .price-tag {
+        background: linear-gradient(45deg, #10b981, #059669);
+        color: white;
+        padding: 0.4rem 0.7rem;
+        border-radius: 1rem;
+        font-weight: bold;
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        z-index: 2;
+        animation: pulse 2s ease-in-out infinite;
+        max-width: 110px;
+        min-width: 70px;
+        text-align: center;
+        font-size: 0.85rem;
+        line-height: 1.2;
+    }
+
+    .price-main {
+        font-size: 0.9rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .price-main small {
+        font-size: 0.75rem;
+        font-weight: 600;
+        opacity: 0.9;
+    }
+
+    .price-min-stay {
+        font-size: 0.65rem;
+        opacity: 0.9;
+        margin-top: 0.1rem;
+        line-height: 1.1;
+        font-weight: 500;
+    }
+
+    /* Ensure price tag doesn't overlap on desktop */
+    @media (min-width: 768px) {
+        .price-tag {
+            max-width: 120px;
+            padding: 0.35rem 0.6rem;
+        }
+        
+        .feature-card:hover .price-tag {
+            z-index: 3;
+        }
+    }
+
+    /* Mobile adjustments - keep existing behavior */
+    @media (max-width: 767px) {
+        .price-tag {
+            max-width: 100px;
+            padding: 0.3rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .price-main {
+            font-size: 0.85rem;
+        }
+        
+        .price-main small {
+            font-size: 0.7rem;
+        }
+        
+        .price-min-stay {
+            font-size: 0.6rem;
+        }
+    }
   </style>
 </head>
 <body>
@@ -1441,7 +1567,7 @@ getPriceDisplay(property) {
         }
 
         // Create property card HTML
-        // Create property card HTML with NSFAS support
+        // Create property card HTML with NSFAS support - FIXED DUPLICATE BADGE ISSUE
 createEnhancedPropertyCard(property, priceDisplay) {
     const accreditation = property.accreditation || 'self';
     const accreditationInfo = this.accreditationConfig[accreditation] || this.accreditationConfig.self;
@@ -1470,17 +1596,19 @@ createEnhancedPropertyCard(property, priceDisplay) {
         propertyDescription = property.description || "Short-term accommodation available during student holidays. Perfect for temporary stays.";
     }
     
-    // NSFAS Badge - ONLY SHOW IN STUDENT MODE
+    // FIXED: Only show NSFAS badge in student mode AND only if it's an NSFAS property
+    // The price tag will handle displaying "NSFAS Rates" in student mode
     const nsfasBadge = (isNsfasProperty && !isTenantMode) ? `
-        <div class="position-absolute top-0 start-50 translate-middle-x m-2">
-            <span class="badge bg-warning text-dark">
-                <i class="bi bi-award me-1"></i>NSFAS Rates
-            </span>
+        <div class="nsfas-badge-listing">
+            <i class="bi bi-award me-1"></i>NSFAS Rates
         </div>
     ` : '';
     
+    // FIXED: Apply nsfas-listing class only in student mode for NSFAS properties
+    const nsfasClass = (isNsfasProperty && !isTenantMode) ? 'nsfas-listing' : '';
+    
     return `
-    <div class="card feature-card h-100">
+    <div class="card feature-card h-100 ${nsfasClass}">
         <div class="position-relative">
             <img src="${property.images[0]}" class="card-img-top" alt="${property.title}" 
                  style="height: 200px; object-fit: cover; width: 100%;">
@@ -1492,14 +1620,14 @@ createEnhancedPropertyCard(property, priceDisplay) {
                 </span>
             </div>
             
-            <!-- Price Tag -->
-            <div class="position-absolute top-0 end-0 m-2">
-                <span class="badge bg-success fs-6">
-                    ${priceDisplay.price}<small>${priceDisplay.label}</small>
-                </span>
+            <!-- Price Tag - This will show "NSFAS Rates" for NSFAS properties in student mode -->
+            <div class="price-tag ${isNsfasProperty && !isTenantMode ? 'nsfas-price' : ''}">
+                <div class="d-flex flex-column align-items-center">
+                    <div class="price-main">${priceDisplay.price}<small>${priceDisplay.label}</small></div>
+                </div>
             </div>
             
-            <!-- NSFAS Badge - ONLY SHOWS IN STUDENT MODE -->
+            <!-- NSFAS Badge - ONLY SHOWS IN STUDENT MODE for NSFAS properties -->
             ${nsfasBadge}
             
             <!-- Accreditation Badge - HIDDEN FOR TENANTS -->
