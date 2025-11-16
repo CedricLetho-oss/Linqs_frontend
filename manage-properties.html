@@ -2861,26 +2861,27 @@ function toggleShortTermPricingSection() {
         pricingSection.style.display = 'none';
     }
 }
-// Add this function to handle short-term pricing validation
+
 function validateShortTermPricing() {
     const acceptsShortTerm = document.getElementById('acceptsShortTerm').checked;
     const pricingType = document.getElementById('shortTermPricing').value;
     const priceField = document.getElementById('shortTermPrice');
     
     if (acceptsShortTerm && pricingType === 'fixed') {
-        priceField.required = true;
-        if (!priceField.value || priceField.value <= 0) {
+        // For fixed pricing, validate that price is provided and is a positive number
+        const priceValue = priceField.value;
+        if (!priceValue || priceValue <= 0) {
             priceField.setCustomValidity('Please enter a valid daily rate for short-term stays');
+            priceField.reportValidity();
             return false;
         }
+        priceField.setCustomValidity('');
     } else {
-        priceField.required = false;
+        // For negotiable pricing or when short-term is disabled, clear validation
         priceField.setCustomValidity('');
     }
     return true;
 }
-
-
 
 // Update the pricing type change handler
 function toggleShortTermPriceField() {
@@ -2889,10 +2890,12 @@ function toggleShortTermPriceField() {
     
     if (pricingType === 'fixed') {
         priceField.style.display = 'block';
-        // Don't set required here - let the validation function handle it
+        document.getElementById('shortTermPrice').required = true;
     } else {
         priceField.style.display = 'none';
-        // Clear any validation errors
+        document.getElementById('shortTermPrice').required = false;
+        // Clear the value and validation when switching to negotiable
+        document.getElementById('shortTermPrice').value = '';
         document.getElementById('shortTermPrice').setCustomValidity('');
     }
 }
@@ -3570,6 +3573,7 @@ document.head.appendChild(toastStyles);
     }
 
     // ============ ADD NEW PROPERTY ============
+// ============ ADD NEW PROPERTY ============
 async function addNewProperty() {
     const form = document.getElementById('addPropertyForm');
     const addBtn = document.getElementById('addPropertyBtn');
@@ -3607,6 +3611,20 @@ async function addNewProperty() {
             finalPrice = parseInt(document.getElementById('fixedRentInput').value);
         }
 
+        // FIX: Properly handle short-term pricing
+        const acceptsShortTerm = document.getElementById('acceptsShortTerm').checked;
+        const shortTermPricing = document.getElementById('shortTermPricing').value;
+        
+        let shortTermPriceValue = null;
+        if (acceptsShortTerm && shortTermPricing === 'fixed') {
+            // Only set shortTermPrice when pricing type is fixed
+            const priceInput = document.getElementById('shortTermPrice').value;
+            shortTermPriceValue = priceInput ? parseInt(priceInput) : 0;
+        } else {
+            // For negotiable pricing or when short-term is disabled, set to 0
+            shortTermPriceValue = 0;
+        }
+
         const propertyData = {
             title: formData.get('title'),
             description: formData.get('description'),
@@ -3625,10 +3643,10 @@ async function addNewProperty() {
             accreditation: formData.get('accreditation'),
             availability: formData.get('availability'),
             rentType: rentType, // This is now properly set
-            acceptsShortTerm: formData.get('acceptsShortTerm') === 'on',
+            acceptsShortTerm: acceptsShortTerm,
             shortTermDescription: formData.get('shortTermDescription') || '',
-            shortTermPricing: formData.get('shortTermPricing'),
-            shortTermPrice: formData.get('shortTermPrice') ? parseInt(formData.get('shortTermPrice')) : null,
+            shortTermPricing: shortTermPricing,
+            shortTermPrice: shortTermPriceValue, // Use the properly handled value
             shortTermMinStay: parseInt(formData.get('shortTermMinStay')) || 1,
             contactInfo: {
                 phone: JSON.parse(localStorage.getItem("user")).phone || '',
@@ -3648,7 +3666,7 @@ async function addNewProperty() {
         // Add URL images (these are already external URLs)
         propertyData.images.push(...propertyImages.add.urls);
 
-        console.log('Creating property with images:', propertyData.images);
+        console.log('Creating property with data:', propertyData);
 
         const response = await fetch(`${API_BASE_URL}/properties`, {
             method: 'POST',
