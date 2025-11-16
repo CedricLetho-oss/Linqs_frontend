@@ -342,13 +342,31 @@ class ListingsManager {
 
     // Get price display based on user type
     // Get price display based on user type and NSFAS status
+// Get price display based on user type and NSFAS status
 getPriceDisplay(property) {
     const context = this.getUserContext();
     const isTenantMode = context.isTenantMode;
     const isNsfasProperty = property.rentType === 'nsfas';
     
-    // Handle NSFAS properties first
+    // Handle NSFAS properties - check if in tenant mode first
     if (isNsfasProperty) {
+        // In tenant mode, NSFAS properties should show short-term pricing
+        if (isTenantMode && property.acceptsShortTerm) {
+            if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
+                return {
+                    price: `R${property.shortTermPrice}`,
+                    label: '/day',
+                    dataPrice: property.shortTermPrice
+                };
+            } else {
+                return {
+                    price: 'Negotiable',
+                    label: '/day',
+                    dataPrice: 0
+                };
+            }
+        }
+        // In student mode, show NSFAS rates
         return {
             price: 'NSFAS',
             label: 'Rates',
@@ -356,7 +374,7 @@ getPriceDisplay(property) {
         };
     }
     
-    // Handle tenant short-term pricing
+    // Handle tenant short-term pricing for non-NSFAS properties
     if (isTenantMode && property.acceptsShortTerm) {
         if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
             return {
@@ -382,25 +400,35 @@ getPriceDisplay(property) {
 }
 
     getPropertyDescription(property) {
-        const context = this.getUserContext();
-        const isTenantMode = context.isTenantMode;
-        const isNsfasProperty = property.rentType === 'nsfas';
-        
-        let propertyDescription = property.description;
-        
-        // NSFAS property description
-        if (isNsfasProperty) {
+    const context = this.getUserContext();
+    const isTenantMode = context.isTenantMode;
+    const isNsfasProperty = property.rentType === 'nsfas';
+    
+    let propertyDescription = property.description;
+    
+    // NSFAS property description - use actual description, not generic one
+    if (isNsfasProperty) {
+        // In tenant mode, use short-term description if available
+        if (isTenantMode && property.acceptsShortTerm && property.shortTermDescription) {
+            propertyDescription = property.shortTermDescription;
+        } 
+        // Otherwise use the property's actual description
+        else if (property.description && property.description.trim() !== '') {
+            propertyDescription = property.description;
+        } else {
+            // Fallback only if no description exists
             propertyDescription = "NSFAS-accredited accommodation. Contact for specific pricing and eligibility requirements.";
         }
-        // Tenant short-term description
-        else if (isTenantMode && property.acceptsShortTerm && property.shortTermDescription) {
-            propertyDescription = property.shortTermDescription;
-        } else if (isTenantMode && property.acceptsShortTerm) {
-            propertyDescription = "Short-term accommodation available during student holidays. Perfect for temporary stays.";
-        }
-        
-        return propertyDescription;
     }
+    // Tenant short-term description
+    else if (isTenantMode && property.acceptsShortTerm && property.shortTermDescription) {
+        propertyDescription = property.shortTermDescription;
+    } else if (isTenantMode && property.acceptsShortTerm) {
+        propertyDescription = property.description || "Short-term accommodation available during student holidays. Perfect for temporary stays.";
+    }
+    
+    return propertyDescription;
+}
 
     // Create property card
     // Create property card with NSFAS support
@@ -653,15 +681,30 @@ applyFilters() {
         }
 
         // Price filter - handle NSFAS and tenant pricing
-        if (priceFilter !== null && !isNsfasProperty) {
+        if (priceFilter !== null) {
             let priceToCheck = property.price;
-            if (isTenantMode && property.acceptsShortTerm) {
+            
+            // For NSFAS properties in tenant mode, use short-term pricing
+            if (isNsfasProperty && isTenantMode && property.acceptsShortTerm) {
                 if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
                     priceToCheck = property.shortTermPrice;
                 } else {
                     // For negotiable properties, show them regardless of price filter
                     priceToCheck = 0;
                 }
+            } 
+            // For non-NSFAS properties in tenant mode
+            else if (isTenantMode && property.acceptsShortTerm) {
+                if (property.shortTermPricing === 'fixed' && property.shortTermPrice) {
+                    priceToCheck = property.shortTermPrice;
+                } else {
+                    // For negotiable properties, show them regardless of price filter
+                    priceToCheck = 0;
+                }
+            }
+            // For NSFAS properties in student mode, ignore price filter
+            else if (isNsfasProperty && !isTenantMode) {
+                priceToCheck = 0; // NSFAS properties always show in student mode
             }
             
             if (priceToCheck > priceFilter) {
