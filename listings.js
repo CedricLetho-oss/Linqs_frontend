@@ -432,6 +432,7 @@ getPriceDisplay(property) {
 
     // Create property card
     // Create property card with NSFAS support
+// Create property card with NSFAS support
 createPropertyCard(property) {
     const context = this.getUserContext();
     const isTenantMode = context.isTenantMode;
@@ -467,15 +468,15 @@ createPropertyCard(property) {
     
     const amenities = property.amenities ? property.amenities.slice(0, 4) : [];
     
-    // Handle NSFAS display
+    // Handle NSFAS display - ONLY SHOW IN STUDENT MODE
     const isNsfasProperty = property.rentType === 'nsfas';
-    const nsfasBadge = isNsfasProperty ? `
+    const nsfasBadge = (isNsfasProperty && !isTenantMode) ? `
         <div class="nsfas-badge-listing">
             <i class="bi bi-award me-1"></i>NSFAS Rates
         </div>
     ` : '';
     
-    // Button logic
+    // Button logic - updated for tenant mode
     let buttonText, buttonClass, isDisabled, buttonTitle = '';
     
     if (adminStatus !== 'approved') {
@@ -486,10 +487,18 @@ createPropertyCard(property) {
     } else {
         switch (propertyStatus) {
             case 'available':
-                buttonText = isNsfasProperty ? 'Inquire' : 'View Details';
-                buttonClass = isNsfasProperty ? 'btn-nsfas' : 'btn-primary';
+                // In tenant mode, all properties show "View Details"
+                if (isTenantMode) {
+                    buttonText = 'View Details';
+                    buttonClass = 'btn-primary';
+                    buttonTitle = 'View property details';
+                } else {
+                    // In student mode, NSFAS properties show "Inquire", others show "View Details"
+                    buttonText = isNsfasProperty ? 'Inquire' : 'View Details';
+                    buttonClass = isNsfasProperty ? 'btn-nsfas' : 'btn-primary';
+                    buttonTitle = isNsfasProperty ? 'Inquire about NSFAS rates' : 'View property details';
+                }
                 isDisabled = false;
-                buttonTitle = isNsfasProperty ? 'Inquire about NSFAS rates' : 'View property details';
                 break;
             case 'occupied':
                 buttonText = 'View Details';
@@ -519,7 +528,7 @@ createPropertyCard(property) {
          data-status="${propertyStatus}"
          data-admin-status="${adminStatus}"
          data-rent-type="${property.rentType || 'fixed'}">
-        <div class="card listing-card h-100 ${propertyStatus !== 'available' ? propertyStatus : ''} ${isNsfasProperty ? 'nsfas-listing' : ''}">
+        <div class="card listing-card h-100 ${propertyStatus !== 'available' ? propertyStatus : ''} ${(isNsfasProperty && !isTenantMode) ? 'nsfas-listing' : ''}">
 
             <!-- Price Tag -->
             <div class="price-tag">
@@ -529,7 +538,7 @@ createPropertyCard(property) {
                 </div>
             </div>
             
-            <!-- NSFAS Badge -->
+            <!-- NSFAS Badge - ONLY SHOWS IN STUDENT MODE -->
             ${nsfasBadge}
             
             <!-- Location Badge -->
@@ -620,7 +629,6 @@ createPropertyCard(property) {
     </div>`;
 }
 
-    // Apply filters with user type awareness
     // Apply filters with user type awareness and NSFAS support
 applyFilters() {
     const context = this.getUserContext();
