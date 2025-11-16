@@ -2969,7 +2969,7 @@
                 
                 if (currentUser.role === 'landlord') {
                     verificationType = 'landlord';
-                    requiredFields = ['idCard', 'proofOfOwnership', 'businessLicense'];
+                    requiredFields = ['idCard', 'proofOfOwnership'];
                 } else if (currentUser.role === 'tenant') {
                     verificationType = 'tenant';
                     requiredFields = ['idCard']; // Only ID card required for tenants
@@ -3009,7 +3009,6 @@
                             case 'idCard': return 'ID Card';
                             case 'proofOfEnrollment': return 'Proof of Enrollment';
                             case 'proofOfOwnership': return 'Proof of Ownership';
-                            case 'businessLicense': return 'Business License';
                             default: return field;
                         }
                     }).join(', ');
@@ -3193,7 +3192,7 @@
                                         
                                         <div class="mb-4">
                                             <h6><i class="bi bi-house-check me-2"></i>Proof of Ownership *</h6>
-                                            <p class="text-muted small">Upload property ownership documents, titles, or rental agreements</p>
+                                            <p class="text-muted small">Upload ownership documents: Municipality bills, property titles, rental agreements, contracts, etc. choose any of the given documents for validation</p>
                                             <input type="file" class="form-control document-file" name="proofOfOwnership" multiple accept="image/*,.pdf" required>
                                             <div class="form-text">Max 10 files. Supported: JPG, PNG, PDF</div>
                                             <div id="proofOfOwnershipPreview" class="file-preview-container mt-2"></div>
