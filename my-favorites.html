@@ -2246,7 +2246,12 @@ async performFavoriteDeletion(favoriteId, deleteBtn, originalText) {
 }
 
 // CORRECTED: Show selection modal with proper pricing display - NO NSFAS badges for tenants
+// CORRECTED: Show selection modal with proper pricing display based on user role AND booking mode
 showSelectionModal(bookingMode) {
+    // Get current user info
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const userRole = currentUser.role || 'student';
+    
     // Create a modal for selecting properties to compare
     const modalHtml = `
         <div class="modal fade" id="compareSelectionModal" tabindex="-1">
@@ -2255,7 +2260,9 @@ showSelectionModal(bookingMode) {
                     <div class="modal-header">
                         <h5 class="modal-title">
                             <i class="bi bi-bar-chart me-2"></i>Select Properties to Compare
-                            ${bookingMode === 'tenant' ? '<span class="badge bg-success ms-2">Short-term Mode</span>' : ''}
+                            ${bookingMode === 'tenant' ? '<span class="badge bg-success ms-2">Short-term Mode</span>' : 
+                             userRole === 'student' ? '<span class="badge bg-primary ms-2">Student Mode</span>' : 
+                             '<span class="badge bg-secondary ms-2">Tenant Mode</span>'}
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
@@ -2263,7 +2270,9 @@ showSelectionModal(bookingMode) {
                         <div class="alert alert-info d-flex align-items-center">
                             <i class="bi bi-info-circle me-2 fs-5"></i>
                             <div>
-                                <strong>Comparison Mode:</strong> ${bookingMode === 'tenant' ? 'Short-term stays (daily pricing)' : 'Student accommodation (monthly pricing)'}
+                                <strong>Comparison Mode:</strong> 
+                                ${bookingMode === 'tenant' ? 'Short-term stays (daily pricing)' : 
+                                 'Student accommodation (monthly pricing)'}
                                 ${bookingMode === 'tenant' ? 
                                     '<br><small>Showing properties that accept short-term bookings with daily rates</small>' : 
                                     '<br><small>Showing monthly rental prices for student accommodation</small>'
@@ -2277,31 +2286,36 @@ showSelectionModal(bookingMode) {
                                 const isNsfasProperty = property.rentType === 'nsfas';
                                 const isShortTermEligible = property.acceptsShortTerm;
                                 
-                                // DETERMINE PRICING DISPLAY - FIXED: NO NSFAS badges for tenants
-                                let priceDisplay, priceBadge, isSelectable = true;
+                                // DETERMINE PRICING DISPLAY BASED ON USER ROLE AND BOOKING MODE
+                                let priceDisplay, priceBadge, isSelectable = true, priceClass = '';
                                 
-                                if (bookingMode === 'tenant') {
-                                    // TENANT MODE: Show short-term pricing for all properties that accept short-term
+                                if (bookingMode === 'tenant' || userRole === 'tenant') {
+                                    // TENANT MODE/USER: Show short-term pricing
                                     if (isShortTermEligible) {
                                         if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
                                             priceDisplay = `R${property.shortTermPrice}/day`;
+                                            priceClass = 'text-success fw-bold';
                                         } else {
                                             priceDisplay = 'Price negotiable';
+                                            priceClass = 'text-success fw-bold';
                                         }
                                         priceBadge = '<span class="badge bg-success ms-2"><i class="bi bi-calendar-range me-1"></i>Short-term</span>';
                                         isSelectable = true;
                                     } else {
                                         priceDisplay = `R${property.price}/month`;
+                                        priceClass = 'text-secondary';
                                         priceBadge = '<span class="badge bg-secondary ms-2"><i class="bi bi-calendar-x me-1"></i>Long-term only</span>';
                                         isSelectable = false;
                                     }
                                 } else {
-                                    // STUDENT MODE: Show appropriate pricing based on property type
+                                    // STUDENT MODE/USER: Show appropriate pricing
                                     if (isNsfasProperty) {
                                         priceDisplay = 'NSFAS Rates';
+                                        priceClass = 'text-nsfas fw-bold';
                                         priceBadge = '<span class="badge nsfas-badge ms-2"><i class="bi bi-award me-1"></i>NSFAS</span>';
                                     } else {
                                         priceDisplay = `R${property.price}/month`;
+                                        priceClass = 'text-primary fw-bold';
                                         priceBadge = isShortTermEligible ? 
                                             '<span class="badge bg-success ms-2"><i class="bi bi-calendar-range me-1"></i>Short-term available</span>' : 
                                             '';
@@ -2311,7 +2325,7 @@ showSelectionModal(bookingMode) {
                                 
                                 return `
                                     <div class="col-md-6 mb-3">
-                                        <div class="form-check compare-selection-item p-3 border rounded ${isShortTermEligible ? 'border-success' : ''}">
+                                        <div class="form-check compare-selection-item p-3 border rounded ${isShortTermEligible ? 'border-success' : ''} ${!isSelectable ? 'opacity-75' : ''}">
                                             <input class="form-check-input" type="checkbox" 
                                                   value="${property._id}" 
                                                   id="compare-prop-${index}"
@@ -2325,21 +2339,24 @@ showSelectionModal(bookingMode) {
                                                     <div class="flex-grow-1">
                                                         <h6 class="mb-1 d-flex align-items-center">
                                                             ${property.title}
-                                                            ${isNsfasProperty && bookingMode !== 'tenant' ? '<span class="badge nsfas-badge ms-2"><i class="bi bi-award me-1"></i>NSFAS</span>' : ''}
-                                                            ${isShortTermEligible && bookingMode === 'tenant' ? '<span class="badge bg-success ms-2"><i class="bi bi-calendar-range me-1"></i>Short-term</span>' : ''}
-                                                            ${!isShortTermEligible && bookingMode === 'tenant' ? '<span class="badge bg-secondary ms-2"><i class="bi bi-calendar-x me-1"></i>Long-term only</span>' : ''}
+                                                            ${isNsfasProperty && bookingMode !== 'tenant' && userRole !== 'tenant' ? '<span class="badge nsfas-badge ms-2"><i class="bi bi-award me-1"></i>NSFAS</span>' : ''}
+                                                            ${isShortTermEligible && (bookingMode === 'tenant' || userRole === 'tenant') ? '<span class="badge bg-success ms-2"><i class="bi bi-calendar-range me-1"></i>Short-term</span>' : ''}
+                                                            ${!isShortTermEligible && (bookingMode === 'tenant' || userRole === 'tenant') ? '<span class="badge bg-secondary ms-2"><i class="bi bi-calendar-x me-1"></i>Long-term only</span>' : ''}
                                                         </h6>
                                                         <div class="d-flex justify-content-between align-items-center">
-                                                            <small class="${isNsfasProperty && bookingMode !== 'tenant' ? 'text-nsfas fw-bold' : 'text-muted'}">${priceDisplay}</small>
+                                                            <small class="${priceClass}">${priceDisplay}</small>
                                                             <small class="text-muted">
                                                                 <i class="bi bi-door-closed me-1"></i>${property.bedrooms || 'N/A'} • 
                                                                 <i class="bi bi-badge-wc me-1"></i>${property.bathrooms || 'N/A'}
                                                             </small>
                                                         </div>
-                                                        ${!isShortTermEligible && bookingMode === 'tenant' ? 
+                                                        ${!isShortTermEligible && (bookingMode === 'tenant' || userRole === 'tenant') ? 
                                                             '<small class="text-danger d-block mt-1"><i class="bi bi-exclamation-triangle me-1"></i>Not available for short-term</small>' : ''}
-                                                        ${isShortTermEligible && property.shortTermMinStay && bookingMode === 'tenant' ? 
+                                                        ${isShortTermEligible && property.shortTermMinStay && (bookingMode === 'tenant' || userRole === 'tenant') ? 
                                                             `<small class="text-muted d-block mt-1"><i class="bi bi-calendar-check me-1"></i>Min. stay: ${property.shortTermMinStay} days</small>` : ''
+                                                        }
+                                                        ${isNsfasProperty && (bookingMode !== 'tenant' && userRole !== 'tenant') ? 
+                                                            `<small class="text-nsfas d-block mt-1"><i class="bi bi-award me-1"></i>NSFAS Accredited Property</small>` : ''
                                                         }
                                                     </div>
                                                 </div>
@@ -2351,7 +2368,7 @@ showSelectionModal(bookingMode) {
                         </div>
                         <div class="mt-3">
                             <small class="text-muted" id="selection-count">Selected: 0/4 properties</small>
-                            ${bookingMode === 'tenant' ? 
+                            ${(bookingMode === 'tenant' || userRole === 'tenant') ? 
                                 '<div class="mt-2"><small class="text-info"><i class="bi bi-lightbulb me-1"></i>Only properties accepting short-term stays are selectable</small></div>' : 
                                 '<div class="mt-2"><small class="text-info"><i class="bi bi-lightbulb me-1"></i>All properties are selectable in student mode</small></div>'
                             }
@@ -2410,8 +2427,10 @@ showSelectionModal(bookingMode) {
         
         if (selectedIds.length >= 2 && selectedIds.length <= 4) {
             const queryString = selectedIds.map(id => `id=${id}`).join('&');
-            // Pass the current booking mode to the compare page
-            window.location.href = `compare.html?${queryString}&mode=${bookingMode}`;
+            // Pass the current booking mode AND user role to the compare page
+            const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+            const userRole = currentUser.role || 'student';
+            window.location.href = `compare.html?${queryString}&mode=${bookingMode}&role=${userRole}`;
         }
     });
 
@@ -2425,14 +2444,17 @@ showSelectionModal(bookingMode) {
 }
 
 // CORRECTED: Check available properties for comparison - NSFAS excluded in tenant mode
+// CORRECTED: Check available properties for comparison based on user role AND booking mode
 getAvailablePropertiesForComparison(bookingMode) {
-    if (bookingMode === 'tenant') {
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const userRole = currentUser.role || 'student';
+    
+    if (bookingMode === 'tenant' || userRole === 'tenant') {
         return this.favorites.filter(favorite => 
             favorite.property && favorite.property.acceptsShortTerm
-            // REMOVED: NSFAS properties from tenant mode comparison
         );
     }
-    return this.favorites; // All properties available for student mode
+    return this.favorites; // All properties available for student mode/users
 }
 
 // CORRECTED: Compare favorites with NSFAS validation - updated message
