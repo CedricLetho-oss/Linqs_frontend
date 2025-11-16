@@ -426,7 +426,6 @@ function showShortTermPricingInfo() {
     accommodationInfo.innerHTML += pricingHTML;
 }
 
-// FIXED: Enhanced property details loading to properly update the UI
 async function loadPropertyDetails(propertyId) {
     try {
         console.log('Loading property details for ID:', propertyId);
@@ -466,10 +465,20 @@ async function loadPropertyDetails(propertyId) {
             property: selectedProperty.title || 'Unknown Property',
             landlord: landlordName,
             propertyId: selectedProperty._id,
-            landlordId: selectedProperty.landlord?._id || selectedProperty.landlord
+            landlordId: selectedProperty.landlord?._id || selectedProperty.landlord,
+            // NEW: Store property pricing information
+            rentType: selectedProperty.rentType || 'fixed',
+            price: selectedProperty.price || 0,
+            acceptsShortTerm: selectedProperty.acceptsShortTerm || false
         };
         
         console.log('Final accommodation data:', selectedAccommodation);
+
+        // NEW: Show NSFAS pricing info if applicable
+        if (selectedProperty.rentType === 'nsfas') {
+            showNSFASPricingInfo();
+        }
+        
     } catch (error) {
         console.error('Error loading property details:', error);
         alert('Failed to load property details. Please try again.');
@@ -492,6 +501,26 @@ async function loadAvailableProperties() {
     } catch (error) {
         console.error('Error loading properties:', error);
     }
+}
+
+// NEW: Show NSFAS pricing information
+function showNSFASPricingInfo() {
+    const accommodationInfo = document.getElementById('accommodationInfo');
+    if (!accommodationInfo) return;
+
+    const nsfasHTML = `
+        <div class="alert alert-info mt-3">
+            <i class="bi bi-award me-2"></i>
+            <strong>NSFAS Accredited Accommodation</strong>
+            <p class="mb-0">This property offers NSFAS rates. The landlord will contact you with specific pricing details.</p>
+        </div>
+        <div class="alert alert-success mt-2">
+            <i class="bi bi-check-circle me-2"></i>
+            <strong>NSFAS Benefits:</strong> Approved for student funding, verified accommodation, secure payment processing
+        </div>
+    `;
+
+    accommodationInfo.innerHTML += nsfasHTML;
 }
 
 function populatePropertyCards(properties) {
@@ -711,14 +740,24 @@ function updateSummary() {
     const dateTime = formData.bookingDateTime;
     document.getElementById('summaryDateTime').textContent = formatDateTime(dateTime);
     
-    // FIXED: Update pricing information for short-term bookings
-    if (isShortTermBooking && isTenant) {
-        const pricingInfo = document.getElementById('summaryPricing') || document.createElement('div');
-        if (!document.getElementById('summaryPricing')) {
-            pricingInfo.id = 'summaryPricing';
-            document.getElementById('summaryBookingType').parentNode.appendChild(pricingInfo);
-        }
-        
+    // FIXED: Enhanced pricing information for all booking types
+    const pricingInfo = document.getElementById('summaryPricing') || document.createElement('div');
+    if (!document.getElementById('summaryPricing')) {
+        pricingInfo.id = 'summaryPricing';
+        document.getElementById('summaryBookingType').parentNode.appendChild(pricingInfo);
+    }
+
+    // NEW: Handle NSFAS pricing
+    if (selectedAccommodation && selectedAccommodation.rentType === 'nsfas') {
+        pricingInfo.innerHTML = `
+            <strong>Pricing:</strong> NSFAS Rates - Contact for details
+            <div class="alert alert-info small mt-2 mb-0">
+                <i class="bi bi-award me-1"></i>NSFAS Accredited Accommodation
+            </div>
+        `;
+    } 
+    // FIXED: Short-term pricing
+    else if (isShortTermBooking && isTenant) {
         if (shortTermParams.dailyRate && shortTermParams.dailyRate !== 'null' && shortTermParams.dailyRate !== 'undefined') {
             pricingInfo.innerHTML = `<strong>Pricing:</strong> R${shortTermParams.dailyRate} per day (Fixed Rate)`;
         } else {
@@ -730,6 +769,13 @@ function updateSummary() {
             minStayInfo.innerHTML = `<strong>Minimum Stay:</strong> ${shortTermParams.minStay} days`;
             pricingInfo.appendChild(minStayInfo);
         }
+    }
+    // FIXED: Regular student pricing
+    else if (selectedAccommodation && selectedAccommodation.price) {
+        pricingInfo.innerHTML = `<strong>Monthly Rent:</strong> R${selectedAccommodation.price}/month`;
+    }
+    else {
+        pricingInfo.innerHTML = `<strong>Pricing:</strong> To be discussed with landlord`;
     }
     
     // Update notes based on user role
@@ -1016,8 +1062,6 @@ async function handleBookingSubmission(e) {
     }
 }
 
-
-// Update the success message to handle short-term bookings
 function showBookingSuccess(booking, formData) {
     const container = document.querySelector('.container .row .col-lg-10');
     if (!container) {
@@ -1030,33 +1074,31 @@ function showBookingSuccess(booking, formData) {
     const bookingStatus = booking.status || 'pending';
     const propertyName = formData.propertyName || (booking.property && booking.property.title) || 'Unknown Property';
 
-    // FIXED: Custom message for short-term bookings with proper pricing display
-    const shortTermMessage = formData.isShortTermBooking ? 
-        `<div class="alert alert-info mt-3">
-            <i class="bi bi-info-circle me-2"></i>
-            <strong>Short-term Stay Request Submitted!</strong><br>
-            The landlord will contact you to discuss:
-            <ul class="mb-0 mt-2">
-                ${formData.shortTermParams && formData.shortTermParams.dailyRate && 
-                  formData.shortTermParams.dailyRate !== 'null' && 
-                  formData.shortTermParams.dailyRate !== 'undefined' ? 
-                    `<li><strong>Fixed Daily Rate:</strong> R${formData.shortTermParams.dailyRate} per day</li>` :
-                    `<li>Custom pricing based on your requirements</li>`
-                }
-                <li>Exact duration and dates</li>
-                <li>Any special requirements</li>
-            </ul>
-            ${formData.shortTermParams && formData.shortTermParams.dailyRate && 
-             formData.shortTermParams.dailyRate !== 'null' && 
-             formData.shortTermParams.dailyRate !== 'undefined' ? 
-                `<div class="mt-2"><strong>Daily Rate:</strong> R${formData.shortTermParams.dailyRate} per day</div>` : 
-                `<div class="mt-2"><strong>Pricing:</strong> Negotiable - will be discussed with landlord</div>`
-            }
-            ${formData.shortTermParams && formData.shortTermParams.minStay && 
-             formData.shortTermParams.minStay !== 'null' && 
-             formData.shortTermParams.minStay !== 'undefined' ? 
-                `<div><strong>Minimum Stay:</strong> ${formData.shortTermParams.minStay} days</div>` : ''}
-        </div>` : '';
+    // NEW: Enhanced pricing display for all types
+    let pricingDisplay = '';
+    
+    if (selectedAccommodation && selectedAccommodation.rentType === 'nsfas') {
+        pricingDisplay = `
+            <p><strong>Pricing:</strong> <span class="text-success">NSFAS Rates - Contact for details</span></p>
+            <div class="alert alert-info small">
+                <i class="bi bi-award me-1"></i>NSFAS Accredited Accommodation
+            </div>
+        `;
+    } else if (formData.isShortTermBooking) {
+        if (formData.shortTermParams && formData.shortTermParams.dailyRate && 
+            formData.shortTermParams.dailyRate !== 'null' && 
+            formData.shortTermParams.dailyRate !== 'undefined') {
+            pricingDisplay = `
+                <p><strong>Pricing:</strong> <span class="text-success">R${formData.shortTermParams.dailyRate}/day (Fixed)</span></p>
+            `;
+        } else {
+            pricingDisplay = `
+                <p><strong>Pricing:</strong> <span class="text-warning">Negotiable - will be discussed with landlord</span></p>
+            `;
+        }
+    } else if (selectedAccommodation && selectedAccommodation.price) {
+        pricingDisplay = `<p><strong>Monthly Rent:</strong> R${selectedAccommodation.price}/month</p>`;
+    }
 
     const successHTML = `
         <div class="text-center py-5">
@@ -1073,21 +1115,12 @@ function showBookingSuccess(booking, formData) {
                         <p><strong>Type:</strong> ${formData.bookingType || 'N/A'}</p>
                         <p><strong>Date & Time:</strong> ${formatDateTime(formData.dateTime) || 'N/A'}</p>
                         <p><strong>Status:</strong> <span class="badge bg-warning">${bookingStatus}</span></p>
-                        ${formData.isShortTermBooking ? 
-                            `<p><strong>Booking Type:</strong> <span class="badge bg-info">Short-term Stay</span></p>
-                             <p><strong>Pricing:</strong> 
-                                ${formData.shortTermParams && formData.shortTermParams.dailyRate && 
-                                 formData.shortTermParams.dailyRate !== 'null' && 
-                                 formData.shortTermParams.dailyRate !== 'undefined' ? 
-                                    `<span class="text-success">R${formData.shortTermParams.dailyRate}/day (Fixed)</span>` : 
-                                    '<span class="text-warning">Negotiable</span>'
-                                }
-                             </p>` : ''}
+                        ${selectedAccommodation && selectedAccommodation.rentType === 'nsfas' ? 
+                            `<p><strong>Accommodation Type:</strong> <span class="badge bg-info">NSFAS Accredited</span></p>` : ''}
+                        ${pricingDisplay}
                     </div>
                 </div>
             </div>
-            
-            ${shortTermMessage}
             
             <div class="alert alert-info mt-4 mx-auto" style="max-width: 500px;">
                 <i class="bi bi-envelope me-2"></i>
