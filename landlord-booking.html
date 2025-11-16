@@ -1645,6 +1645,7 @@ footer {
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
   
     <!-- Bookings Management Script -->
+    <!-- Bookings Management Script -->
   <script>
     // Global variables
     let allBookings = [];
@@ -1659,6 +1660,93 @@ footer {
       completed: { class: 'secondary', text: 'Completed', icon: 'bi-check-lg' },
       rescheduled: { class: 'info', text: 'Reschedule Requested', icon: 'bi-calendar-week' }
     };
+
+    // NEW: Enhanced price display method that handles all pricing scenarios
+    function getPriceDisplay(booking, property, isTenant) {
+        // Check for NSFAS pricing first
+        if (property.rentType === 'nsfas') {
+            // Check if there's a specific NSFAS rate in the booking
+            if (booking.nsfasRate && booking.nsfasRate > 0) {
+                return `
+                    <div class="pricing-display">
+                        <p class="text-success mb-1">
+                            <i class="bi bi-award me-1"></i><strong>NSFAS Rate:</strong> R${booking.nsfasRate}/month
+                        </p>
+                        <small class="text-muted">NSFAS Accredited Accommodation</small>
+                    </div>
+                `;
+            } else if (property.nsfasRate && property.nsfasRate > 0) {
+                return `
+                    <div class="pricing-display">
+                        <p class="text-success mb-1">
+                            <i class="bi bi-award me-1"></i><strong>NSFAS Rate:</strong> R${property.nsfasRate}/month
+                        </p>
+                        <small class="text-muted">NSFAS Accredited Accommodation</small>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="pricing-display">
+                        <p class="text-success mb-1">
+                            <i class="bi bi-award me-1"></i><strong>NSFAS Rates Available</strong>
+                        </p>
+                        <small class="text-muted">Contact for NSFAS pricing details</small>
+                    </div>
+                `;
+            }
+        }
+        
+        // Handle tenant/short-term pricing
+        if (isTenant) {
+            if (booking.negotiatedPrice && booking.negotiatedPrice > 0) {
+                return `
+                    <div class="pricing-display">
+                        <p class="text-primary mb-1">
+                            <i class="bi bi-cash-coin me-1"></i><strong>Negotiated Price:</strong> R${booking.negotiatedPrice}
+                        </p>
+                        ${booking.priceNegotiable ? '<small class="text-warning">Price negotiable</small>' : ''}
+                    </div>
+                `;
+            } else if (property.dailyRate && property.dailyRate > 0) {
+                return `
+                    <div class="pricing-display">
+                        <p class="text-primary mb-1">
+                            <i class="bi bi-cash-coin me-1"></i><strong>Daily Rate:</strong> R${property.dailyRate}
+                        </p>
+                        ${property.minStay ? `<small class="text-muted">Min stay: ${property.minStay} days</small>` : ''}
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="pricing-display">
+                        <p class="text-muted mb-1">
+                            <i class="bi bi-cash-coin me-1"></i>Price to be negotiated
+                        </p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Handle regular student pricing
+        if (property.price && property.price > 0) {
+            return `
+                <div class="pricing-display">
+                    <p class="text-primary mb-1">
+                        <i class="bi bi-cash-coin me-1"></i><strong>Monthly Rent:</strong> R${property.price}/month
+                    </p>
+                </div>
+            `;
+        }
+        
+        // Default fallback
+        return `
+            <div class="pricing-display">
+                <p class="text-muted mb-1">
+                    <i class="bi bi-cash-coin me-1"></i>Contact for pricing details
+                </p>
+            </div>
+        `;
+    }
 
     // NEW: Check if booking has pending reschedule request
     function hasPendingReschedule(booking) {
@@ -1704,8 +1792,7 @@ footer {
       return name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : '?';
     }
 
-// Update generateBookingRow function to include booking type
-// UPDATE generateBookingRow function to include verification badge
+// UPDATE generateBookingRow function to include enhanced pricing display
 function generateBookingRow(booking) {
     const status = statusConfig[booking.status];
     const isUpcoming = booking.status === 'confirmed' && new Date(booking.checkIn) > new Date();
@@ -1725,11 +1812,14 @@ function generateBookingRow(booking) {
     const typeText = isTenant ? 'Short-term' : 'Student';
     const typeIcon = isTenant ? 'bi-person' : 'bi-person-check';
     
+    // ENHANCED: Get proper price display
+    const priceDisplay = getPriceDisplay(booking, booking.property || {}, isTenant);
+
     return `
         <tr class="booking-row" data-booking-id="${booking._id}">
             <td>
                 <div class="d-flex align-items-center">
-                    <div class="student-avatar me-2 ${isTenant ? 'bg-info' : 'bg-primary'}">${getInitials(studentName)}</div>
+                    <div class="student-avatar me-2 ${isTenant ? 'tenant-avatar' : 'student-avatar'}">${getInitials(studentName)}</div>
                     <div>
                         <div class="fw-bold small">${studentName}</div>
                         <small class="text-muted">${booking.student?.email || 'No email'}</small>
@@ -1738,14 +1828,14 @@ function generateBookingRow(booking) {
                             `<small class="text-warning d-block"><i class="bi bi-exclamation-triangle"></i> Unverified</small>`
                         }
                         ${hasRescheduleRequest ? '<small class="text-warning d-block"><i class="bi bi-exclamation-triangle"></i> Reschedule Requested</small>' : ''}
-                        ${isTenant && booking.stayDuration ? `<small class="text-info d-block"><i class="bi bi-clock"></i> ${booking.stayDuration}</small>` : ''}
-                        ${isTenant && booking.negotiatedPrice > 0 ? `<small class="text-success d-block"><i class="bi bi-currency-dollar"></i> R${booking.negotiatedPrice}</small>` : ''}
+                        ${isTenant && booking.stayDuration ? `<small class="text-info d-block"><i class="bi bi-clock me-1"></i>${booking.stayDuration}</small>` : ''}
                     </div>
                 </div>
             </td>
             <td>
                 <div class="fw-bold small">${propertyName}</div>
-                <small class="text-muted">${isTenant ? 'Price negotiated' : `R${booking.property?.price || 0}/month`}</small>
+                <!-- ENHANCED: Price display -->
+                ${priceDisplay}
             </td>
             <td>
                 <div class="small">${formatDateTime(booking.checkIn)}</div>
@@ -1761,6 +1851,7 @@ function generateBookingRow(booking) {
                 <span class="badge ${typeBadgeClass} status-badge">
                     <i class="${typeIcon} me-1"></i>${typeText}
                 </span>
+                ${booking.property?.rentType === 'nsfas' ? '<span class="badge bg-success status-badge ms-1"><i class="bi bi-award me-1"></i>NSFAS</span>' : ''}
             </td>
             <td>
                 <span class="badge bg-${status.class} status-badge">
@@ -1973,7 +2064,7 @@ async function submitRescheduleResponse(bookingId) {
   }
 }
     
-// UPDATED: Load bookings from backend with reschedule support
+// UPDATED: Load bookings from backend with enhanced pricing data
 async function loadBookings() {
     try {
         if (allBookings.length === 0) {
@@ -1999,6 +2090,16 @@ async function loadBookings() {
         const data = await response.json();
         allBookings = data.bookings || [];
         filteredBookings = [...allBookings];
+
+        console.log('Loaded bookings with pricing data:', allBookings.map(b => ({
+            id: b._id,
+            type: b.bookingType,
+            property: b.property?.title,
+            rentType: b.property?.rentType,
+            nsfasRate: b.nsfasRate,
+            negotiatedPrice: b.negotiatedPrice,
+            price: b.property?.price
+        })));
 
         hideLoadingState();
         renderFilteredBookings();
@@ -2082,7 +2183,7 @@ async function loadBookings() {
       renderFilteredBookings();
     }
 
-    // UPDATED: Render filtered bookings with reschedule counts
+    // UPDATED: Render filtered bookings with enhanced pricing display
 function renderFilteredBookings() {
   // Update stats based on filtered bookings
   document.getElementById('totalBookings').textContent = filteredBookings.length;
@@ -2569,8 +2670,7 @@ function updateCalendar() {
       }
     }
 
-// Update viewBookingDetails function
-// UPDATE viewBookingDetails function
+// UPDATE viewBookingDetails function with enhanced pricing information
 async function viewBookingDetails(bookingId) {
     try {
         const token = localStorage.getItem("token");
@@ -2602,6 +2702,10 @@ async function viewBookingDetails(bookingId) {
         const typeBadgeClass = isTenant ? 'bg-info' : 'bg-primary';
         const typeText = isTenant ? 'Short-term Tenant' : 'Student';
         const typeIcon = isTenant ? 'bi-person' : 'bi-person-check';
+
+        // ENHANCED: Get detailed pricing information
+        const property = booking.property || {};
+        const priceDisplay = getPriceDisplay(booking, property, isTenant);
 
         let rescheduleHistory = '';
         if (hasRescheduleRequests) {
@@ -2648,6 +2752,21 @@ async function viewBookingDetails(bookingId) {
             </div>
         ` : '';
 
+        // NSFAS-specific information
+        const nsfasInfo = property.rentType === 'nsfas' ? `
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="alert alert-success">
+                        <h6><i class="bi bi-award me-2"></i>NSFAS Accredited Property</h6>
+                        <p class="mb-0">
+                            <strong>NSFAS Rate:</strong> R${booking.nsfasRate || property.nsfasRate || 'Contact for details'}/month<br>
+                            <small>This property is approved for NSFAS student funding.</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        ` : '';
+
         const modalContent = `
             <div class="row">
                 <div class="col-md-6">
@@ -2659,11 +2778,14 @@ async function viewBookingDetails(bookingId) {
                 </div>
                 <div class="col-md-6">
                     <h6>Booking Details</h6>
-                    <p><strong>Property:</strong> ${booking.property?.title || 'Unknown'}</p>
+                    <p><strong>Property:</strong> ${property.title || 'Unknown'}</p>
                     <p><strong>Check-in:</strong> ${formatDateTime(booking.checkIn)}</p>
                     <p><strong>Check-out:</strong> ${formatDateTime(booking.checkOut)}</p>
                     <p><strong>Guests:</strong> ${booking.numberOfGuests || 1}</p>
-                    ${!isTenant ? `<p><strong>Total Price:</strong> R${booking.totalPrice || 0}</p>` : ''}
+                    <!-- ENHANCED: Pricing Information -->
+                    <div class="pricing-section">
+                        ${priceDisplay}
+                    </div>
                     <p><strong>Status:</strong> <span class="badge bg-${statusConfig[booking.status].class}">${statusConfig[booking.status].text}</span></p>
                     ${hasPendingReschedule(booking) ? `
                         <p><strong>Reschedule:</strong> <span class="badge bg-info">Pending Request</span></p>
@@ -2671,6 +2793,7 @@ async function viewBookingDetails(bookingId) {
                 </div>
             </div>
             
+            ${nsfasInfo}
             ${tenantInfo}
             
             ${booking.specialRequests ? `
@@ -3241,6 +3364,33 @@ async function viewBookingDetails(bookingId) {
       // Cleanup on page unload
       window.addEventListener('beforeunload', cleanupCalendar);
     });
+
+    // Add CSS for better pricing display
+    const style = document.createElement('style');
+    style.textContent = `
+        .pricing-display {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 8px;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+        }
+        .pricing-display p {
+            margin-bottom: 0.25rem;
+        }
+        .pricing-section {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+        }
+        .tenant-avatar {
+            background: linear-gradient(135deg, #7e22ce 0%, #a855f7 100%) !important;
+        }
+        .student-avatar {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+        }
+    `;
+    document.head.appendChild(style);
   </script>
 </body>
 </html>
