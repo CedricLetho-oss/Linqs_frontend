@@ -799,7 +799,7 @@
   <script src="navbar.js"></script>
   
   <script>
-  // Initialize AOS
+// Initialize AOS
 AOS.init({
   duration: 1000,
   once: true,
@@ -808,48 +808,47 @@ AOS.init({
 
 class PropertyComparator {
   constructor() {
-  this.favorites = [];
-  this.selectedProperties = [];
-  this.maxSelection = 4;
-  this.currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-  this.userRole = this.currentUser.role || 'student';
-  this.currentBookingMode = this.getCurrentBookingMode();
-  
-  console.log(`Comparator initialized: ${this.userRole} in ${this.currentBookingMode} mode`);
-  
-  this.updateHeroSection(); 
-  this.init();
-}
-
-
-// NEW: Update hero section based on current mode
-updateHeroSection() {
-  const heroTitle = document.querySelector('.compare-hero h1');
-  const heroSubtitle = document.querySelector('.compare-hero .lead');
-  
-  if (this.userRole === 'tenant' || this.currentBookingMode === 'tenant') {
-    heroTitle.innerHTML = 'Compare <span class="gradient-text">Short-term Properties</span>';
-    heroSubtitle.innerHTML = 'Side-by-side comparison of short-term rental properties with daily pricing.';
+    this.favorites = [];
+    this.selectedProperties = [];
+    this.maxSelection = 4;
+    this.currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    this.userRole = this.currentUser.role || 'student';
+    this.currentBookingMode = this.getCurrentBookingMode();
     
-    // Add a badge to indicate tenant mode
-    const existingBadge = document.querySelector('.mode-badge');
-    if (!existingBadge) {
-      const badge = document.createElement('span');
-      badge.className = 'badge bg-success mode-badge ms-2';
-      badge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term Mode';
-      heroTitle.appendChild(badge);
-    }
-  } else {
-    heroTitle.innerHTML = 'Compare <span class="gradient-text">Properties</span>';
-    heroSubtitle.textContent = 'Side-by-side comparison of your favorite properties to help you make the best decision.';
+    console.log(`Comparator initialized: ${this.userRole} in ${this.currentBookingMode} mode`);
     
-    // Remove tenant badge if exists
-    const existingBadge = document.querySelector('.mode-badge');
-    if (existingBadge) {
-      existingBadge.remove();
+    this.updateHeroSection(); 
+    this.init();
+  }
+
+  // NEW: Update hero section based on current mode
+  updateHeroSection() {
+    const heroTitle = document.querySelector('.compare-hero h1');
+    const heroSubtitle = document.querySelector('.compare-hero .lead');
+    
+    if (this.userRole === 'tenant' || this.currentBookingMode === 'tenant') {
+      heroTitle.innerHTML = 'Compare <span class="gradient-text">Short-term Properties</span>';
+      heroSubtitle.innerHTML = 'Side-by-side comparison of short-term rental properties with daily pricing.';
+      
+      // Add a badge to indicate tenant mode
+      const existingBadge = document.querySelector('.mode-badge');
+      if (!existingBadge) {
+        const badge = document.createElement('span');
+        badge.className = 'badge bg-success mode-badge ms-2';
+        badge.innerHTML = '<i class="bi bi-calendar-range me-1"></i>Short-term Mode';
+        heroTitle.appendChild(badge);
+      }
+    } else {
+      heroTitle.innerHTML = 'Compare <span class="gradient-text">Properties</span>';
+      heroSubtitle.textContent = 'Side-by-side comparison of your favorite properties to help you make the best decision.';
+      
+      // Remove tenant badge if exists
+      const existingBadge = document.querySelector('.mode-badge');
+      if (existingBadge) {
+        existingBadge.remove();
+      }
     }
   }
-}
 
   init() {
     this.bindEvents();
@@ -857,43 +856,43 @@ updateHeroSection() {
   }
 
   bindEvents() {
-  // Compare button
-  document.getElementById('compare-button').addEventListener('click', () => {
-    this.compareProperties();
-  });
+    // Compare button
+    document.getElementById('compare-button').addEventListener('click', () => {
+      this.compareProperties();
+    });
 
-  // Reset comparison
-  document.getElementById('reset-comparison').addEventListener('click', () => {
-    this.resetComparison();
-  });
+    // Reset comparison
+    document.getElementById('reset-comparison').addEventListener('click', () => {
+      this.resetComparison();
+    });
 
-  // ENHANCED: Listen for booking mode changes with proper refresh
-  window.addEventListener('bookingModeChanged', () => {
-    console.log('Booking mode changed, refreshing comparison...');
-    
-    // Update current mode
-    this.currentBookingMode = this.getCurrentBookingMode();
-    this.updateHeroSection();
-    
-    if (this.selectedProperties.length >= 2) {
-      // Full refresh of all comparison components
-      this.renderSelection();
-      this.renderPropertyCards();
-      this.renderComparisonTable();
-      this.generateSummary();
+    // Listen for booking mode changes with proper refresh
+    window.addEventListener('bookingModeChanged', () => {
+      console.log('Booking mode changed, refreshing comparison...');
       
-      this.showToast('Comparison updated for current booking mode', 'info');
-    }
-  });
-  
-  // NEW: Also listen for storage changes (fallback)
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'booking_mode') {
-      console.log('Storage change detected, refreshing...');
-      window.dispatchEvent(new Event('bookingModeChanged'));
-    }
-  });
-}
+      // Update current mode
+      this.currentBookingMode = this.getCurrentBookingMode();
+      this.updateHeroSection();
+      
+      if (this.selectedProperties.length >= 2) {
+        // Full refresh of all comparison components
+        this.renderSelection();
+        this.renderPropertyCards();
+        this.renderComparisonTable();
+        this.generateSummary();
+        
+        this.showToast('Comparison updated for current booking mode', 'info');
+      }
+    });
+    
+    // Also listen for storage changes (fallback)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'booking_mode') {
+        console.log('Storage change detected, refreshing...');
+        window.dispatchEvent(new Event('bookingModeChanged'));
+      }
+    });
+  }
 
   async loadFavorites() {
     this.showLoading();
@@ -936,7 +935,7 @@ updateHeroSection() {
             let favorites = data.data || data.favorites || [];
             console.log('Favorites data:', favorites);
             
-            // FIX: Filter out favorites with null properties and ensure property has _id
+            // Filter out favorites with null properties and ensure property has _id
             favorites = favorites.filter(favorite => 
                 favorite && 
                 favorite.property && 
@@ -1019,7 +1018,6 @@ updateHeroSection() {
       
       col.innerHTML = `
         <div class="selection-card ${isSelected ? 'selected' : ''}" data-property-id="${property._id}">
-          <!-- FIXED: Consistent image container -->
           <div class="property-image-container mb-3">
             <img src="${property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/300x200/1e3a8a/ffffff?text=Property+Image'}" 
                 alt="${property.title}" class="property-image">
@@ -1051,12 +1049,32 @@ updateHeroSection() {
     });
   }
 
-  // UPDATED: Role-based price display with proper tenant handling
-// UPDATED: Role-based price display with proper NSFAS handling for students
-getRoleBasedPriceDisplay(property) {
-  // For tenants, ALWAYS show short-term pricing if available
-  if (this.userRole === 'tenant') {
-    if (property.acceptsShortTerm) {
+  // UPDATED: Role-based price display - ONLY show "NSFAS Rates" for NSFAS properties
+  getRoleBasedPriceDisplay(property) {
+    // For tenants, ALWAYS show short-term pricing if available
+    if (this.userRole === 'tenant') {
+      if (property.acceptsShortTerm) {
+        if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
+          return {
+            text: `R${property.shortTermPrice}/day`,
+            className: 'text-success'
+          };
+        } else if (property.shortTermPricing === 'negotiable') {
+          return {
+            text: 'Price negotiable (short-term)',
+            className: 'text-success'
+          };
+        }
+      }
+      // If tenant but no short-term available, show monthly as fallback
+      return {
+        text: `R${property.price}/month`,
+        className: 'text-primary'
+      };
+    }
+    
+    // For students in tenant mode, show short-term pricing
+    if (this.currentBookingMode === 'tenant' && property.acceptsShortTerm) {
       if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
         return {
           text: `R${property.shortTermPrice}/day`,
@@ -1069,346 +1087,310 @@ getRoleBasedPriceDisplay(property) {
         };
       }
     }
-    // If tenant but no short-term available, show monthly as fallback
+    
+    // FOR STUDENTS IN STUDENT MODE: Show "NSFAS Rates" ONLY for properties with rentType 'nsfas'
+    if (property.rentType === 'nsfas') {
+      return {
+        text: 'NSFAS Rates',
+        className: 'text-nsfas fw-bold'
+      };
+    }
+    
+    // Default to monthly pricing for non-NSFAS properties
     return {
       text: `R${property.price}/month`,
       className: 'text-primary'
     };
   }
-  
-  // For students in tenant mode, show short-term pricing
-  if (this.currentBookingMode === 'tenant' && property.acceptsShortTerm) {
-    if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
-      return {
-        text: `R${property.shortTermPrice}/day`,
-        className: 'text-success'
-      };
-    } else if (property.shortTermPricing === 'negotiable') {
-      return {
-        text: 'Price negotiable (short-term)',
-        className: 'text-success'
-      };
-    }
-  }
-  
-  // FOR STUDENTS IN STUDENT MODE: Show NSFAS Rates for NSFAS properties
-  if (property.rentType === 'nsfas') {
-    return {
-      text: 'NSFAS Rates',
-      className: 'text-nsfas fw-bold'
-    };
-  }
-  
-  // Default to monthly pricing for non-NSFAS properties
-  return {
-    text: `R${property.price}/month`,
-    className: 'text-primary'
-  };
-}
 
-// UPDATED: Role-based features display with proper tenant handling
-getRoleBasedFeatures(property) {
-  // For tenants, ALWAYS show tenant-focused features
-  if (this.userRole === 'tenant') {
-    const features = `
+  // Role-based features display
+  getRoleBasedFeatures(property) {
+    // For tenants, ALWAYS show tenant-focused features
+    if (this.userRole === 'tenant') {
+      const features = `
+        <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds • 
+        <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths
+      `;
+      
+      // Add short-term availability indicator for tenants
+      if (property.acceptsShortTerm) {
+        return features + ` • <i class="bi bi-calendar-range me-1"></i>Short-term available`;
+      }
+      
+      return features + ` • <i class="bi bi-calendar-month me-1"></i>Long-term only`;
+    }
+    
+    // For students in tenant mode, show tenant-focused features
+    if (this.currentBookingMode === 'tenant') {
+      const features = `
+        <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds • 
+        <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths
+      `;
+      
+      if (property.acceptsShortTerm) {
+        return features + ` • <i class="bi bi-calendar-range me-1"></i>Short-term available`;
+      }
+      
+      return features + ` • <i class="bi bi-calendar-month me-1"></i>Long-term only`;
+    }
+    
+    // Default student view
+    return `
       <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds • 
-      <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths
+      <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths •
+      <i class="bi bi-people me-1"></i>${this.getGenderText(property.genderPreference)} •
+      <i class="bi bi-award me-1"></i>${this.getAccreditationText(property.accreditation)}
     `;
-    
-    // Add short-term availability indicator for tenants
-    if (property.acceptsShortTerm) {
-      return features + ` • <i class="bi bi-calendar-range me-1"></i>Short-term available`;
-    }
-    
-    return features + ` • <i class="bi bi-calendar-month me-1"></i>Long-term only`;
   }
-  
-  // For students in tenant mode, show tenant-focused features
-  if (this.currentBookingMode === 'tenant') {
-    const features = `
-      <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds • 
-      <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths
-    `;
-    
-    if (property.acceptsShortTerm) {
-      return features + ` • <i class="bi bi-calendar-range me-1"></i>Short-term available`;
-    }
-    
-    return features + ` • <i class="bi bi-calendar-month me-1"></i>Long-term only`;
-  }
-  
-  // Default student view
-  return `
-    <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds • 
-    <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths •
-    <i class="bi bi-people me-1"></i>${this.getGenderText(property.genderPreference)} •
-    <i class="bi bi-award me-1"></i>${this.getAccreditationText(property.accreditation)}
-  `;
-}
 
-renderPropertyCards() {
-  const container = document.getElementById('property-cards');
-  container.innerHTML = '';
-  
-  this.selectedProperties.forEach((property, index) => {
-    const col = document.createElement('div');
-    col.className = `col-md-6 ${this.selectedProperties.length > 2 ? 'col-lg-3' : 'col-lg-6'} mb-4`;
+  // Property cards rendering
+  renderPropertyCards() {
+    const container = document.getElementById('property-cards');
+    container.innerHTML = '';
     
-    const priceDisplay = this.getRoleBasedPriceDisplay(property);
-    const genderText = this.getGenderText(property.genderPreference);
-    const accreditationText = this.getAccreditationText(property.accreditation);
-    const amenitiesCount = property.amenities ? property.amenities.length : 0;
-    
-    // Determine badges to show
-    const showShortTermBadge = (this.userRole === 'tenant' || this.currentBookingMode === 'tenant') && property.acceptsShortTerm;
-    const showNsfasBadge = property.rentType === 'nsfas' && (this.userRole !== 'tenant' && this.currentBookingMode !== 'tenant');
-    
-    col.innerHTML = `
-      <div class="comparison-card">
-        <div class="property-image-container mb-3">
-          <img src="${property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/300x200/1e3a8a/ffffff?text=Property+Image'}" 
-              alt="${property.title}" class="property-image">
-        </div>
-        <h5 class="property-title">${property.title}</h5>
-        <p class="property-location text-muted small mb-2">
-          <i class="bi bi-geo-alt"></i> ${property.location?.address || 'Location not specified'}
-        </p>
-        <p class="property-price fw-bold ${priceDisplay.className} mb-3">${priceDisplay.text}</p>
-        
-        <!-- UPDATED: Badge logic - NSFAS for students, Short-term for tenants -->
-        ${showNsfasBadge ? 
-          '<span class="badge nsfas-badge mb-2"><i class="bi bi-award me-1"></i>NSFAS Accredited</span>' : 
-          showShortTermBadge ? 
-          '<span class="badge bg-success mb-2"><i class="bi bi-calendar-range me-1"></i>Short-term Available</span>' : 
-          ''
-        }
-        
-        <div class="property-features mb-3">
-          <div class="d-flex flex-wrap gap-2">
-            <span class="badge bg-light text-dark">
-              <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds
-            </span>
-            <span class="badge bg-light text-dark">
-              <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths
-            </span>
-            ${this.userRole !== 'tenant' && this.currentBookingMode !== 'tenant' ? `
-              <span class="badge bg-light text-dark">
-                <i class="bi bi-people me-1"></i>${genderText}
-              </span>
-              <span class="badge bg-light text-dark">
-                <i class="bi bi-award me-1"></i>${accreditationText}
-              </span>
-            ` : ''}
-            <span class="badge amenity-count-badge">
-              <i class="bi bi-grid-3x3 me-1"></i>${amenitiesCount} amenities
-            </span>
+    this.selectedProperties.forEach((property, index) => {
+      const col = document.createElement('div');
+      col.className = `col-md-6 ${this.selectedProperties.length > 2 ? 'col-lg-3' : 'col-lg-6'} mb-4`;
+      
+      const priceDisplay = this.getRoleBasedPriceDisplay(property);
+      const genderText = this.getGenderText(property.genderPreference);
+      const accreditationText = this.getAccreditationText(property.accreditation);
+      const amenitiesCount = property.amenities ? property.amenities.length : 0;
+      
+      // Determine if we should show short-term badge
+      const showShortTermBadge = (this.userRole === 'tenant' || this.currentBookingMode === 'tenant') && property.acceptsShortTerm;
+      const showNsfasBadge = property.rentType === 'nsfas' && (this.userRole !== 'tenant' && this.currentBookingMode !== 'tenant');
+      
+      col.innerHTML = `
+        <div class="comparison-card">
+          <div class="property-image-container mb-3">
+            <img src="${property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/300x200/1e3a8a/ffffff?text=Property+Image'}" 
+                alt="${property.title}" class="property-image">
           </div>
-        </div>
-        
-        <div class="property-amenities mb-3">
-          <h6 class="text-navy mb-2"> Amenities</h6>
-          <div class="d-flex flex-wrap gap-1">
-            ${property.amenities && property.amenities.length > 0 ? 
-              property.amenities.map(amenity => `
-                <span class="badge bg-primary">${amenity}</span>
-              `).join('') : 
-              '<small class="text-muted">No amenities listed</small>'
-            }
-          </div>
-        </div>
-        
-        <div class="text-center mt-3">
-          <a href="property-details.html?id=${property._id}" class="btn btn-outline-primary btn-sm me-2">
-            <i class="bi bi-eye me-1"></i>View Details
-          </a>
-          <button class="btn btn-outline-danger btn-sm remove-from-comparison" data-property-id="${property._id}">
-            <i class="bi bi-x me-1"></i>Remove
-          </button>
-        </div>
-      </div>
-    `;
-    
-    col.querySelector('.remove-from-comparison').addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.removeFromComparison(property._id);
-    });
-    
-    container.appendChild(col);
-  });
-}
-
-// UPDATED: Get current booking mode with tenant role priority
-getCurrentBookingMode() {
-  // If user is tenant role, ALWAYS use tenant mode
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  if (user.role === 'tenant') {
-    return 'tenant';
-  }
-  
-  // First check URL parameters
-  const urlMode = this.detectBookingModeFromURL();
-  if (urlMode) {
-    return urlMode;
-  }
-  
-  // If user is student, check booking mode preference
-  if (user.role === 'student') {
-    return localStorage.getItem('booking_mode') || 'student';
-  }
-  
-  // Default to student mode
-  return 'student';
-}
-
-// UPDATED: Helper to get property price with tenant priority
-// UPDATED: Get property price for comparison with NSFAS handling
-getPropertyPrice(property) {
-  // For tenants, ALWAYS use short-term pricing if available
-  if (this.userRole === 'tenant' && property.acceptsShortTerm) {
-    if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
-      return property.shortTermPrice;
-    }
-    // Return a high number for negotiable properties so they're not considered "cheapest"
-    return 999999;
-  }
-  
-  // For students in tenant mode, use short-term pricing
-  if (this.currentBookingMode === 'tenant' && property.acceptsShortTerm) {
-    if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
-      return property.shortTermPrice;
-    }
-    return 999999;
-  }
-  
-  // FOR STUDENTS IN STUDENT MODE: NSFAS properties get special pricing (0 for comparison)
-  if (property.rentType === 'nsfas') {
-    return 0; // NSFAS properties are always considered "cheapest" for students
-  }
-  
-  // Default to monthly pricing for non-NSFAS properties
-  return property.price;
-}
-
-// UPDATED: Enhanced role-based comparison features with tenant priority
-// UPDATED: Enhanced role-based comparison features with NSFAS support
-getRoleBasedComparisonFeatures() {
-  const isTenantView = this.userRole === 'tenant' || this.currentBookingMode === 'tenant';
-  
-  const baseFeatures = [
-    {
-      name: 'Price',
-      getValue: (prop) => {
-        // For tenant view, prioritize short-term pricing
-        if (isTenantView) {
-          if (prop.acceptsShortTerm) {
-            if (prop.shortTermPricing === 'fixed' && prop.shortTermPrice > 0) {
-              return `R${prop.shortTermPrice}/day`;
-            } else if (prop.shortTermPricing === 'negotiable') {
-              return 'Price negotiable';
-            }
+          <h5 class="property-title">${property.title}</h5>
+          <p class="property-location text-muted small mb-2">
+            <i class="bi bi-geo-alt"></i> ${property.location?.address || 'Location not specified'}
+          </p>
+          <p class="property-price fw-bold ${priceDisplay.className} mb-3">${priceDisplay.text}</p>
+          
+          <!-- Badge logic - NSFAS for students, Short-term for tenants -->
+          ${showNsfasBadge ? 
+            '<span class="badge nsfas-badge mb-2"><i class="bi bi-award me-1"></i>NSFAS Rates</span>' : 
+            showShortTermBadge ? 
+            '<span class="badge bg-success mb-2"><i class="bi bi-calendar-range me-1"></i>Short-term Available</span>' : 
+            ''
           }
-          return `R${prop.price}/month`;
-        }
-        
-        // For students: Show NSFAS Rates for NSFAS properties
-        if (prop.rentType === 'nsfas') {
-          return 'NSFAS Rates';
-        }
-        
-        return `R${prop.price}/month`;
-      },
-      type: 'text'
-    },
-    {
-      name: 'Rent Type',
-      getValue: (prop) => {
-        if (prop.rentType === 'nsfas') return 'NSFAS';
-        if (prop.acceptsShortTerm) return 'Short-term Available';
-        return 'Standard';
-      },
-      type: 'text'
-    },
-    {
-      name: 'Bedrooms',
-      getValue: (prop) => this.getSafeNumber(prop.bedrooms),
-      type: 'numeric',
-      better: 'higher'
-    },
-    {
-      name: 'Bathrooms', 
-      getValue: (prop) => this.getSafeNumber(prop.bathrooms),
-      type: 'numeric',
-      better: 'higher'
-    },
-    {
-      name: 'Amenities Count',
-      getValue: (prop) => prop.amenities ? prop.amenities.length : 0,
-      type: 'numeric',
-      better: 'higher'
-    },
-    {
-      name: 'Property Type',
-      getValue: (prop) => prop.propertyType ? prop.propertyType.charAt(0).toUpperCase() + prop.propertyType.slice(1) : 'Not specified',
-      type: 'text'
-    },
-    {
-      name: 'Location',
-      getValue: (prop) => prop.location?.address || 'Not specified',
-      type: 'text'
-    }
-  ];
-
-  // Add pricing type and minimum stay for tenant view
-  if (isTenantView) {
-    baseFeatures.splice(2, 0, {
-      name: 'Pricing Type',
-      getValue: (prop) => {
-        if (prop.acceptsShortTerm) {
-          return prop.shortTermPricing === 'fixed' ? 'Fixed daily rate' : 
-                 prop.shortTermPricing === 'negotiable' ? 'Negotiable' : 'Monthly only';
-        }
-        return 'Monthly only';
-      },
-      type: 'text'
-    });
-    
-    if (this.selectedProperties.some(p => p.acceptsShortTerm && p.shortTermMinStay)) {
-      baseFeatures.push({
-        name: 'Minimum Stay',
-        getValue: (prop) => prop.acceptsShortTerm && prop.shortTermMinStay ? `${prop.shortTermMinStay} days` : 'N/A',
-        type: 'numeric',
-        better: 'lower'
+          
+          <div class="property-features mb-3">
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge bg-light text-dark">
+                <i class="bi bi-door-closed me-1"></i>${this.getSafeNumber(property.bedrooms)} beds
+              </span>
+              <span class="badge bg-light text-dark">
+                <i class="bi bi-badge-wc me-1"></i>${this.getSafeNumber(property.bathrooms)} baths
+              </span>
+              ${this.userRole !== 'tenant' && this.currentBookingMode !== 'tenant' ? `
+                <span class="badge bg-light text-dark">
+                  <i class="bi bi-people me-1"></i>${genderText}
+                </span>
+                <span class="badge bg-light text-dark">
+                  <i class="bi bi-award me-1"></i>${accreditationText}
+                </span>
+              ` : ''}
+              <span class="badge amenity-count-badge">
+                <i class="bi bi-grid-3x3 me-1"></i>${amenitiesCount} amenities
+              </span>
+            </div>
+          </div>
+          
+          <div class="property-amenities mb-3">
+            <h6 class="text-navy mb-2"> Amenities</h6>
+            <div class="d-flex flex-wrap gap-1">
+              ${property.amenities && property.amenities.length > 0 ? 
+                property.amenities.map(amenity => `
+                  <span class="badge bg-primary">${amenity}</span>
+                `).join('') : 
+                '<small class="text-muted">No amenities listed</small>'
+              }
+            </div>
+          </div>
+          
+          <div class="text-center mt-3">
+            <a href="property-details.html?id=${property._id}" class="btn btn-outline-primary btn-sm me-2">
+              <i class="bi bi-eye me-1"></i>View Details
+            </a>
+            <button class="btn btn-outline-danger btn-sm remove-from-comparison" data-property-id="${property._id}">
+              <i class="bi bi-x me-1"></i>Remove
+            </button>
+          </div>
+        </div>
+      `;
+      
+      col.querySelector('.remove-from-comparison').addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.removeFromComparison(property._id);
       });
+      
+      container.appendChild(col);
+    });
+  }
+
+  // Get current booking mode
+  getCurrentBookingMode() {
+    // If user is tenant role, ALWAYS use tenant mode
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.role === 'tenant') {
+      return 'tenant';
     }
-  } else {
-    // Student-specific features (only for student mode)
-    baseFeatures.push(
+    
+    // First check URL parameters
+    const urlMode = this.detectBookingModeFromURL();
+    if (urlMode) {
+      return urlMode;
+    }
+    
+    // If user is student, check booking mode preference
+    if (user.role === 'student') {
+      return localStorage.getItem('booking_mode') || 'student';
+    }
+    
+    // Default to student mode
+    return 'student';
+  }
+
+  // Get property price for comparison
+  getPropertyPrice(property) {
+    // For tenants, ALWAYS use short-term pricing if available
+    if (this.userRole === 'tenant' && property.acceptsShortTerm) {
+      if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
+        return property.shortTermPrice;
+      }
+      // Return a high number for negotiable properties so they're not considered "cheapest"
+      return 999999;
+    }
+    
+    // For students in tenant mode, use short-term pricing
+    if (this.currentBookingMode === 'tenant' && property.acceptsShortTerm) {
+      if (property.shortTermPricing === 'fixed' && property.shortTermPrice > 0) {
+        return property.shortTermPrice;
+      }
+      return 999999;
+    }
+    
+    // Default to monthly pricing
+    return property.price;
+  }
+
+  // Role-based comparison features
+  getRoleBasedComparisonFeatures() {
+    const isTenantView = this.userRole === 'tenant' || this.currentBookingMode === 'tenant';
+    
+    const baseFeatures = [
       {
-        name: 'Gender Preference',
-        getValue: (prop) => this.getGenderText(prop.genderPreference),
+        name: 'Price',
+        getValue: (prop) => {
+          // For tenant view, prioritize short-term pricing
+          if (isTenantView) {
+            if (prop.acceptsShortTerm) {
+              if (prop.shortTermPricing === 'fixed' && prop.shortTermPrice > 0) {
+                return `R${prop.shortTermPrice}/day`;
+              } else if (prop.shortTermPricing === 'negotiable') {
+                return 'Price negotiable';
+              }
+            }
+            return `R${prop.price}/month`;
+          }
+          
+          // For students: Show "NSFAS Rates" for NSFAS properties
+          if (prop.rentType === 'nsfas') {
+            return 'NSFAS Rates';
+          }
+          
+          return `R${prop.price}/month`;
+        },
         type: 'text'
       },
       {
-        name: 'Accreditation',
-        getValue: (prop) => this.getAccreditationText(prop.accreditation),
+        name: 'Bedrooms',
+        getValue: (prop) => this.getSafeNumber(prop.bedrooms),
+        type: 'numeric',
+        better: 'higher'
+      },
+      {
+        name: 'Bathrooms', 
+        getValue: (prop) => this.getSafeNumber(prop.bathrooms),
+        type: 'numeric',
+        better: 'higher'
+      },
+      {
+        name: 'Amenities Count',
+        getValue: (prop) => prop.amenities ? prop.amenities.length : 0,
+        type: 'numeric',
+        better: 'higher'
+      },
+      {
+        name: 'Property Type',
+        getValue: (prop) => prop.propertyType ? prop.propertyType.charAt(0).toUpperCase() + prop.propertyType.slice(1) : 'Not specified',
         type: 'text'
       },
       {
-        name: 'Funding Type',
-        getValue: (prop) => prop.rentType === 'nsfas' ? 'NSFAS' : 'Self-paying',
+        name: 'Location',
+        getValue: (prop) => prop.location?.address || 'Not specified',
         type: 'text'
       }
-    );
+    ];
+
+    // Add pricing type and minimum stay for tenant view
+    if (isTenantView) {
+      baseFeatures.splice(1, 0, {
+        name: 'Pricing Type',
+        getValue: (prop) => {
+          if (prop.acceptsShortTerm) {
+            return prop.shortTermPricing === 'fixed' ? 'Fixed daily rate' : 
+                   prop.shortTermPricing === 'negotiable' ? 'Negotiable' : 'Monthly only';
+          }
+          return 'Monthly only';
+        },
+        type: 'text'
+      });
+      
+      if (this.selectedProperties.some(p => p.acceptsShortTerm && p.shortTermMinStay)) {
+        baseFeatures.push({
+          name: 'Minimum Stay',
+          getValue: (prop) => prop.acceptsShortTerm && prop.shortTermMinStay ? `${prop.shortTermMinStay} days` : 'N/A',
+          type: 'numeric',
+          better: 'lower'
+        });
+      }
+    } else {
+      // Student-specific features (only for student mode)
+      baseFeatures.push(
+        {
+          name: 'Gender Preference',
+          getValue: (prop) => this.getGenderText(prop.genderPreference),
+          type: 'text'
+        },
+        {
+          name: 'Accreditation',
+          getValue: (prop) => this.getAccreditationText(prop.accreditation),
+          type: 'text'
+        },
+        {
+          name: 'Rent Type',
+          getValue: (prop) => prop.rentType === 'nsfas' ? 'NSFAS' : 'Standard',
+          type: 'text'
+        }
+      );
+    }
+
+    baseFeatures.push({
+      name: 'All Amenities',
+      getValue: (prop) => prop.amenities ? prop.amenities.join(', ') : 'None',
+      type: 'text'
+    });
+
+    return baseFeatures;
   }
-
-  baseFeatures.push({
-    name: 'All Amenities',
-    getValue: (prop) => prop.amenities ? prop.amenities.join(', ') : 'None',
-    type: 'text'
-  });
-
-  return baseFeatures;
-}
 
   getSafeNumber(value) {
     return value !== undefined && value !== null ? value : 'N/A';
@@ -1540,28 +1522,27 @@ getRoleBasedComparisonFeatures() {
     });
   }
 
-
-// NEW: Detect booking mode from URL parameters
-detectBookingModeFromURL() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const modeFromURL = urlParams.get('mode');
-  
-  if (modeFromURL === 'tenant' || modeFromURL === 'student') {
-    console.log(`Booking mode detected from URL: ${modeFromURL}`);
-    return modeFromURL;
+  // Detect booking mode from URL parameters
+  detectBookingModeFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const modeFromURL = urlParams.get('mode');
+    
+    if (modeFromURL === 'tenant' || modeFromURL === 'student') {
+      console.log(`Booking mode detected from URL: ${modeFromURL}`);
+      return modeFromURL;
+    }
+    
+    return null;
   }
-  
-  return null;
-}
 
-  // UPDATED: Enhanced summary generation with booking mode support
+  // Enhanced summary generation with NSFAS consideration
   generateSummary() {
     const insightsContainer = document.getElementById('key-insights');
     const summaryContainer = document.getElementById('comparison-summary');
     
     if (this.selectedProperties.length < 2) return;
 
-    // Calculate key metrics with negotiable handling
+    // Calculate key metrics
     const cheapest = this.getCheapestProperty();
     const mostBedrooms = this.selectedProperties.reduce((prev, current) => {
       const prevBedrooms = parseInt(prev.bedrooms) || 0;
@@ -1583,17 +1564,15 @@ detectBookingModeFromURL() {
 
     const accreditedProperties = this.selectedProperties.filter(p => p.accreditation === 'accredited');
     const shortTermProperties = this.selectedProperties.filter(p => p.acceptsShortTerm);
+    const nsfasProperties = this.selectedProperties.filter(p => p.rentType === 'nsfas');
     const negotiableProperties = this.selectedProperties.filter(p => 
       p.acceptsShortTerm && p.shortTermPricing === 'negotiable'
-    );
-    const fixedPriceProperties = this.selectedProperties.filter(p => 
-      p.acceptsShortTerm && p.shortTermPricing === 'fixed' && p.shortTermPrice > 0
     );
     const maleOnlyProperties = this.selectedProperties.filter(p => p.genderPreference === 'male');
     const femaleOnlyProperties = this.selectedProperties.filter(p => p.genderPreference === 'female');
     const unisexProperties = this.selectedProperties.filter(p => !p.genderPreference || p.genderPreference === 'unisex');
 
-    // Calculate price range excluding negotiable properties
+    // Calculate price range
     const pricesForRange = this.selectedProperties
       .filter(p => !(this.currentBookingMode === 'tenant' && p.acceptsShortTerm && p.shortTermPricing === 'negotiable'))
       .map(p => this.getPropertyPrice(p));
@@ -1603,83 +1582,69 @@ detectBookingModeFromURL() {
       const minPrice = Math.min(...pricesForRange);
       const maxPrice = Math.max(...pricesForRange);
       
-      if (this.currentBookingMode === 'tenant' && fixedPriceProperties.length > 0) {
+      if (this.currentBookingMode === 'tenant' && shortTermProperties.length > 0) {
         priceRangeText = `R${minPrice} - R${maxPrice}/day`;
       } else {
         priceRangeText = `R${minPrice} - R${maxPrice}/month`;
       }
     }
 
-    const hasNegotiablePrices = negotiableProperties.length > 0;
+    const hasNsfasProperties = nsfasProperties.length > 0;
     const hasSignificantPriceDifference = pricesForRange.length > 0 ? 
       (Math.max(...pricesForRange) - Math.min(...pricesForRange)) > 1000 : false;
 
     // Generate role-based key insights
     insightsContainer.innerHTML = this.generateRoleBasedInsights(
       cheapest, mostAmenities, mostBedrooms, accreditedProperties, 
-      shortTermProperties, negotiableProperties, fixedPriceProperties
+      shortTermProperties, nsfasProperties, negotiableProperties
     );
 
     // Generate detailed summary
     const recommendation = this.generateRoleBasedRecommendation(
       cheapest, mostAmenities, hasSignificantPriceDifference, 
-      accreditedProperties, shortTermProperties, negotiableProperties,
-      hasNegotiablePrices
+      accreditedProperties, shortTermProperties, nsfasProperties,
+      negotiableProperties
     );
 
     summaryContainer.innerHTML = this.generateRoleBasedSummary(
       recommendation, priceRangeText, unisexProperties, maleOnlyProperties, 
       femaleOnlyProperties, accreditedProperties, shortTermProperties,
-      negotiableProperties, fixedPriceProperties, cheapest
+      nsfasProperties, negotiableProperties, cheapest
     );
   }
 
-  // UPDATED: Get cheapest property with booking mode support
-  // UPDATED: Get cheapest property with NSFAS priority for students
-getCheapestProperty() {
-  // For tenants, consider short-term pricing if available and fixed
-  if (this.currentBookingMode === 'tenant' || this.userRole === 'tenant') {
-    const propertiesWithFixedShortTerm = this.selectedProperties.filter(p => 
-      p.acceptsShortTerm && p.shortTermPricing === 'fixed' && p.shortTermPrice > 0
+  // Get cheapest property
+  getCheapestProperty() {
+    if (this.currentBookingMode === 'tenant' || this.userRole === 'tenant') {
+      const propertiesWithFixedShortTerm = this.selectedProperties.filter(p => 
+        p.acceptsShortTerm && p.shortTermPricing === 'fixed' && p.shortTermPrice > 0
+      );
+      
+      if (propertiesWithFixedShortTerm.length > 0) {
+        return propertiesWithFixedShortTerm.reduce((prev, current) => 
+          prev.shortTermPrice < current.shortTermPrice ? prev : current
+        );
+      }
+    }
+    
+    // Default to monthly pricing for non-NSFAS properties
+    const propertiesWithMonthlyPricing = this.selectedProperties.filter(p => 
+      !((this.currentBookingMode === 'tenant' || this.userRole === 'tenant') && 
+        p.acceptsShortTerm && p.shortTermPricing === 'negotiable')
     );
     
-    if (propertiesWithFixedShortTerm.length > 0) {
-      return propertiesWithFixedShortTerm.reduce((prev, current) => 
-        prev.shortTermPrice < current.shortTermPrice ? prev : current
+    if (propertiesWithMonthlyPricing.length > 0) {
+      return propertiesWithMonthlyPricing.reduce((prev, current) => 
+        prev.price < current.price ? prev : current
       );
     }
+    
+    // Fallback: return first property if all are negotiable
+    return this.selectedProperties[0];
   }
-  
-  // FOR STUDENTS: NSFAS properties are always considered cheapest
-  const nsfasProperties = this.selectedProperties.filter(p => p.rentType === 'nsfas');
-  if (nsfasProperties.length > 0) {
-    // If multiple NSFAS properties, choose the one with most amenities
-    return nsfasProperties.reduce((prev, current) => {
-      const prevAmenities = prev.amenities ? prev.amenities.length : 0;
-      const currentAmenities = current.amenities ? current.amenities.length : 0;
-      return currentAmenities > prevAmenities ? current : prev;
-    });
-  }
-  
-  // Default to monthly pricing for non-NSFAS properties
-  // Filter out properties with negotiable pricing for price comparison
-  const propertiesWithMonthlyPricing = this.selectedProperties.filter(p => 
-    !((this.currentBookingMode === 'tenant' || this.userRole === 'tenant') && 
-      p.acceptsShortTerm && p.shortTermPricing === 'negotiable')
-  );
-  
-  if (propertiesWithMonthlyPricing.length > 0) {
-    return propertiesWithMonthlyPricing.reduce((prev, current) => 
-      prev.price < current.price ? prev : current
-    );
-  }
-  
-  // Fallback: return first property if all are negotiable
-  return this.selectedProperties[0];
-}
 
-  // UPDATED: Enhanced role-based insights with booking mode support
-  generateRoleBasedInsights(cheapest, mostAmenities, mostBedrooms, accreditedProperties, shortTermProperties, negotiableProperties, fixedPriceProperties) {
+  // Enhanced role-based insights with NSFAS consideration
+  generateRoleBasedInsights(cheapest, mostAmenities, mostBedrooms, accreditedProperties, shortTermProperties, nsfasProperties, negotiableProperties) {
     const insights = [];
     
     // Always show best value insight
@@ -1728,7 +1693,7 @@ getCheapestProperty() {
       </div>
     `);
 
-    // Role-specific insights based on booking mode
+    // Role-specific insights based on booking mode and NSFAS availability
     if (this.currentBookingMode === 'tenant') {
       if (negotiableProperties.length > 0) {
         insights.push(`
@@ -1744,21 +1709,21 @@ getCheapestProperty() {
             </div>
           </div>
         `);
-      } else if (shortTermProperties.length > 0) {
-        insights.push(`
-          <div class="col-md-6 mb-3">
-            <div class="comparison-insight d-flex align-items-center">
-              <div class="insight-icon bg-warning">
-                <i class="bi bi-calendar-range text-white"></i>
-              </div>
-              <div>
-                <h6 class="mb-1">Short-term Options</h6>
-                <p class="mb-0 text-muted">${shortTermProperties.length} properties available</p>
-              </div>
+      }
+    } else if (nsfasProperties.length > 0) {
+      insights.push(`
+        <div class="col-md-6 mb-3">
+          <div class="comparison-insight d-flex align-items-center">
+            <div class="insight-icon bg-warning">
+              <i class="bi bi-award text-white"></i>
+            </div>
+            <div>
+              <h6 class="mb-1">NSFAS Options</h6>
+              <p class="mb-0 text-muted">${nsfasProperties.length} properties with NSFAS rates</p>
             </div>
           </div>
-        `);
-      }
+        </div>
+      `);
     } else {
       insights.push(`
         <div class="col-md-6 mb-3">
@@ -1778,30 +1743,17 @@ getCheapestProperty() {
     return insights.join('');
   }
 
-  // UPDATED: Role-based recommendation generation with booking mode support
-  // UPDATED: Enhanced role-based recommendation generation with NSFAS priority
-generateRoleBasedRecommendation(cheapest, mostAmenities, hasSignificantPriceDifference, accreditedProperties, shortTermProperties, negotiableProperties, hasNegotiablePrices) {
-  let recommendation = '';
-  
-  const nsfasProperties = this.selectedProperties.filter(p => p.rentType === 'nsfas');
-  const hasNsfasProperties = nsfasProperties.length > 0;
-  
-  // NSFAS properties get highest priority for students
-  if (hasNsfasProperties && (this.userRole !== 'tenant' && this.currentBookingMode !== 'tenant')) {
-    if (nsfasProperties.length === 1) {
-      recommendation += `<strong>${nsfasProperties[0].title}</strong> is NSFAS accredited, making it the top choice for students with NSFAS funding. `;
-    } else {
-      recommendation += `Multiple NSFAS accredited properties available. <strong>${nsfasProperties.map(p => p.title).join('</strong> and <strong>')}</strong> are excellent options for NSFAS students. `;
+  // Role-based recommendation generation with NSFAS consideration
+  generateRoleBasedRecommendation(cheapest, mostAmenities, hasSignificantPriceDifference, accreditedProperties, shortTermProperties, nsfasProperties, negotiableProperties) {
+    let recommendation = '';
+    
+    // Consider NSFAS properties in recommendations
+    const hasNsfasProperties = nsfasProperties.length > 0;
+    
+    if (hasNsfasProperties && (this.userRole !== 'tenant' && this.currentBookingMode !== 'tenant')) {
+      recommendation += `${nsfasProperties.length} properties offer NSFAS rates, making them ideal for students with NSFAS funding. `;
     }
     
-    // If cheapest is also NSFAS, highlight the value
-    if (nsfasProperties.includes(cheapest)) {
-      recommendation += `It also offers the best value among NSFAS options.`;
-    } else {
-      recommendation += `Consider <strong>${cheapest.title}</strong> for the most affordable option.`;
-    }
-  } else {
-    // Standard recommendation logic for non-NSFAS comparisons
     if (hasSignificantPriceDifference) {
       recommendation += `There's a significant price difference between the properties. `;
     }
@@ -1813,23 +1765,19 @@ generateRoleBasedRecommendation(cheapest, mostAmenities, hasSignificantPriceDiff
     } else {
       recommendation += `<strong>${cheapest.title}</strong> offers the best value at ${this.getRoleBasedPriceDisplay(cheapest).text}, while <strong>${mostAmenities.title}</strong> provides the most comprehensive amenities.`;
     }
-  }
 
-  // Role-specific recommendations
-  if (this.currentBookingMode !== 'tenant' && accreditedProperties.length > 0 && !hasNsfasProperties) {
-    recommendation += ` Consider ${accreditedProperties.map(p => p.title).join(', ')} for university-accredited options that may qualify for bursary funding.`;
-  } else if (this.currentBookingMode === 'tenant' && shortTermProperties.length > 0) {
-    recommendation += ` ${shortTermProperties.length} properties offer flexible short-term stays, perfect for temporary accommodation needs.`;
-    if (hasNegotiablePrices) {
-      recommendation += ` Don't forget to negotiate rates for the best deal!`;
+    // Role-specific recommendations
+    if (this.currentBookingMode !== 'tenant' && accreditedProperties.length > 0 && !hasNsfasProperties) {
+      recommendation += ` Consider ${accreditedProperties.map(p => p.title).join(', ')} for university-accredited options.`;
+    } else if (this.currentBookingMode === 'tenant' && shortTermProperties.length > 0) {
+      recommendation += ` ${shortTermProperties.length} properties offer flexible short-term stays, perfect for temporary accommodation needs.`;
     }
+
+    return recommendation;
   }
 
-  return recommendation;
-}
-
-  // UPDATED: Enhanced role-based summary with booking mode support
-  generateRoleBasedSummary(recommendation, priceRangeText, unisexProperties, maleOnlyProperties, femaleOnlyProperties, accreditedProperties, shortTermProperties, negotiableProperties, fixedPriceProperties, cheapest) {
+  // Enhanced role-based summary with NSFAS consideration
+  generateRoleBasedSummary(recommendation, priceRangeText, unisexProperties, maleOnlyProperties, femaleOnlyProperties, accreditedProperties, shortTermProperties, nsfasProperties, negotiableProperties, cheapest) {
     return `
       <div class="summary-highlight">
         <h5 class="text-navy mb-3">🏆 Top Recommendation</h5>
@@ -1844,7 +1792,7 @@ generateRoleBasedRecommendation(cheapest, mostAmenities, hasSignificantPriceDiff
             <li class="mb-2"><i class="bi bi-grid-3x3 text-primary me-2"></i>Average Amenities: ${Math.round(this.selectedProperties.reduce((sum, p) => sum + (p.amenities ? p.amenities.length : 0), 0) / this.selectedProperties.length)}</li>
             ${this.currentBookingMode !== 'tenant' ? `
               <li class="mb-2"><i class="bi bi-people text-info me-2"></i>Gender Options: ${unisexProperties.length} Unisex, ${maleOnlyProperties.length} Male-only, ${femaleOnlyProperties.length} Female-only</li>
-              <li><i class="bi bi-award text-warning me-2"></i>Accredited: ${accreditedProperties.length} of ${this.selectedProperties.length}</li>
+              <li><i class="bi bi-award text-warning me-2"></i>NSFAS Options: ${nsfasProperties.length} of ${this.selectedProperties.length}</li>
             ` : `
               <li class="mb-2"><i class="bi bi-calendar-range text-warning me-2"></i>Short-term: ${shortTermProperties.length} of ${this.selectedProperties.length}</li>
               ${negotiableProperties.length > 0 ? `<li><i class="bi bi-chat-dots text-info me-2"></i>Negotiable: ${negotiableProperties.length} properties</li>` : ''}
@@ -1857,7 +1805,7 @@ generateRoleBasedRecommendation(cheapest, mostAmenities, hasSignificantPriceDiff
             <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Consider your budget and essential amenities</li>
             ${this.currentBookingMode !== 'tenant' ? `
               <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Check proximity to your campus</li>
-              <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Verify accreditation for bursary eligibility</li>
+              ${nsfasProperties.length > 0 ? `<li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>NSFAS properties offer special rates for eligible students</li>` : ''}
             ` : `
               <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Confirm short-term availability and minimum stay</li>
               ${negotiableProperties.length > 0 ? `<li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Contact owners for negotiable rates</li>` : ''}
@@ -1876,8 +1824,6 @@ generateRoleBasedRecommendation(cheapest, mostAmenities, hasSignificantPriceDiff
       </div>
     `;
   }
-
-
 
   removeFromComparison(propertyId) {
     this.selectedProperties = this.selectedProperties.filter(p => p._id !== propertyId);
