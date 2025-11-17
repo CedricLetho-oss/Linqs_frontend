@@ -4358,6 +4358,22 @@ function viewPropertyDetails(propertyId) {
                 </div>
             </div>
         `;
+
+        // In your viewPropertyDetails function, add this section:
+        const websiteSection = property.websiteUrl ? `
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <a href="${property.websiteUrl}" target="_blank" class="btn btn-outline-primary">
+                                <i class="bi bi-globe me-2"></i>Visit Property Website
+                            </a>
+                            <small class="d-block text-muted mt-1">${property.websiteUrl}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        ` : '';
         
         const modalContent = `
             <div class="row">
