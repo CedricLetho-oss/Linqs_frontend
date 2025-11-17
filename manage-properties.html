@@ -1552,6 +1552,22 @@
             </div>
           </div>
 
+          <!-- Website URL Field -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h6 class="text-primary mb-3 border-bottom pb-2">
+                <i class="bi bi-globe me-2"></i>Contact & Website
+              </h6>
+            </div>
+            <div class="col-12">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Website URL (Optional)</label>
+                <input type="url" class="form-control" name="websiteUrl" placeholder="https://your-property-website.com">
+                <small class="text-muted">Add your business/property website or portfolio link for students to learn more</small>
+              </div>
+            </div>
+          </div>
+
           <!-- Location Information -->
           <div class="row mb-4">
             <div class="col-12">
@@ -1822,6 +1838,14 @@
                     <input class="form-check-input" type="checkbox" name="amenities" value="cctv" id="cctv">
                     <label class="form-check-label" for="cctv">
                       <i class="bi bi-camera-video me-1"></i>CCTV
+                    </label>
+                  </div>
+                </div>            
+                <div class="col-md-3 col-6 mb-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="amenities" value="alarm-system" id="alarmSystem">
+                    <label class="form-check-label" for="alarmSystem">
+                      <i class="bi bi-shield-check me-1"></i>Alarm System
                     </label>
                   </div>
                 </div>
@@ -2098,6 +2122,22 @@
                 </div>
               </div>
             </div>
+
+            <!-- Website URL Field -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary mb-3 border-bottom pb-2">
+                  <i class="bi bi-globe me-2"></i>Contact & Website
+                </h6>
+              </div>
+              <div class="col-12">
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Website URL (Optional)</label>
+                  <input type="url" class="form-control" id="editPropertyWebsiteUrl" placeholder="https://your-property-website.com">
+                  <small class="text-muted">Add your business/property website for students to learn more</small>
+                </div>
+              </div>
+            </div>
             
             <div class="row">
               <div class="col-12">
@@ -2154,7 +2194,12 @@
                       <label class="form-check-label">CCTV</label>
                     </div>
                   </div>
-
+                  <div class="col-md-3">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="editAmenityAlarmSystem" value="alarm-system">
+                      <label class="form-check-label">Alarm System</label>
+                    </div>
+                  </div>
                   <div class="col-md-3">
                     <div class="form-check">
                       <input class="form-check-input" type="checkbox" id="editAmenityShuttle" value="shuttle">
@@ -2694,6 +2739,7 @@
             ac: 'snow',
             heating: 'thermometer-sun',
             shuttle: 'bus-front',
+            'alarm-system': 'shield-check',
             cctv: 'camera-video'
         };
         return icons[amenity] || 'check';
@@ -3641,6 +3687,7 @@ async function addNewProperty() {
             amenities: amenities,
             genderPreference: formData.get('genderPreference'),
             accreditation: formData.get('accreditation'),
+            websiteUrl: formData.get('websiteUrl') || '',
             availability: formData.get('availability'),
             rentType: rentType, // This is now properly set
             acceptsShortTerm: acceptsShortTerm,
@@ -3760,6 +3807,7 @@ async function updateProperty() {
             shortTermPricing: document.getElementById('editShortTermPricing').value,
             shortTermPrice: document.getElementById('editShortTermPrice').value ? parseInt(document.getElementById('editShortTermPrice').value) : null,
             shortTermMinStay: parseInt(document.getElementById('editShortTermMinStay').value) || 1,
+            websiteUrl: document.getElementById('editPropertyWebsiteUrl').value || '',
             genderPreference: document.getElementById('editPropertyGenderPreference').value,
             accreditation: document.getElementById('editPropertyAccreditation').value,
             availability: document.getElementById('editPropertyAvailability').value,
@@ -4483,6 +4531,8 @@ function editProperty(propertyId) {
         document.getElementById('editPropertyCity').value = property.location.city;
         document.getElementById('editPropertyState').value = property.location.state;
         document.getElementById('editPropertyZipCode').value = property.location.zipCode;
+
+        document.getElementById('editPropertyWebsiteUrl').value = property.websiteUrl || '';
         
         document.getElementById('editPropertyBedrooms').value = property.bedrooms;
         document.getElementById('editPropertyBathrooms').value = property.bathrooms;
@@ -4938,6 +4988,7 @@ function closeStatsAndOpenRooms(propertyId) {
         if (document.getElementById('editAmenityHeating').checked) amenities.push('heating');
         if (document.getElementById('editAmenityShuttle').checked) amenities.push('shuttle');
         if (document.getElementById('editAmenityCCTV').checked) amenities.push('cctv');
+        if (document.getElementById('editAmenityAlarmSystem').checked) amenities.push('alarm-system');
         return amenities;
     }
 
