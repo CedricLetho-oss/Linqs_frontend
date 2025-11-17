@@ -1050,6 +1050,28 @@
     background: linear-gradient(135deg, #e55a00 0%, #e57c00 100%);
     color: white;
 }
+
+/* Website URL Styles */
+.website-url-container {
+    transition: all 0.3s ease;
+}
+
+.website-url-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+#websiteUrlLink {
+    border-radius: 2rem;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+#websiteUrlLink:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+}
   </style>
 </head>
 <body>
@@ -1216,6 +1238,31 @@
           <div id="propertyAmenities">
             <div class="loading-skeleton" style="height: 100px;"></div>
           </div>
+        </div>
+
+        <!-- Website URL -->
+        <div class="property-card" id="websiteUrlSection" style="display: none;">
+            <h3 class="section-title">Property Website</h3>
+            <div class="website-url-container">
+                <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-3">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-globe text-primary fs-4 me-3"></i>
+                        <div>
+                            <h6 class="mb-1 text-navy">Visit Property Website</h6>
+                            <p class="mb-0 text-muted small" id="websiteUrlDisplay">Loading website...</p>
+                        </div>
+                    </div>
+                    <a href="#" class="btn btn-primary" id="websiteUrlLink" target="_blank" rel="noopener noreferrer">
+                        <i class="bi bi-box-arrow-up-right me-2"></i>Visit Site
+                    </a>
+                </div>
+                <div class="mt-2 text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Official business/property website for to learn about the landlord and their properties. Book at ResLinQ for a secure rental experience.
+                    </small>
+                </div>
+            </div>
         </div>
 
         <!-- Rooms Section -->
@@ -1827,6 +1874,44 @@
         });
     }
 
+    function updateWebsiteUrlDisplay() {
+    const websiteUrlSection = document.getElementById('websiteUrlSection');
+    const websiteUrlDisplay = document.getElementById('websiteUrlDisplay');
+    const websiteUrlLink = document.getElementById('websiteUrlLink');
+    
+    if (!currentProperty || !currentProperty.websiteUrl) {
+        websiteUrlSection.style.display = 'none';
+        return;
+    }
+    
+    // Only show website URL for students
+    const userType = getEffectiveUserType();
+    if (userType !== 'student') {
+        websiteUrlSection.style.display = 'none';
+        return;
+    }
+    
+    // Clean and validate the URL
+    let websiteUrl = currentProperty.websiteUrl.trim();
+    
+    // Ensure URL has protocol
+    if (!websiteUrl.startsWith('http://') && !websiteUrl.startsWith('https://')) {
+        websiteUrl = 'https://' + websiteUrl;
+    }
+    
+    // Display the clean URL (without protocol for readability)
+    const displayUrl = websiteUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    websiteUrlDisplay.textContent = displayUrl;
+    
+    // Set the link
+    websiteUrlLink.href = websiteUrl;
+    
+    // Show the section
+    websiteUrlSection.style.display = 'block';
+    
+    console.log('Website URL displayed:', websiteUrl);
+}
+
     // ============ USER TYPE DETECTION & DISPLAY MODIFICATION ============
 
     function isPropertyAvailableForShortTerm() {
@@ -1955,6 +2040,12 @@
             const bookingBtn = document.querySelector('.btn-primary.action-btn');
             if (bookingBtn && currentProperty && currentProperty.acceptsShortTerm) {
                 bookingBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request Short-term Stay';
+            }
+
+            // Hide website URL for tenants
+            const websiteUrlSection = document.getElementById('websiteUrlSection');
+            if (websiteUrlSection) {
+                websiteUrlSection.style.display = 'none';
             }
         } else {
             // For students, show the gender and accreditation info
@@ -2287,6 +2378,7 @@ function updatePropertyDisplay() {
     updateReviewsDisplay();
     updateBookingButton(propertyStatus);
     updateLocationMap();
+    updateWebsiteUrlDisplay();
 
     setTimeout(() => {
         updateVisibleReviewsCount();
