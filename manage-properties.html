@@ -3750,6 +3750,7 @@ async function addNewProperty() {
 }
 
 // ============ UPDATE PROPERTY ============
+// ============ UPDATE PROPERTY ============
 async function updateProperty() {
     const propertyId = document.getElementById('editPropertyId').value;
     const property = allProperties.find(p => p._id === propertyId);
@@ -3785,9 +3786,20 @@ async function updateProperty() {
             final: allImages.length
         });
 
-        // ✅ FIXED: Properly get the checkbox value
+        // Get rent type
+        const rentType = document.querySelector('input[name="editRentType"]:checked').value;
+        
+        // Get short-term fields
         const acceptsShortTerm = document.getElementById('editAcceptsShortTerm').checked;
+        const shortTermPricing = document.getElementById('editShortTermPricing').value;
+        const shortTermPrice = document.getElementById('editShortTermPrice').value ? parseInt(document.getElementById('editShortTermPrice').value) : 0;
+        const shortTermMinStay = parseInt(document.getElementById('editShortTermMinStay').value) || 1;
+        const shortTermDescription = document.getElementById('editShortTermDescription').value || '';
 
+        // Get amenities
+        const amenities = getSelectedEditAmenities();
+
+        // COMPLETE update data object
         const updatedData = {
             title: document.getElementById('editPropertyTitle').value,
             description: document.getElementById('editPropertyDescription').value,
@@ -3801,21 +3813,21 @@ async function updateProperty() {
             propertyType: document.getElementById('editPropertyType').value,
             bedrooms: parseInt(document.getElementById('editPropertyBedrooms').value),
             bathrooms: parseInt(document.getElementById('editPropertyBathrooms').value),
-            amenities: getSelectedEditAmenities(),
-            acceptsShortTerm: acceptsShortTerm, // ✅ FIXED: Now properly sending the boolean value
-            shortTermDescription: document.getElementById('editShortTermDescription').value || '',
-            shortTermPricing: document.getElementById('editShortTermPricing').value,
-            shortTermPrice: document.getElementById('editShortTermPrice').value ? parseInt(document.getElementById('editShortTermPrice').value) : null,
-            shortTermMinStay: parseInt(document.getElementById('editShortTermMinStay').value) || 1,
-            websiteUrl: document.getElementById('editPropertyWebsiteUrl').value || '',
+            amenities: amenities,
             genderPreference: document.getElementById('editPropertyGenderPreference').value,
             accreditation: document.getElementById('editPropertyAccreditation').value,
             availability: document.getElementById('editPropertyAvailability').value,
-            rentType: document.querySelector('input[name="editRentType"]:checked').value,
+            websiteUrl: document.getElementById('editPropertyWebsiteUrl').value || '',
+            rentType: rentType,
+            acceptsShortTerm: acceptsShortTerm,
+            shortTermDescription: shortTermDescription,
+            shortTermPricing: shortTermPricing,
+            shortTermPrice: shortTermPrice,
+            shortTermMinStay: shortTermMinStay,
             images: allImages
         };
 
-        console.log('Sending update data:', updatedData); // Debug log
+        console.log('Sending COMPLETE update data:', updatedData);
 
         const response = await fetch(`${API_BASE_URL}/properties/${propertyId}`, {
             method: 'PUT',
@@ -3852,8 +3864,6 @@ async function updateProperty() {
     }
 }
 
-    // ✅ CORRECT - Upload to Cloudinary and get URL
-// ✅ IMPROVED: Upload to Cloudinary with better error handling
 async function uploadToCloudinary(file) {
     try {
         const formData = new FormData();
