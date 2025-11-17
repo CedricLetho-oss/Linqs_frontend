@@ -942,7 +942,8 @@ getNoResultsHTML() {
             'ac': 'snow',
             'heating': 'thermometer-sun',
             'shuttle': 'bus-front',
-            'cctv': 'camera-video'
+            'cctv': 'camera-video',
+            'alarm-system': 'shield-check'
         };
         return icons[amenity] || 'check';
     }
@@ -958,7 +959,8 @@ getNoResultsHTML() {
             'ac': 'A/C',
             'heating': 'Heating',
             'shuttle': 'Shuttle',
-            'cctv': 'CCTV'
+            'cctv': 'CCTV',
+            'alarm-system': 'Alarm System'
         };
         return amenityMap[amenity] || amenity;
     }
