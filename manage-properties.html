@@ -4300,8 +4300,18 @@ function generatePropertyRow(property) {
     
 // View property details - FIXED with proper modal timing
 function viewPropertyDetails(propertyId) {
+    console.log('DEBUG: Opening property details for:', propertyId);
+    
     const property = allProperties.find(p => p._id === propertyId);
-    if (property) {
+    if (!property) {
+        console.error('Property not found with ID:', propertyId);
+        alert('Property not found!');
+        return;
+    }
+
+    console.log('DEBUG: Property data:', property);
+
+    try {
         // Get the AVAILABILITY status (landlord-controlled), not approval status
         const availabilityStatus = property.availability || 'available';
         const availabilityInfo = statusConfig[availabilityStatus] || statusConfig.available;
@@ -4309,8 +4319,34 @@ function viewPropertyDetails(propertyId) {
         const type = typeConfig[property.propertyType] || typeConfig.apartment;
         const gender = genderConfig[property.genderPreference] || genderConfig.unisex;
         const accreditation = accreditationConfig[property.accreditation] || accreditationConfig.self;
-        const imageUrl = property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/400x250/007bff/ffffff?text=Property+Image';
         
+        // FIX: Safe image URL with fallback
+        const imageUrl = property.images && property.images.length > 0 ? 
+            property.images[0] : 
+            'https://via.placeholder.com/400x250/007bff/ffffff?text=Property+Image';
+        
+        // FIX: NSFAS Rent Display
+        let rentDisplay;
+        if (property.rentType === 'nsfas') {
+            rentDisplay = `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong class="small">Monthly Rent:</strong><br>
+                    <h6 class="text-navy">NSFAS Rates</h6>
+                    <small class="text-muted">Contact for details</small>
+                </div>
+                <div class="alert alert-info small p-2 mb-2">
+                    <i class="bi bi-award me-1"></i>NSFAS Accredited Accommodation
+                </div>
+            `;
+        } else {
+            rentDisplay = `
+                <div class="col-6">
+                    <strong class="small">Monthly Rent:</strong><br>
+                    <h6 class="text-navy">R${property.price || 0}</h6>
+                </div>
+            `;
+        }
+
         // Create image carousel if multiple images exist
         let imagesHtml = '';
         if (property.images && property.images.length > 1) {
@@ -4324,7 +4360,7 @@ function viewPropertyDetails(propertyId) {
                     <div class="carousel-inner">
                         ${property.images.map((image, index) => `
                             <div class="carousel-item ${index === 0 ? 'active' : ''}">
-                                <img src="${image}" class="d-block w-100" style="height: 300px; object-fit: cover;" alt="${property.title} - Image ${index + 1}">
+                                <img src="${image}" class="d-block w-100" style="height: 300px; object-fit: cover;" alt="${property.title} - Image ${index + 1}" onerror="this.src='https://via.placeholder.com/400x250/007bff/ffffff?text=Image+Error'">
                             </div>
                         `).join('')}
                     </div>
@@ -4339,10 +4375,10 @@ function viewPropertyDetails(propertyId) {
                 </div>
             `;
         } else {
-            imagesHtml = `<img src="${imageUrl}" class="img-fluid rounded" alt="${property.title}">`;
+            imagesHtml = `<img src="${imageUrl}" class="img-fluid rounded" alt="${property.title}" style="width: 100%; height: 300px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/400x250/007bff/ffffff?text=Image+Error'">`;
         }
         
-        // AVAILABILITY Status Section - FIXED: Now shows Availability with correct colors
+        // AVAILABILITY Status Section
         const availabilitySection = `
             <div class="row mt-3">
                 <div class="col-12">
@@ -4369,7 +4405,7 @@ function viewPropertyDetails(propertyId) {
             </div>
         `;
 
-        // In your viewPropertyDetails function, add this section:
+        // Website Section
         const websiteSection = property.websiteUrl ? `
             <div class="row mt-3">
                 <div class="col-12">
@@ -4385,14 +4421,15 @@ function viewPropertyDetails(propertyId) {
             </div>
         ` : '';
         
+        // FIXED: Modal Content with proper NSFAS handling
         const modalContent = `
             <div class="row">
                 <div class="col-md-6">
                     ${imagesHtml}
                 </div>
                 <div class="col-md-6">
-                    <h5>${property.title}</h5>
-                    <p class="text-muted small">${property.location.address}, ${property.location.city}, ${property.location.state}</p>
+                    <h5>${property.title || 'Untitled Property'}</h5>
+                    <p class="text-muted small">${property.location?.address || 'Address not specified'}, ${property.location?.city || 'City not specified'}, ${property.location?.state || 'State not specified'}</p>
                     
                     <div class="mb-3">
                         <span class="badge bg-${availabilityInfo.class} me-2">
@@ -4405,20 +4442,33 @@ function viewPropertyDetails(propertyId) {
                             <i class="${accreditation.icon} me-1"></i>${accreditation.text}
                         </span>
                         <span class="badge bg-light text-dark">${type.text}</span>
+                        
+                        ${property.rentType === 'nsfas' ? `
+                            <span class="badge nsfas-badge">
+                                <i class="bi bi-award me-1"></i>NSFAS Rates
+                            </span>
+                        ` : ''}
                     </div>
                     
                     <div class="row mb-3">
-                      <div class="col-6">
-                          <strong class="small">Monthly Rent:</strong><br>
-                          <h6 class="text-navy">R${property.price}</h6>
-                      </div>
-                      <div class="col-6">
-                          <strong class="small">Rooms:</strong><br>
-                          <h6>${property.bedrooms} beds • ${property.bathrooms} baths</h6>
-                      </div>
-                  </div>
+                        ${property.rentType === 'nsfas' ? `
+                            ${rentDisplay}
+                            <div class="col-6">
+                                <strong class="small">Rooms:</strong><br>
+                                <h6>${property.bedrooms || 0} beds • ${property.bathrooms || 0} baths</h6>
+                            </div>
+                        ` : `
+                            <div class="col-6">
+                                <strong class="small">Monthly Rent:</strong><br>
+                                <h6 class="text-navy">R${property.price || 0}</h6>
+                            </div>
+                            <div class="col-6">
+                                <strong class="small">Rooms:</strong><br>
+                                <h6>${property.bedrooms || 0} beds • ${property.bathrooms || 0} baths</h6>
+                            </div>
+                        `}
+                    </div>
 
-                  
                     <div class="mb-3">
                         <strong class="small">Amenities:</strong><br>
                         ${property.amenities && property.amenities.length > 0 ? 
@@ -4433,58 +4483,59 @@ function viewPropertyDetails(propertyId) {
                 </div>
             </div>
 
-                  <!-- ADD THE SHORT-TERM PRICING SECTION HERE -->
-                  ${property.acceptsShortTerm ? `
-                  <div class="row mt-3">
-                      <div class="col-12">
-                          <div class="card border-warning">
-                              <div class="card-header bg-warning text-dark">
-                                  <h6 class="mb-0">
-                                      <i class="bi bi-calendar-range me-2"></i>Short-term Availability (December & January)
-                                  </h6>
-                              </div>
-                              <div class="card-body">
-                                  ${property.shortTermPricing === 'fixed' ? `
-                                      <div class="d-flex justify-content-between align-items-center">
-                                          <div>
-                                              <strong class="short-term-pricing-text">Daily Rate:</strong>
-                                              <h5 class="short-term-pricing-text mb-0">R${property.shortTermPrice}/day</h5>
-                                              <small class="text-muted">Minimum stay: ${property.shortTermMinStay} days</small>
-                                          </div>
-                                          <span class="badge short-term-badge">
-                                              <i class="bi bi-currency-dollar me-1"></i>Fixed Rate
-                                          </span>
-                                      </div>
-                                  ` : `
-                                      <div class="d-flex justify-content-between align-items-center">
-                                          <div>
-                                              <strong class="short-term-pricing-text">Daily Rate:</strong>
-                                              <h5 class="short-term-pricing-text mb-0">Negotiable</h5>
-                                              <small class="text-muted">Minimum stay: ${property.shortTermMinStay} days</small>
-                                          </div>
-                                          <span class="badge short-term-badge">
-                                              <i class="bi bi-chat-dots me-1"></i>Contact for Price
-                                          </span>
-                                      </div>
-                                  `}
-                                  ${property.shortTermDescription ? `
-                                      <div class="mt-2 pt-2 border-top">
-                                          <strong>Details:</strong>
-                                          <p class="mb-0 small">${property.shortTermDescription}</p>
-                                      </div>
-                                  ` : ''}
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-                  ` : ''}
+            <!-- Short-term Pricing Section -->
+            ${property.acceptsShortTerm ? `
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="mb-0">
+                                <i class="bi bi-calendar-range me-2"></i>Short-term Availability (December & January)
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            ${property.shortTermPricing === 'fixed' ? `
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong class="short-term-pricing-text">Daily Rate:</strong>
+                                        <h5 class="short-term-pricing-text mb-0">R${property.shortTermPrice || 0}/day</h5>
+                                        <small class="text-muted">Minimum stay: ${property.shortTermMinStay || 1} days</small>
+                                    </div>
+                                    <span class="badge short-term-badge">
+                                        <i class="bi bi-currency-dollar me-1"></i>Fixed Rate
+                                    </span>
+                                </div>
+                            ` : `
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong class="short-term-pricing-text">Daily Rate:</strong>
+                                        <h5 class="short-term-pricing-text mb-0">Negotiable</h5>
+                                        <small class="text-muted">Minimum stay: ${property.shortTermMinStay || 1} days</small>
+                                    </div>
+                                    <span class="badge short-term-badge">
+                                        <i class="bi bi-chat-dots me-1"></i>Contact for Price
+                                    </span>
+                                </div>
+                            `}
+                            ${property.shortTermDescription ? `
+                                <div class="mt-2 pt-2 border-top">
+                                    <strong>Details:</strong>
+                                    <p class="mb-0 small">${property.shortTermDescription}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            ` : ''}
                     
-            
             ${availabilitySection}
+            
+            ${websiteSection}
             
             <div class="row mt-3">
                 <div class="col-12">
-                    <strong class="small">Students Description:</strong>
+                    <strong class="small">Property Description:</strong>
                     <p class="small">${property.description || 'No description provided.'}</p>
                 </div>
             </div>
@@ -4509,21 +4560,35 @@ function viewPropertyDetails(propertyId) {
             </div>
         `;
         
-        document.getElementById('propertyDetailsContent').innerHTML = modalContent;
+        // Update modal content
+        const detailsContent = document.getElementById('propertyDetailsContent');
+        if (detailsContent) {
+            detailsContent.innerHTML = modalContent;
+            
+            // Add event listener for the edit button
+            setTimeout(() => {
+                const editBtn = document.getElementById('editFromDetailsBtn');
+                if (editBtn) {
+                    editBtn.addEventListener('click', function() {
+                        const propertyId = this.getAttribute('data-property-id');
+                        closeDetailsAndOpenEdit(propertyId);
+                    });
+                }
+            }, 100);
+            
+            // Show the modal
+            const detailsModal = new bootstrap.Modal(document.getElementById('propertyDetailsModal'));
+            detailsModal.show();
+            
+            console.log('DEBUG: Property details modal opened successfully');
+        } else {
+            console.error('DEBUG: Property details content element not found');
+            alert('Error: Could not load property details - element missing');
+        }
         
-        // Add event listener for the edit button
-        setTimeout(() => {
-            const editBtn = document.getElementById('editFromDetailsBtn');
-            if (editBtn) {
-                editBtn.addEventListener('click', function() {
-                    const propertyId = this.getAttribute('data-property-id');
-                    closeDetailsAndOpenEdit(propertyId);
-                });
-            }
-        }, 100);
-        
-        const detailsModal = new bootstrap.Modal(document.getElementById('propertyDetailsModal'));
-        detailsModal.show();
+    } catch (error) {
+        console.error('DEBUG: Error displaying property details:', error);
+        alert('Error loading property details: ' + error.message);
     }
 }
 
