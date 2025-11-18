@@ -1253,11 +1253,15 @@ function displayPropertyDetails(property) {
   modal.show();
 }
 
-    // Delete property
-    async function deleteProperty(propertyId) {
+    // Delete property - UPDATED FOR ADMINLOG INTEGRATION
+async function deleteProperty(propertyId) {
   try {
-    // First, check property status
+    // First, check property status and details
     const property = await getPropertyDetails(propertyId);
+    if (!property) {
+      throw new Error('Could not fetch property details');
+    }
+    
     const hasBookings = await checkPropertyBookings(propertyId);
     
     let deleteConfig = {
@@ -1266,13 +1270,13 @@ function displayPropertyDetails(property) {
     };
 
     // If property has bookings, show enhanced confirmation
-    if (hasBookings) {
+    if (hasBookings > 0) {
       const userChoice = await showBookingWarning(property, hasBookings);
       
       if (userChoice.cancelled) return;
       
       if (userChoice.forceDelete) {
-        const reason = prompt(`🚨 FORCE DELETE REQUIRED\n\nProperty has ${hasBookings} active bookings.\n\nPlease provide justification for cancellation (min 10 characters):\n\nExamples:\n- "Property found to be fraudulent/scam"\n- "Landlord account compromised"\n- "Safety concerns reported"\n- "Legal compliance requirement"`);
+        const reason = prompt(`🚨 FORCE DELETE REQUIRED\n\nProperty "${property.title}" has ${hasBookings} active bookings.\n\nPlease provide justification for cancellation (min 10 characters):\n\nExamples:\n- "Property found to be fraudulent/scam"\n- "Landlord account compromised"\n- "Safety concerns reported"\n- "Legal compliance requirement"`);
         
         if (!reason || reason.length < 10) {
           alert('Force delete cancelled. Reason must be at least 10 characters for audit purposes.');
@@ -1289,10 +1293,16 @@ function displayPropertyDetails(property) {
         return;
       }
     } else {
-      // Regular confirmation for safe deletion
-      if (!confirm('Delete this property? This action cannot be undone.')) {
+      // Regular confirmation for safe deletion - COLLECT REASON FOR AUDIT
+      const reason = prompt(`Delete property "${property.title}"?\n\nPlease provide a brief reason for deletion (optional but recommended for audit):`);
+      
+      if (reason === null) return; // User cancelled
+      
+      if (!confirm(`Delete property "${property.title}"? This action cannot be undone.`)) {
         return;
       }
+      
+      deleteConfig.reason = encodeURIComponent(reason || 'Regular admin deletion');
     }
 
     // Execute deletion
@@ -1304,28 +1314,68 @@ function displayPropertyDetails(property) {
   }
 }
 
-// Helper functions
-async function checkPropertyBookings(propertyId) {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/admin/bookings?property=${propertyId}&status=active,confirmed,pending`, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
-  
-  if (response.ok) {
-    const data = await response.json();
-    return data.data?.total || 0;
+// ADD THIS MISSING FUNCTION
+async function getPropertyDetails(propertyId) {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/admin/properties/${propertyId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.data?.property || data.property || data.data;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching property details:', error);
+    return null;
   }
-  return 0;
 }
 
+// UPDATED: Better booking check with fallback
+async function checkPropertyBookings(propertyId) {
+  try {
+    const token = localStorage.getItem('token');
+    
+    // Try admin bookings endpoint first
+    let response = await fetch(`${API_BASE_URL}/admin/bookings?property=${propertyId}&status=active,confirmed,pending`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.data?.total || data.total || 0;
+    }
+    
+    // Fallback: Try regular bookings endpoint
+    response = await fetch(`${API_BASE_URL}/bookings?property=${propertyId}&status=active,confirmed,pending`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.bookings?.length || data.data?.length || 0;
+    }
+    
+    return 0; // Assume no bookings if we can't check
+  } catch (error) {
+    console.error('Error checking bookings:', error);
+    return 0; // Assume no bookings on error
+  }
+}
+
+// UPDATED: Enhanced modal with better UX
 function showBookingWarning(property, bookingCount) {
   return new Promise((resolve) => {
+    const modalId = 'forceDeleteModal-' + Date.now();
     const modal = `
-      <div class="modal fade" id="forceDeleteModal" tabindex="-1">
+      <div class="modal fade" id="${modalId}" tabindex="-1">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header bg-warning">
               <h5 class="modal-title">⚠️ Property Has Active Bookings</h5>
+              <button type="button" class="btn-close" onclick="window.resolveChoice('${modalId}', {cancelled: true})"></button>
             </div>
             <div class="modal-body">
               <div class="alert alert-danger">
@@ -1335,28 +1385,35 @@ function showBookingWarning(property, bookingCount) {
               
               <div class="row">
                 <div class="col-md-6">
-                  <div class="card">
-                    <div class="card-body">
-                      <h6>🚫 Safe Option</h6>
-                      <p>Cancel bookings first, then delete property</p>
-                      <button class="btn btn-outline-primary w-100" onclick="resolveChoice({cancelled: true})">
+                  <div class="card h-100">
+                    <div class="card-body text-center">
+                      <h6><i class="bi bi-shield-check text-success"></i> Safe Option</h6>
+                      <p class="small">Cancel bookings first, then delete property</p>
+                      <button class="btn btn-outline-primary w-100" onclick="window.resolveChoice('${modalId}', {cancelled: true})">
                         Cancel Deletion
                       </button>
                     </div>
                   </div>
                 </div>
                 <div class="col-md-6">
-                  <div class="card border-danger">
-                    <div class="card-body">
-                      <h6>🚨 Emergency Option</h6>
-                      <p><strong>Force delete</strong> - Cancels all bookings immediately</p>
-                      <small class="text-muted">Use for: scams, safety issues, legal requirements</small>
-                      <button class="btn btn-danger w-100 mt-2" onclick="resolveChoice({forceDelete: true})">
+                  <div class="card border-danger h-100">
+                    <div class="card-body text-center">
+                      <h6><i class="bi bi-exclamation-triangle-fill text-danger"></i> Emergency Option</h6>
+                      <p class="small"><strong>Force delete</strong> - Cancels all bookings immediately</p>
+                      <small class="text-muted d-block mb-2">Use for: scams, safety issues, legal requirements</small>
+                      <button class="btn btn-danger w-100" onclick="window.resolveChoice('${modalId}', {forceDelete: true})">
                         Force Delete
                       </button>
                     </div>
                   </div>
                 </div>
+              </div>
+              
+              <div class="mt-3 p-3 bg-light rounded">
+                <small class="text-muted">
+                  <i class="bi bi-info-circle"></i> 
+                  <strong>Audit Note:</strong> All admin deletions are logged for security and compliance purposes.
+                </small>
               </div>
             </div>
           </div>
@@ -1366,43 +1423,99 @@ function showBookingWarning(property, bookingCount) {
     
     // Add modal to DOM
     document.body.insertAdjacentHTML('beforeend', modal);
-    const modalEl = new bootstrap.Modal(document.getElementById('forceDeleteModal'));
+    const modalEl = new bootstrap.Modal(document.getElementById(modalId));
     
-    // Handle resolution
-    window.resolveChoice = (choice) => {
-      modalEl.hide();
-      setTimeout(() => document.getElementById('forceDeleteModal')?.remove(), 500);
-      resolve(choice);
+    // Enhanced resolution handler
+    window.resolveChoice = (modalId, choice) => {
+      const modalElement = document.getElementById(modalId);
+      if (modalElement) {
+        const bsModal = bootstrap.Modal.getInstance(modalElement);
+        if (bsModal) bsModal.hide();
+        
+        setTimeout(() => {
+          modalElement.remove();
+          resolve(choice);
+        }, 500);
+      }
     };
+    
+    // Auto-remove on hidden
+    document.getElementById(modalId).addEventListener('hidden.bs.modal', function () {
+      setTimeout(() => {
+        if (document.getElementById(modalId)) {
+          document.getElementById(modalId).remove();
+          resolve({ cancelled: true }); // Default to cancel if closed without choice
+        }
+      }, 500);
+    });
     
     modalEl.show();
   });
 }
 
+// UPDATED: Enhanced deletion execution with better error handling
 async function executePropertyDeletion(propertyId, config) {
-  const token = localStorage.getItem('token');
-  let url = `${API_BASE_URL}/admin/properties/${propertyId}`;
-  
-  if (config.force) {
-    url += `?force=true&reason=${config.reason}`;
-  }
-  
-  const response = await fetch(url, {
-    method: 'DELETE',
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
-  
-  const result = await response.json();
-  
-  if (response.ok) {
-    const message = config.force 
-      ? `🚨 Property force deleted. ${result.cancelledBookings} bookings were cancelled.`
-      : 'Property deleted successfully.';
+  try {
+    const token = localStorage.getItem('token');
+    let url = `${API_BASE_URL}/admin/properties/${propertyId}`;
     
-    alert(message);
-    loadProperties();
-  } else {
-    throw new Error(result.error || 'Delete failed');
+    // Build query parameters for audit logging
+    const params = new URLSearchParams();
+    if (config.force) {
+      params.append('force', 'true');
+    }
+    if (config.reason) {
+      params.append('reason', config.reason);
+    }
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+    
+    console.log('Deleting property with config:', config);
+    
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok) {
+      let message = config.force 
+        ? `🚨 Property force deleted successfully. ${result.cancelledBookings || 0} bookings were cancelled.`
+        : '✅ Property deleted successfully.';
+      
+      // Add audit reference if available
+      if (result.logId) {
+        message += `\n\nAudit ID: ${result.logId}`;
+      }
+      
+      alert(message);
+      loadProperties();
+    } else {
+      // Enhanced error messages
+      let errorMessage = result.error || 'Delete failed';
+      
+      if (response.status === 400 && result.bookings) {
+        errorMessage += `\n\nActive bookings found: ${result.bookings.length}`;
+        if (result.bookings.length > 0) {
+          errorMessage += '\n\nBooking IDs: ' + result.bookings.map(b => b.id).join(', ');
+        }
+      } else if (response.status === 403) {
+        errorMessage = 'Access denied. Admin privileges required.';
+      } else if (response.status === 404) {
+        errorMessage = 'Property not found. It may have been already deleted.';
+      }
+      
+      throw new Error(errorMessage);
+    }
+  } catch (error) {
+    console.error('Execution error:', error);
+    throw error; // Re-throw for the main function to handle
   }
 }
 
