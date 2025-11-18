@@ -1454,6 +1454,7 @@ function showBookingWarning(property, bookingCount) {
 }
 
 // UPDATED: Enhanced deletion execution with better error handling
+// UPDATED: Enhanced deletion execution with better error handling
 async function executePropertyDeletion(propertyId, config) {
   try {
     const token = localStorage.getItem('token');
@@ -1472,7 +1473,10 @@ async function executePropertyDeletion(propertyId, config) {
       url += `?${params.toString()}`;
     }
     
-    console.log('Deleting property with config:', config);
+    console.log('🔧 DELETE REQUEST DETAILS:');
+    console.log('URL:', url);
+    console.log('Config:', config);
+    console.log('Full URL with params:', url);
     
     const response = await fetch(url, {
       method: 'DELETE',
@@ -1484,15 +1488,14 @@ async function executePropertyDeletion(propertyId, config) {
     
     const result = await response.json();
     
+    console.log('🔧 DELETE RESPONSE:');
+    console.log('Status:', response.status);
+    console.log('Response:', result);
+    
     if (response.ok) {
       let message = config.force 
         ? `🚨 Property force deleted successfully. ${result.cancelledBookings || 0} bookings were cancelled.`
         : '✅ Property deleted successfully.';
-      
-      // Add audit reference if available
-      if (result.logId) {
-        message += `\n\nAudit ID: ${result.logId}`;
-      }
       
       alert(message);
       loadProperties();
@@ -1505,6 +1508,9 @@ async function executePropertyDeletion(propertyId, config) {
         if (result.bookings.length > 0) {
           errorMessage += '\n\nBooking IDs: ' + result.bookings.map(b => b.id).join(', ');
         }
+        
+        // ADD THIS: Show force delete option in the error
+        errorMessage += '\n\n💡 Use "Force Delete" option to cancel all bookings and delete the property.';
       } else if (response.status === 403) {
         errorMessage = 'Access denied. Admin privileges required.';
       } else if (response.status === 404) {
