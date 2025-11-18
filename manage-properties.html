@@ -5139,7 +5139,24 @@ function showAddRoomForm() {
     document.getElementById('addRoomForm').scrollIntoView({ behavior: 'smooth' });
 }
 
-// Update the editExistingRoom function to populate short-term pricing
+function toggleRoomRentType() {
+    const fixedRentRadio = document.getElementById('roomFixedRent');
+    const nsfasRentRadio = document.getElementById('roomNsfasRent');
+    const fixedRentSection = document.getElementById('roomFixedRentSection');
+    const nsfasRentSection = document.getElementById('roomNsfasRentSection');
+    
+    if (fixedRentRadio.checked) {
+        fixedRentSection.style.display = 'block';
+        nsfasRentSection.style.display = 'none';
+        document.getElementById('roomPrice').required = true;
+    } else {
+        fixedRentSection.style.display = 'none';
+        nsfasRentSection.style.display = 'block';
+        document.getElementById('roomPrice').required = false;
+        document.getElementById('roomPrice').value = '0';
+    }
+}
+
 function editExistingRoom(roomId) {
     const room = currentPropertyRooms.find(r => r._id === roomId);
     if (!room) return;
@@ -5159,6 +5176,14 @@ function editExistingRoom(roomId) {
     document.getElementById('roomSize').value = room.size || '';
     document.getElementById('roomDescription').value = room.description || '';
     document.getElementById('roomAvailability').value = room.isAvailable ? 'true' : 'false';
+    
+    // ENHANCED: Populate rent type for rooms
+    if (room.rentType === 'nsfas') {
+        document.getElementById('roomNsfasRent').checked = true;
+    } else {
+        document.getElementById('roomFixedRent').checked = true;
+    }
+    toggleRoomRentType(); // Initialize the display
     
     // Populate short-term pricing fields if they exist
     if (room.shortTermPricing) {
@@ -5449,7 +5474,28 @@ function manageRooms(propertyId) {
         }
     }
 
-    // Update the renderRoomsList function to show short-term pricing badges
+function generateRoomRentDisplay(room) {
+    if (room.rentType === 'nsfas') {
+        return `
+            <div class="mb-2">
+                <h6 class="text-navy mb-0">NSFAS Rates</h6>
+                <small class="text-muted">Contact for details</small>
+            </div>
+            <div class="alert alert-info small p-2 mb-2">
+                <i class="bi bi-award me-1"></i>NSFAS Accredited Room
+            </div>
+        `;
+    } else {
+        return `
+            <div class="mb-2">
+                <h6 class="text-navy mb-0">R${room.price || 0}</h6>
+                <small class="text-muted">/month</small>
+            </div>
+        `;
+    }
+}
+
+// Update the room card generation in renderRoomsList function
 function renderRoomsList() {
     const container = document.getElementById('roomsListContainer');
     const propertyId = document.getElementById('roomPropertyId').value;
@@ -5466,7 +5512,11 @@ function renderRoomsList() {
         return;
     }
     
-    container.innerHTML = currentPropertyRooms.map(room => `
+    container.innerHTML = currentPropertyRooms.map(room => {
+        // Use the enhanced rent display function
+        const rentDisplay = generateRoomRentDisplay(room);
+        
+        return `
         <div class="card mb-3 room-card ${room.isAvailable ? 'border-success' : 'border-warning'}">
             <div class="card-body">
                 <div class="row">
@@ -5488,6 +5538,11 @@ function renderRoomsList() {
                                     <i class="bi ${room.isAvailable ? 'bi-check-circle' : 'bi-person-check'} me-1"></i>
                                     ${room.isAvailable ? 'Available' : 'Occupied'}
                                 </span>
+                                ${room.rentType === 'nsfas' ? `
+                                    <span class="badge nsfas-badge ms-1">
+                                        <i class="bi bi-award me-1"></i>NSFAS Rates
+                                    </span>
+                                ` : ''}
                                 ${property && property.acceptsShortTerm && room.shortTermPricing ? `
                                     <span class="badge room-short-term-badge ms-1">
                                         <i class="bi bi-calendar-range me-1"></i>
@@ -5497,6 +5552,10 @@ function renderRoomsList() {
                             </div>
                         </div>
                         <p class="card-text small text-muted mb-2">${room.description || 'No description provided'}</p>
+                        
+                        <!-- ENHANCED: Room Rent Display -->
+                        ${rentDisplay}
+                        
                         ${property && property.acceptsShortTerm && room.shortTermPricing ? `
                             <div class="mb-2">
                                 <small class="room-short-term-pricing">
@@ -5517,9 +5576,7 @@ function renderRoomsList() {
                             <div>
                                 <span class="text-muted small me-3"><i class="bi bi-arrows-fullscreen me-1"></i>${room.size || 'Size not specified'}</span>
                             </div>
-                            <div>
-                                <strong class="text-primary">R${room.price}/month</strong>
-                            </div>
+                            <!-- REMOVED: Duplicate price display since we're showing it above -->
                         </div>
                         ${!room.isAvailable && room.occupant ? `
                             <div class="mt-2 p-2 bg-light rounded small">
@@ -5548,7 +5605,8 @@ function renderRoomsList() {
                 </div>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
     // Hide add room form
@@ -5592,7 +5650,6 @@ function renderRoomsList() {
         return features;
     }
 
-// Enhanced View Room Details with Short-term Pricing
 function viewRoomDetails(roomId) {
     const room = currentPropertyRooms.find(r => r._id === roomId);
     const propertyId = document.getElementById('roomPropertyId').value;
@@ -5601,6 +5658,37 @@ function viewRoomDetails(roomId) {
     if (!room) return;
 
     const roomType = roomTypeConfig[room.roomType] || { text: room.roomType, icon: 'bi-door-closed', class: 'secondary' };
+    
+    // ENHANCED: NSFAS Rent Display
+    let rentDisplay;
+    if (room.rentType === 'nsfas') {
+        rentDisplay = `
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-navy mb-0">NSFAS Rates</h6>
+                        <small class="text-muted">Contact for details</small>
+                    </div>
+                    <div class="alert alert-info small p-2">
+                        <i class="bi bi-award me-1"></i>NSFAS Accredited Room
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        rentDisplay = `
+            <div class="row mb-3">
+                <div class="col-6">
+                    <strong class="small">Monthly Rent:</strong><br>
+                    <h6 class="text-navy">R${room.price}</h6>
+                </div>
+                <div class="col-6">
+                    <strong class="small">Room Size:</strong><br>
+                    <span class="h6">${room.size || 'Not specified'}</span>
+                </div>
+            </div>
+        `;
+    }
     
     // Enhanced short-term pricing section
     const shortTermSection = property && property.acceptsShortTerm && room.shortTermPricing ? `
@@ -5714,18 +5802,15 @@ function viewRoomDetails(roomId) {
                         <i class="bi ${room.isAvailable ? 'bi-check-circle' : 'bi-person-check'} me-1"></i>
                         ${room.isAvailable ? 'Available' : 'Occupied'}
                     </span>
+                    ${room.rentType === 'nsfas' ? `
+                        <span class="badge nsfas-badge small">
+                            <i class="bi bi-award me-1"></i>NSFAS Rates
+                        </span>
+                    ` : ''}
                 </div>
                 
-                <div class="row mb-3">
-                    <div class="col-6">
-                        <strong class="small">Monthly Rent:</strong><br>
-                        <span class="h6 text-primary">R${room.price}</span>
-                    </div>
-                    <div class="col-6">
-                        <strong class="small">Room Size:</strong><br>
-                        <span class="h6">${room.size || 'Not specified'}</span>
-                    </div>
-                </div>
+                <!-- ENHANCED: Rent Display -->
+                ${rentDisplay}
                 
                 ${!room.isAvailable && room.occupant ? `
                     <div class="mb-3 p-2 bg-light rounded small">
