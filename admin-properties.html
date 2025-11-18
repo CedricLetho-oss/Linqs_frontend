@@ -1254,71 +1254,142 @@ function displayPropertyDetails(property) {
 }
 
     // Delete property - UPDATED FOR ADMINLOG INTEGRATION
-// Delete property - SIMPLIFIED WORKING VERSION
 async function deleteProperty(propertyId) {
   try {
-    console.log('Starting delete process for property:', propertyId);
-    
-    // Get property details
+    // First, check property status and details
     const property = await getPropertyDetails(propertyId);
     if (!property) {
       throw new Error('Could not fetch property details');
     }
     
-    console.log('Property details:', property);
-    
-    // Check for bookings
     const hasBookings = await checkPropertyBookings(propertyId);
-    console.log('Has bookings:', hasBookings);
     
-    // If property has bookings, show the force delete modal
+    let deleteConfig = {
+      force: false,
+      reason: ''
+    };
+
+    // If property has bookings, show enhanced confirmation
     if (hasBookings > 0) {
-      console.log('Showing booking warning modal...');
-      await showForceDeleteModal(property, hasBookings);
+      const userChoice = await showBookingWarning(property, hasBookings);
+      
+      if (userChoice.cancelled) return;
+      
+      if (userChoice.forceDelete) {
+        const reason = prompt(`🚨 FORCE DELETE REQUIRED\n\nProperty "${property.title}" has ${hasBookings} active bookings.\n\nPlease provide justification for cancellation (min 10 characters):\n\nExamples:\n- "Property found to be fraudulent/scam"\n- "Landlord account compromised"\n- "Safety concerns reported"\n- "Legal compliance requirement"`);
+        
+        if (!reason || reason.length < 10) {
+          alert('Force delete cancelled. Reason must be at least 10 characters for audit purposes.');
+          return;
+        }
+        
+        deleteConfig = {
+          force: true,
+          reason: encodeURIComponent(reason)
+        };
+      } else {
+        // User chose to check bookings first
+        alert(`Cannot delete - property has ${hasBookings} active bookings. Please cancel bookings first or use force delete for emergencies.`);
+        return;
+      }
     } else {
-      // No bookings - regular deletion
-      const reason = prompt(`Delete property "${property.title}"?\n\nPlease provide a brief reason for deletion (optional):`);
+      // Regular confirmation for safe deletion - COLLECT REASON FOR AUDIT
+      const reason = prompt(`Delete property "${property.title}"?\n\nPlease provide a brief reason for deletion (optional but recommended for audit):`);
+      
       if (reason === null) return; // User cancelled
       
-      if (confirm(`Delete property "${property.title}"? This action cannot be undone.`)) {
-        await executePropertyDeletion(propertyId, {
-          force: false,
-          reason: encodeURIComponent(reason || 'Regular admin deletion')
-        });
+      if (!confirm(`Delete property "${property.title}"? This action cannot be undone.`)) {
+        return;
       }
+      
+      deleteConfig.reason = encodeURIComponent(reason || 'Regular admin deletion');
     }
+
+    // Execute deletion
+    await executePropertyDeletion(propertyId, deleteConfig);
+    
   } catch (error) {
     console.error('Delete property error:', error);
     alert('Delete failed: ' + error.message);
   }
 }
 
-// SIMPLIFIED: Show force delete modal
-function showForceDeleteModal(property, bookingCount) {
+// ADD THIS MISSING FUNCTION
+async function getPropertyDetails(propertyId) {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/admin/properties/${propertyId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.data?.property || data.property || data.data;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching property details:', error);
+    return null;
+  }
+}
+
+// UPDATED: Better booking check with fallback
+async function checkPropertyBookings(propertyId) {
+  try {
+    const token = localStorage.getItem('token');
+    
+    // Try admin bookings endpoint first
+    let response = await fetch(`${API_BASE_URL}/admin/bookings?property=${propertyId}&status=active,confirmed,pending`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.data?.total || data.total || 0;
+    }
+    
+    // Fallback: Try regular bookings endpoint
+    response = await fetch(`${API_BASE_URL}/bookings?property=${propertyId}&status=active,confirmed,pending`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.bookings?.length || data.data?.length || 0;
+    }
+    
+    return 0; // Assume no bookings if we can't check
+  } catch (error) {
+    console.error('Error checking bookings:', error);
+    return 0; // Assume no bookings on error
+  }
+}
+
+// UPDATED: Enhanced modal with better UX
+function showBookingWarning(property, bookingCount) {
   return new Promise((resolve) => {
     const modalId = 'forceDeleteModal-' + Date.now();
-    
-    const modalHTML = `
-      <div class="modal fade" id="${modalId}" tabindex="-1" data-bs-backdrop="static">
+    const modal = `
+      <div class="modal fade" id="${modalId}" tabindex="-1">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header bg-warning">
               <h5 class="modal-title">⚠️ Property Has Active Bookings</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              <button type="button" class="btn-close" onclick="window.resolveChoice('${modalId}', {cancelled: true})"></button>
             </div>
             <div class="modal-body">
               <div class="alert alert-danger">
                 <h6><i class="bi bi-exclamation-triangle"></i> Warning: ${bookingCount} Active Bookings</h6>
-                <p class="mb-0">"${property.title}" has ${bookingCount} active or pending bookings that will be cancelled.</p>
+                <p class="mb-0">"${property.title}" has ${bookingCount} active or pending bookings.</p>
               </div>
               
-              <div class="row g-3">
+              <div class="row">
                 <div class="col-md-6">
-                  <div class="card h-100 border-success">
+                  <div class="card h-100">
                     <div class="card-body text-center">
                       <h6><i class="bi bi-shield-check text-success"></i> Safe Option</h6>
                       <p class="small">Cancel bookings first, then delete property</p>
-                      <button class="btn btn-outline-primary w-100" id="cancelBtn">
+                      <button class="btn btn-outline-primary w-100" onclick="window.resolveChoice('${modalId}', {cancelled: true})">
                         Cancel Deletion
                       </button>
                     </div>
@@ -1330,7 +1401,7 @@ function showForceDeleteModal(property, bookingCount) {
                       <h6><i class="bi bi-exclamation-triangle-fill text-danger"></i> Emergency Option</h6>
                       <p class="small"><strong>Force delete</strong> - Cancels all bookings immediately</p>
                       <small class="text-muted d-block mb-2">Use for: scams, safety issues, legal requirements</small>
-                      <button class="btn btn-danger w-100" id="forceDeleteBtn">
+                      <button class="btn btn-danger w-100" onclick="window.resolveChoice('${modalId}', {forceDelete: true})">
                         Force Delete
                       </button>
                     </div>
@@ -1351,49 +1422,39 @@ function showForceDeleteModal(property, bookingCount) {
     `;
     
     // Add modal to DOM
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    const modalElement = document.getElementById(modalId);
-    const modal = new bootstrap.Modal(modalElement);
+    document.body.insertAdjacentHTML('beforeend', modal);
+    const modalEl = new bootstrap.Modal(document.getElementById(modalId));
     
-    // Set up event handlers
-    modalElement.querySelector('#cancelBtn').onclick = () => {
-      modal.hide();
-      resolve({ action: 'cancelled' });
-    };
-    
-    modalElement.querySelector('#forceDeleteBtn').onclick = async () => {
-      modal.hide();
-      
-      // Prompt for reason
-      const reason = prompt(`🚨 FORCE DELETE REQUIRED\n\nProperty "${property.title}" has ${bookingCount} active bookings.\n\nPlease provide justification for cancellation (min 10 characters):\n\nExamples:\n- "Property found to be fraudulent/scam"\n- "Landlord account compromised"\n- "Safety concerns reported"\n- "Legal compliance requirement"`);
-      
-      if (!reason || reason.length < 10) {
-        alert('Force delete cancelled. Reason must be at least 10 characters for audit purposes.');
-        resolve({ action: 'cancelled' });
-        return;
+    // Enhanced resolution handler
+    window.resolveChoice = (modalId, choice) => {
+      const modalElement = document.getElementById(modalId);
+      if (modalElement) {
+        const bsModal = bootstrap.Modal.getInstance(modalElement);
+        if (bsModal) bsModal.hide();
+        
+        setTimeout(() => {
+          modalElement.remove();
+          resolve(choice);
+        }, 500);
       }
-      
-      resolve({ 
-        action: 'forceDelete', 
-        reason: encodeURIComponent(reason)
-      });
     };
     
-    // Handle modal hidden event
-    modalElement.addEventListener('hidden.bs.modal', () => {
+    // Auto-remove on hidden
+    document.getElementById(modalId).addEventListener('hidden.bs.modal', function () {
       setTimeout(() => {
         if (document.getElementById(modalId)) {
           document.getElementById(modalId).remove();
+          resolve({ cancelled: true }); // Default to cancel if closed without choice
         }
       }, 500);
     });
     
-    // Show modal
-    modal.show();
+    modalEl.show();
   });
 }
 
-// UPDATED: Enhanced deletion execution
+// UPDATED: Enhanced deletion execution with better error handling
+// UPDATED: Enhanced deletion execution with better error handling
 async function executePropertyDeletion(propertyId, config) {
   try {
     const token = localStorage.getItem('token');
@@ -1415,6 +1476,7 @@ async function executePropertyDeletion(propertyId, config) {
     console.log('🔧 DELETE REQUEST DETAILS:');
     console.log('URL:', url);
     console.log('Config:', config);
+    console.log('Full URL with params:', url);
     
     const response = await fetch(url, {
       method: 'DELETE',
@@ -1438,65 +1500,28 @@ async function executePropertyDeletion(propertyId, config) {
       alert(message);
       loadProperties();
     } else {
-      throw new Error(result.error || 'Delete failed');
+      // Enhanced error messages
+      let errorMessage = result.error || 'Delete failed';
+      
+      if (response.status === 400 && result.bookings) {
+        errorMessage += `\n\nActive bookings found: ${result.bookings.length}`;
+        if (result.bookings.length > 0) {
+          errorMessage += '\n\nBooking IDs: ' + result.bookings.map(b => b.id).join(', ');
+        }
+        
+        // ADD THIS: Show force delete option in the error
+        errorMessage += '\n\n💡 Use "Force Delete" option to cancel all bookings and delete the property.';
+      } else if (response.status === 403) {
+        errorMessage = 'Access denied. Admin privileges required.';
+      } else if (response.status === 404) {
+        errorMessage = 'Property not found. It may have been already deleted.';
+      }
+      
+      throw new Error(errorMessage);
     }
   } catch (error) {
     console.error('Execution error:', error);
-    throw error;
-  }
-}
-
-// UPDATED: Better booking check
-async function checkPropertyBookings(propertyId) {
-  try {
-    const token = localStorage.getItem('token');
-    
-    // Try multiple endpoints
-    const endpoints = [
-      `${API_BASE_URL}/admin/bookings?property=${propertyId}&status=active,confirmed,pending`,
-      `${API_BASE_URL}/bookings?property=${propertyId}&status=active,confirmed,pending`
-    ];
-    
-    for (const endpoint of endpoints) {
-      try {
-        const response = await fetch(endpoint, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          const count = data.data?.total || data.total || data.bookings?.length || data.data?.length || 0;
-          console.log(`Bookings found via ${endpoint}:`, count);
-          return count;
-        }
-      } catch (error) {
-        console.log(`Endpoint ${endpoint} failed:`, error.message);
-      }
-    }
-    
-    return 0; // Assume no bookings if we can't check
-  } catch (error) {
-    console.error('Error checking bookings:', error);
-    return 0;
-  }
-}
-
-// UPDATED: Get property details
-async function getPropertyDetails(propertyId) {
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/admin/properties/${propertyId}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      return data.data?.property || data.property || data.data;
-    }
-    return null;
-  } catch (error) {
-    console.error('Error fetching property details:', error);
-    return null;
+    throw error; // Re-throw for the main function to handle
   }
 }
 
