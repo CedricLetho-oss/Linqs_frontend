@@ -1172,6 +1172,57 @@
 .nsfas-property {
     border-left: 4px solid #ff6b00 !important;
 }
+
+/* Enhanced Loading States */
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s ease-in-out infinite;
+}
+
+.btn-loading.btn-outline-primary::after,
+.btn-loading.btn-outline-warning::after,
+.btn-loading.btn-outline-info::after,
+.btn-loading.btn-outline-danger::after {
+    border: 2px solid #6c757d;
+    border-top-color: transparent;
+}
+
+/* Disabled state for all buttons during loading */
+.btn:disabled {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+/* Loading overlay for forms */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    border-radius: 0.375rem;
+}
 </style>
 </head>
 <body>
@@ -3438,6 +3489,7 @@ async function removeExistingRoomImage(propertyId, roomId, imageIndex) {
 }
 
 // Toast notification function
+// Enhanced toast function (add this if you don't have it)
 function showToast(message, type = 'info') {
     // Remove existing toasts
     const existingToasts = document.querySelectorAll('.custom-toast');
@@ -3751,9 +3803,11 @@ async function addNewProperty() {
 
 // ============ UPDATE PROPERTY ============
 // ============ UPDATE PROPERTY ============
+// ============ UPDATE PROPERTY WITH LOADING STATE ============
 async function updateProperty() {
     const propertyId = document.getElementById('editPropertyId').value;
     const property = allProperties.find(p => p._id === propertyId);
+    const updateBtn = document.querySelector('#editPropertyModal .btn-primary');
     
     if (!property) {
         alert('Property not found!');
@@ -3761,6 +3815,10 @@ async function updateProperty() {
     }
 
     try {
+        // Set loading state
+        setButtonLoading(updateBtn, true);
+        showFormLoading('editPropertyForm');
+
         const token = localStorage.getItem("token");
         if (!token) {
             throw new Error('No authentication token found');
@@ -3846,7 +3904,7 @@ async function updateProperty() {
         const result = await response.json();
         console.log('Update successful:', result);
         
-        alert('Property updated successfully!');
+        showToast('Property updated successfully!', 'success');
         
         // Close modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('editPropertyModal'));
@@ -3860,7 +3918,11 @@ async function updateProperty() {
         
     } catch (error) {
         console.error('Error updating property:', error);
-        alert('Failed to update property: ' + error.message);
+        showToast('Failed to update property: ' + error.message, 'error');
+    } finally {
+        // Always remove loading state - even if there was an error
+        setButtonLoading(updateBtn, false);
+        hideFormLoading('editPropertyForm');
     }
 }
 
@@ -4180,6 +4242,74 @@ function generatePropertyRow(property) {
         
         renderFilteredProperties();
     }
+
+    // ============ LOADING STATE MANAGEMENT ============
+
+// Enable loading state for a button
+function setButtonLoading(button, isLoading) {
+    if (isLoading) {
+        button.disabled = true;
+        button.classList.add('btn-loading');
+        // Store original text if not already stored
+        if (!button.dataset.originalText) {
+            button.dataset.originalText = button.innerHTML;
+        }
+        button.innerHTML = '<span class="loading-spinner"></span> Processing...';
+    } else {
+        button.disabled = false;
+        button.classList.remove('btn-loading');
+        // Restore original text if available
+        if (button.dataset.originalText) {
+            button.innerHTML = button.dataset.originalText;
+        }
+    }
+}
+
+// Enable loading state for multiple buttons
+function setMultipleButtonsLoading(buttonSelectors, isLoading) {
+    buttonSelectors.forEach(selector => {
+        const button = document.querySelector(selector);
+        if (button) {
+            setButtonLoading(button, isLoading);
+        }
+    });
+}
+
+// Show loading overlay on a form
+function showFormLoading(formId) {
+    const form = document.getElementById(formId);
+    if (form) {
+        // Remove existing overlay if any
+        const existingOverlay = form.querySelector('.loading-overlay');
+        if (existingOverlay) {
+            existingOverlay.remove();
+        }
+        
+        const overlay = document.createElement('div');
+        overlay.className = 'loading-overlay';
+        overlay.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-muted">Processing...</p>
+            </div>
+        `;
+        form.style.position = 'relative';
+        form.appendChild(overlay);
+    }
+}
+
+// Hide loading overlay from a form
+function hideFormLoading(formId) {
+    const form = document.getElementById(formId);
+    if (form) {
+        const overlay = form.querySelector('.loading-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+    }
+}
 
     // Calculate monthly revenue based on occupied rooms
     async function calculateMonthlyRevenue() {
@@ -4717,39 +4847,77 @@ function editProperty(propertyId) {
         alert('Property not found!');
     }
 }
-    // Delete property
-    async function deleteProperty(propertyId) {
-        const property = allProperties.find(p => p._id === propertyId);
-        
-        if (property && confirm(`Are you sure you want to delete "${property.title}"? This action cannot be undone.`)) {
-            try {
-                const token = localStorage.getItem("token");
-                if (!token) {
-                    throw new Error('No authentication token found');
+  
+    // Enhanced delete functions with loading states
+async function deleteRoom(roomId) {
+    const propertyId = document.getElementById('roomPropertyId').value;
+    const deleteBtn = event.target.closest('button');
+    
+    if (confirm('Are you sure you want to delete this room?')) {
+        try {
+            setButtonLoading(deleteBtn, true);
+
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms/${roomId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
+            });
 
-                const response = await fetch(`${API_BASE_URL}/properties/${propertyId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to delete property');
-                }
-
-                alert('Property deleted successfully');
-                await loadProperties();
-                
-            } catch (error) {
-                console.error('Error deleting property:', error);
-                alert('Failed to delete property: ' + error.message);
+            if (response.ok) {
+                showToast('Room deleted successfully!', 'success');
+                await loadPropertyRooms(propertyId);
+            } else {
+                throw new Error('Failed to delete room');
             }
+        } catch (error) {
+            console.error('Error deleting room:', error);
+            showToast('Failed to delete room: ' + error.message, 'error');
+        } finally {
+            setButtonLoading(deleteBtn, false);
         }
     }
+}
+
+async function deleteProperty(propertyId) {
+    const deleteBtn = event.target.closest('button');
+    const property = allProperties.find(p => p._id === propertyId);
+    
+    if (property && confirm(`Are you sure you want to delete "${property.title}"? This action cannot be undone.`)) {
+        try {
+            setButtonLoading(deleteBtn, true);
+
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error('No authentication token found');
+            }
+
+            const response = await fetch(`${API_BASE_URL}/properties/${propertyId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to delete property');
+            }
+
+            showToast('Property deleted successfully', 'success');
+            await loadProperties();
+            
+        } catch (error) {
+            console.error('Error deleting property:', error);
+            showToast('Failed to delete property: ' + error.message, 'error');
+        } finally {
+            setButtonLoading(deleteBtn, false);
+        }
+    }
+}
 
     // Delete property from edit modal
     async function deletePropertyFromEdit() {
@@ -5267,56 +5435,82 @@ function editExistingRoom(roomId) {
 }
 
 // Update the addNewRoom function to include short-term pricing
+// ============ ADD ROOM WITH LOADING STATE ============
+async function addRoom() {
+    const propertyId = document.getElementById('roomPropertyId').value;
+    const roomActionButton = document.getElementById('roomActionButton');
+    
+    try {
+        // Set loading state
+        setButtonLoading(roomActionButton, true);
+        showFormLoading('addRoomFormFields');
+
+        if (currentEditingRoomId) {
+            await updateRoom();
+        } else {
+            await addNewRoom();
+        }
+        
+    } catch (error) {
+        console.error('Error in add/update room:', error);
+        showToast('Failed to save room: ' + error.message, 'error');
+    } finally {
+        // Always remove loading state
+        setButtonLoading(roomActionButton, false);
+        hideFormLoading('addRoomFormFields');
+    }
+}
+
+// Enhanced addNewRoom function with loading state
 async function addNewRoom() {
     const propertyId = document.getElementById('roomPropertyId').value;
-    const property = allProperties.find(p => p._id === propertyId);
+    const roomActionButton = document.getElementById('roomActionButton');
     
-    const roomData = {
-        roomType: document.getElementById('roomType').value,
-        roomNumber: document.getElementById('roomNumber').value,
-        price: parseInt(document.getElementById('roomPrice').value),
-        size: document.getElementById('roomSize').value,
-        description: document.getElementById('roomDescription').value,
-        isAvailable: document.getElementById('roomAvailability').value === 'true',
-        images: [],
-        features: getSelectedRoomFeatures()
-    };
-
-    // Add short-term pricing if property accepts short-term
-    if (property && property.acceptsShortTerm) {
-        roomData.shortTermPricing = document.getElementById('roomShortTermPricing').value;
-        roomData.shortTermMinStay = parseInt(document.getElementById('roomShortTermMinStay').value) || 1;
-        roomData.shortTermDescription = document.getElementById('roomShortTermDescription').value || '';
-        
-        if (roomData.shortTermPricing === 'fixed') {
-            roomData.shortTermPrice = parseInt(document.getElementById('roomShortTermPrice').value) || 0;
-        } else {
-            roomData.shortTermPrice = 0;
-        }
-    }
-
-    // Add occupant info if room is occupied
-    if (!roomData.isAvailable) {
-        roomData.occupant = {
-            name: document.getElementById('occupantName').value,
-            moveInDate: document.getElementById('moveInDate').value
-        };
-    }
-
-    // ✅ FIXED: Use batch upload for room images
-    const filesToUpload = roomImages.add.files.map(fileData => fileData.file);
-    
-    if (filesToUpload.length > 0) {
-        const uploadedUrls = await uploadMultipleToCloudinary(filesToUpload);
-        roomData.images.push(...uploadedUrls);
-    }
-    
-    // Add URL images (these are already external URLs)
-    roomData.images.push(...roomImages.add.urls);
-
-    console.log('Creating room with short-term data:', roomData);
-
     try {
+        // Keep button in loading state
+        setButtonLoading(roomActionButton, true);
+
+        const property = allProperties.find(p => p._id === propertyId);
+        const roomData = {
+            roomType: document.getElementById('roomType').value,
+            roomNumber: document.getElementById('roomNumber').value,
+            price: parseInt(document.getElementById('roomPrice').value),
+            size: document.getElementById('roomSize').value,
+            description: document.getElementById('roomDescription').value,
+            isAvailable: document.getElementById('roomAvailability').value === 'true',
+            images: [],
+            features: getSelectedRoomFeatures()
+        };
+
+        // [Your existing room creation logic...]
+        if (property && property.acceptsShortTerm) {
+            roomData.shortTermPricing = document.getElementById('roomShortTermPricing').value;
+            roomData.shortTermMinStay = parseInt(document.getElementById('roomShortTermMinStay').value) || 1;
+            roomData.shortTermDescription = document.getElementById('roomShortTermDescription').value || '';
+            
+            if (roomData.shortTermPricing === 'fixed') {
+                roomData.shortTermPrice = parseInt(document.getElementById('roomShortTermPrice').value) || 0;
+            } else {
+                roomData.shortTermPrice = 0;
+            }
+        }
+
+        // Upload images
+        const filesToUpload = roomImages.add.files.map(fileData => fileData.file);
+        if (filesToUpload.length > 0) {
+            const uploadedUrls = await uploadMultipleToCloudinary(filesToUpload);
+            roomData.images.push(...uploadedUrls);
+        }
+        roomData.images.push(...roomImages.add.urls);
+
+        // Add occupant info if room is occupied
+        if (!roomData.isAvailable) {
+            roomData.occupant = {
+                name: document.getElementById('occupantName').value,
+                moveInDate: document.getElementById('moveInDate').value
+            };
+        }
+
         const token = localStorage.getItem("token");
         const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms`, {
             method: 'POST',
@@ -5331,79 +5525,77 @@ async function addNewRoom() {
             throw new Error('Failed to add room');
         }
 
-        alert('Room added successfully!');
+        showToast('Room added successfully!', 'success');
         hideAddRoomForm();
         await loadPropertyRooms(propertyId);
-        
-        // Reset room image data after successful add
         resetRoomImageData();
+        
     } catch (error) {
         console.error('Error adding room:', error);
-        alert('Failed to add room: ' + error.message);
+        throw error; // Re-throw to be caught by parent function
+    } finally {
+        setButtonLoading(roomActionButton, false);
     }
 }
 
 // Update the updateRoom function to include short-term pricing
+// ============ UPDATE ROOM WITH LOADING STATE ============
 async function updateRoom() {
     if (!currentEditingRoomId) return;
 
     const propertyId = document.getElementById('roomPropertyId').value;
-    const property = allProperties.find(p => p._id === propertyId);
-    const existingRoom = currentPropertyRooms.find(r => r._id === currentEditingRoomId);
+    const roomActionButton = document.getElementById('roomActionButton');
     
-    if (!existingRoom) {
-        alert('Room not found!');
-        return;
-    }
-
-    // Get existing images from the room (these are the ones that remain after deletions)
-    const existingImages = roomImages.add.urls;
-    
-    // Upload new files to Cloudinary
-    const filesToUpload = roomImages.add.files.map(fileData => fileData.file);
-    const newUploadedUrls = await uploadMultipleToCloudinary(filesToUpload);
-    
-    // Combine existing images with new images
-    const allImages = [
-        ...existingImages,           // Existing Cloudinary URLs (after any deletions)
-        ...newUploadedUrls,          // Newly uploaded Cloudinary URLs  
-    ];
-
-    const roomData = {
-        roomType: document.getElementById('roomType').value,
-        roomNumber: document.getElementById('roomNumber').value,
-        price: parseInt(document.getElementById('roomPrice').value),
-        size: document.getElementById('roomSize').value,
-        description: document.getElementById('roomDescription').value,
-        isAvailable: document.getElementById('roomAvailability').value === 'true',
-        images: allImages,
-        features: getSelectedRoomFeatures()
-    };
-
-    // Add short-term pricing if property accepts short-term
-    if (property && property.acceptsShortTerm) {
-        roomData.shortTermPricing = document.getElementById('roomShortTermPricing').value;
-        roomData.shortTermMinStay = parseInt(document.getElementById('roomShortTermMinStay').value) || 1;
-        roomData.shortTermDescription = document.getElementById('roomShortTermDescription').value || '';
-        
-        if (roomData.shortTermPricing === 'fixed') {
-            roomData.shortTermPrice = parseInt(document.getElementById('roomShortTermPrice').value) || 0;
-        } else {
-            roomData.shortTermPrice = 0;
-        }
-    }
-
-    // Add occupant info if room is occupied
-    if (!roomData.isAvailable) {
-        roomData.occupant = {
-            name: document.getElementById('occupantName').value,
-            moveInDate: document.getElementById('moveInDate').value
-        };
-    } else {
-        roomData.occupant = null;
-    }
-
     try {
+        setButtonLoading(roomActionButton, true);
+
+        const property = allProperties.find(p => p._id === propertyId);
+        const existingRoom = currentPropertyRooms.find(r => r._id === currentEditingRoomId);
+        
+        if (!existingRoom) {
+            throw new Error('Room not found!');
+        }
+
+        // [Your existing update room logic...]
+        const existingImages = roomImages.add.urls;
+        const filesToUpload = roomImages.add.files.map(fileData => fileData.file);
+        const newUploadedUrls = await uploadMultipleToCloudinary(filesToUpload);
+        const allImages = [...existingImages, ...newUploadedUrls];
+
+        const roomData = {
+            roomType: document.getElementById('roomType').value,
+            roomNumber: document.getElementById('roomNumber').value,
+            price: parseInt(document.getElementById('roomPrice').value),
+            size: document.getElementById('roomSize').value,
+            description: document.getElementById('roomDescription').value,
+            isAvailable: document.getElementById('roomAvailability').value === 'true',
+            images: allImages,
+            features: getSelectedRoomFeatures()
+        };
+
+        // Add short-term pricing if property accepts short-term
+        if (property && property.acceptsShortTerm) {
+            roomData.shortTermPricing = document.getElementById('roomShortTermPricing').value;
+            roomData.shortTermMinStay = parseInt(document.getElementById('roomShortTermMinStay').value) || 1;
+            roomData.shortTermDescription = document.getElementById('roomShortTermDescription').value || '';
+            
+            if (roomData.shortTermPricing === 'fixed') {
+                roomData.shortTermPrice = parseInt(document.getElementById('roomShortTermPrice').value) || 0;
+            } else {
+                roomData.shortTermPrice = 0;
+            }
+        }
+
+        // Add occupant info if room is occupied
+        if (!roomData.isAvailable) {
+            roomData.occupant = {
+                name: document.getElementById('occupantName').value,
+                moveInDate: document.getElementById('moveInDate').value
+            };
+        } else {
+            roomData.occupant = null;
+        }
+
         const token = localStorage.getItem("token");
         const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms/${currentEditingRoomId}`, {
             method: 'PUT',
@@ -5418,16 +5610,17 @@ async function updateRoom() {
             throw new Error('Failed to update room');
         }
 
-        alert('Room updated successfully!');
+        showToast('Room updated successfully!', 'success');
         hideAddRoomForm();
         await loadPropertyRooms(propertyId);
         currentEditingRoomId = null;
-        
-        // Reset room image data after successful update
         resetRoomImageData();
+        
     } catch (error) {
         console.error('Error updating room:', error);
-        alert('Failed to update room: ' + error.message);
+        throw error;
+    } finally {
+        setButtonLoading(roomActionButton, false);
     }
 }
 
@@ -5623,15 +5816,7 @@ function renderRoomsList() {
     }
 
     // Add or update room
-    async function addRoom() {
-        const propertyId = document.getElementById('roomPropertyId').value;
-        
-        if (currentEditingRoomId) {
-            await updateRoom();
-        } else {
-            await addNewRoom();
-        }
-    }
+    
 
 
     // Get selected room features
@@ -5988,32 +6173,7 @@ async function addBulkRooms() {
 }
 
     // Delete room
-    async function deleteRoom(roomId) {
-        const propertyId = document.getElementById('roomPropertyId').value;
-        
-        if (confirm('Are you sure you want to delete this room?')) {
-            try {
-                const token = localStorage.getItem("token");
-                const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/rooms/${roomId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    alert('Room deleted successfully!');
-                    await loadPropertyRooms(propertyId);
-                } else {
-                    throw new Error('Failed to delete room');
-                }
-            } catch (error) {
-                console.error('Error deleting room:', error);
-                alert('Failed to delete room: ' + error.message);
-            }
-        }
-    }
+    
 
     // Toggle room availability
     async function toggleRoomAvailability(roomId) {
