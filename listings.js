@@ -53,21 +53,36 @@ class ListingsManager {
     }
 
     // Initialize with booking mode sync
-    async init() {
-        // Sync booking mode first
-        await this.syncBookingMode();
-        
-        // Then load properties and setup UI
-        await this.loadProperties();
-        this.setupEventListeners();
-        this.applySorting();
-        this.renderProperties();
-        this.updateResultsCount();
-        this.updateAllSectionsForUserType();
-        
-        // Setup booking mode change listener
-        this.setupBookingModeListener();
+    // Initialize with booking mode sync
+async init() {
+    // Sync booking mode first
+    await this.syncBookingMode();
+    
+    // Then load properties and setup UI
+    await this.loadProperties();
+    this.setupEventListeners();
+    this.applySorting();
+    this.renderProperties();
+    this.updateResultsCount();
+    this.updateAllSectionsForUserType();
+    
+    // Setup booking mode change listener
+    this.setupBookingModeListener();
+    
+    // Add random sort option to dropdown
+    this.addRandomSortOption();
+}
+
+// Add random sort option to the sort dropdown
+addRandomSortOption() {
+    const sortSelect = document.getElementById('sortOptions');
+    if (sortSelect && !sortSelect.querySelector('option[value="random"]')) {
+        const randomOption = document.createElement('option');
+        randomOption.value = 'random';
+        randomOption.textContent = 'Random';
+        sortSelect.appendChild(randomOption);
     }
+}
 
     // Sync booking mode with backend
     async syncBookingMode() {
@@ -751,8 +766,10 @@ applyFilters() {
 
     // Apply sorting
     // Apply sorting with NSFAS support
+// Apply sorting with randomization and fair rotation
 applySorting() {
     const sortValue = document.getElementById('sortOptions').value;
+    const context = this.getUserContext();
 
     switch (sortValue) {
         case 'priceLow':
@@ -764,7 +781,7 @@ applySorting() {
                 if (statusA === 'available' && statusB !== 'available') return -1;
                 if (statusA !== 'available' && statusB === 'available') return 1;
                 
-                // Handle NSFAS properties (always show first in price sorting)
+                // Handle NSFAS properties
                 const isNsfasA = a.rentType === 'nsfas';
                 const isNsfasB = b.rentType === 'nsfas';
                 
@@ -793,36 +810,110 @@ applySorting() {
                 return b.price - a.price;
             });
             break;
+        case 'random':
+            // True random shuffle
+            this.shuffleArray(this.filteredProperties);
+            break;
         case 'default':
         default:
-            // Sort by availability first, then NSFAS, then by rating, then by creation date
-            this.filteredProperties.sort((a, b) => {
-                const statusA = this.getPropertyStatus(a);
-                const statusB = this.getPropertyStatus(b);
-                
-                // Available properties first
-                if (statusA === 'available' && statusB !== 'available') return -1;
-                if (statusA !== 'available' && statusB === 'available') return 1;
-                
-                // NSFAS properties next
-                const isNsfasA = a.rentType === 'nsfas';
-                const isNsfasB = b.rentType === 'nsfas';
-                
-                if (isNsfasA && !isNsfasB) return -1;
-                if (!isNsfasA && isNsfasB) return 1;
-                
-                // Then by rating (higher first)
-                const ratingA = a.averageRating || 0;
-                const ratingB = b.averageRating || 0;
-                if (ratingB !== ratingA) return ratingB - ratingA;
-                
-                // Then by review count (more reviews first)
-                const reviewsA = a.reviewCount || 0;
-                const reviewsB = b.reviewCount || 0;
-                return reviewsB - reviewsA;
-            });
+            // Smart rotation - ensures each property gets time at the top
+            this.applySmartRotation();
             break;
     }
+}
+
+// Fisher-Yates shuffle algorithm for true randomization
+shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+// Smart rotation that ensures each property gets a chance to be first
+applySmartRotation() {
+    // Get or create rotation tracking in localStorage
+    let rotationData = JSON.parse(localStorage.getItem('propertyRotationData') || '{}');
+    
+    // Initialize if needed
+    if (!rotationData.lastReset || !rotationData.propertyViews) {
+        rotationData = {
+            lastReset: new Date().toISOString(),
+            propertyViews: {},
+            sessionViews: 0
+        };
+    }
+    
+    // Check if we should reset (after 24 hours or new session)
+    const now = new Date();
+    const lastReset = new Date(rotationData.lastReset);
+    const hoursSinceReset = (now - lastReset) / (1000 * 60 * 60);
+    
+    if (hoursSinceReset >= 24 || rotationData.sessionViews >= 50) {
+        // Reset rotation data
+        rotationData = {
+            lastReset: now.toISOString(),
+            propertyViews: {},
+            sessionViews: 0
+        };
+    }
+    
+    // Increment session views
+    rotationData.sessionViews = (rotationData.sessionViews || 0) + 1;
+    
+    // Sort properties with rotation logic
+    this.filteredProperties.sort((a, b) => {
+        const statusA = this.getPropertyStatus(a);
+        const statusB = this.getPropertyStatus(b);
+        
+        // Available properties first (but with rotation)
+        if (statusA === 'available' && statusB !== 'available') return -1;
+        if (statusA !== 'available' && statusB === 'available') return 1;
+        
+        // Get view counts for both properties
+        const viewsA = rotationData.propertyViews[a._id] || 0;
+        const viewsB = rotationData.propertyViews[b._id] || 0;
+        
+        // Prioritize properties with fewer views
+        if (viewsA !== viewsB) {
+            return viewsA - viewsB;
+        }
+        
+        // If same view count, use a combination of rating and random factor
+        const ratingA = a.averageRating || 0;
+        const ratingB = b.averageRating || 0;
+        
+        // Small random factor to avoid strict ordering
+        const randomFactor = Math.random() * 0.3 - 0.15; // -0.15 to +0.15
+        
+        return (ratingB - ratingA) + randomFactor;
+    });
+    
+    // Update view counts for the top 6 properties (first page)
+    const propertiesToIncrement = this.filteredProperties.slice(0, 6);
+    propertiesToIncrement.forEach(property => {
+        rotationData.propertyViews[property._id] = (rotationData.propertyViews[property._id] || 0) + 1;
+    });
+    
+    // Save updated rotation data
+    localStorage.setItem('propertyRotationData', JSON.stringify(rotationData));
+    
+    console.log('Rotation data:', {
+        sessionViews: rotationData.sessionViews,
+        topProperties: propertiesToIncrement.map(p => ({
+            id: p._id,
+            title: p.title,
+            views: rotationData.propertyViews[p._id]
+        }))
+    });
+}
+
+// Add a reset method for testing
+resetRotationData() {
+    localStorage.removeItem('propertyRotationData');
+    console.log('Rotation data reset');
+    this.applyFilters(); // Re-apply to refresh
 }
 
     // Render properties
