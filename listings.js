@@ -448,6 +448,7 @@ getPriceDisplay(property) {
     // Create property card
     // Create property card with NSFAS support
 // Create property card with NSFAS support
+// Create property card with NSFAS support
 createPropertyCard(property) {
     const context = this.getUserContext();
     const isTenantMode = context.isTenantMode;
@@ -485,11 +486,6 @@ createPropertyCard(property) {
     
     // Handle NSFAS display - ONLY SHOW IN STUDENT MODE
     const isNsfasProperty = property.rentType === 'nsfas';
-    const nsfasBadge = (isNsfasProperty && !isTenantMode) ? `
-        <div class="nsfas-badge-listing">
-            <i class="bi bi-award me-1"></i>NSFAS Rates
-        </div>
-    ` : '';
     
     // Button logic - updated for tenant mode
     let buttonText, buttonClass, isDisabled, buttonTitle = '';
@@ -545,16 +541,22 @@ createPropertyCard(property) {
          data-rent-type="${property.rentType || 'fixed'}">
         <div class="card listing-card h-100 ${propertyStatus !== 'available' ? propertyStatus : ''} ${(isNsfasProperty && !isTenantMode) ? 'nsfas-listing' : ''}">
 
-            <!-- Price Tag -->
+            <!-- Price Tag - NSFAS shows special styling -->
+            ${(isNsfasProperty && !isTenantMode) ? `
+            <div class="price-tag" style="background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);">
+                <div class="d-flex flex-column align-items-center">
+                    <div class="price-main">NSFAS<small>Rates</small></div>
+                    <div class="price-min-stay">Contact</div>
+                </div>
+            </div>
+            ` : `
             <div class="price-tag">
                 <div class="d-flex flex-column align-items-center">
                     <div class="price-main">${priceDisplay.price}<small>${priceDisplay.label}</small></div>
                     ${minStayInfo ? `<div class="price-min-stay">${minStayInfo}</div>` : ''}
                 </div>
             </div>
-            
-            <!-- NSFAS Badge - ONLY SHOWS IN STUDENT MODE -->
-            ${nsfasBadge}
+            `}
             
             <!-- Location Badge -->
             <div class="location-badge" style="top: ${minStayInfo ? '4.2rem' : '3.5rem'};">
