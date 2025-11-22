@@ -5313,16 +5313,26 @@ function toggleRoomRentType() {
     const nsfasRentRadio = document.getElementById('roomNsfasRent');
     const fixedRentSection = document.getElementById('roomFixedRentSection');
     const nsfasRentSection = document.getElementById('roomNsfasRentSection');
+    const roomPriceInput = document.getElementById('roomPrice');
     
     if (fixedRentRadio.checked) {
         fixedRentSection.style.display = 'block';
         nsfasRentSection.style.display = 'none';
-        document.getElementById('roomPrice').required = true;
+        roomPriceInput.required = true;
+        roomPriceInput.disabled = false;
+        
+        // Set a default value if it's currently 0 (from NSFAS mode)
+        if (roomPriceInput.value === '0' || roomPriceInput.value === '') {
+            roomPriceInput.value = '2500'; // Default room price
+        }
     } else {
         fixedRentSection.style.display = 'none';
         nsfasRentSection.style.display = 'block';
-        document.getElementById('roomPrice').required = false;
-        document.getElementById('roomPrice').value = '0';
+        roomPriceInput.required = false;
+        roomPriceInput.disabled = true;
+        
+        // Set price to 0 for NSFAS (this is what gets sent to backend)
+        roomPriceInput.value = '0';
     }
 }
 
@@ -5434,8 +5444,7 @@ function editExistingRoom(roomId) {
     document.getElementById('addRoomForm').scrollIntoView({ behavior: 'smooth' });
 }
 
-// Update the addNewRoom function to include short-term pricing
-// ============ ADD ROOM WITH LOADING STATE ============
+
 async function addRoom() {
     const propertyId = document.getElementById('roomPropertyId').value;
     const roomActionButton = document.getElementById('roomActionButton');
@@ -5467,14 +5476,27 @@ async function addNewRoom() {
     const roomActionButton = document.getElementById('roomActionButton');
     
     try {
-        // Keep button in loading state
         setButtonLoading(roomActionButton, true);
 
         const property = allProperties.find(p => p._id === propertyId);
+        
+        // Get rent type and handle pricing
+        const rentType = document.querySelector('input[name="roomRentType"]:checked').value;
+        let finalPrice;
+        
+        if (rentType === 'nsfas') {
+            // For NSFAS, price should be 0
+            finalPrice = 0;
+        } else {
+            // For fixed rent, use the input value
+            finalPrice = parseInt(document.getElementById('roomPrice').value) || 0;
+        }
+
         const roomData = {
             roomType: document.getElementById('roomType').value,
             roomNumber: document.getElementById('roomNumber').value,
-            price: parseInt(document.getElementById('roomPrice').value),
+            price: finalPrice,
+            rentType: rentType, // Make sure rentType is included
             size: document.getElementById('roomSize').value,
             description: document.getElementById('roomDescription').value,
             isAvailable: document.getElementById('roomAvailability').value === 'true',
@@ -5482,7 +5504,7 @@ async function addNewRoom() {
             features: getSelectedRoomFeatures()
         };
 
-        // [Your existing room creation logic...]
+        // Handle short-term pricing if property accepts it
         if (property && property.acceptsShortTerm) {
             roomData.shortTermPricing = document.getElementById('roomShortTermPricing').value;
             roomData.shortTermMinStay = parseInt(document.getElementById('roomShortTermMinStay').value) || 1;
@@ -5495,7 +5517,7 @@ async function addNewRoom() {
             }
         }
 
-        // Upload images
+        // Upload images and create room (rest of your existing code)...
         const filesToUpload = roomImages.add.files.map(fileData => fileData.file);
         if (filesToUpload.length > 0) {
             const uploadedUrls = await uploadMultipleToCloudinary(filesToUpload);
@@ -5532,7 +5554,7 @@ async function addNewRoom() {
         
     } catch (error) {
         console.error('Error adding room:', error);
-        throw error; // Re-throw to be caught by parent function
+        throw error;
     } finally {
         setButtonLoading(roomActionButton, false);
     }
@@ -5556,7 +5578,17 @@ async function updateRoom() {
             throw new Error('Room not found!');
         }
 
-        // [Your existing update room logic...]
+         // Get rent type and handle pricing
+        const rentType = document.querySelector('input[name="roomRentType"]:checked').value;
+        let finalPrice;
+        
+        if (rentType === 'nsfas') {
+            finalPrice = 0;
+        } else {
+            finalPrice = parseInt(document.getElementById('roomPrice').value) || 0;
+        }
+
+        // Handle images and other data...
         const existingImages = roomImages.add.urls;
         const filesToUpload = roomImages.add.files.map(fileData => fileData.file);
         const newUploadedUrls = await uploadMultipleToCloudinary(filesToUpload);
@@ -5565,7 +5597,8 @@ async function updateRoom() {
         const roomData = {
             roomType: document.getElementById('roomType').value,
             roomNumber: document.getElementById('roomNumber').value,
-            price: parseInt(document.getElementById('roomPrice').value),
+            price: finalPrice,
+            rentType: rentType, 
             size: document.getElementById('roomSize').value,
             description: document.getElementById('roomDescription').value,
             isAvailable: document.getElementById('roomAvailability').value === 'true',
