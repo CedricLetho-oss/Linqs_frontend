@@ -2476,17 +2476,17 @@ function updatePropertyDisplay() {
     }
     
     roomsContainer.innerHTML = propertyRooms.map(room => {
-        // Determine pricing based on room rentType
+        // Determine pricing based on room rentType - FIXED
         let roomPrice, pricePeriod, priceDisplay;
         
         if (room.rentType === 'nsfas') {
-            roomPrice = 'NSFAS Rates';
-            pricePeriod = '';
+            // NSFAS rooms should show "NSFAS Rates" not "R0/month"
             priceDisplay = `
                 <div class="text-primary fw-bold">NSFAS Rates</div>
                 <small class="text-muted">Contact for details</small>
             `;
         } else {
+            // Regular fixed price rooms
             roomPrice = room.price;
             pricePeriod = 'month';
             priceDisplay = `
@@ -3327,7 +3327,7 @@ function submitBookingRequest() {
 
     let roomPrice, pricePeriod, priceLabel;
     
-    // Handle NSFAS room pricing
+    // Handle NSFAS room pricing - FIXED
     if (room.rentType === 'nsfas') {
         roomPrice = 'NSFAS Rates';
         pricePeriod = '';
