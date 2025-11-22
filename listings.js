@@ -541,22 +541,21 @@ createPropertyCard(property) {
          data-rent-type="${property.rentType || 'fixed'}">
         <div class="card listing-card h-100 ${propertyStatus !== 'available' ? propertyStatus : ''} ${(isNsfasProperty && !isTenantMode) ? 'nsfas-listing' : ''}">
 
-            <!-- Price Tag - NSFAS shows special styling -->
-            ${(isNsfasProperty && !isTenantMode) ? `
-            <div class="price-tag" style="background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);">
-                <div class="d-flex flex-column align-items-center">
-                    <div class="price-main">NSFAS<small>Rates</small></div>
-                    <div class="price-min-stay">Contact</div>
+            <!-- Price & NSFAS Section - Stacked vertically -->
+            <div class="price-nsfas-container" style="position: absolute; top: 1rem; right: 1rem; z-index: 2; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+                ${(isNsfasProperty && !isTenantMode) ? `
+                <div class="nsfas-badge-listing" style="position: relative; top: auto; right: auto; margin: 0;">
+                    <i class="bi bi-award me-1"></i>NSFAS Rates
+                </div>
+                ` : ''}
+                
+                <div class="price-tag" style="position: relative; top: auto; right: auto; margin: 0;">
+                    <div class="d-flex flex-column align-items-center">
+                        <div class="price-main">${priceDisplay.price}<small>${priceDisplay.label}</small></div>
+                        ${minStayInfo ? `<div class="price-min-stay">${minStayInfo}</div>` : ''}
+                    </div>
                 </div>
             </div>
-            ` : `
-            <div class="price-tag">
-                <div class="d-flex flex-column align-items-center">
-                    <div class="price-main">${priceDisplay.price}<small>${priceDisplay.label}</small></div>
-                    ${minStayInfo ? `<div class="price-min-stay">${minStayInfo}</div>` : ''}
-                </div>
-            </div>
-            `}
             
             <!-- Location Badge -->
             <div class="location-badge" style="top: ${minStayInfo ? '4.2rem' : '3.5rem'};">
