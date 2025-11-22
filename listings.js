@@ -445,10 +445,6 @@ getPriceDisplay(property) {
     return propertyDescription;
 }
 
-    // Create property card
-    // Create property card with NSFAS support
-// Create property card with NSFAS support
-// Create property card with NSFAS support
 createPropertyCard(property) {
     const context = this.getUserContext();
     const isTenantMode = context.isTenantMode;
@@ -541,21 +537,19 @@ createPropertyCard(property) {
          data-rent-type="${property.rentType || 'fixed'}">
         <div class="card listing-card h-100 ${propertyStatus !== 'available' ? propertyStatus : ''} ${(isNsfasProperty && !isTenantMode) ? 'nsfas-listing' : ''}">
 
-            <!-- Price & NSFAS Section - Stacked vertically -->
-            <div class="price-nsfas-container" style="position: absolute; top: 1rem; right: 1rem; z-index: 2; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
-                ${(isNsfasProperty && !isTenantMode) ? `
-                <div class="nsfas-badge-listing" style="position: relative; top: auto; right: auto; margin: 0;">
-                    <i class="bi bi-award me-1"></i>NSFAS Rates
-                </div>
-                ` : ''}
-                
-                <div class="price-tag" style="position: relative; top: auto; right: auto; margin: 0;">
-                    <div class="d-flex flex-column align-items-center">
-                        <div class="price-main">${priceDisplay.price}<small>${priceDisplay.label}</small></div>
-                        ${minStayInfo ? `<div class="price-min-stay">${minStayInfo}</div>` : ''}
-                    </div>
+            <!-- Price Tag - Single location for both regular and NSFAS prices -->
+            ${(isNsfasProperty && !isTenantMode) ? `
+            <div class="nsfas-badge-listing">
+                <i class="bi bi-award me-1"></i>NSFAS Rates
+            </div>
+            ` : `
+            <div class="price-tag">
+                <div class="d-flex flex-column align-items-center">
+                    <div class="price-main">${priceDisplay.price}<small>${priceDisplay.label}</small></div>
+                    ${minStayInfo ? `<div class="price-min-stay">${minStayInfo}</div>` : ''}
                 </div>
             </div>
+            `}
             
             <!-- Location Badge -->
             <div class="location-badge" style="top: ${minStayInfo ? '4.2rem' : '3.5rem'};">
