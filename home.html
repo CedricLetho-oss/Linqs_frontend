@@ -1258,8 +1258,6 @@
             return score;
         }
 
-        // Select featured properties based on user mode - UPDATED
-        // Select featured properties based on user mode - UPDATED with NSFAS support
 selectFeaturedProperties(properties) {
     const context = this.getUserContext();
     const isTenantMode = context.isTenantMode;
@@ -1280,34 +1278,85 @@ selectFeaturedProperties(properties) {
             return propertyStatus === 'available' && adminStatus === 'approved';
         });
         console.log('Student mode - available properties:', availableProperties.length);
-        
-        // Log NSFAS properties for debugging
-        const nsfasProperties = availableProperties.filter(p => p.rentType === 'nsfas');
-        console.log('NSFAS properties found:', nsfasProperties.length);
-        nsfasProperties.forEach(p => {
-            console.log('NSFAS Property:', p.title, 'Rent Type:', p.rentType);
-        });
     }
 
     if (availableProperties.length === 0) {
         return [];
     }
 
-    // Calculate scores for all available properties
-    const scoredProperties = availableProperties.map(property => ({
-        ...property,
-        score: this.calculatePropertyScore(property)
-    }));
-
-    // Sort by score (highest first), then by rating, then by review count
+    // Get or create rotation tracking for homepage
+    let rotationData = JSON.parse(localStorage.getItem('homepageRotationData') || '{}');
+    
+    // Initialize if needed
+    if (!rotationData.lastReset || !rotationData.propertyViews) {
+        rotationData = {
+            lastReset: new Date().toISOString(),
+            propertyViews: {},
+            sessionViews: 0
+        };
+    }
+    
+    // Check if we should reset (after 12 hours or new session)
+    const now = new Date();
+    const lastReset = new Date(rotationData.lastReset);
+    const hoursSinceReset = (now - lastReset) / (1000 * 60 * 60);
+    
+    if (hoursSinceReset >= 12 || rotationData.sessionViews >= 30) {
+        // Reset rotation data
+        rotationData = {
+            lastReset: now.toISOString(),
+            propertyViews: {},
+            sessionViews: 0
+        };
+    }
+    
+    // Increment session views
+    rotationData.sessionViews = (rotationData.sessionViews || 0) + 1;
+    
+    // Calculate scores with rotation logic
+    const scoredProperties = availableProperties.map(property => {
+        const baseScore = this.calculatePropertyScore(property);
+        const views = rotationData.propertyViews[property._id] || 0;
+        
+        // Reduce score based on how many times it's been shown recently
+        const rotationPenalty = views * 5; // Each view reduces score by 5 points
+        
+        return {
+            ...property,
+            score: baseScore - rotationPenalty,
+            views: views
+        };
+    });
+    
+    // Sort by adjusted score (highest first)
     scoredProperties.sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
         if (b.averageRating !== a.averageRating) return (b.averageRating || 0) - (a.averageRating || 0);
         return (b.reviewCount || 0) - (a.reviewCount || 0);
     });
-
-    // Return top 4 properties
-    return scoredProperties.slice(0, 4);
+    
+    // Select top 4 properties
+    const selectedProperties = scoredProperties.slice(0, 4);
+    
+    // Update view counts for selected properties
+    selectedProperties.forEach(property => {
+        rotationData.propertyViews[property._id] = (rotationData.propertyViews[property._id] || 0) + 1;
+    });
+    
+    // Save updated rotation data
+    localStorage.setItem('homepageRotationData', JSON.stringify(rotationData));
+    
+    console.log('Homepage rotation data:', {
+        sessionViews: rotationData.sessionViews,
+        selectedProperties: selectedProperties.map(p => ({
+            id: p._id,
+            title: p.title,
+            score: p.score,
+            views: rotationData.propertyViews[p._id]
+        }))
+    });
+    
+    return selectedProperties;
 }
 
         // Filter properties for tenants - UPDATED with seasonal logic
@@ -1567,8 +1616,6 @@ getPriceDisplay(property) {
             }).join('');
         }
 
-        // Create property card HTML
-        // Create property card HTML with NSFAS support - FIXED DUPLICATE BADGE ISSUE
 createEnhancedPropertyCard(property, priceDisplay) {
     const accreditation = property.accreditation || 'self';
     const accreditationInfo = this.accreditationConfig[accreditation] || this.accreditationConfig.self;
@@ -1597,19 +1644,9 @@ createEnhancedPropertyCard(property, priceDisplay) {
         propertyDescription = property.description || "Short-term accommodation available during student holidays. Perfect for temporary stays.";
     }
     
-    // FIXED: Only show NSFAS badge in student mode AND only if it's an NSFAS property
-    // The price tag will handle displaying "NSFAS Rates" in student mode
-    const nsfasBadge = (isNsfasProperty && !isTenantMode) ? `
-        <div class="nsfas-badge-listing">
-            <i class="bi bi-award me-1"></i>NSFAS Rates
-        </div>
-    ` : '';
-    
-    // FIXED: Apply nsfas-listing class only in student mode for NSFAS properties
-    const nsfasClass = (isNsfasProperty && !isTenantMode) ? 'nsfas-listing' : '';
     
     return `
-    <div class="card feature-card h-100 ${nsfasClass}">
+    <div class="card feature-card h-100 ${(isNsfasProperty && !isTenantMode) ? 'nsfas-listing' : ''}">
         <div class="position-relative">
             <img src="${property.images[0]}" class="card-img-top" alt="${property.title}" 
                  style="height: 200px; object-fit: cover; width: 100%;">
@@ -1621,15 +1658,18 @@ createEnhancedPropertyCard(property, priceDisplay) {
                 </span>
             </div>
             
-            <!-- Price Tag - This will show "NSFAS Rates" for NSFAS properties in student mode -->
-            <div class="price-tag ${isNsfasProperty && !isTenantMode ? 'nsfas-price' : ''}">
+            <!-- Price/NSFAS Badge - Single location like listings.js -->
+            ${(isNsfasProperty && !isTenantMode) ? `
+            <div class="nsfas-badge-listing">
+                <i class="bi bi-award me-1"></i>NSFAS Rates
+            </div>
+            ` : `
+            <div class="price-tag">
                 <div class="d-flex flex-column align-items-center">
                     <div class="price-main">${priceDisplay.price}<small>${priceDisplay.label}</small></div>
                 </div>
             </div>
-            
-            <!-- NSFAS Badge - ONLY SHOWS IN STUDENT MODE for NSFAS properties -->
-            ${nsfasBadge}
+            `}
             
             <!-- Accreditation Badge - HIDDEN FOR TENANTS -->
             ${!isTenantMode ? `
