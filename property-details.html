@@ -2324,7 +2324,7 @@ function updatePropertyDisplay() {
     // Handle NSFAS pricing display
     if (currentProperty.rentType === 'nsfas') {
         document.getElementById('propertyPrice').textContent = 'NSFAS Rates';
-        document.getElementById('pricePeriod').textContent = 'Contact for details';
+        document.getElementById('pricePeriod').textContent = 'Book a viewing for details';
         
         // Add NSFAS badge
         const nsfasBadge = document.createElement('span');
@@ -2483,7 +2483,7 @@ function updatePropertyDisplay() {
             // NSFAS rooms should show "NSFAS Rates" not "R0/month"
             priceDisplay = `
                 <div class="text-primary fw-bold">NSFAS Rates</div>
-                <small class="text-muted">Contact for details</small>
+                <small class="text-muted">Book a viewing for details</small>
             `;
         } else {
             // Regular fixed price rooms
@@ -3412,11 +3412,11 @@ function submitBookingRequest() {
     if (roomPrice === 'NSFAS Rates') {
         priceElement.textContent = 'NSFAS Rates';
         priceElement.className = 'text-info mb-1';
-        periodElement.textContent = 'Contact for details';
+        periodElement.textContent = 'Book a viewing for details';
     } else if (roomPrice === 'Negotiable') {
         priceElement.textContent = 'Negotiable';
         priceElement.className = 'negotiable-price mb-1';
-        periodElement.textContent = 'Contact for pricing';
+        periodElement.textContent = 'Book a viewing for details';
     } else {
         priceElement.textContent = `R${roomPrice}`;
         priceElement.className = 'text-success mb-1';
@@ -3495,7 +3495,7 @@ function submitBookingRequest() {
         if (userType === 'tenant') {
             bookBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Request Short-term Stay';
         } else if (room.rentType === 'nsfas') {
-            bookBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Inquire About NSFAS Rates';
+            bookBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Book a Viewing';
         } else {
             bookBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Book This Room';
         }
